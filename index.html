@@ -17,20 +17,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 }
 .brand { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.1em; }
 .brand span { color: #00e87a; }
-.badge {
-  font-size: 10px; padding: 4px 12px; border-radius: 99px;
-  letter-spacing: 0.1em; text-transform: uppercase;
-}
+.badge { font-size: 10px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.1em; text-transform: uppercase; }
 .badge-admin { background: #00e87a20; border: 1px solid #00e87a40; color: #00e87a; }
 .badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
 
 .layout { display: flex; height: calc(100vh - 52px); }
 
-.sidebar {
-  width: 200px; background: #0f1318;
-  border-right: 1px solid #1e2530;
-  overflow-y: auto; flex-shrink: 0;
-}
+.sidebar { width: 200px; background: #0f1318; border-right: 1px solid #1e2530; overflow-y: auto; flex-shrink: 0; }
 .sidebar-hdr {
   padding: 10px 14px; font-size: 10px; color: #4a5568;
   text-transform: uppercase; letter-spacing: 0.15em;
@@ -57,10 +50,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 .main { flex: 1; overflow-y: auto; padding: 20px; }
 
-.section {
-  background: #0f1318; border: 1px solid #1e2530;
-  border-radius: 10px; padding: 16px 18px; margin-bottom: 14px;
-}
+.section { background: #0f1318; border: 1px solid #1e2530; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
 .sec-title {
   font-size: 10px; color: #4a5568; text-transform: uppercase;
   letter-spacing: 0.15em; margin-bottom: 12px; padding-bottom: 8px;
@@ -77,9 +67,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6;
   width: 100%; transition: all 0.15s;
 }
-.field input:focus, .field select:focus {
-  outline: none; border-color: #00e87a; background: #00e87a08; color: #fff;
-}
+.field input:focus, .field select:focus { outline: none; border-color: #00e87a; background: #00e87a08; color: #fff; }
 .field input[readonly] { cursor: default; color: #6b7280; }
 .field input.green { color: #00e87a; font-weight: 700; }
 .field select { background: #0f1318; cursor: pointer; }
@@ -89,20 +77,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   background: #ffb30010; border: 1px solid #ffb30025;
   border-radius: 6px; padding: 7px 10px; margin-bottom: 7px;
 }
-.alert-item input {
-  flex: 1; background: transparent; border: none;
-  font-family: 'Courier New', monospace; font-size: 12px;
-  color: #ffd166; outline: none;
-}
+.alert-item input { flex: 1; background: transparent; border: none; font-family: 'Courier New', monospace; font-size: 12px; color: #ffd166; outline: none; }
 .alert-item input[readonly] { color: #b8960a; cursor: default; }
 .btn-x { background: none; border: none; color: #4a5568; cursor: pointer; font-size: 13px; padding: 2px 6px; }
 .btn-x:hover { color: #ff4d4d; }
 
-.btn {
-  font-family: 'Courier New', monospace; font-size: 11px;
-  letter-spacing: 0.08em; padding: 6px 14px; border-radius: 6px;
-  border: none; cursor: pointer; text-transform: uppercase; transition: all 0.15s;
-}
+.btn { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.08em; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
 .btn:hover { filter: brightness(1.2); }
 .btn-green { background: #00e87a; color: #000; font-weight: 800; }
 .btn-gray { background: #1e2530; color: #d8dde6; border: 1px solid #2e3b4e; }
@@ -117,7 +97,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 /* IMAGEM DA PEÇA */
 .img-upload-box {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border: 2px dashed #1e2530; border-radius: 8px; cursor: pointer;
+  border: 2px dashed #1e2530; border-radius: 8px;
   transition: all 0.2s; overflow: hidden; position: relative;
   min-height: 110px; background: #080b0f;
 }
@@ -132,15 +112,32 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .img-upload-box:hover .img-overlay { opacity: 1; }
 .img-overlay span { font-size: 11px; color: #fff; letter-spacing: 0.06em; }
 
-.login-wrap {
-  min-height: 100vh; display: flex; align-items: center;
-  justify-content: center; padding: 20px;
+/* LIGHTBOX */
+.lightbox {
+  position: fixed; inset: 0; background: #000000ee;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  cursor: zoom-out;
 }
-.login-box {
-  background: #0f1318; border: 1px solid #1e2530;
-  border-radius: 16px; padding: 36px 30px;
-  width: 100%; max-width: 360px; text-align: center;
+.lightbox.open { opacity: 1; pointer-events: all; }
+.lightbox img {
+  max-width: 92vw; max-height: 92vh;
+  object-fit: contain; border-radius: 8px;
+  box-shadow: 0 0 60px #00000080;
+  transform: scale(0.95); transition: transform 0.2s;
 }
+.lightbox.open img { transform: scale(1); }
+.lightbox-close {
+  position: absolute; top: 18px; right: 22px;
+  font-size: 28px; color: #fff; cursor: pointer;
+  background: none; border: none; opacity: 0.7;
+  font-family: 'Courier New', monospace;
+}
+.lightbox-close:hover { opacity: 1; }
+
+/* LOGIN */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
 .login-icon { font-size: 38px; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; }
 .login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
@@ -168,32 +165,19 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 }
 .login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
 
-.overlay {
-  position: fixed; inset: 0; background: #000000bb;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-}
+/* MODAL */
+.overlay { position: fixed; inset: 0; background: #000000bb; display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .overlay.open { opacity: 1; pointer-events: all; }
-.modal {
-  background: #0f1318; border: 1px solid #1e2530;
-  border-radius: 12px; padding: 26px; width: 360px; max-width: 95vw;
-}
+.modal { background: #0f1318; border: 1px solid #1e2530; border-radius: 12px; padding: 26px; width: 360px; max-width: 95vw; }
 .modal-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 18px; letter-spacing: 0.06em; }
 .modal-field { margin-bottom: 12px; }
 .modal-field label { display: block; font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-.modal-input {
-  width: 100%; background: #080b0f; border: 1px solid #1e2530;
-  border-radius: 6px; padding: 8px 10px;
-  font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6; outline: none;
-}
+.modal-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 6px; padding: 8px 10px; font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6; outline: none; }
 .modal-input:focus { border-color: #00e87a; color: #fff; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
-.xlsx-preview {
-  background: #080b0f; border: 1px solid #1e2530;
-  border-radius: 8px; padding: 12px; margin-top: 12px;
-  max-height: 220px; overflow-y: auto; font-size: 11px;
-}
+/* XLSX */
+.xlsx-preview { background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 12px; margin-top: 12px; max-height: 220px; overflow-y: auto; font-size: 11px; }
 .xlsx-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1e2530; align-items: center; }
 .xlsx-row:last-child { border-bottom: none; }
 .xlsx-cell-num { color: #00e87a; font-weight: 800; min-width: 30px; }
@@ -201,13 +185,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .xlsx-found { color: #00e87a; font-size: 10px; }
 .xlsx-notfound { color: #ff4d4d; font-size: 10px; }
 
-.toast {
-  position: fixed; bottom: 20px; right: 20px;
-  padding: 10px 18px; border-radius: 8px;
-  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
-  z-index: 999; opacity: 0; transform: translateY(8px);
-  transition: all 0.25s; pointer-events: none;
-}
+/* TOAST */
+.toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.ok { background: #00e87a; color: #000; }
 .toast.error { background: #ff4d4d; color: #fff; }
@@ -228,13 +207,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </head>
 <body>
 
+<!-- LOGIN -->
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
     <div class="login-icon">⬡</div>
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador"
-      onkeydown="if(event.key==='Enter')tryLogin()">
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
     <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
@@ -242,6 +221,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- APP -->
 <div id="appScreen" style="display:none">
   <div class="topbar">
     <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
@@ -266,6 +246,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- MODAL NOVA CÉLULA -->
 <div class="overlay" id="modalEl">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title">Nova Célula</div>
@@ -284,6 +265,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- MODAL XLSX -->
 <div class="overlay" id="xlsxModalEl">
   <div class="modal" style="width:460px" onclick="event.stopPropagation()">
     <div class="modal-title">📊 Importar Produção do Excel</div>
@@ -312,7 +294,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- INPUT OCULTO PARA UPLOAD DE IMAGEM -->
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightboxEl" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
+</div>
+
+<!-- INPUT OCULTO IMAGEM -->
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
 
 <div class="toast" id="toastEl"></div>
@@ -363,20 +351,12 @@ function parseTempoPeca(str) {
 function calcRitmo(meta_hora, tempo_peca_str) {
   const metaNum = parseFloat(meta_hora);
   const segsTP = parseTempoPeca(tempo_peca_str);
-
-  // Precisa dos dois para calcular
   if (!metaNum || metaNum <= 0 || !segsTP) return '—';
-
-  // Tempo disponível por peça = 3600s / meta_hora
   const disponivel = 3600 / metaNum;
-  // Eficiência = tempo_peca / disponivel * 100
   const efic = Math.round((segsTP / disponivel) * 100);
-
-  // Formata o tempo disponível
   const m = Math.floor(disponivel / 60);
   const s = Math.round(disponivel % 60);
   const tempoStr = m > 0 ? `${m}min ${s > 0 ? s+'s' : ''}`.trim() : `${s}s`;
-
   return `${tempoStr} / peça (${efic}% do tempo)`;
 }
 
@@ -423,7 +403,7 @@ function updateAndRefreshRitmo(key, field, value) {
   if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
 }
 
-// ── IMAGEM DA PEÇA ────────────────────────────
+// ── IMAGEM ────────────────────────────────────
 function triggerImgUpload() {
   if (!isAdmin) return;
   document.getElementById("imgFileInput").click();
@@ -433,13 +413,15 @@ function handleImgUpload(file) {
   if (!file || !selected) return;
   const reader = new FileReader();
   reader.onload = function(e) {
-    celulas[selected].img_peca = e.target.result; // base64
+    celulas[selected].img_peca = e.target.result;
     saveToAPI(celulas);
-    // Atualiza só a imagem sem re-renderizar tudo
     const imgEl = document.getElementById("pecaImgEl");
-    const placeholderEl = document.getElementById("pecaImgPlaceholder");
+    const placeholder = document.getElementById("pecaImgPlaceholder");
     if (imgEl) { imgEl.src = e.target.result; imgEl.style.display = "block"; }
-    if (placeholderEl) placeholderEl.style.display = "none";
+    if (placeholder) placeholder.style.display = "none";
+    // Mostra overlay de troca
+    const overlay = document.getElementById("pecaImgOverlay");
+    if (overlay) overlay.style.display = "flex";
   };
   reader.readAsDataURL(file);
 }
@@ -449,6 +431,15 @@ function removeImg() {
   celulas[selected].img_peca = "";
   saveToAPI(celulas);
   renderDetail();
+}
+
+// ── LIGHTBOX ──────────────────────────────────
+function openLightbox(src) {
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("lightboxEl").classList.add("open");
+}
+function closeLightbox() {
+  document.getElementById("lightboxEl").classList.remove("open");
 }
 
 // ── LOGIN ─────────────────────────────────────
@@ -528,8 +519,7 @@ function handleXlsxFile(file) {
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
       const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
       if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
-      xlsxPendingData = [];
-      let previewHTML = ""; let found = 0, notFound = 0;
+      xlsxPendingData = []; let previewHTML = ""; let found = 0, notFound = 0;
       dataRows.forEach(row => {
         let rawKey = String(row[0]).trim().replace(/\D/g, "");
         const key = rawKey.padStart(2, "0");
@@ -673,16 +663,15 @@ function renderDetail() {
         <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
         <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
 
-        <!-- IMAGEM DA PEÇA -->
         <div class="field">
           <label>Imagem da peça</label>
-          <div class="img-upload-box" onclick="${isAdmin ? 'triggerImgUpload()' : ''}" style="${isAdmin?'cursor:pointer':'cursor:default'}">
+          <div class="img-upload-box" id="imgBox" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer':'cursor:default'}">
             ${imgSrc
-              ? `<img id="pecaImgEl" src="${imgSrc}" alt="peça">`
-              : `<div class="img-placeholder" id="pecaImgPlaceholder">${isAdmin ? '📷<br>Clique para<br>enviar imagem' : '—'}</div>`
+              ? `<img id="pecaImgEl" src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="cursor:zoom-in">`
+              : `<div class="img-placeholder" id="pecaImgPlaceholder">${isAdmin?'📷<br>Clique para<br>enviar imagem':'—'}</div>`
             }
             ${isAdmin && imgSrc ? `
-              <div class="img-overlay">
+              <div class="img-overlay" id="pecaImgOverlay">
                 <span>📷 Trocar</span>
                 <button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button>
               </div>` : ''
@@ -774,9 +763,11 @@ function showToast(msg, err=false){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeXlsxModal(); } });
-document.getElementById("modalEl").addEventListener("click",closeModal);
-document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); }
+});
+document.getElementById("modalEl").addEventListener("click", closeModal);
+document.getElementById("xlsxModalEl").addEventListener("click", closeXlsxModal);
 </script>
 </body>
 </html>
