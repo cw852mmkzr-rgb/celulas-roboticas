@@ -273,7 +273,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 // ══════════════════════════════════════════════
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "TREMPS23";
+const ADMIN_PW = "admin123";
 // ══════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -471,6 +471,24 @@ function renderDetail() {
         <div class="field"><label>Nome da célula</label><input value="${esc(c.nome)}" ${ro} onchange="update('${selected}','nome',this.value);renderSidebar()"></div>
         <div class="field"><label>Operador</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
         <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Membros da Equipe</div>
+      <div class="grid2">
+        <div class="field"><label>👷 Membro 1</label><input value="${esc(c.membro1||'—')}" ${ro} onchange="update('${selected}','membro1',this.value)"></div>
+        <div class="field"><label>👷 Membro 2</label><input value="${esc(c.membro2||'—')}" ${ro} onchange="update('${selected}','membro2',this.value)"></div>
+        <div class="field"><label>👷 Membro 3</label><input value="${esc(c.membro3||'—')}" ${ro} onchange="update('${selected}','membro3',this.value)"></div>
+        <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Meta por Hora</div>
+      <div class="grid2">
+        <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" value="${c.meta_hora||0}" ${ro} onchange="update('${selected}','meta_hora',+this.value)"></div>
+        <div class="field"><label>📊 Ritmo necessário</label><input readonly value="${c.meta_hora ? Math.round(60/(c.meta_hora)) + ' min por peça' : '—'}" style="color:#00e87a;font-weight:700"></div>
       </div>
     </div>
 
