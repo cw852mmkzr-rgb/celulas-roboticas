@@ -112,10 +112,25 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
 .detail-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
-.status-badge {
-  display: flex; align-items: center; gap: 7px;
-  padding: 7px 12px; border-radius: 8px;
+.status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
+
+/* IMAGEM DA PEÇA */
+.img-upload-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 2px dashed #1e2530; border-radius: 8px; cursor: pointer;
+  transition: all 0.2s; overflow: hidden; position: relative;
+  min-height: 110px; background: #080b0f;
 }
+.img-upload-box:hover { border-color: #00e87a40; }
+.img-upload-box img { width: 100%; height: 110px; object-fit: contain; display: block; }
+.img-upload-box .img-placeholder { font-size: 11px; color: #2a3040; text-align: center; padding: 10px; }
+.img-upload-box .img-overlay {
+  position: absolute; inset: 0; background: #000000cc;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; gap: 6px;
+}
+.img-upload-box:hover .img-overlay { opacity: 1; }
+.img-overlay span { font-size: 11px; color: #fff; letter-spacing: 0.06em; }
 
 .login-wrap {
   min-height: 100vh; display: flex; align-items: center;
@@ -179,10 +194,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   border-radius: 8px; padding: 12px; margin-top: 12px;
   max-height: 220px; overflow-y: auto; font-size: 11px;
 }
-.xlsx-row {
-  display: flex; gap: 10px; padding: 5px 0;
-  border-bottom: 1px solid #1e2530; align-items: center;
-}
+.xlsx-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1e2530; align-items: center; }
 .xlsx-row:last-child { border-bottom: none; }
 .xlsx-cell-num { color: #00e87a; font-weight: 800; min-width: 30px; }
 .xlsx-val { color: #d8dde6; }
@@ -300,6 +312,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- INPUT OCULTO PARA UPLOAD DE IMAGEM -->
+<input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
+
 <div class="toast" id="toastEl"></div>
 
 <script>
@@ -318,9 +333,9 @@ let pollTimer = null;
 let xlsxPendingData = null;
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
 };
 
 const SC = {
@@ -331,41 +346,38 @@ const SC = {
 };
 
 // ── RITMO ─────────────────────────────────────
-// Converte "4min 32s", "4:32", "272s", "4.5" (minutos) → segundos totais
 function parseTempoPeca(str) {
   if (!str || str === '—') return null;
   str = String(str).trim();
-  // "Xmin Ys" ou "Xm Ys"
   const minseg = str.match(/(\d+)\s*min\s*(\d*)\s*s?/i);
   if (minseg) return parseInt(minseg[1]) * 60 + (parseInt(minseg[2]) || 0);
-  // "X:Y"
   const colon = str.match(/^(\d+):(\d{2})$/);
   if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
-  // só segundos "Xs"
   const seg = str.match(/^(\d+)\s*s$/i);
   if (seg) return parseInt(seg[1]);
-  // número puro → minutos
   const num = parseFloat(str);
   if (!isNaN(num)) return Math.round(num * 60);
   return null;
 }
 
 function calcRitmo(meta_hora, tempo_peca_str) {
-  // Se tem meta por hora: ritmo = 60min / meta_hora
-  if (meta_hora && meta_hora > 0) {
-    const segs = Math.round(3600 / meta_hora);
-    const m = Math.floor(segs / 60);
-    const s = segs % 60;
-    return m > 0 ? `${m}min ${s > 0 ? s + 's' : ''}`.trim() : `${s}s`;
-  }
-  // Se tem tempo por peça: mostra o próprio tempo como ritmo
-  const segs = parseTempoPeca(tempo_peca_str);
-  if (segs) {
-    const m = Math.floor(segs / 60);
-    const s = segs % 60;
-    return m > 0 ? `${m}min ${s > 0 ? s + 's' : ''}`.trim() : `${s}s`;
-  }
-  return '—';
+  const metaNum = parseFloat(meta_hora);
+  const segsTP = parseTempoPeca(tempo_peca_str);
+
+  // Precisa dos dois para calcular
+  if (!metaNum || metaNum <= 0 || !segsTP) return '—';
+
+  // Tempo disponível por peça = 3600s / meta_hora
+  const disponivel = 3600 / metaNum;
+  // Eficiência = tempo_peca / disponivel * 100
+  const efic = Math.round((segsTP / disponivel) * 100);
+
+  // Formata o tempo disponível
+  const m = Math.floor(disponivel / 60);
+  const s = Math.round(disponivel % 60);
+  const tempoStr = m > 0 ? `${m}min ${s > 0 ? s+'s' : ''}`.trim() : `${s}s`;
+
+  return `${tempoStr} / peça (${efic}% do tempo)`;
 }
 
 // ── API ───────────────────────────────────────
@@ -373,7 +385,6 @@ async function loadFromAPI() {
   const active = document.activeElement;
   const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
   if (isEditing) return;
-
   try {
     const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
     const d = await r.json();
@@ -383,9 +394,7 @@ async function loadFromAPI() {
       celulas = defaultData;
       await saveToAPI(celulas);
     }
-  } catch(e) {
-    celulas = defaultData;
-  }
+  } catch(e) { celulas = defaultData; }
   renderSidebar();
   if (!selected) {
     const keys = Object.keys(celulas).sort();
@@ -407,14 +416,39 @@ function update(key, field, value) {
   saveToAPI(celulas);
 }
 
-// Atualiza campo e recalcula ritmo em tempo real sem re-renderizar tudo
 function updateAndRefreshRitmo(key, field, value) {
   celulas[key][field] = value;
   saveToAPI(celulas);
   const ritmoEl = document.getElementById("ritmoDisplay");
-  if (ritmoEl) {
-    ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
-  }
+  if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
+}
+
+// ── IMAGEM DA PEÇA ────────────────────────────
+function triggerImgUpload() {
+  if (!isAdmin) return;
+  document.getElementById("imgFileInput").click();
+}
+
+function handleImgUpload(file) {
+  if (!file || !selected) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    celulas[selected].img_peca = e.target.result; // base64
+    saveToAPI(celulas);
+    // Atualiza só a imagem sem re-renderizar tudo
+    const imgEl = document.getElementById("pecaImgEl");
+    const placeholderEl = document.getElementById("pecaImgPlaceholder");
+    if (imgEl) { imgEl.src = e.target.result; imgEl.style.display = "block"; }
+    if (placeholderEl) placeholderEl.style.display = "none";
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg() {
+  if (!selected) return;
+  celulas[selected].img_peca = "";
+  saveToAPI(celulas);
+  renderDetail();
 }
 
 // ── LOGIN ─────────────────────────────────────
@@ -471,7 +505,7 @@ function renderSidebar() {
 
 function selectCell(k) { selected = k; renderSidebar(); renderDetail(); }
 
-// ── XLSX IMPORT ───────────────────────────────
+// ── XLSX ──────────────────────────────────────
 function openXlsxModal() {
   xlsxPendingData = null;
   document.getElementById("xlsxPreview").style.display = "none";
@@ -495,8 +529,7 @@ function handleXlsxFile(file) {
       const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
       if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
       xlsxPendingData = [];
-      let previewHTML = "";
-      let found = 0, notFound = 0;
+      let previewHTML = ""; let found = 0, notFound = 0;
       dataRows.forEach(row => {
         let rawKey = String(row[0]).trim().replace(/\D/g, "");
         const key = rawKey.padStart(2, "0");
@@ -532,10 +565,7 @@ function confirmXlsxImport() {
       updated++;
     }
   });
-  saveToAPI(celulas);
-  closeXlsxModal();
-  renderSidebar();
-  renderDetail();
+  saveToAPI(celulas); closeXlsxModal(); renderSidebar(); renderDetail();
   showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
@@ -616,6 +646,7 @@ function renderDetail() {
     </div>`).join("");
 
   const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
+  const imgSrc = c.img_peca || "";
 
   document.getElementById("mainPanel").innerHTML = `
   <div>
@@ -638,9 +669,27 @@ function renderDetail() {
 
     <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
-      <div class="grid2">
+      <div style="display:grid;grid-template-columns:1fr 1fr 140px;gap:12px;align-items:start">
         <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
         <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
+
+        <!-- IMAGEM DA PEÇA -->
+        <div class="field">
+          <label>Imagem da peça</label>
+          <div class="img-upload-box" onclick="${isAdmin ? 'triggerImgUpload()' : ''}" style="${isAdmin?'cursor:pointer':'cursor:default'}">
+            ${imgSrc
+              ? `<img id="pecaImgEl" src="${imgSrc}" alt="peça">`
+              : `<div class="img-placeholder" id="pecaImgPlaceholder">${isAdmin ? '📷<br>Clique para<br>enviar imagem' : '—'}</div>`
+            }
+            ${isAdmin && imgSrc ? `
+              <div class="img-overlay">
+                <span>📷 Trocar</span>
+                <button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button>
+              </div>` : ''
+            }
+          </div>
+        </div>
+
         <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
@@ -686,7 +735,7 @@ function renderDetail() {
       <div class="sec-title">◈ Meta por Hora</div>
       <div class="grid2">
         <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" id="metaHoraInput" value="${c.meta_hora||0}" ${ro} onchange="updateAndRefreshRitmo('${selected}','meta_hora',+this.value)"></div>
-        <div class="field"><label>📊 Ritmo necessário</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#00e87a;font-weight:700"></div>
+        <div class="field"><label>📊 Ritmo por peça / hora</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#00e87a;font-weight:700"></div>
       </div>
     </div>
 
@@ -712,7 +761,7 @@ function createCell(){
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");
   if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
 }
 
