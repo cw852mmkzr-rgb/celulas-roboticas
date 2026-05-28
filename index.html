@@ -84,11 +84,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .field input.green { color: #00e87a; font-weight: 700; }
 .field select { background: #0f1318; cursor: pointer; }
 
-.prog-wrap { margin-bottom: 12px; }
-.prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: #4a5568; margin-bottom: 5px; }
-.prog-bg { height: 5px; background: #1e2530; border-radius: 99px; overflow: hidden; }
-.prog-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
-
 .alert-item {
   display: flex; align-items: center; gap: 8px;
   background: #ffb30010; border: 1px solid #ffb30025;
@@ -122,7 +117,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   padding: 7px 12px; border-radius: 8px;
 }
 
-/* LOGIN */
 .login-wrap {
   min-height: 100vh; display: flex; align-items: center;
   justify-content: center; padding: 20px;
@@ -159,7 +153,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 }
 .login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
 
-/* MODAL */
 .overlay {
   position: fixed; inset: 0; background: #000000bb;
   display: flex; align-items: center; justify-content: center;
@@ -181,7 +174,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .modal-input:focus { border-color: #00e87a; color: #fff; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
-/* MODAL XLSX */
 .xlsx-preview {
   background: #080b0f; border: 1px solid #1e2530;
   border-radius: 8px; padding: 12px; margin-top: 12px;
@@ -197,7 +189,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .xlsx-found { color: #00e87a; font-size: 10px; }
 .xlsx-notfound { color: #ff4d4d; font-size: 10px; }
 
-/* TOAST */
 .toast {
   position: fixed; bottom: 20px; right: 20px;
   padding: 10px 18px; border-radius: 8px;
@@ -225,7 +216,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
     <div class="login-icon">⬡</div>
@@ -240,7 +230,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- APP -->
 <div id="appScreen" style="display:none">
   <div class="topbar">
     <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
@@ -265,7 +254,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- MODAL NOVA CÉLULA -->
 <div class="overlay" id="modalEl">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title">Nova Célula</div>
@@ -284,17 +272,14 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- MODAL IMPORTAR XLSX -->
 <div class="overlay" id="xlsxModalEl">
   <div class="modal" style="width:460px" onclick="event.stopPropagation()">
     <div class="modal-title">📊 Importar Produção do Excel</div>
-
     <div style="font-size:11px;color:#4a5568;margin-bottom:14px;line-height:1.6">
       A planilha deve ter as colunas nessa ordem:<br>
       <span style="color:#00e87a">Célula</span> · <span style="color:#00e87a">Ciclos Hoje</span> · <span style="color:#00e87a">Meta Dia</span><br>
       <span style="color:#2a3040">A primeira linha é ignorada (cabeçalho)</span>
     </div>
-
     <div style="border:2px dashed #1e2530;border-radius:8px;padding:20px;text-align:center;cursor:pointer"
       onclick="document.getElementById('xlsxFileInput').click()"
       ondragover="event.preventDefault();this.style.borderColor='#00e87a'"
@@ -304,12 +289,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <div style="font-size:12px;color:#4a5568">Clique ou arraste o arquivo <span style="color:#3d9eff">.xlsx</span> aqui</div>
     </div>
     <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsxFile(this.files[0])">
-
     <div id="xlsxPreview" style="display:none">
       <div class="xlsx-preview" id="xlsxPreviewList"></div>
       <div id="xlsxSummary" style="font-size:11px;color:#4a5568;margin-top:8px"></div>
     </div>
-
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-gray" onclick="closeXlsxModal()">Cancelar</button>
       <button class="btn btn-green" id="btnConfirmXlsx" style="display:none" onclick="confirmXlsxImport()">✓ Confirmar Importação</button>
@@ -320,11 +303,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
-// ══════════════════════════════════════════════
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
 const ADMIN_PW = "admin123";
-// ══════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
@@ -334,13 +315,12 @@ let celulas = {};
 let selected = null;
 let isAdmin = false;
 let pollTimer = null;
-let xlsxPendingData = null; // dados lidos do xlsx aguardando confirmação
+let xlsxPendingData = null;
 
-// ── DADOS PADRÃO ──────────────────────────────
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", ciclos_hoje:87, meta_dia:120, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", ciclos_hoje:43, meta_dia:100, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", ciclos_hoje:62, meta_dia:80, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
 };
 
 const SC = {
@@ -349,6 +329,44 @@ const SC = {
   "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
+
+// ── RITMO ─────────────────────────────────────
+// Converte "4min 32s", "4:32", "272s", "4.5" (minutos) → segundos totais
+function parseTempoPeca(str) {
+  if (!str || str === '—') return null;
+  str = String(str).trim();
+  // "Xmin Ys" ou "Xm Ys"
+  const minseg = str.match(/(\d+)\s*min\s*(\d*)\s*s?/i);
+  if (minseg) return parseInt(minseg[1]) * 60 + (parseInt(minseg[2]) || 0);
+  // "X:Y"
+  const colon = str.match(/^(\d+):(\d{2})$/);
+  if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
+  // só segundos "Xs"
+  const seg = str.match(/^(\d+)\s*s$/i);
+  if (seg) return parseInt(seg[1]);
+  // número puro → minutos
+  const num = parseFloat(str);
+  if (!isNaN(num)) return Math.round(num * 60);
+  return null;
+}
+
+function calcRitmo(meta_hora, tempo_peca_str) {
+  // Se tem meta por hora: ritmo = 60min / meta_hora
+  if (meta_hora && meta_hora > 0) {
+    const segs = Math.round(3600 / meta_hora);
+    const m = Math.floor(segs / 60);
+    const s = segs % 60;
+    return m > 0 ? `${m}min ${s > 0 ? s + 's' : ''}`.trim() : `${s}s`;
+  }
+  // Se tem tempo por peça: mostra o próprio tempo como ritmo
+  const segs = parseTempoPeca(tempo_peca_str);
+  if (segs) {
+    const m = Math.floor(segs / 60);
+    const s = segs % 60;
+    return m > 0 ? `${m}min ${s > 0 ? s + 's' : ''}`.trim() : `${s}s`;
+  }
+  return '—';
+}
 
 // ── API ───────────────────────────────────────
 async function loadFromAPI() {
@@ -389,12 +407,21 @@ function update(key, field, value) {
   saveToAPI(celulas);
 }
 
+// Atualiza campo e recalcula ritmo em tempo real sem re-renderizar tudo
+function updateAndRefreshRitmo(key, field, value) {
+  celulas[key][field] = value;
+  saveToAPI(celulas);
+  const ritmoEl = document.getElementById("ritmoDisplay");
+  if (ritmoEl) {
+    ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
+  }
+}
+
 // ── LOGIN ─────────────────────────────────────
 function tryLogin() {
   const pw = document.getElementById("pwInput").value;
-  if (pw === ADMIN_PW) {
-    isAdmin = true; startApp();
-  } else {
+  if (pw === ADMIN_PW) { isAdmin = true; startApp(); }
+  else {
     document.getElementById("pwInput").classList.add("err");
     document.getElementById("loginErr").style.display = "block";
     setTimeout(() => {
@@ -435,7 +462,7 @@ function renderSidebar() {
       <div class="cell-num">${parseInt(k)}</div>
       <div class="cell-info">
         <div class="cell-name">${c.nome}</div>
-        <div class="cell-peca">${c.peca}</div>
+        <div class="cell-peca">${c.cliente||c.peca||'—'}</div>
       </div>
       <div class="dot ${s.dot}"></div>
     </div>`;
@@ -456,7 +483,6 @@ function closeXlsxModal() {
   document.getElementById("xlsxModalEl").classList.remove("open");
   xlsxPendingData = null;
 }
-
 function handleXlsxFile(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -466,56 +492,36 @@ function handleXlsxFile(file) {
       const wb = XLSX.read(data, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-
-      // Pula primeira linha (cabeçalho)
       const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
-
-      if (dataRows.length === 0) {
-        showToast("Planilha vazia ou sem dados!", true);
-        return;
-      }
-
+      if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
       xlsxPendingData = [];
       let previewHTML = "";
       let found = 0, notFound = 0;
-
       dataRows.forEach(row => {
-        // Normaliza a chave da célula: aceita "1", "01", "Célula 01", etc.
         let rawKey = String(row[0]).trim().replace(/\D/g, "");
         const key = rawKey.padStart(2, "0");
         const ciclos = parseInt(row[1]) || 0;
         const meta = parseInt(row[2]) || 0;
         const exists = !!celulas[key];
-
-        if (exists) found++;
-        else notFound++;
-
+        if (exists) found++; else notFound++;
         xlsxPendingData.push({ key, ciclos, meta, exists });
-
-        previewHTML += `
-          <div class="xlsx-row">
-            <span class="xlsx-cell-num">C${key}</span>
-            <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
-            <span class="xlsx-val">Meta: <b>${meta}</b></span>
-            <span class="${exists ? 'xlsx-found' : 'xlsx-notfound'}">${exists ? '✓ encontrada' : '✗ não existe'}</span>
-          </div>`;
+        previewHTML += `<div class="xlsx-row">
+          <span class="xlsx-cell-num">C${key}</span>
+          <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
+          <span class="xlsx-val">Meta: <b>${meta}</b></span>
+          <span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span>
+        </div>`;
       });
-
       document.getElementById("xlsxPreviewList").innerHTML = previewHTML;
       document.getElementById("xlsxSummary").innerHTML =
         `<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>` +
         (notFound > 0 ? ` · <span style="color:#ff4d4d">${notFound} não encontrada(s) (ignoradas)</span>` : "");
       document.getElementById("xlsxPreview").style.display = "block";
       document.getElementById("btnConfirmXlsx").style.display = found > 0 ? "inline-block" : "none";
-
-    } catch(err) {
-      showToast("Erro ao ler o arquivo!", true);
-      console.error(err);
-    }
+    } catch(err) { showToast("Erro ao ler o arquivo!", true); }
   };
   reader.readAsArrayBuffer(file);
 }
-
 function confirmXlsxImport() {
   if (!xlsxPendingData) return;
   let updated = 0;
@@ -533,12 +539,11 @@ function confirmXlsxImport() {
   showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
-// ── DETAIL ────────────────────────────────────
+// ── ARMÁRIO ───────────────────────────────────
 function renderArmario() {
   const c = celulas[selected];
   const espacos = c.espacos || {};
   const ro = !isAdmin ? 'readonly' : '';
-
   let espacosHTML = '';
   for (let i = 1; i <= 18; i++) {
     const e = espacos[i] || { gabarito: '—', status: 'Livre' };
@@ -565,7 +570,6 @@ function renderArmario() {
         </div>
       </div>`;
   }
-
   document.getElementById("mainPanel").innerHTML = `
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
@@ -580,32 +584,28 @@ function renderArmario() {
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">
-      ${espacosHTML}
-    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">${espacosHTML}</div>
   </div>`;
 }
 
 function updateEspaco(key, num, field, value) {
   if (!celulas[key].espacos) celulas[key].espacos = {};
-  if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', peca: '—', status: 'Livre' };
+  if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', status: 'Livre' };
   celulas[key].espacos[num][field] = value;
   saveToAPI(celulas);
   if (field === 'status') renderArmario();
 }
 
+// ── DETAIL ────────────────────────────────────
 function renderDetail() {
   if (!selected || !celulas[selected]) return;
-
   const nomeCell = (celulas[selected].nome || '').toLowerCase();
   if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
-    renderArmario();
-    return;
+    renderArmario(); return;
   }
+
   const c = celulas[selected];
   const s = SC[c.status] || SC["Parado"];
-  const pct = c.meta_dia > 0 ? Math.min(Math.round(c.ciclos_hoje/c.meta_dia*100),100) : 0;
-  const bc = pct>=90?"#00e87a":pct>=60?"#ffb300":"#3d9eff";
   const ro = !isAdmin ? 'readonly' : '';
   const statusOpts = ["Produzindo","Manutenção","Aguardando","Parado"]
     .map(st => `<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -614,6 +614,8 @@ function renderDetail() {
       <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
       ${isAdmin?`<button class="btn-x" onclick="delAlert('${selected}',${i})">✕</button>`:""}
     </div>`).join("");
+
+  const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
 
   document.getElementById("mainPanel").innerHTML = `
   <div>
@@ -635,23 +637,11 @@ function renderDetail() {
     </div>
 
     <div class="section">
-      <div class="sec-title">◈ Produção do Dia</div>
-      <div class="prog-wrap">
-        <div class="prog-labels"><span>Progresso</span><span style="color:${bc};font-weight:700">${c.ciclos_hoje} / ${c.meta_dia} (${pct}%)</span></div>
-        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${bc};box-shadow:0 0 6px ${bc}80"></div></div>
-      </div>
-      <div class="grid2">
-        <div class="field"><label>Ciclos hoje</label><input type="number" value="${c.ciclos_hoje}" ${ro} onchange="update('${selected}','ciclos_hoje',+this.value);renderDetail()"></div>
-        <div class="field"><label>Meta do dia</label><input type="number" value="${c.meta_dia}" ${ro} onchange="update('${selected}','meta_dia',+this.value);renderDetail()"></div>
-      </div>
-    </div>
-
-    <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
       <div class="grid2">
-        <div class="field"><label>Peça</label><input class="green" value="${esc(c.peca)}" ${ro} onchange="update('${selected}','peca',this.value);renderSidebar()"></div>
+        <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
         <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
-        <div class="field"><label>Tempo por peça</label><input value="${esc(c.tempo_peca)}" ${ro} onchange="update('${selected}','tempo_peca',this.value)"></div>
+        <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
 
@@ -695,8 +685,8 @@ function renderDetail() {
     <div class="section">
       <div class="sec-title">◈ Meta por Hora</div>
       <div class="grid2">
-        <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" value="${c.meta_hora||0}" ${ro} onchange="update('${selected}','meta_hora',+this.value)"></div>
-        <div class="field"><label>📊 Ritmo necessário</label><input readonly value="${c.meta_hora ? Math.round(60/(c.meta_hora)) + ' min por peça' : '—'}" style="color:#00e87a;font-weight:700"></div>
+        <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" id="metaHoraInput" value="${c.meta_hora||0}" ${ro} onchange="updateAndRefreshRitmo('${selected}','meta_hora',+this.value)"></div>
+        <div class="field"><label>📊 Ritmo necessário</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#00e87a;font-weight:700"></div>
       </div>
     </div>
 
@@ -722,7 +712,7 @@ function createCell(){
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");
   if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",ciclos_hoje:0,meta_dia:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
 }
 
