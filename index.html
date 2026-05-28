@@ -335,7 +335,7 @@ function update(key, field, value) {
   // Debounce: wait 1.2s after last change before saving
   clearTimeout(saveTimer);
   document.getElementById("savedLabel").textContent = "editando...";
-  saveTimer = setTimeout(() => saveToAPI(celulas), 1200);
+  saveTimer = setTimeout(() => saveToAPI(celulas), 20000);
 }
 
 // ── LOGIN ─────────────────────────────────────
