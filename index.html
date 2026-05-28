@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Células Robóticas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospace; min-height: 100vh; }
@@ -111,6 +112,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .btn-green { background: #00e87a; color: #000; font-weight: 800; }
 .btn-gray { background: #1e2530; color: #d8dde6; border: 1px solid #2e3b4e; }
 .btn-red { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d30; }
+.btn-blue { background: #3d9eff20; color: #3d9eff; border: 1px solid #3d9eff40; }
 
 .detail-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
 .detail-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
@@ -179,6 +181,22 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .modal-input:focus { border-color: #00e87a; color: #fff; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
+/* MODAL XLSX */
+.xlsx-preview {
+  background: #080b0f; border: 1px solid #1e2530;
+  border-radius: 8px; padding: 12px; margin-top: 12px;
+  max-height: 220px; overflow-y: auto; font-size: 11px;
+}
+.xlsx-row {
+  display: flex; gap: 10px; padding: 5px 0;
+  border-bottom: 1px solid #1e2530; align-items: center;
+}
+.xlsx-row:last-child { border-bottom: none; }
+.xlsx-cell-num { color: #00e87a; font-weight: 800; min-width: 30px; }
+.xlsx-val { color: #d8dde6; }
+.xlsx-found { color: #00e87a; font-size: 10px; }
+.xlsx-notfound { color: #ff4d4d; font-size: 10px; }
+
 /* TOAST */
 .toast {
   position: fixed; bottom: 20px; right: 20px;
@@ -229,6 +247,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div style="display:flex;align-items:center;gap:10px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
+      <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊 Importar Excel</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
   </div>
@@ -246,7 +265,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL NOVA CÉLULA -->
 <div class="overlay" id="modalEl">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title">Nova Célula</div>
@@ -265,15 +284,46 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- MODAL IMPORTAR XLSX -->
+<div class="overlay" id="xlsxModalEl">
+  <div class="modal" style="width:460px" onclick="event.stopPropagation()">
+    <div class="modal-title">📊 Importar Produção do Excel</div>
+
+    <div style="font-size:11px;color:#4a5568;margin-bottom:14px;line-height:1.6">
+      A planilha deve ter as colunas nessa ordem:<br>
+      <span style="color:#00e87a">Célula</span> · <span style="color:#00e87a">Ciclos Hoje</span> · <span style="color:#00e87a">Meta Dia</span><br>
+      <span style="color:#2a3040">A primeira linha é ignorada (cabeçalho)</span>
+    </div>
+
+    <div style="border:2px dashed #1e2530;border-radius:8px;padding:20px;text-align:center;cursor:pointer"
+      onclick="document.getElementById('xlsxFileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='#00e87a'"
+      ondragleave="this.style.borderColor='#1e2530'"
+      ondrop="event.preventDefault();this.style.borderColor='#1e2530';handleXlsxFile(event.dataTransfer.files[0])">
+      <div style="font-size:28px;margin-bottom:6px">📂</div>
+      <div style="font-size:12px;color:#4a5568">Clique ou arraste o arquivo <span style="color:#3d9eff">.xlsx</span> aqui</div>
+    </div>
+    <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsxFile(this.files[0])">
+
+    <div id="xlsxPreview" style="display:none">
+      <div class="xlsx-preview" id="xlsxPreviewList"></div>
+      <div id="xlsxSummary" style="font-size:11px;color:#4a5568;margin-top:8px"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-gray" onclick="closeXlsxModal()">Cancelar</button>
+      <button class="btn btn-green" id="btnConfirmXlsx" style="display:none" onclick="confirmXlsxImport()">✓ Confirmar Importação</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toastEl"></div>
 
 <script>
 // ══════════════════════════════════════════════
-// CONFIGURAÇÃO — cole sua chave e BIN ID aqui
-// ══════════════════════════════════════════════
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "TREMPS23";
+const ADMIN_PW = "admin123";
 // ══════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -284,6 +334,7 @@ let celulas = {};
 let selected = null;
 let isAdmin = false;
 let pollTimer = null;
+let xlsxPendingData = null; // dados lidos do xlsx aguardando confirmação
 
 // ── DADOS PADRÃO ──────────────────────────────
 const defaultData = {
@@ -358,7 +409,10 @@ function startApp() {
   document.getElementById("appScreen").style.display = "block";
   document.getElementById("modeBadge").textContent = isAdmin ? "⚙ Admin" : "👁 Viewer";
   document.getElementById("modeBadge").className = "badge " + (isAdmin ? "badge-admin" : "badge-viewer");
-  if (isAdmin) document.getElementById("btnAdd").style.display = "inline-block";
+  if (isAdmin) {
+    document.getElementById("btnAdd").style.display = "inline-block";
+    document.getElementById("btnXlsx").style.display = "inline-block";
+  }
   loadFromAPI();
   pollTimer = setInterval(loadFromAPI, 6000);
 }
@@ -390,8 +444,96 @@ function renderSidebar() {
 
 function selectCell(k) { selected = k; renderSidebar(); renderDetail(); }
 
-// ── DETAIL ────────────────────────────────────
+// ── XLSX IMPORT ───────────────────────────────
+function openXlsxModal() {
+  xlsxPendingData = null;
+  document.getElementById("xlsxPreview").style.display = "none";
+  document.getElementById("btnConfirmXlsx").style.display = "none";
+  document.getElementById("xlsxFileInput").value = "";
+  document.getElementById("xlsxModalEl").classList.add("open");
+}
+function closeXlsxModal() {
+  document.getElementById("xlsxModalEl").classList.remove("open");
+  xlsxPendingData = null;
+}
 
+function handleXlsxFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+      // Pula primeira linha (cabeçalho)
+      const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
+
+      if (dataRows.length === 0) {
+        showToast("Planilha vazia ou sem dados!", true);
+        return;
+      }
+
+      xlsxPendingData = [];
+      let previewHTML = "";
+      let found = 0, notFound = 0;
+
+      dataRows.forEach(row => {
+        // Normaliza a chave da célula: aceita "1", "01", "Célula 01", etc.
+        let rawKey = String(row[0]).trim().replace(/\D/g, "");
+        const key = rawKey.padStart(2, "0");
+        const ciclos = parseInt(row[1]) || 0;
+        const meta = parseInt(row[2]) || 0;
+        const exists = !!celulas[key];
+
+        if (exists) found++;
+        else notFound++;
+
+        xlsxPendingData.push({ key, ciclos, meta, exists });
+
+        previewHTML += `
+          <div class="xlsx-row">
+            <span class="xlsx-cell-num">C${key}</span>
+            <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
+            <span class="xlsx-val">Meta: <b>${meta}</b></span>
+            <span class="${exists ? 'xlsx-found' : 'xlsx-notfound'}">${exists ? '✓ encontrada' : '✗ não existe'}</span>
+          </div>`;
+      });
+
+      document.getElementById("xlsxPreviewList").innerHTML = previewHTML;
+      document.getElementById("xlsxSummary").innerHTML =
+        `<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>` +
+        (notFound > 0 ? ` · <span style="color:#ff4d4d">${notFound} não encontrada(s) (ignoradas)</span>` : "");
+      document.getElementById("xlsxPreview").style.display = "block";
+      document.getElementById("btnConfirmXlsx").style.display = found > 0 ? "inline-block" : "none";
+
+    } catch(err) {
+      showToast("Erro ao ler o arquivo!", true);
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function confirmXlsxImport() {
+  if (!xlsxPendingData) return;
+  let updated = 0;
+  xlsxPendingData.forEach(({ key, ciclos, meta, exists }) => {
+    if (exists) {
+      celulas[key].ciclos_hoje = ciclos;
+      if (meta > 0) celulas[key].meta_dia = meta;
+      updated++;
+    }
+  });
+  saveToAPI(celulas);
+  closeXlsxModal();
+  renderSidebar();
+  renderDetail();
+  showToast(`${updated} célula(s) atualizada(s) ✓`);
+}
+
+// ── DETAIL ────────────────────────────────────
 function renderArmario() {
   const c = celulas[selected];
   const espacos = c.espacos || {};
@@ -438,7 +580,6 @@ function renderArmario() {
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
-
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">
       ${espacosHTML}
     </div>
@@ -594,8 +735,9 @@ function showToast(msg, err=false){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-document.addEventListener("keydown",e=>{ if(e.key==="Escape")closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeXlsxModal(); } });
 document.getElementById("modalEl").addEventListener("click",closeModal);
+document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
 </script>
 </body>
 </html>
