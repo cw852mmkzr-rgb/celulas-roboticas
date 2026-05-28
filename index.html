@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Células Robóticas</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospace; min-height: 100vh; }
+
+.topbar {
+  background: #0f1318; border-bottom: 1px solid #1e2530;
+  height: 52px; padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.brand { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.1em; }
+.brand span { color: #00e87a; }
+.badge {
+  font-size: 10px; padding: 4px 12px; border-radius: 99px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.badge-admin { background: #00e87a20; border: 1px solid #00e87a40; color: #00e87a; }
+.badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
+
+.layout { display: flex; height: calc(100vh - 52px); }
+
+.sidebar {
+  width: 200px; background: #0f1318;
+  border-right: 1px solid #1e2530;
+  overflow-y: auto; flex-shrink: 0;
+}
+.sidebar-hdr {
+  padding: 10px 14px; font-size: 10px; color: #4a5568;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  border-bottom: 1px solid #1e2530;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.cell-item {
+  padding: 11px 14px; border-bottom: 1px solid #1e2530;
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  border-left: 3px solid transparent; transition: all 0.15s;
+}
+.cell-item:hover { background: #ffffff06; }
+.cell-item.active { background: #00e87a08; border-left-color: #00e87a; }
+.cell-num { font-size: 18px; font-weight: 800; color: #fff; min-width: 26px; }
+.cell-info { flex: 1; min-width: 0; }
+.cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-peca { font-size: 10px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
+.dot-amber { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
+.dot-blue  { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
+.dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
+.dot-gray  { background: #4a5568; }
+
+.main { flex: 1; overflow-y: auto; padding: 20px; }
+
+.section {
+  background: #0f1318; border: 1px solid #1e2530;
+  border-radius: 10px; padding: 16px 18px; margin-bottom: 14px;
+}
+.sec-title {
+  font-size: 10px; color: #4a5568; text-transform: uppercase;
+  letter-spacing: 0.15em; margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid #1e2530;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
+.field input, .field select {
+  background: transparent; border: 1px solid transparent;
+  border-radius: 6px; padding: 6px 8px;
+  font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6;
+  width: 100%; transition: all 0.15s;
+}
+.field input:focus, .field select:focus {
+  outline: none; border-color: #00e87a; background: #00e87a08; color: #fff;
+}
+.field input[readonly] { cursor: default; color: #6b7280; }
+.field input.green { color: #00e87a; font-weight: 700; }
+.field select { background: #0f1318; cursor: pointer; }
+
+.prog-wrap { margin-bottom: 12px; }
+.prog-labels { display: flex; justify-content: space-between; font-size: 11px; color: #4a5568; margin-bottom: 5px; }
+.prog-bg { height: 5px; background: #1e2530; border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 99px; transition: width 0.5s; }
+
+.alert-item {
+  display: flex; align-items: center; gap: 8px;
+  background: #ffb30010; border: 1px solid #ffb30025;
+  border-radius: 6px; padding: 7px 10px; margin-bottom: 7px;
+}
+.alert-item input {
+  flex: 1; background: transparent; border: none;
+  font-family: 'Courier New', monospace; font-size: 12px;
+  color: #ffd166; outline: none;
+}
+.alert-item input[readonly] { color: #b8960a; cursor: default; }
+.btn-x { background: none; border: none; color: #4a5568; cursor: pointer; font-size: 13px; padding: 2px 6px; }
+.btn-x:hover { color: #ff4d4d; }
+
+.btn {
+  font-family: 'Courier New', monospace; font-size: 11px;
+  letter-spacing: 0.08em; padding: 6px 14px; border-radius: 6px;
+  border: none; cursor: pointer; text-transform: uppercase; transition: all 0.15s;
+}
+.btn:hover { filter: brightness(1.2); }
+.btn-green { background: #00e87a; color: #000; font-weight: 800; }
+.btn-gray { background: #1e2530; color: #d8dde6; border: 1px solid #2e3b4e; }
+.btn-red { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d30; }
+
+.detail-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+.detail-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
+.detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
+.status-badge {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 12px; border-radius: 8px;
+}
+
+/* LOGIN */
+.login-wrap {
+  min-height: 100vh; display: flex; align-items: center;
+  justify-content: center; padding: 20px;
+}
+.login-box {
+  background: #0f1318; border: 1px solid #1e2530;
+  border-radius: 16px; padding: 36px 30px;
+  width: 100%; max-width: 360px; text-align: center;
+}
+.login-icon { font-size: 38px; margin-bottom: 8px; }
+.login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; }
+.login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
+.login-input {
+  width: 100%; background: #080b0f; border: 1px solid #1e2530;
+  border-radius: 8px; padding: 11px 14px;
+  font-family: 'Courier New', monospace; font-size: 14px;
+  color: #d8dde6; text-align: center; letter-spacing: 0.15em;
+  margin-bottom: 10px; outline: none; transition: all 0.2s;
+}
+.login-input:focus { border-color: #00e87a; color: #fff; }
+.login-input.err { border-color: #ff4d4d60; color: #ff8888; }
+.login-err { color: #ff6b6b; font-size: 12px; margin-bottom: 8px; }
+.login-btn-main {
+  width: 100%; background: #00e87a; color: #000; border: none;
+  border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.1em;
+  cursor: pointer; margin-bottom: 8px; text-transform: uppercase;
+}
+.login-btn-sec {
+  width: 100%; background: transparent; color: #4a5568;
+  border: 1px solid #1e2530; border-radius: 8px; padding: 10px;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  cursor: pointer; letter-spacing: 0.06em;
+}
+.login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
+
+/* MODAL */
+.overlay {
+  position: fixed; inset: 0; background: #000000bb;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: #0f1318; border: 1px solid #1e2530;
+  border-radius: 12px; padding: 26px; width: 360px; max-width: 95vw;
+}
+.modal-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 18px; letter-spacing: 0.06em; }
+.modal-field { margin-bottom: 12px; }
+.modal-field label { display: block; font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.modal-input {
+  width: 100%; background: #080b0f; border: 1px solid #1e2530;
+  border-radius: 6px; padding: 8px 10px;
+  font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6; outline: none;
+}
+.modal-input:focus { border-color: #00e87a; color: #fff; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  padding: 10px 18px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  z-index: 999; opacity: 0; transform: translateY(8px);
+  transition: all 0.25s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.ok { background: #00e87a; color: #000; }
+.toast.error { background: #ff4d4d; color: #fff; }
+
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
+.empty-icon { font-size: 40px; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
+
+@media (max-width: 600px) {
+  .sidebar { width: 160px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .main { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">⬡</div>
+    <div class="login-title">CÉLULAS ROBÓTICAS</div>
+    <div class="login-sub">MONITOR INDUSTRIAL</div>
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador"
+      onkeydown="if(event.key==='Enter')tryLogin()">
+    <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
+    <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
+    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
+    <div class="login-hint">Senha padrão: admin123</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" style="display:none">
+  <div class="topbar">
+    <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
+      <span class="badge" id="modeBadge"></span>
+      <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-hdr">
+        <span id="cellCount">Células</span>
+        <button id="btnAdd" class="btn btn-green" style="padding:2px 8px;font-size:13px;display:none" onclick="openModal()">+</button>
+      </div>
+      <div id="sidebarList"></div>
+    </div>
+    <div class="main" id="mainPanel">
+      <div class="empty"><div class="empty-icon">⬡</div><div>Selecione uma célula</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modalEl">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Nova Célula</div>
+    <div class="modal-field">
+      <label>Número</label>
+      <input class="modal-input" id="mNum" type="number" placeholder="Ex: 4" onkeydown="if(event.key==='Enter')createCell()">
+    </div>
+    <div class="modal-field">
+      <label>Nome</label>
+      <input class="modal-input" id="mNome" placeholder="Ex: Célula Robótica 04" onkeydown="if(event.key==='Enter')createCell()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="createCell()">Criar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURAÇÃO — cole sua chave e BIN ID aqui
+// ══════════════════════════════════════════════
+const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
+const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
+const ADMIN_PW = "admin123";
+// ══════════════════════════════════════════════
+
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS_R = { "X-Master-Key": API_KEY };
+const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
+
+let celulas = {};
+let selected = null;
+let isAdmin = false;
+let pollTimer = null;
+
+// ── DADOS PADRÃO ──────────────────────────────
+const defaultData = {
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", ciclos_hoje:87, meta_dia:120, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", temperatura:"312°C", corrente:"130A", tensao:"24V", ultima_troca:"09:45", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", ciclos_hoje:43, meta_dia:100, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", temperatura:"—", corrente:"—", tensao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", ciclos_hoje:62, meta_dia:80, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", temperatura:"285°C", corrente:"180A", tensao:"28V", ultima_troca:"11:00", alertas:[] }
+};
+
+const SC = {
+  "Produzindo": { dot:"dot-green", bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
+  "Manutenção": { dot:"dot-amber", bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
+  "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
+  "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+};
+
+// ── API ───────────────────────────────────────
+async function loadFromAPI() {
+  try {
+    const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
+    const d = await r.json();
+    if (d.record && Object.keys(d.record).length > 0) {
+      celulas = d.record;
+    } else {
+      celulas = defaultData;
+      await saveToAPI(celulas);
+    }
+  } catch(e) {
+    celulas = defaultData;
+  }
+  renderSidebar();
+  if (!selected) {
+    const keys = Object.keys(celulas).sort();
+    if (keys.length) { selected = keys[0]; renderDetail(); }
+  } else { renderDetail(); }
+}
+
+async function saveToAPI(data) {
+  try {
+    await fetch(BASE_URL, { method:"PUT", headers: HEADERS_W, body: JSON.stringify(data) });
+    const now = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    document.getElementById("savedLabel").textContent = "salvo " + now;
+    showToast("Salvo ✓");
+  } catch(e) { showToast("Erro ao salvar", true); }
+}
+
+function update(key, field, value) {
+  celulas[key][field] = value;
+  saveToAPI(celulas);
+}
+
+// ── LOGIN ─────────────────────────────────────
+function tryLogin() {
+  const pw = document.getElementById("pwInput").value;
+  if (pw === ADMIN_PW) {
+    isAdmin = true; startApp();
+  } else {
+    document.getElementById("pwInput").classList.add("err");
+    document.getElementById("loginErr").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("pwInput").classList.remove("err");
+      document.getElementById("loginErr").style.display = "none";
+    }, 1500);
+  }
+}
+function startViewer() { isAdmin = false; startApp(); }
+function startApp() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("appScreen").style.display = "block";
+  document.getElementById("modeBadge").textContent = isAdmin ? "⚙ Admin" : "👁 Viewer";
+  document.getElementById("modeBadge").className = "badge " + (isAdmin ? "badge-admin" : "badge-viewer");
+  if (isAdmin) document.getElementById("btnAdd").style.display = "inline-block";
+  loadFromAPI();
+  pollTimer = setInterval(loadFromAPI, 6000);
+}
+function doLogout() {
+  clearInterval(pollTimer);
+  document.getElementById("appScreen").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("pwInput").value = "";
+  isAdmin = false; selected = null;
+}
+
+// ── SIDEBAR ───────────────────────────────────
+function renderSidebar() {
+  const keys = Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent = "Células (" + keys.length + ")";
+  document.getElementById("sidebarList").innerHTML = keys.map(k => {
+    const c = celulas[k];
+    const s = SC[c.status] || SC["Parado"];
+    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
+      <div class="cell-num">${parseInt(k)}</div>
+      <div class="cell-info">
+        <div class="cell-name">${c.nome}</div>
+        <div class="cell-peca">${c.peca}</div>
+      </div>
+      <div class="dot ${s.dot}"></div>
+    </div>`;
+  }).join("");
+}
+
+function selectCell(k) { selected = k; renderSidebar(); renderDetail(); }
+
+// ── DETAIL ────────────────────────────────────
+function renderDetail() {
+  if (!selected || !celulas[selected]) return;
+  const c = celulas[selected];
+  const s = SC[c.status] || SC["Parado"];
+  const pct = c.meta_dia > 0 ? Math.min(Math.round(c.ciclos_hoje/c.meta_dia*100),100) : 0;
+  const bc = pct>=90?"#00e87a":pct>=60?"#ffb300":"#3d9eff";
+  const ro = !isAdmin ? 'readonly' : '';
+  const statusOpts = ["Produzindo","Manutenção","Aguardando","Parado"]
+    .map(st => `<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+  const alertsHTML = (c.alertas||[]).map((a,i) => `
+    <div class="alert-item">
+      <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
+      ${isAdmin?`<button class="btn-x" onclick="delAlert('${selected}',${i})">✕</button>`:""}
+    </div>`).join("");
+
+  document.getElementById("mainPanel").innerHTML = `
+  <div>
+    <div class="detail-hdr">
+      <div>
+        <div class="detail-title">${esc(c.nome)}</div>
+        <div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
+          <div class="dot ${s.dot}"></div>
+          ${isAdmin
+            ? `<select onchange="update('${selected}','status',this.value);renderDetail()" style="background:transparent;border:none;color:${s.text};font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;cursor:pointer;outline:none">${statusOpts}</select>`
+            : `<span style="font-size:12px;font-weight:700;color:${s.text};letter-spacing:0.08em">${c.status.toUpperCase()}</span>`
+          }
+        </div>
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Produção do Dia</div>
+      <div class="prog-wrap">
+        <div class="prog-labels"><span>Progresso</span><span style="color:${bc};font-weight:700">${c.ciclos_hoje} / ${c.meta_dia} (${pct}%)</span></div>
+        <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${bc};box-shadow:0 0 6px ${bc}80"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Ciclos hoje</label><input type="number" value="${c.ciclos_hoje}" ${ro} onchange="update('${selected}','ciclos_hoje',+this.value);renderDetail()"></div>
+        <div class="field"><label>Meta do dia</label><input type="number" value="${c.meta_dia}" ${ro} onchange="update('${selected}','meta_dia',+this.value);renderDetail()"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Peça em Produção</div>
+      <div class="grid2">
+        <div class="field"><label>Peça</label><input class="green" value="${esc(c.peca)}" ${ro} onchange="update('${selected}','peca',this.value);renderSidebar()"></div>
+        <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
+        <div class="field"><label>Tempo por peça</label><input value="${esc(c.tempo_peca)}" ${ro} onchange="update('${selected}','tempo_peca',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Eletrodo</div>
+      <div class="grid2">
+        <div class="field"><label>Eletrodo</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
+        <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
+        <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Parâmetros de Soldagem</div>
+      <div class="grid3">
+        <div class="field"><label>🌡 Temperatura</label><input value="${esc(c.temperatura)}" ${ro} onchange="update('${selected}','temperatura',this.value)"></div>
+        <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
+        <div class="field"><label>🔋 Tensão</label><input value="${esc(c.tensao)}" ${ro} onchange="update('${selected}','tensao',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">◈ Equipe</div>
+      <div class="grid2">
+        <div class="field"><label>Nome da célula</label><input value="${esc(c.nome)}" ${ro} onchange="update('${selected}','nome',this.value);renderSidebar()"></div>
+        <div class="field"><label>Operador</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
+        <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">⚠ Alertas
+        ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}
+      </div>
+      ${alertsHTML || '<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
+    </div>
+  </div>`;
+}
+
+function updAlert(k,i,v){ celulas[k].alertas[i]=v; saveToAPI(celulas); }
+function delAlert(k,i){ celulas[k].alertas.splice(i,1); saveToAPI(celulas); renderDetail(); }
+function addAlert(k){ celulas[k].alertas.push("Novo alerta"); saveToAPI(celulas); renderDetail(); }
+function deleteCell(k){ if(!confirm("Excluir "+celulas[k].nome+"?"))return; delete celulas[k]; saveToAPI(celulas); selected=Object.keys(celulas).sort()[0]||null; renderSidebar(); renderDetail(); }
+
+function openModal(){ document.getElementById("modalEl").classList.add("open"); document.getElementById("mNum").focus(); }
+function closeModal(){ document.getElementById("modalEl").classList.remove("open"); document.getElementById("mNum").value=""; document.getElementById("mNome").value=""; }
+function createCell(){
+  const n=document.getElementById("mNum").value.trim();
+  const nm=document.getElementById("mNome").value.trim();
+  if(!n){showToast("Informe o número",true);return;}
+  const k=String(n).padStart(2,"0");
+  if(celulas[k]){showToast("Célula já existe!",true);return;}
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",ciclos_hoje:0,meta_dia:0,operador:"—",turno:"—",temperatura:"—",corrente:"—",tensao:"—",ultima_troca:"—",alertas:[]};
+  saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
+}
+
+function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function showToast(msg, err=false){
+  const t=document.getElementById("toastEl");
+  t.textContent=msg; t.className="toast "+(err?"error":"ok");
+  void t.offsetWidth; t.classList.add("show");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+document.addEventListener("keydown",e=>{ if(e.key==="Escape")closeModal(); });
+document.getElementById("modalEl").addEventListener("click",closeModal);
+</script>
+</body>
+</html>
