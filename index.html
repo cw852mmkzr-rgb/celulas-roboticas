@@ -301,6 +301,11 @@ const SC = {
 
 // ── API ───────────────────────────────────────
 async function loadFromAPI() {
+  // Don't reload if user is typing in a field
+  const active = document.activeElement;
+  const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+  if (isEditing) return;
+
   try {
     const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
     const d = await r.json();
