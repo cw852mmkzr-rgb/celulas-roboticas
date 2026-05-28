@@ -465,8 +465,9 @@ function updateEspaco(key, num, field, value) {
 function renderDetail() {
   if (!selected || !celulas[selected]) return;
 
-  // Special layout for Armario de Gabaritos
-  if (celulas[selected].tipo === 'armario') {
+  // Special layout for Armario de Gabaritos (detect by name)
+  const nomeCell = (celulas[selected].nome || '').toLowerCase();
+  if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
     renderArmario();
     return;
   }
