@@ -284,7 +284,6 @@ let celulas = {};
 let selected = null;
 let isAdmin = false;
 let pollTimer = null;
-let saveTimer = null;
 
 // ── DADOS PADRÃO ──────────────────────────────
 const defaultData = {
@@ -332,10 +331,7 @@ async function saveToAPI(data) {
 
 function update(key, field, value) {
   celulas[key][field] = value;
-  // Debounce: wait 1.2s after last change before saving
-  clearTimeout(saveTimer);
-  document.getElementById("savedLabel").textContent = "editando...";
-  saveTimer = setTimeout(() => saveToAPI(celulas), 20000);
+  saveToAPI(celulas);
 }
 
 // ── LOGIN ─────────────────────────────────────
