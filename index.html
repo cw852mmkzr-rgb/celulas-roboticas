@@ -273,7 +273,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 // ══════════════════════════════════════════════
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "TREMPS23";
+const ADMIN_PW = "admin123";
 // ══════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -392,8 +392,84 @@ function renderSidebar() {
 function selectCell(k) { selected = k; renderSidebar(); renderDetail(); }
 
 // ── DETAIL ────────────────────────────────────
+
+function renderArmario() {
+  const c = celulas[selected];
+  const espacos = c.espacos || {};
+  const ro = !isAdmin ? 'readonly' : '';
+
+  let espacosHTML = '';
+  for (let i = 1; i <= 18; i++) {
+    const e = espacos[i] || { gabarito: '—', peca: '—', status: 'Livre' };
+    const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
+    const statusBg = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
+    espacosHTML += `
+      <div style="background:${statusBg};border:1px solid ${statusColor}30;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:0.06em">ESPAÇO ${i}</span>
+          <select onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
+            style="background:#0f1318;border:1px solid ${statusColor}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:10px;color:${statusColor};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.08em">
+            <option ${e.status==='Livre'?'selected':''}>Livre</option>
+            <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
+            <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
+          </select>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:9px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em">Gabarito</label>
+          <input value="${esc(e.gabarito)}" ${ro}
+            onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
+            style="background:transparent;border:1px solid transparent;border-radius:5px;padding:5px 8px;font-family:'Courier New',monospace;font-size:12px;color:#00e87a;font-weight:700;width:100%"
+            onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
+            onblur="this.style.borderColor='transparent';this.style.background='transparent'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:9px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em">Peça</label>
+          <input value="${esc(e.peca)}" ${ro}
+            onchange="updateEspaco('${selected}',${i},'peca',this.value)"
+            style="background:transparent;border:1px solid transparent;border-radius:5px;padding:5px 8px;font-family:'Courier New',monospace;font-size:12px;color:#d8dde6;width:100%"
+            onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
+            onblur="this.style.borderColor='transparent';this.style.background='transparent'">
+        </div>
+      </div>`;
+  }
+
+  document.getElementById("mainPanel").innerHTML = `
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
+          ${Object.values(espacos).filter(e=>e.status==='Ocupado').length} / 18 ocupados
+        </div>
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      ${espacosHTML}
+    </div>
+  </div>`;
+}
+
+function updateEspaco(key, num, field, value) {
+  if (!celulas[key].espacos) celulas[key].espacos = {};
+  if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', peca: '—', status: 'Livre' };
+  celulas[key].espacos[num][field] = value;
+  saveToAPI(celulas);
+  if (field === 'status') renderArmario();
+}
+
 function renderDetail() {
   if (!selected || !celulas[selected]) return;
+
+  // Special layout for Armario de Gabaritos
+  if (celulas[selected].tipo === 'armario') {
+    renderArmario();
+    return;
+  }
   const c = celulas[selected];
   const s = SC[c.status] || SC["Parado"];
   const pct = c.meta_dia > 0 ? Math.min(Math.round(c.ciclos_hoje/c.meta_dia*100),100) : 0;
