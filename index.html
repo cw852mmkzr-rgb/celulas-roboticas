@@ -273,7 +273,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 // ══════════════════════════════════════════════
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "admin123";
+const ADMIN_PW = "TREMPS23";
 // ══════════════════════════════════════════════
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -287,9 +287,9 @@ let pollTimer = null;
 
 // ── DADOS PADRÃO ──────────────────────────────
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", ciclos_hoje:87, meta_dia:120, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", temperatura:"312°C", corrente:"130A", tensao:"24V", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", ciclos_hoje:43, meta_dia:100, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", temperatura:"—", corrente:"—", tensao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", ciclos_hoje:62, meta_dia:80, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", temperatura:"285°C", corrente:"180A", tensao:"28V", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", ciclos_hoje:87, meta_dia:120, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", ciclos_hoje:43, meta_dia:100, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", ciclos_hoje:62, meta_dia:80, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
 };
 
 const SC = {
@@ -301,7 +301,6 @@ const SC = {
 
 // ── API ───────────────────────────────────────
 async function loadFromAPI() {
-  // Don't reload if user is typing in a field
   const active = document.activeElement;
   const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
   if (isEditing) return;
@@ -457,7 +456,6 @@ function updateEspaco(key, num, field, value) {
 function renderDetail() {
   if (!selected || !celulas[selected]) return;
 
-  // Special layout for Armario de Gabaritos (detect by name)
   const nomeCell = (celulas[selected].nome || '').toLowerCase();
   if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
     renderArmario();
@@ -528,9 +526,9 @@ function renderDetail() {
     <div class="section">
       <div class="sec-title">◈ Parâmetros de Soldagem</div>
       <div class="grid3">
-        <div class="field"><label>🌡 Temperatura</label><input value="${esc(c.temperatura)}" ${ro} onchange="update('${selected}','temperatura',this.value)"></div>
+        <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
         <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
-        <div class="field"><label>🔋 Tensão</label><input value="${esc(c.tensao)}" ${ro} onchange="update('${selected}','tensao',this.value)"></div>
+        <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
       </div>
     </div>
 
@@ -583,7 +581,7 @@ function createCell(){
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");
   if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",ciclos_hoje:0,meta_dia:0,operador:"—",turno:"—",temperatura:"—",corrente:"—",tensao:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",peca:"—",codigo_peca:"—",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",ciclos_hoje:0,meta_dia:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
 }
 
