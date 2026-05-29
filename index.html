@@ -60,11 +60,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
-.field label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
+.field label { font-size: 13px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 .field input, .field select {
   background: transparent; border: 1px solid transparent;
-  border-radius: 6px; padding: 6px 8px;
-  font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6;
+  border-radius: 6px; padding: 8px 10px;
+  font-family: 'Courier New', monospace; font-size: 20px; color: #d8dde6;
   width: 100%; transition: all 0.15s;
 }
 .field input:focus, .field select:focus { outline: none; border-color: #00e87a; background: #00e87a08; color: #fff; }
@@ -77,7 +77,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   background: #ffb30010; border: 1px solid #ffb30025;
   border-radius: 6px; padding: 7px 10px; margin-bottom: 7px;
 }
-.alert-item input { flex: 1; background: transparent; border: none; font-family: 'Courier New', monospace; font-size: 12px; color: #ffd166; outline: none; }
+.alert-item input { flex: 1; background: transparent; border: none; font-family: 'Courier New', monospace; font-size: 20px; color: #ffd166; outline: none; }
 .alert-item input[readonly] { color: #b8960a; cursor: default; }
 .btn-x { background: none; border: none; color: #4a5568; cursor: pointer; font-size: 13px; padding: 2px 6px; }
 .btn-x:hover { color: #ff4d4d; }
@@ -652,21 +652,15 @@ function renderDetail() {
 
     <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
-
-      <!-- LAYOUT: [ Cliente ] [ Código ] [ Imagem larga ] numa linha só -->
       <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
-
         <div class="field">
           <label>Cliente</label>
           <input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()">
         </div>
-
         <div class="field">
           <label>Código</label>
           <input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)">
         </div>
-
-        <!-- Imagem alinhada com os campos, mesma altura do input -->
         <div class="field">
           <label>Imagem da peça</label>
           <div class="img-upload-box" id="imgBox"
@@ -675,17 +669,13 @@ function renderDetail() {
             ${imgBlock}
           </div>
         </div>
-
       </div>
-
-      <!-- Tempo por peça abaixo -->
       <div style="margin-top:12px;max-width:50%">
         <div class="field">
           <label>Tempo por peça</label>
           <input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)">
         </div>
       </div>
-
     </div>
 
     <div class="section">
