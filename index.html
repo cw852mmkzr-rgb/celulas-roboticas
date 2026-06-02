@@ -181,7 +181,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
 
-/* ARMÁRIO — campo gabarito expansível */
 .arm-gabarito {
   overflow: hidden;
   max-height: 0;
@@ -195,17 +194,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   margin-top: 10px;
 }
 
+/* destaque de busca */
+.arm-highlight { outline: 2px solid #00e87a; background: #00e87a08 !important; }
+
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
 
 @media (max-width: 700px) {
   .btn-menu { display: block; }
-  .sidebar {
-    position: fixed; top: 52px; left: 0; bottom: 0;
-    width: 260px; z-index: 150;
-    transform: translateX(-100%);
-  }
+  .sidebar { position: fixed; top: 52px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
   .main { padding: 12px; width: 100%; }
   .grid2 { grid-template-columns: 1fr; }
@@ -355,10 +353,47 @@ function closeSidebar() {
   document.getElementById("sidebarOverlay").classList.remove("open");
 }
 
-// ── TOGGLE GABARITO ───────────────────────────
 function toggleGabarito(num) {
   const el = document.getElementById("gab-" + num);
   if (el) el.classList.toggle("open");
+}
+
+// ── BUSCA GABARITO ────────────────────────────
+function buscarGabarito(termo) {
+  const t = termo.trim().toLowerCase();
+  const cards = document.querySelectorAll(".arm-card");
+  let encontrados = 0;
+
+  cards.forEach(card => {
+    const gab = (card.dataset.gabarito || "").toLowerCase();
+    const num = card.dataset.num;
+    const match = t && gab.includes(t);
+
+    // remove highlight anterior
+    card.classList.remove("arm-highlight");
+
+    if (!t) {
+      // sem busca: mostra tudo normal
+      card.style.display = "";
+      const gabEl = document.getElementById("gab-" + num);
+      if (gabEl) gabEl.classList.remove("open");
+    } else if (match) {
+      card.style.display = "";
+      card.classList.add("arm-highlight");
+      // abre automaticamente o campo
+      const gabEl = document.getElementById("gab-" + num);
+      if (gabEl) gabEl.classList.add("open");
+      encontrados++;
+    } else {
+      card.style.display = "none";
+    }
+  });
+
+  const info = document.getElementById("busca-info");
+  if (info) {
+    info.textContent = t ? (encontrados > 0 ? `${encontrados} encontrado(s)` : "Nenhum encontrado") : "";
+    info.style.color = encontrados > 0 ? "#00e87a" : "#ff4d4d";
+  }
 }
 
 function parseTempoPeca(str) {
@@ -588,14 +623,13 @@ function renderArmario() {
     const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
     const statusBg   = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
     const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
-    const chevron    = `<span id="chev-${i}" style="font-size:11px;color:#4a5568;transition:transform 0.25s;display:inline-block">▼</span>`;
 
     espacosHTML += `
-      <div style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;">
+      <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
+        style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;transition:outline 0.2s">
 
-        <!-- Cabeçalho clicável -->
         <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
             ${gabValor ? `<span style="font-size:12px;color:${statusColor};font-weight:700;background:${statusBg};border:1px solid ${statusColor}40;border-radius:5px;padding:2px 8px">${gabValor}</span>` : ''}
           </div>
@@ -606,11 +640,10 @@ function renderArmario() {
               <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
               <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
             </select>
-            ${chevron}
+            <span style="font-size:11px;color:#4a5568">▼</span>
           </div>
         </div>
 
-        <!-- Campo gabarito — escondido até clicar -->
         <div id="gab-${i}" class="arm-gabarito">
           <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
           <input value="${esc(e.gabarito||'')}" ${ro}
@@ -620,24 +653,37 @@ function renderArmario() {
             onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
             onblur="this.style.borderColor='#1e2530';this.style.background='transparent'">
         </div>
-
       </div>`;
   }
 
   document.getElementById("mainPanel").innerHTML = `
   <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
           ${Object.values(espacos).filter(e=>e.status==='Ocupado').length} / 18 ocupados
         </div>
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
+
+    <!-- CAMPO DE BUSCA -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px">
+      <span style="font-size:16px">🔍</span>
+      <input id="buscaGabarito"
+        placeholder="Procurar gabarito..."
+        oninput="buscarGabarito(this.value)"
+        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none"
+        autocomplete="off">
+      <span id="busca-info" style="font-size:11px;letter-spacing:0.06em;white-space:nowrap"></span>
+      <button onclick="document.getElementById('buscaGabarito').value='';buscarGabarito('')"
+        style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
+    </div>
+
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">${espacosHTML}</div>
   </div>`;
 }
