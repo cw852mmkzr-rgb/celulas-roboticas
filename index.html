@@ -23,7 +23,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 .layout { display: flex; height: calc(100vh - 52px); }
 
-.sidebar { width: 200px; background: #0f1318; border-right: 1px solid #1e2530; overflow-y: auto; flex-shrink: 0; }
+/* SIDEBAR DESKTOP */
+.sidebar {
+  width: 200px; background: #0f1318;
+  border-right: 1px solid #1e2530;
+  overflow-y: auto; flex-shrink: 0;
+  transition: transform 0.25s;
+}
 .sidebar-hdr {
   padding: 10px 14px; font-size: 10px; color: #4a5568;
   text-transform: uppercase; letter-spacing: 0.15em;
@@ -47,6 +53,22 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dot-blue  { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
 .dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
 .dot-gray  { background: #4a5568; }
+
+/* MENU HAMBURGUER — só no mobile */
+.btn-menu {
+  display: none;
+  background: none; border: none; color: #d8dde6;
+  font-size: 22px; cursor: pointer; padding: 4px 8px;
+  line-height: 1;
+}
+
+/* OVERLAY DO MENU MOBILE */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0; background: #000000aa;
+  z-index: 149;
+}
+.sidebar-overlay.open { display: block; }
 
 .main { flex: 1; overflow-y: auto; padding: 20px; }
 
@@ -166,10 +188,30 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
 
-@media (max-width: 600px) {
-  .sidebar { width: 160px; }
-  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
-  .main { padding: 12px; }
+/* ── MOBILE ─────────────────────────────────── */
+@media (max-width: 700px) {
+  .btn-menu { display: block; }
+
+  .sidebar {
+    position: fixed; top: 52px; left: 0; bottom: 0;
+    width: 260px; z-index: 150;
+    transform: translateX(-100%);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .main { padding: 12px; width: 100%; }
+
+  .grid2 { grid-template-columns: 1fr; }
+  .grid3 { grid-template-columns: 1fr; }
+  .grid4 { grid-template-columns: 1fr 1fr; }
+
+  /* Peça em Produção: empilha no mobile */
+  .peca-grid { grid-template-columns: 1fr !important; }
+
+  .detail-title { font-size: 18px; }
+
+  /* esconde label "salvo" no mobile pra não lotar topbar */
+  #savedLabel { display: none; }
 }
 </style>
 </head>
@@ -190,16 +232,23 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 <div id="appScreen" style="display:none">
   <div class="topbar">
-    <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
-    <div style="display:flex;align-items:center;gap:10px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
+      <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
-      <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊 Importar Excel</button>
+      <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
   </div>
+
+  <!-- Overlay escuro ao abrir sidebar no mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
   <div class="layout">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <div class="sidebar-hdr">
         <span id="cellCount">Células</span>
         <button id="btnAdd" class="btn btn-green" style="padding:2px 8px;font-size:13px;display:none" onclick="openModal()">+</button>
@@ -293,6 +342,18 @@ const SC = {
   "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
+
+// ── SIDEBAR MOBILE ────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById("sidebar");
+  const ov = document.getElementById("sidebarOverlay");
+  sb.classList.toggle("open");
+  ov.classList.toggle("open");
+}
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarOverlay").classList.remove("open");
+}
 
 function parseTempoPeca(str) {
   if (!str || str === '—') return null;
@@ -440,7 +501,12 @@ function renderSidebar() {
   }).join("");
 }
 
-function selectCell(k) { selected = k; renderSidebar(); renderDetail(); }
+function selectCell(k) {
+  selected = k;
+  renderSidebar();
+  renderDetail();
+  closeSidebar(); // fecha menu ao selecionar no mobile
+}
 
 function openXlsxModal() {
   xlsxPendingData = null;
@@ -613,7 +679,7 @@ function renderDetail() {
 
     <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
+      <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
         <div class="field">
           <label>Cliente</label>
           <input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()">
@@ -721,7 +787,7 @@ function showToast(msg, err=false){
 }
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); }
+  if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); closeSidebar(); }
 });
 document.getElementById("modalEl").addEventListener("click", closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click", closeXlsxModal);
