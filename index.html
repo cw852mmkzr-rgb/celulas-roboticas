@@ -23,7 +23,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 .layout { display: flex; height: calc(100vh - 52px); }
 
-/* SIDEBAR DESKTOP */
 .sidebar {
   width: 200px; background: #0f1318;
   border-right: 1px solid #1e2530;
@@ -54,7 +53,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
 .dot-gray  { background: #4a5568; }
 
-/* MENU HAMBURGUER — só no mobile */
 .btn-menu {
   display: none;
   background: none; border: none; color: #d8dde6;
@@ -62,7 +60,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   line-height: 1;
 }
 
-/* OVERLAY DO MENU MOBILE */
 .sidebar-overlay {
   display: none;
   position: fixed; inset: 0; background: #000000aa;
@@ -184,33 +181,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
 
+/* ARMÁRIO — campo gabarito expansível */
+.arm-gabarito {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  opacity: 0;
+  margin-top: 0;
+}
+.arm-gabarito.open {
+  max-height: 80px;
+  opacity: 1;
+  margin-top: 10px;
+}
+
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
 
-/* ── MOBILE ─────────────────────────────────── */
 @media (max-width: 700px) {
   .btn-menu { display: block; }
-
   .sidebar {
     position: fixed; top: 52px; left: 0; bottom: 0;
     width: 260px; z-index: 150;
     transform: translateX(-100%);
   }
   .sidebar.open { transform: translateX(0); }
-
   .main { padding: 12px; width: 100%; }
-
   .grid2 { grid-template-columns: 1fr; }
   .grid3 { grid-template-columns: 1fr; }
   .grid4 { grid-template-columns: 1fr 1fr; }
-
-  /* Peça em Produção: empilha no mobile */
   .peca-grid { grid-template-columns: 1fr !important; }
-
   .detail-title { font-size: 18px; }
-
-  /* esconde label "salvo" no mobile pra não lotar topbar */
   #savedLabel { display: none; }
 }
 </style>
@@ -244,7 +246,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
   </div>
 
-  <!-- Overlay escuro ao abrir sidebar no mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
   <div class="layout">
@@ -343,7 +344,6 @@ const SC = {
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
 
-// ── SIDEBAR MOBILE ────────────────────────────
 function toggleSidebar() {
   const sb = document.getElementById("sidebar");
   const ov = document.getElementById("sidebarOverlay");
@@ -353,6 +353,12 @@ function toggleSidebar() {
 function closeSidebar() {
   document.getElementById("sidebar").classList.remove("open");
   document.getElementById("sidebarOverlay").classList.remove("open");
+}
+
+// ── TOGGLE GABARITO ───────────────────────────
+function toggleGabarito(num) {
+  const el = document.getElementById("gab-" + num);
+  if (el) el.classList.toggle("open");
 }
 
 function parseTempoPeca(str) {
@@ -505,7 +511,7 @@ function selectCell(k) {
   selected = k;
   renderSidebar();
   renderDetail();
-  closeSidebar(); // fecha menu ao selecionar no mobile
+  closeSidebar();
 }
 
 function openXlsxModal() {
@@ -570,36 +576,54 @@ function confirmXlsxImport() {
   showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
+// ── ARMÁRIO ───────────────────────────────────
 function renderArmario() {
   const c = celulas[selected];
   const espacos = c.espacos || {};
   const ro = !isAdmin ? 'readonly' : '';
   let espacosHTML = '';
+
   for (let i = 1; i <= 18; i++) {
     const e = espacos[i] || { gabarito: '—', status: 'Livre' };
     const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
-    const statusBg = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
+    const statusBg   = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
+    const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
+    const chevron    = `<span id="chev-${i}" style="font-size:11px;color:#4a5568;transition:transform 0.25s;display:inline-block">▼</span>`;
+
     espacosHTML += `
-      <div style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:16px;font-weight:800;color:#fff;letter-spacing:0.08em">ARMÁRIO ${i}</span>
-          <select onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
-            style="background:#0f1318;border:1px solid ${statusColor}50;border-radius:5px;padding:4px 10px;font-family:'Courier New',monospace;font-size:11px;color:${statusColor};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.08em">
-            <option ${e.status==='Livre'?'selected':''}>Livre</option>
-            <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
-            <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
-          </select>
+      <div style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;">
+
+        <!-- Cabeçalho clicável -->
+        <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
+            ${gabValor ? `<span style="font-size:12px;color:${statusColor};font-weight:700;background:${statusBg};border:1px solid ${statusColor}40;border-radius:5px;padding:2px 8px">${gabValor}</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
+              style="background:#0f1318;border:1px solid ${statusColor}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${statusColor};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
+              <option ${e.status==='Livre'?'selected':''}>Livre</option>
+              <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
+              <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
+            </select>
+            ${chevron}
+          </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em">Gabarito</label>
-          <input value="${esc(e.gabarito||'—')}" ${ro}
+
+        <!-- Campo gabarito — escondido até clicar -->
+        <div id="gab-${i}" class="arm-gabarito">
+          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
+          <input value="${esc(e.gabarito||'')}" ${ro}
+            placeholder="Digite o gabarito..."
             onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
-            style="background:transparent;border:1px solid transparent;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:16px;color:#00e87a;font-weight:700;width:100%"
+            style="background:transparent;border:1px solid #1e2530;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:16px;color:#00e87a;font-weight:700;width:100%;outline:none"
             onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
-            onblur="this.style.borderColor='transparent';this.style.background='transparent'">
+            onblur="this.style.borderColor='#1e2530';this.style.background='transparent'">
         </div>
+
       </div>`;
   }
+
   document.getElementById("mainPanel").innerHTML = `
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
@@ -614,7 +638,7 @@ function renderArmario() {
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px">${espacosHTML}</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">${espacosHTML}</div>
   </div>`;
 }
 
