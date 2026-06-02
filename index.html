@@ -59,6 +59,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 13px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 .field input, .field select {
@@ -94,7 +95,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
 .status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
 
-/* IMAGEM DA PEÇA */
 .img-upload-box {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   border: 2px dashed #1e2530; border-radius: 8px;
@@ -112,60 +112,30 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .img-upload-box:hover .img-overlay { opacity: 1; }
 .img-overlay span { font-size: 10px; color: #fff; letter-spacing: 0.06em; }
 
-/* LIGHTBOX */
 .lightbox {
   position: fixed; inset: 0; background: #000000ee;
   display: flex; align-items: center; justify-content: center;
-  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  cursor: zoom-out;
+  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out;
 }
 .lightbox.open { opacity: 1; pointer-events: all; }
-.lightbox img {
-  max-width: 92vw; max-height: 92vh;
-  object-fit: contain; border-radius: 8px;
-  box-shadow: 0 0 60px #00000080;
-  transform: scale(0.95); transition: transform 0.2s;
-}
+.lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 8px; box-shadow: 0 0 60px #00000080; transform: scale(0.95); transition: transform 0.2s; }
 .lightbox.open img { transform: scale(1); }
-.lightbox-close {
-  position: absolute; top: 18px; right: 22px;
-  font-size: 28px; color: #fff; cursor: pointer;
-  background: none; border: none; opacity: 0.7;
-  font-family: 'Courier New', monospace;
-}
+.lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.7; font-family: 'Courier New', monospace; }
 .lightbox-close:hover { opacity: 1; }
 
-/* LOGIN */
 .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
 .login-icon { font-size: 38px; margin-bottom: 8px; }
 .login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; }
 .login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
-.login-input {
-  width: 100%; background: #080b0f; border: 1px solid #1e2530;
-  border-radius: 8px; padding: 11px 14px;
-  font-family: 'Courier New', monospace; font-size: 14px;
-  color: #d8dde6; text-align: center; letter-spacing: 0.15em;
-  margin-bottom: 10px; outline: none; transition: all 0.2s;
-}
+.login-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 11px 14px; font-family: 'Courier New', monospace; font-size: 14px; color: #d8dde6; text-align: center; letter-spacing: 0.15em; margin-bottom: 10px; outline: none; transition: all 0.2s; }
 .login-input:focus { border-color: #00e87a; color: #fff; }
 .login-input.err { border-color: #ff4d4d60; color: #ff8888; }
 .login-err { color: #ff6b6b; font-size: 12px; margin-bottom: 8px; }
-.login-btn-main {
-  width: 100%; background: #00e87a; color: #000; border: none;
-  border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace;
-  font-size: 12px; font-weight: 800; letter-spacing: 0.1em;
-  cursor: pointer; margin-bottom: 8px; text-transform: uppercase;
-}
-.login-btn-sec {
-  width: 100%; background: transparent; color: #4a5568;
-  border: 1px solid #1e2530; border-radius: 8px; padding: 10px;
-  font-family: 'Courier New', monospace; font-size: 11px;
-  cursor: pointer; letter-spacing: 0.06em;
-}
+.login-btn-main { width: 100%; background: #00e87a; color: #000; border: none; border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; cursor: pointer; margin-bottom: 8px; text-transform: uppercase; }
+.login-btn-sec { width: 100%; background: transparent; color: #4a5568; border: 1px solid #1e2530; border-radius: 8px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; letter-spacing: 0.06em; }
 .login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
 
-/* MODAL */
 .overlay { position: fixed; inset: 0; background: #000000bb; display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .overlay.open { opacity: 1; pointer-events: all; }
 .modal { background: #0f1318; border: 1px solid #1e2530; border-radius: 12px; padding: 26px; width: 360px; max-width: 95vw; }
@@ -176,7 +146,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .modal-input:focus { border-color: #00e87a; color: #fff; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
-/* XLSX */
 .xlsx-preview { background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 12px; margin-top: 12px; max-height: 220px; overflow-y: auto; font-size: 11px; }
 .xlsx-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1e2530; align-items: center; }
 .xlsx-row:last-child { border-bottom: none; }
@@ -185,7 +154,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .xlsx-found { color: #00e87a; font-size: 10px; }
 .xlsx-notfound { color: #ff4d4d; font-size: 10px; }
 
-/* TOAST */
 .toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.ok { background: #00e87a; color: #000; }
@@ -200,14 +168,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 @media (max-width: 600px) {
   .sidebar { width: 160px; }
-  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .grid2, .grid3, .grid4 { grid-template-columns: 1fr; }
   .main { padding: 12px; }
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
     <div class="login-icon">⬡</div>
@@ -221,7 +188,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- APP -->
 <div id="appScreen" style="display:none">
   <div class="topbar">
     <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
@@ -246,7 +212,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- MODAL NOVA CÉLULA -->
 <div class="overlay" id="modalEl">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title">Nova Célula</div>
@@ -265,7 +230,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- MODAL XLSX -->
 <div class="overlay" id="xlsxModalEl">
   <div class="modal" style="width:460px" onclick="event.stopPropagation()">
     <div class="modal-title">📊 Importar Produção do Excel</div>
@@ -294,15 +258,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
-<!-- LIGHTBOX -->
 <div class="lightbox" id="lightboxEl" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
 </div>
 
-<!-- INPUT OCULTO IMAGEM -->
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
-
 <div class="toast" id="toastEl"></div>
 
 <script>
@@ -321,9 +282,9 @@ let pollTimer = null;
 let xlsxPendingData = null;
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"11:00", alertas:[] }
 };
 
 const SC = {
@@ -689,18 +650,19 @@ function renderDetail() {
 
     <div class="section">
       <div class="sec-title">◈ Parâmetros de Soldagem</div>
-      <div class="grid3">
+      <div class="grid4">
         <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
         <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
         <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
+        <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="sec-title">◈ Equipe</div>
+      <div class="sec-title">◈ Responsável Técnico</div>
       <div class="grid2">
         <div class="field"><label>Nome da célula</label><input value="${esc(c.nome)}" ${ro} onchange="update('${selected}','nome',this.value);renderSidebar()"></div>
-        <div class="field"><label>Operador</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
+        <div class="field"><label>Responsável Técnico</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
         <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
       </div>
     </div>
@@ -745,7 +707,7 @@ function createCell(){
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");
   if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
 }
 
