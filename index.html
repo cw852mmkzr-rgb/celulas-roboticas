@@ -59,7 +59,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   font-size: 22px; cursor: pointer; padding: 4px 8px;
   line-height: 1;
 }
-
 .sidebar-overlay {
   display: none;
   position: fixed; inset: 0; background: #000000aa;
@@ -181,21 +180,62 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
 
-.arm-gabarito {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
-  opacity: 0;
-  margin-top: 0;
-}
-.arm-gabarito.open {
-  max-height: 80px;
-  opacity: 1;
-  margin-top: 10px;
-}
-
-/* destaque de busca */
+.arm-gabarito { overflow: hidden; max-height: 0; transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease; opacity: 0; margin-top: 0; }
+.arm-gabarito.open { max-height: 80px; opacity: 1; margin-top: 10px; }
 .arm-highlight { outline: 2px solid #00e87a; background: #00e87a08 !important; }
+
+/* PRODUÇÃO DIÁRIA */
+.prod-day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.prod-day-card {
+  background: #080b0f;
+  border: 1px solid #1e2530;
+  border-radius: 10px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s;
+}
+.prod-day-card:hover { border-color: #2e3b4e; }
+.prod-day-card.today { border-color: #00e87a60; background: #00e87a08; }
+.prod-day-num {
+  font-size: 11px; color: #4a5568;
+  font-weight: 700; letter-spacing: 0.1em;
+}
+.prod-day-card.today .prod-day-num { color: #00e87a; }
+.prod-day-input {
+  background: transparent; border: none; outline: none;
+  font-family: 'Courier New', monospace;
+  font-size: 18px; font-weight: 700;
+  color: #d8dde6; text-align: center;
+  width: 100%; padding: 2px 0;
+  transition: color 0.15s;
+}
+.prod-day-input:focus { color: #00e87a; }
+.prod-day-input[readonly] { cursor: default; color: #4a5568; }
+.prod-day-input.has-value { color: #00e87a; }
+.prod-day-bar-wrap {
+  width: 100%; height: 4px;
+  background: #1e2530; border-radius: 99px; overflow: hidden;
+}
+.prod-day-bar {
+  height: 100%; border-radius: 99px;
+  background: #00e87a;
+  transition: width 0.4s;
+}
+.prod-total-box {
+  background: #00e87a15;
+  border: 1px solid #00e87a30;
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -212,6 +252,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .peca-grid { grid-template-columns: 1fr !important; }
   .detail-title { font-size: 18px; }
   #savedLabel { display: none; }
+  .prod-day-grid { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
@@ -343,10 +384,8 @@ const SC = {
 };
 
 function toggleSidebar() {
-  const sb = document.getElementById("sidebar");
-  const ov = document.getElementById("sidebarOverlay");
-  sb.classList.toggle("open");
-  ov.classList.toggle("open");
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("sidebarOverlay").classList.toggle("open");
 }
 function closeSidebar() {
   document.getElementById("sidebar").classList.remove("open");
@@ -358,29 +397,22 @@ function toggleGabarito(num) {
   if (el) el.classList.toggle("open");
 }
 
-// ── BUSCA GABARITO ────────────────────────────
 function buscarGabarito(termo) {
   const t = termo.trim().toLowerCase();
   const cards = document.querySelectorAll(".arm-card");
   let encontrados = 0;
-
   cards.forEach(card => {
     const gab = (card.dataset.gabarito || "").toLowerCase();
     const num = card.dataset.num;
     const match = t && gab.includes(t);
-
-    // remove highlight anterior
     card.classList.remove("arm-highlight");
-
     if (!t) {
-      // sem busca: mostra tudo normal
       card.style.display = "";
       const gabEl = document.getElementById("gab-" + num);
       if (gabEl) gabEl.classList.remove("open");
     } else if (match) {
       card.style.display = "";
       card.classList.add("arm-highlight");
-      // abre automaticamente o campo
       const gabEl = document.getElementById("gab-" + num);
       if (gabEl) gabEl.classList.add("open");
       encontrados++;
@@ -388,7 +420,6 @@ function buscarGabarito(termo) {
       card.style.display = "none";
     }
   });
-
   const info = document.getElementById("busca-info");
   if (info) {
     info.textContent = t ? (encontrados > 0 ? `${encontrados} encontrado(s)` : "Nenhum encontrado") : "";
@@ -459,6 +490,120 @@ function updateAndRefreshRitmo(key, field, value) {
   saveToAPI(celulas);
   const ritmoEl = document.getElementById("ritmoDisplay");
   if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
+}
+
+// ── PRODUÇÃO DIÁRIA ───────────────────────────
+function updateDia(key, dia, value) {
+  if (!celulas[key].producao_dias) celulas[key].producao_dias = {};
+  const val = parseInt(value) || 0;
+  celulas[key].producao_dias[dia] = val;
+  saveToAPI(celulas);
+
+  // atualiza total e barra sem re-render
+  const dias = celulas[key].producao_dias;
+  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b) || 0), 0);
+  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
+
+  const totalEl = document.getElementById("prod-total");
+  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR");
+
+  // atualiza cor do input
+  const inp = document.getElementById("inp-dia-" + dia);
+  if (inp) inp.className = "prod-day-input" + (val > 0 ? " has-value" : "") + (!isAdmin ? " readonly" : "");
+
+  // atualiza barra de todos os dias
+  for (let d = 1; d <= 31; d++) {
+    const bar = document.getElementById("bar-dia-" + d);
+    const v = parseInt((celulas[key].producao_dias || {})[d]) || 0;
+    if (bar) bar.style.width = (maxVal > 0 ? Math.round(v / maxVal * 100) : 0) + "%";
+  }
+}
+
+function renderProducaoDiaria() {
+  const c = celulas[selected];
+  const dias = c.producao_dias || {};
+  const hoje = new Date().getDate();
+  const mesAtual = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const ro = !isAdmin ? 'readonly' : '';
+
+  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
+  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
+
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const anoAtual = new Date().getFullYear();
+  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
+  const anoSel = c.ano_selecionado || anoAtual;
+
+  let diasHTML = '';
+  for (let d = 1; d <= 31; d++) {
+    const val = parseInt(dias[d]) || 0;
+    const isHoje = d === hoje && mesIdx === new Date().getMonth() && anoSel === anoAtual;
+    const pct = maxVal > 0 ? Math.round(val / maxVal * 100) : 0;
+    diasHTML += `
+      <div class="prod-day-card ${isHoje ? 'today' : ''}">
+        <div class="prod-day-num">DIA ${d}</div>
+        <input id="inp-dia-${d}" type="number" min="0"
+          class="prod-day-input${val > 0 ? ' has-value' : ''}${!isAdmin ? ' readonly' : ''}"
+          value="${val > 0 ? val : ''}"
+          placeholder="0"
+          ${ro}
+          onchange="updateDia('${selected}',${d},this.value)">
+        <div class="prod-day-bar-wrap">
+          <div id="bar-dia-${d}" class="prod-day-bar" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById("mainPanel").innerHTML = `
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
+      </div>
+      ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>` : ""}
+    </div>
+
+    <!-- Seletor de mês/ano -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <select onchange="updateMesAno('${selected}','mes',+this.value)"
+        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+        ${meses.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <select onchange="updateMesAno('${selected}','ano',+this.value)"
+        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+        ${[anoAtual-1, anoAtual, anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
+      </select>
+    </div>
+
+    <!-- Total do mês -->
+    <div class="prod-total-box">
+      <div>
+        <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Total do mês</div>
+        <div style="font-size:32px;font-weight:800;color:#00e87a;letter-spacing:0.04em" id="prod-total">${total.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Média diária</div>
+        <div style="font-size:20px;font-weight:700;color:#3d9eff">
+          ${Object.values(dias).filter(v => parseInt(v) > 0).length > 0
+            ? Math.round(total / Object.values(dias).filter(v => parseInt(v) > 0).length).toLocaleString("pt-BR")
+            : '—'}
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid dos dias -->
+    <div class="prod-day-grid">${diasHTML}</div>
+  </div>`;
+}
+
+function updateMesAno(key, campo, valor) {
+  if (campo === 'mes') celulas[key].mes_selecionado = valor;
+  if (campo === 'ano') celulas[key].ano_selecionado = valor;
+  // Limpa os dias ao trocar mês/ano
+  celulas[key].producao_dias = {};
+  saveToAPI(celulas);
+  renderProducaoDiaria();
 }
 
 function triggerImgUpload() {
@@ -543,10 +688,7 @@ function renderSidebar() {
 }
 
 function selectCell(k) {
-  selected = k;
-  renderSidebar();
-  renderDetail();
-  closeSidebar();
+  selected = k; renderSidebar(); renderDetail(); closeSidebar();
 }
 
 function openXlsxModal() {
@@ -611,23 +753,19 @@ function confirmXlsxImport() {
   showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
-// ── ARMÁRIO ───────────────────────────────────
 function renderArmario() {
   const c = celulas[selected];
   const espacos = c.espacos || {};
   const ro = !isAdmin ? 'readonly' : '';
   let espacosHTML = '';
-
   for (let i = 1; i <= 18; i++) {
     const e = espacos[i] || { gabarito: '—', status: 'Livre' };
     const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
     const statusBg   = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
     const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
-
     espacosHTML += `
       <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
         style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;transition:outline 0.2s">
-
         <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
@@ -643,7 +781,6 @@ function renderArmario() {
             <span style="font-size:11px;color:#4a5568">▼</span>
           </div>
         </div>
-
         <div id="gab-${i}" class="arm-gabarito">
           <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
           <input value="${esc(e.gabarito||'')}" ${ro}
@@ -655,7 +792,6 @@ function renderArmario() {
         </div>
       </div>`;
   }
-
   document.getElementById("mainPanel").innerHTML = `
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -670,20 +806,14 @@ function renderArmario() {
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
-
-    <!-- CAMPO DE BUSCA -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px">
       <span style="font-size:16px">🔍</span>
-      <input id="buscaGabarito"
-        placeholder="Procurar gabarito..."
-        oninput="buscarGabarito(this.value)"
-        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none"
-        autocomplete="off">
+      <input id="buscaGabarito" placeholder="Procurar gabarito..." oninput="buscarGabarito(this.value)"
+        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none" autocomplete="off">
       <span id="busca-info" style="font-size:11px;letter-spacing:0.06em;white-space:nowrap"></span>
       <button onclick="document.getElementById('buscaGabarito').value='';buscarGabarito('')"
         style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
     </div>
-
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">${espacosHTML}</div>
   </div>`;
 }
@@ -702,6 +832,9 @@ function renderDetail() {
   if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
     renderArmario(); return;
   }
+  if (nomeCell.includes('produção diária') || nomeCell.includes('producao diaria') || nomeCell.includes('produção diaria') || nomeCell.includes('producao diária')) {
+    renderProducaoDiaria(); return;
+  }
 
   const c = celulas[selected];
   const s = SC[c.status] || SC["Parado"];
@@ -716,16 +849,9 @@ function renderDetail() {
 
   const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
   const imgSrc = c.img_peca || "";
-
   const imgBlock = imgSrc
-    ? `<img src="${imgSrc}" alt="peça"
-         onclick="event.stopPropagation();openLightbox('${imgSrc}')"
-         style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
-       ${isAdmin ? `<div class="img-overlay">
-         <span>📷 Trocar</span>
-         <button onclick="event.stopPropagation();removeImg()"
-           style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button>
-       </div>` : ''}`
+    ? `<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
+       ${isAdmin ? `<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button></div>` : ''}`
     : `<div class="img-placeholder">${isAdmin ? '📷<br>Clique para<br>enviar' : '—'}</div>`;
 
   document.getElementById("mainPanel").innerHTML = `
@@ -750,28 +876,15 @@ function renderDetail() {
     <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
       <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
-        <div class="field">
-          <label>Cliente</label>
-          <input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()">
-        </div>
-        <div class="field">
-          <label>Código</label>
-          <input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)">
-        </div>
+        <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
+        <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
         <div class="field">
           <label>Imagem da peça</label>
-          <div class="img-upload-box" id="imgBox"
-            onclick="${isAdmin ? 'triggerImgUpload()' : ''}"
-            style="${isAdmin ? 'cursor:pointer;' : 'cursor:default;'}height:90px">
-            ${imgBlock}
-          </div>
+          <div class="img-upload-box" id="imgBox" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
         </div>
       </div>
       <div style="margin-top:12px;max-width:50%">
-        <div class="field">
-          <label>Tempo por peça</label>
-          <input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)">
-        </div>
+        <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
 
