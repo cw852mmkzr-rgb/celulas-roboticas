@@ -9,12 +9,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospace; min-height: 100vh; }
 
-.topbar {
-  background: #0f1318; border-bottom: 1px solid #1e2530;
-  height: 52px; padding: 0 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
-}
+.topbar { background: #0f1318; border-bottom: 1px solid #1e2530; height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .brand { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.1em; }
 .brand span { color: #00e87a; }
 .badge { font-size: 10px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -22,7 +17,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
 
 .layout { display: flex; height: calc(100vh - 52px); }
-
 .sidebar { width: 200px; background: #0f1318; border-right: 1px solid #1e2530; overflow-y: auto; flex-shrink: 0; transition: transform 0.25s; }
 .sidebar-hdr { padding: 10px 14px; font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.15em; border-bottom: 1px solid #1e2530; display: flex; justify-content: space-between; align-items: center; }
 .cell-item { padding: 11px 14px; border-bottom: 1px solid #1e2530; cursor: pointer; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; transition: all 0.15s; }
@@ -88,7 +82,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .lightbox.open { opacity: 1; pointer-events: all; }
 .lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 8px; box-shadow: 0 0 60px #00000080; transform: scale(0.95); transition: transform 0.2s; }
 .lightbox.open img { transform: scale(1); }
-.lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.7; font-family: 'Courier New', monospace; }
+.lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.7; }
 
 .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
@@ -149,33 +143,43 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* ── METAS DIÁRIA ── */
 .metas-table-wrap { overflow-x: auto; }
-.metas-table { border-collapse: collapse; width: 100%; min-width: 900px; font-family: 'Courier New', monospace; }
-.metas-table th { background: #0a0d11; color: #4a5568; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
-.metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 80px; }
-.metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 80px; }
-.metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 120px; }
-.metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 70px; }
-.metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 70px; }
-.metas-table th.col-total { background: #0d1117; color: #00e87a; min-width: 80px; }
-.metas-table td { border: 1px solid #1e2530; padding: 4px 6px; text-align: center; vertical-align: middle; }
+.metas-table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
+.metas-table th { background: #0a0d11; color: #4a5568; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; padding: 9px 7px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
+.metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 60px; }
+.metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 65px; }
+.metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 100px; }
+.metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 62px; }
+.metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 62px; }
+.metas-table th.col-sub { background: #0d1117; min-width: 70px; }
+.metas-table th.col-total-geral { background: #0a0d11; color: #ffb300; min-width: 80px; border-left: 2px solid #ffb30040; }
+.metas-table td { border: 1px solid #1e2530; padding: 4px 5px; text-align: center; vertical-align: middle; }
 .metas-table tr:hover td { background: #ffffff04; }
 .metas-table td.robo-label { color: #00e87a; font-weight: 800; font-size: 13px; background: #00e87a06; }
 .metas-table td.meta-val { color: #3d9eff; font-weight: 700; font-size: 13px; background: #3d9eff06; }
 .metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #ffb30006; }
-.metas-table td.total-val { color: #00e87a; font-weight: 800; font-size: 14px; background: #00e87a10; }
-.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; color: #d8dde6; text-align: center; width: 100%; padding: 2px 0; font-weight: 600; }
+.metas-table td.sub-dia-val { font-weight: 800; font-size: 13px; background: #00e87a08; border-left: 1px solid #00e87a20; }
+.metas-table td.sub-noite-val { font-weight: 800; font-size: 13px; background: #a78bfa08; border-left: 1px solid #a78bfa20; }
+.metas-table td.total-geral-val { font-weight: 800; font-size: 14px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; }
+.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6; text-align: center; width: 100%; padding: 2px 0; font-weight: 600; }
 .metas-table input.hora-inp:focus { color: #fff; }
 .metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
-.metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 13px; width: 100%; padding: 2px 0; text-align: center; }
+.metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 12px; width: 100%; padding: 2px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
 .metas-table input.cod-inp { color: #ffb300; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
+.cell-ok  { background: #00e87a20 !important; color: #00e87a !important; }
+.cell-fail{ background: #ff4d4d20 !important; color: #ff4d4d !important; }
 
-/* célula verde = atingiu meta */
-.cell-ok { background: #00e87a18 !important; color: #00e87a !important; }
-/* célula vermelha = abaixo da meta (com valor) */
-.cell-fail { background: #ff4d4d18 !important; color: #ff4d4d !important; }
+/* seletor de data */
+.date-sel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.date-sel select, .date-sel input {
+  background: #0f1318; border: 1px solid #1e2530; border-radius: 6px;
+  padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px;
+  color: #d8dde6; cursor: pointer; outline: none; transition: border-color 0.15s;
+}
+.date-sel select:focus, .date-sel input:focus { border-color: #00e87a; }
+.date-sel label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -224,9 +228,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
   </div>
-
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
   <div class="layout">
     <div class="sidebar" id="sidebar">
       <div class="sidebar-hdr">
@@ -285,7 +287,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
 </div>
-
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
 <div class="toast" id="toastEl"></div>
 
@@ -293,7 +294,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
 const ADMIN_PW = "admin123";
-
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
 const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
@@ -307,6 +307,7 @@ let xlsxPendingData = null;
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 const defaultData = {
   "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
@@ -321,8 +322,17 @@ const SC = {
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
 
+// ── chave de data para metas ──────────────────
+function getMetasChave(key) {
+  const c = celulas[key];
+  const ano  = c.metas_ano  || new Date().getFullYear();
+  const mes  = c.metas_mes  !== undefined ? c.metas_mes : new Date().getMonth();
+  const dia  = c.metas_dia  || new Date().getDate();
+  return `${ano}_${mes}_${dia}`;
+}
+
 function toggleSidebar() { document.getElementById("sidebar").classList.toggle("open"); document.getElementById("sidebarOverlay").classList.toggle("open"); }
-function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("sidebarOverlay").classList.remove("open"); }
+function closeSidebar()  { document.getElementById("sidebar").classList.remove("open");  document.getElementById("sidebarOverlay").classList.remove("open"); }
 function toggleGabarito(num) { const el = document.getElementById("gab-" + num); if (el) el.classList.toggle("open"); }
 
 function buscarGabarito(termo) {
@@ -334,146 +344,127 @@ function buscarGabarito(termo) {
     const num = card.dataset.num;
     const match = t && gab.includes(t);
     card.classList.remove("arm-highlight");
-    if (!t) { card.style.display = ""; const gabEl = document.getElementById("gab-" + num); if (gabEl) gabEl.classList.remove("open"); }
-    else if (match) { card.style.display = ""; card.classList.add("arm-highlight"); const gabEl = document.getElementById("gab-" + num); if (gabEl) gabEl.classList.add("open"); encontrados++; }
-    else { card.style.display = "none"; }
+    if (!t) { card.style.display=""; const g=document.getElementById("gab-"+num); if(g) g.classList.remove("open"); }
+    else if (match) { card.style.display=""; card.classList.add("arm-highlight"); const g=document.getElementById("gab-"+num); if(g) g.classList.add("open"); encontrados++; }
+    else { card.style.display="none"; }
   });
   const info = document.getElementById("busca-info");
-  if (info) { info.textContent = t ? (encontrados > 0 ? `${encontrados} encontrado(s)` : "Nenhum encontrado") : ""; info.style.color = encontrados > 0 ? "#00e87a" : "#ff4d4d"; }
+  if (info) { info.textContent = t?(encontrados>0?`${encontrados} encontrado(s)`:"Nenhum encontrado"):""; info.style.color=encontrados>0?"#00e87a":"#ff4d4d"; }
 }
 
 function parseTempoPeca(str) {
-  if (!str || str === '—') return null;
-  str = String(str).trim();
-  const minseg = str.match(/(\d+)\s*min\s*(\d*)\s*s?/i);
-  if (minseg) return parseInt(minseg[1]) * 60 + (parseInt(minseg[2]) || 0);
-  const colon = str.match(/^(\d+):(\d{2})$/);
-  if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
-  const seg = str.match(/^(\d+)\s*s$/i);
-  if (seg) return parseInt(seg[1]);
-  const num = parseFloat(str);
-  if (!isNaN(num)) return Math.round(num * 60);
-  return null;
+  if (!str||str==='—') return null; str=String(str).trim();
+  const ms=str.match(/(\d+)\s*min\s*(\d*)\s*s?/i); if(ms) return parseInt(ms[1])*60+(parseInt(ms[2])||0);
+  const co=str.match(/^(\d+):(\d{2})$/); if(co) return parseInt(co[1])*60+parseInt(co[2]);
+  const sg=str.match(/^(\d+)\s*s$/i); if(sg) return parseInt(sg[1]);
+  const nm=parseFloat(str); if(!isNaN(nm)) return Math.round(nm*60); return null;
 }
-
 function calcRitmo(meta_hora, tempo_peca_str) {
-  const metaNum = parseFloat(meta_hora);
-  const segsTP = parseTempoPeca(tempo_peca_str);
-  if (!metaNum || metaNum <= 0 || !segsTP) return '—';
-  const disponivel = 3600 / metaNum;
-  const efic = Math.round((segsTP / disponivel) * 100);
-  const m = Math.floor(disponivel / 60);
-  const s = Math.round(disponivel % 60);
-  const tempoStr = m > 0 ? `${m}min ${s > 0 ? s+'s' : ''}`.trim() : `${s}s`;
-  return `${tempoStr} / peça (${efic}% do tempo)`;
+  const mn=parseFloat(meta_hora); const st=parseTempoPeca(tempo_peca_str);
+  if(!mn||mn<=0||!st) return '—';
+  const d=3600/mn; const ef=Math.round((st/d)*100);
+  const m=Math.floor(d/60); const s=Math.round(d%60);
+  return `${m>0?m+'min ':''} ${s>0?s+'s':''} / peça (${ef}% do tempo)`.trim();
 }
 
 async function loadFromAPI() {
   const active = document.activeElement;
-  const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
-  if (isEditing) return;
+  if (active && (active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT')) return;
   try {
-    const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
+    const r = await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
     const d = await r.json();
-    if (d.record && Object.keys(d.record).length > 0) { celulas = d.record; }
-    else { celulas = defaultData; await saveToAPI(celulas); }
-  } catch(e) { celulas = defaultData; }
+    if (d.record && Object.keys(d.record).length>0) celulas=d.record;
+    else { celulas=defaultData; await saveToAPI(celulas); }
+  } catch(e) { celulas=defaultData; }
   renderSidebar();
-  if (!selected) { const keys = Object.keys(celulas).sort(); if (keys.length) { selected = keys[0]; renderDetail(); } }
-  else { renderDetail(); }
+  if (!selected) { const keys=Object.keys(celulas).sort(); if(keys.length){selected=keys[0];renderDetail();} }
+  else renderDetail();
 }
 
 async function saveToAPI(data) {
   try {
-    await fetch(BASE_URL, { method:"PUT", headers: HEADERS_W, body: JSON.stringify(data) });
-    const now = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    document.getElementById("savedLabel").textContent = "salvo " + now;
+    await fetch(BASE_URL,{method:"PUT",headers:HEADERS_W,body:JSON.stringify(data)});
+    const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
-  } catch(e) { showToast("Erro ao salvar", true); }
+  } catch(e){showToast("Erro ao salvar",true);}
 }
 
-function update(key, field, value) { celulas[key][field] = value; saveToAPI(celulas); }
-function updateAndRefreshRitmo(key, field, value) {
-  celulas[key][field] = value; saveToAPI(celulas);
-  const ritmoEl = document.getElementById("ritmoDisplay");
-  if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
+function update(key,field,value){celulas[key][field]=value;saveToAPI(celulas);}
+function updateAndRefreshRitmo(key,field,value){
+  celulas[key][field]=value;saveToAPI(celulas);
+  const el=document.getElementById("ritmoDisplay");
+  if(el) el.value=calcRitmo(celulas[key].meta_hora,celulas[key].tempo_peca);
 }
 
 // ── PRODUÇÃO DIÁRIA ───────────────────────────
-function getChave(key) {
-  const mes = celulas[key].mes_selecionado !== undefined ? celulas[key].mes_selecionado : new Date().getMonth();
-  const ano = celulas[key].ano_selecionado || new Date().getFullYear();
-  return ano + "_" + mes;
+function getChave(key){
+  const mes=celulas[key].mes_selecionado!==undefined?celulas[key].mes_selecionado:new Date().getMonth();
+  const ano=celulas[key].ano_selecionado||new Date().getFullYear();
+  return ano+"_"+mes;
 }
-function updateDia(key, dia, value) {
-  const chave = getChave(key);
-  if (!celulas[key].producao_meses) celulas[key].producao_meses = {};
-  if (!celulas[key].producao_meses[chave]) celulas[key].producao_meses[chave] = {};
-  const val = parseInt(value) || 0;
-  celulas[key].producao_meses[chave][dia] = val;
+function updateDia(key,dia,value){
+  const chave=getChave(key);
+  if(!celulas[key].producao_meses) celulas[key].producao_meses={};
+  if(!celulas[key].producao_meses[chave]) celulas[key].producao_meses[chave]={};
+  const val=parseInt(value)||0;
+  celulas[key].producao_meses[chave][dia]=val;
   saveToAPI(celulas);
-  const dias = celulas[key].producao_meses[chave];
-  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
-  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
-  const totalEl = document.getElementById("prod-total");
-  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR");
-  const inp = document.getElementById("inp-dia-" + dia);
-  if (inp) inp.className = "prod-day-input" + (val > 0 ? " has-value" : "") + (!isAdmin ? " readonly" : "");
-  for (let d = 1; d <= 31; d++) {
-    const bar = document.getElementById("bar-dia-" + d);
-    const v = parseInt(dias[d]) || 0;
-    if (bar) bar.style.width = (maxVal > 0 ? Math.round(v / maxVal * 100) : 0) + "%";
-  }
+  const dias=celulas[key].producao_meses[chave];
+  const total=Object.values(dias).reduce((a,b)=>a+(parseInt(b)||0),0);
+  const maxVal=Math.max(...Object.values(dias).map(v=>parseInt(v)||0),1);
+  const te=document.getElementById("prod-total"); if(te) te.textContent=total.toLocaleString("pt-BR");
+  const inp=document.getElementById("inp-dia-"+dia); if(inp) inp.className="prod-day-input"+(val>0?" has-value":"")+(!isAdmin?" readonly":"");
+  for(let d=1;d<=31;d++){const bar=document.getElementById("bar-dia-"+d);const v=parseInt(dias[d])||0;if(bar)bar.style.width=(maxVal>0?Math.round(v/maxVal*100):0)+"%";}
 }
-function updateMesAno(key, campo, valor) {
-  if (campo === 'mes') celulas[key].mes_selecionado = valor;
-  if (campo === 'ano') celulas[key].ano_selecionado = valor;
+function updateMesAno(key,campo,valor){
+  if(campo==='mes') celulas[key].mes_selecionado=valor;
+  if(campo==='ano') celulas[key].ano_selecionado=valor;
   saveToAPI(celulas); renderProducaoDiaria();
 }
-function renderProducaoDiaria() {
-  const c = celulas[selected];
-  const anoAtual = new Date().getFullYear();
-  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
-  const anoSel = c.ano_selecionado || anoAtual;
-  const chave = anoSel + "_" + mesIdx;
-  const dias = (c.producao_meses && c.producao_meses[chave]) ? c.producao_meses[chave] : {};
-  const hoje = new Date().getDate();
-  const ro = !isAdmin ? 'readonly' : '';
-  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
-  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
-  const diasComValor = Object.values(dias).filter(v => parseInt(v) > 0).length;
-  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  let diasHTML = '';
-  for (let d = 1; d <= 31; d++) {
-    const val = parseInt(dias[d]) || 0;
-    const isHoje = d === hoje && mesIdx === new Date().getMonth() && anoSel === anoAtual;
-    const pct = maxVal > 0 ? Math.round(val / maxVal * 100) : 0;
-    diasHTML += `<div class="prod-day-card ${isHoje ? 'today' : ''}">
+function renderProducaoDiaria(){
+  const c=celulas[selected];
+  const anoAtual=new Date().getFullYear();
+  const mesIdx=c.mes_selecionado!==undefined?c.mes_selecionado:new Date().getMonth();
+  const anoSel=c.ano_selecionado||anoAtual;
+  const chave=anoSel+"_"+mesIdx;
+  const dias=(c.producao_meses&&c.producao_meses[chave])?c.producao_meses[chave]:{};
+  const hoje=new Date().getDate();
+  const ro=!isAdmin?'readonly':'';
+  const total=Object.values(dias).reduce((a,b)=>a+(parseInt(b)||0),0);
+  const maxVal=Math.max(...Object.values(dias).map(v=>parseInt(v)||0),1);
+  const diasComValor=Object.values(dias).filter(v=>parseInt(v)>0).length;
+  let diasHTML='';
+  for(let d=1;d<=31;d++){
+    const val=parseInt(dias[d])||0;
+    const isHoje=d===hoje&&mesIdx===new Date().getMonth()&&anoSel===anoAtual;
+    const pct=maxVal>0?Math.round(val/maxVal*100):0;
+    diasHTML+=`<div class="prod-day-card ${isHoje?'today':''}">
       <div class="prod-day-num">DIA ${d}</div>
       <input id="inp-dia-${d}" type="number" min="0"
-        class="prod-day-input${val > 0 ? ' has-value' : ''}${!isAdmin ? ' readonly' : ''}"
-        value="${val > 0 ? val : ''}" placeholder="0" ${ro}
+        class="prod-day-input${val>0?' has-value':''}${!isAdmin?' readonly':''}"
+        value="${val>0?val:''}" placeholder="0" ${ro}
         onchange="updateDia('${selected}',${d},this.value)">
       <div class="prod-day-bar-wrap"><div id="bar-dia-${d}" class="prod-day-bar" style="width:${pct}%"></div></div>
     </div>`;
   }
-  document.getElementById("mainPanel").innerHTML = `
+  document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
       </div>
-      ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>` : ""}
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <select onchange="updateMesAno('${selected}','mes',+this.value)"
         style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
-        ${meses.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
+        ${MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
       </select>
       <select onchange="updateMesAno('${selected}','ano',+this.value)"
         style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
-        ${[anoAtual-1, anoAtual, anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
+        ${[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
       </select>
     </div>
     <div class="prod-total-box">
@@ -483,7 +474,7 @@ function renderProducaoDiaria() {
       </div>
       <div style="text-align:right">
         <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Média diária</div>
-        <div style="font-size:20px;font-weight:700;color:#3d9eff">${diasComValor > 0 ? Math.round(total / diasComValor).toLocaleString("pt-BR") : '—'}</div>
+        <div style="font-size:20px;font-weight:700;color:#3d9eff">${diasComValor>0?Math.round(total/diasComValor).toLocaleString("pt-BR"):'—'}</div>
       </div>
     </div>
     <div class="prod-day-grid">${diasHTML}</div>
@@ -491,331 +482,340 @@ function renderProducaoDiaria() {
 }
 
 // ── METAS DIÁRIA ──────────────────────────────
-function campoHora(h) { return 'h' + h.replace(':',''); }
+function campoH(h){ return 'h'+h.replace(':',''); }
 
-function updateMetasCell(key, robo, campo, valor, turno) {
-  if (!celulas[key].metas_data) celulas[key].metas_data = {};
-  if (!celulas[key].metas_data[robo]) celulas[key].metas_data[robo] = {};
-  celulas[key].metas_data[robo][campo] = valor;
+function updateMetasCell(key, robo, campo, valor) {
+  const chave = getMetasChave(key);
+  if (!celulas[key].metas_dias) celulas[key].metas_dias = {};
+  if (!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave] = {};
+  if (!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo] = {};
+  celulas[key].metas_dias[chave][robo][campo] = valor;
   saveToAPI(celulas);
 
-  const rd = celulas[key].metas_data[robo];
+  const rd = celulas[key].metas_dias[chave][robo];
   const meta = parseInt(rd.meta) || 0;
 
-  // Recalcula total do turno correspondente
-  if (turno === 'dia') {
-    const totalDia = HORAS_DIA.reduce((s, h) => s + (parseInt(rd[campoHora(h)]) || 0), 0);
-    const el = document.getElementById(`total-dia-${robo}`);
-    if (el) { el.textContent = totalDia > 0 ? totalDia : '—'; el.style.color = totalDia > 0 ? '#00e87a' : '#4a5568'; }
-  } else {
-    const totalNoite = HORAS_NOITE.reduce((s, h) => s + (parseInt(rd[campoHora(h)]) || 0), 0);
-    const el = document.getElementById(`total-noite-${robo}`);
-    if (el) { el.textContent = totalNoite > 0 ? totalNoite : '—'; el.style.color = totalNoite > 0 ? '#a78bfa' : '#4a5568'; }
-  }
+  // Recalcula subtotais
+  const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseInt(rd[campoH(h)])||0),0);
+  const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseInt(rd[campoH(h)])||0),0);
+  const totalG   = subDia + subNoite;
 
-  // Atualiza cor da célula alterada (só campos de hora)
-  if (campo.startsWith('h') && campo.length > 1) {
+  const elD = document.getElementById(`sub-dia-${robo}`);
+  const elN = document.getElementById(`sub-noite-${robo}`);
+  const elT = document.getElementById(`total-g-${robo}`);
+  if(elD){ elD.textContent=subDia>0?subDia:'—'; elD.style.color=subDia>0?'#00e87a':'#4a5568'; }
+  if(elN){ elN.textContent=subNoite>0?subNoite:'—'; elN.style.color=subNoite>0?'#a78bfa':'#4a5568'; }
+  if(elT){ elT.textContent=totalG>0?totalG:'—'; }
+
+  // Reaplica cor na célula editada
+  if (campo.startsWith('h')) {
     const inp = document.getElementById(`inp-${robo}-${campo}`);
-    if (inp) aplicarCorCelula(inp, parseInt(valor) || 0, meta);
+    if (inp) aplicarCor(inp, parseInt(valor)||0, meta);
   }
-
-  // Se mudou a meta, reaplica cor em todas as células desse robô
+  // Se mudou a meta, reaplica em todas
   if (campo === 'meta') {
-    [...HORAS_DIA, ...HORAS_NOITE].forEach(h => {
-      const c = campoHora(h);
-      const inp = document.getElementById(`inp-${robo}-${c}`);
-      if (inp) aplicarCorCelula(inp, parseInt(rd[c]) || 0, parseInt(valor) || 0);
+    [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
+      const c=campoH(h);
+      const inp=document.getElementById(`inp-${robo}-${c}`);
+      if(inp) aplicarCor(inp, parseInt((rd[c])||0), parseInt(valor)||0);
     });
   }
 }
 
-function aplicarCorCelula(inp, val, meta) {
-  inp.classList.remove('cell-ok', 'cell-fail');
-  if (val <= 0) return; // sem valor: sem cor
-  if (meta > 0 && val >= meta) inp.classList.add('cell-ok');
-  else if (meta > 0 && val < meta) inp.classList.add('cell-fail');
-  else inp.classList.add('cell-ok'); // meta não definida: verde se tiver valor
+function aplicarCor(inp, val, meta) {
+  inp.classList.remove('cell-ok','cell-fail');
+  if (val<=0) return;
+  if (meta>0 && val>=meta) inp.classList.add('cell-ok');
+  else if (meta>0 && val<meta) inp.classList.add('cell-fail');
+  else inp.classList.add('cell-ok');
 }
 
-function buildTurnoTable(c, turno) {
-  const data = c.metas_data || {};
+function updateMetasData(key, campo, valor) {
+  celulas[key][campo] = valor;
+  saveToAPI(celulas);
+  renderMetasDiaria();
+}
+
+function buildTurnoTable(c, turno, chave) {
+  const data = (c.metas_dias && c.metas_dias[chave]) ? c.metas_dias[chave] : {};
   const ro = !isAdmin ? 'readonly' : '';
   const HORAS = turno === 'dia' ? HORAS_DIA : HORAS_NOITE;
   const isNoite = turno === 'noite';
   const thClass = isNoite ? 'col-hora-noite' : 'col-hora';
-  const totalId = isNoite ? 'total-noite' : 'total-dia';
-  const totalColor = isNoite ? '#a78bfa' : '#00e87a';
-  const totalBg = isNoite ? '#a78bfa10' : '#00e87a10';
+  const subLabel = isNoite ? 'Sub Noite' : 'Sub Dia';
+  const subClass = isNoite ? 'sub-noite-val' : 'sub-dia-val';
+  const subId    = isNoite ? 'sub-noite' : 'sub-dia';
+  const subColor = isNoite ? '#a78bfa' : '#00e87a';
 
-  const horasHeader = HORAS.map(h => `<th class="${thClass}">${h}</th>`).join('');
+  const horasHeader = HORAS.map(h=>`<th class="${thClass}">${h}</th>`).join('');
 
   const linhas = ROBOS.map(robo => {
-    const rd = data[robo] || {};
+    const rd = (data[robo]) ? data[robo] : {};
     const meta = parseInt(rd.meta) || 0;
-    const cod = rd.cod || '';
+    const cod  = rd.cod || '';
 
     const horasCells = HORAS.map(h => {
-      const campo = campoHora(h);
+      const campo = campoH(h);
       const val = parseInt(rd[campo]) || 0;
-      // Determina classe de cor
-      let cellClass = '';
-      if (val > 0) {
-        if (meta > 0 && val >= meta) cellClass = 'cell-ok';
-        else if (meta > 0 && val < meta) cellClass = 'cell-fail';
-        else cellClass = 'cell-ok';
-      }
-      return `<td>
-        <input id="inp-${robo}-${campo}" type="number" min="0"
-          class="hora-inp${cellClass ? ' ' + cellClass : ''}"
-          value="${val > 0 ? val : ''}" placeholder="—" ${ro}
-          onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value,'${turno}')">
-      </td>`;
+      let cc = '';
+      if (val>0) { if(meta>0&&val>=meta) cc='cell-ok'; else if(meta>0&&val<meta) cc='cell-fail'; else cc='cell-ok'; }
+      return `<td><input id="inp-${robo}-${campo}" type="number" min="0"
+        class="hora-inp${cc?' '+cc:''}"
+        value="${val>0?val:''}" placeholder="—" ${ro}
+        onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
     }).join('');
 
-    const totalRow = HORAS.reduce((s, h) => s + (parseInt(rd[campoHora(h)]) || 0), 0);
+    const sub = HORAS.reduce((s,h)=>s+(parseInt((rd[campoH(h)])||0)),0);
+
+    // Total geral só aparece na linha da tabela noite
+    const totalG = isNoite
+      ? (HORAS_DIA.reduce((s,h)=>s+(parseInt((rd[campoH(h)])||0)),0) + sub)
+      : null;
 
     return `<tr>
       <td class="robo-label">${robo}</td>
-      <td class="meta-val">
-        <input class="meta-inp" type="number" min="0"
-          value="${meta > 0 ? meta : ''}" placeholder="—" ${ro}
-          onchange="updateMetasCell('${selected}',${robo},'meta',this.value,'${turno}');renderMetasDiaria()">
-      </td>
-      <td class="cod-val">
-        <input class="cod-inp" type="text"
-          value="${esc(cod)}" placeholder="—" ${ro}
-          onchange="updateMetasCell('${selected}',${robo},'cod',this.value,'${turno}')">
-      </td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0"
+        value="${meta>0?meta:''}" placeholder="—" ${ro}
+        onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text"
+        value="${esc(cod)}" placeholder="—" ${ro}
+        onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
       ${horasCells}
-      <td id="${totalId}-${robo}" style="color:${totalRow > 0 ? totalColor : '#4a5568'};font-weight:800;font-size:14px;background:${totalBg}">
-        ${totalRow > 0 ? totalRow : '—'}
-      </td>
+      <td id="${subId}-${robo}" class="${subClass}" style="color:${sub>0?subColor:'#4a5568'}">${sub>0?sub:'—'}</td>
+      ${isNoite
+        ? `<td id="total-g-${robo}" class="total-geral-val">${totalG>0?totalG:'—'}</td>`
+        : ''}
     </tr>`;
   }).join('');
 
-  // Rodapé totais por hora
-  const totalPorHora = HORAS.map(h => {
-    const campo = campoHora(h);
-    const soma = ROBOS.reduce((s, robo) => s + (parseInt((data[robo] || {})[campo]) || 0), 0);
-    return `<td style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#ffb30010'}">${soma > 0 ? soma : '—'}</td>`;
+  // Rodapé por hora
+  const rodapeHoras = HORAS.map(h=>{
+    const campo=campoH(h);
+    const soma=ROBOS.reduce((s,r)=>s+(parseInt(((data[r]||{})[campo])||0)),0);
+    return `<td style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:12px;background:${isNoite?'#a78bfa10':'#ffb30010'}">${soma>0?soma:'—'}</td>`;
   }).join('');
 
-  const totalGeral = ROBOS.reduce((sum, robo) =>
-    sum + HORAS.reduce((s, h) => s + (parseInt((data[robo] || {})[campoHora(h)]) || 0), 0), 0);
+  const subTotal = ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseInt(((data[r]||{})[campoH(h)])||0)),0),0);
+  const totalGeral = isNoite
+    ? ROBOS.reduce((sum,r)=>
+        sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseInt(((data[r]||{})[campoH(h)])||0)),0),0)
+    : null;
 
   return `
-    <div class="metas-table-wrap">
-      <table class="metas-table">
-        <thead>
-          <tr>
-            <th class="col-robo">Robô</th>
-            <th class="col-meta">Meta/h</th>
-            <th class="col-cod">Cód. Peça</th>
-            ${horasHeader}
-            <th class="col-total">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${linhas}
-          <tr style="border-top:2px solid #1e2530">
-            <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:11px;background:${isNoite?'#a78bfa08':'#ffb30008'};text-align:right;padding-right:10px">TOTAL / HORA →</td>
-            ${totalPorHora}
-            <td style="color:${totalColor};font-weight:800;font-size:14px;background:${totalBg}">${totalGeral > 0 ? totalGeral.toLocaleString("pt-BR") : '—'}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>`;
+  <div class="metas-table-wrap">
+    <table class="metas-table">
+      <thead>
+        <tr>
+          <th class="col-robo">Robô</th>
+          <th class="col-meta">Meta/h</th>
+          <th class="col-cod">Cód. Peça</th>
+          ${horasHeader}
+          <th class="col-sub" style="color:${subColor}">${subLabel}</th>
+          ${isNoite?`<th class="col-total-geral">Total Geral</th>`:''}
+        </tr>
+      </thead>
+      <tbody>
+        ${linhas}
+        <tr style="border-top:2px solid #1e2530">
+          <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
+          ${rodapeHoras}
+          <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotal>0?subTotal:'—'}</td>
+          ${isNoite?`<td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30015;border-left:2px solid #ffb30040">${totalGeral>0?totalGeral:'—'}</td>`:''}
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 }
 
 function renderMetasDiaria() {
   const c = celulas[selected];
-  const hoje = new Date().toLocaleDateString("pt-BR", { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  const anoAtual = new Date().getFullYear();
+  const ano  = c.metas_ano  || anoAtual;
+  const mes  = c.metas_mes  !== undefined ? c.metas_mes : new Date().getMonth();
+  const dia  = c.metas_dia  || new Date().getDate();
+  const chave = `${ano}_${mes}_${dia}`;
 
-  const data = c.metas_data || {};
-  const totalDia = ROBOS.reduce((sum, robo) =>
-    sum + HORAS_DIA.reduce((s, h) => s + (parseInt((data[robo] || {})[campoHora(h)]) || 0), 0), 0);
-  const totalNoite = ROBOS.reduce((sum, robo) =>
-    sum + HORAS_NOITE.reduce((s, h) => s + (parseInt((data[robo] || {})[campoHora(h)]) || 0), 0), 0);
+  const data = (c.metas_dias && c.metas_dias[chave]) ? c.metas_dias[chave] : {};
+
+  const totalDia   = ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseInt(((data[r]||{})[campoH(h)])||0)),0),0);
+  const totalNoite = ROBOS.reduce((s,r)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseInt(((data[r]||{})[campoH(h)])||0)),0),0);
+  const totalGeral = totalDia + totalNoite;
+
+  // Opções de dia (1-31)
+  const diasOpts = Array.from({length:31},(_,i)=>i+1)
+    .map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
+  const mesesOpts = MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
+  const anosOpts  = [anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
 
   document.getElementById("mainPanel").innerHTML = `
   <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <!-- CABEÇALHO -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">${hoje}</div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700">
-          ☀ Dia: ${totalDia.toLocaleString("pt-BR")}
-        </div>
-        <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:8px;padding:6px 14px;font-size:11px;color:#a78bfa;font-weight:700">
-          🌙 Noite: ${totalNoite.toLocaleString("pt-BR")}
-        </div>
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:8px;padding:6px 14px;font-size:11px;color:#ffb300;font-weight:700">
-          ∑ Total: ${(totalDia + totalNoite).toLocaleString("pt-BR")}
-        </div>
-        ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>` : ""}
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+    </div>
+
+    <!-- SELETOR DE DATA -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:18px">📆</span>
+      <div class="date-sel">
+        <label>Dia</label>
+        <select onchange="updateMetasData('${selected}','metas_dia',+this.value)">${diasOpts}</select>
+      </div>
+      <div class="date-sel">
+        <label>Mês</label>
+        <select onchange="updateMetasData('${selected}','metas_mes',+this.value)">${mesesOpts}</select>
+      </div>
+      <div class="date-sel">
+        <label>Ano</label>
+        <select onchange="updateMetasData('${selected}','metas_ano',+this.value)">${anosOpts}</select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 12px;font-size:11px;color:#00e87a;font-weight:700">☀ ${totalDia.toLocaleString("pt-BR")}</div>
+        <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:6px;padding:5px 12px;font-size:11px;color:#a78bfa;font-weight:700">🌙 ${totalNoite.toLocaleString("pt-BR")}</div>
+        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 12px;font-size:11px;color:#ffb300;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")}</div>
       </div>
     </div>
 
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:8px 12px;margin-bottom:16px;display:flex;gap:20px;font-size:10px;color:#4a5568;letter-spacing:0.1em;flex-wrap:wrap">
-      <span style="color:#00e87a">■</span> Atingiu meta
-      <span style="color:#ff4d4d">■</span> Abaixo da meta
-      <span style="color:#4a5568">—</span> Sem lançamento
+    <!-- LEGENDA -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:7px 14px;margin-bottom:14px;display:flex;gap:18px;font-size:10px;color:#4a5568;letter-spacing:0.1em;flex-wrap:wrap">
+      <span><span style="color:#00e87a">■</span> Atingiu meta</span>
+      <span><span style="color:#ff4d4d">■</span> Abaixo da meta</span>
+      <span><span style="color:#4a5568">—</span> Sem lançamento</span>
     </div>
 
     <!-- TURNO DIA -->
-    <div style="margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <span style="font-size:16px">☀</span>
-        <span style="font-size:13px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
+    <div style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:15px">☀</span>
+        <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
       </div>
-      ${buildTurnoTable(c, 'dia')}
+      ${buildTurnoTable(c,'dia',chave)}
     </div>
 
     <!-- TURNO NOITE -->
-    <div style="margin-top:28px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <span style="font-size:16px">🌙</span>
-        <span style="font-size:13px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
+    <div style="margin-top:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:15px">🌙</span>
+        <span style="font-size:12px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
+        <span style="font-size:10px;color:#4a5568;margin-left:6px">← Total Geral = Sub Dia + Sub Noite</span>
       </div>
-      ${buildTurnoTable(c, 'noite')}
+      ${buildTurnoTable(c,'noite',chave)}
     </div>
   </div>`;
 }
 
-function triggerImgUpload() { if (!isAdmin) return; document.getElementById("imgFileInput").click(); }
-function handleImgUpload(file) {
-  if (!file || !selected) return;
-  const reader = new FileReader();
-  reader.onload = function(e) { celulas[selected].img_peca = e.target.result; saveToAPI(celulas); renderDetail(); };
-  reader.readAsDataURL(file);
+function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
+function handleImgUpload(file){
+  if(!file||!selected)return;
+  const r=new FileReader();
+  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
+  r.readAsDataURL(file);
 }
-function removeImg() { if (!selected) return; celulas[selected].img_peca = ""; saveToAPI(celulas); renderDetail(); }
-function openLightbox(src) { document.getElementById("lightboxImg").src = src; document.getElementById("lightboxEl").classList.add("open"); }
-function closeLightbox() { document.getElementById("lightboxEl").classList.remove("open"); }
+function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
+function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
+function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
 
-function tryLogin() {
-  const pw = document.getElementById("pwInput").value;
-  if (pw === ADMIN_PW) { isAdmin = true; startApp(); }
-  else {
+function tryLogin(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_PW){isAdmin=true;startApp();}
+  else{
     document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display = "block";
-    setTimeout(() => { document.getElementById("pwInput").classList.remove("err"); document.getElementById("loginErr").style.display = "none"; }, 1500);
+    document.getElementById("loginErr").style.display="block";
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
   }
 }
-function startViewer() { isAdmin = false; startApp(); }
-function startApp() {
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("appScreen").style.display = "block";
-  document.getElementById("modeBadge").textContent = isAdmin ? "⚙ Admin" : "👁 Viewer";
-  document.getElementById("modeBadge").className = "badge " + (isAdmin ? "badge-admin" : "badge-viewer");
-  if (isAdmin) { document.getElementById("btnAdd").style.display = "inline-block"; document.getElementById("btnXlsx").style.display = "inline-block"; }
+function startViewer(){isAdmin=false;startApp();}
+function startApp(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+  document.getElementById("modeBadge").textContent=isAdmin?"⚙ Admin":"👁 Viewer";
+  document.getElementById("modeBadge").className="badge "+(isAdmin?"badge-admin":"badge-viewer");
+  if(isAdmin){document.getElementById("btnAdd").style.display="inline-block";document.getElementById("btnXlsx").style.display="inline-block";}
   loadFromAPI();
-  pollTimer = setInterval(loadFromAPI, 6000);
+  pollTimer=setInterval(loadFromAPI,6000);
 }
-function doLogout() {
+function doLogout(){
   clearInterval(pollTimer);
-  document.getElementById("appScreen").style.display = "none";
-  document.getElementById("loginScreen").style.display = "flex";
-  document.getElementById("pwInput").value = "";
-  isAdmin = false; selected = null;
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("pwInput").value="";
+  isAdmin=false;selected=null;
 }
 
-function renderSidebar() {
-  const keys = Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent = "Células (" + keys.length + ")";
-  document.getElementById("sidebarList").innerHTML = keys.map(k => {
-    const c = celulas[k];
-    const s = SC[c.status] || SC["Parado"];
+function renderSidebar(){
+  const keys=Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
+  document.getElementById("sidebarList").innerHTML=keys.map(k=>{
+    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
     return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
       <div class="cell-num">${parseInt(k)}</div>
-      <div class="cell-info">
-        <div class="cell-name">${c.nome}</div>
-        <div class="cell-peca">${c.cliente||c.peca||'—'}</div>
-      </div>
+      <div class="cell-info"><div class="cell-name">${c.nome}</div><div class="cell-peca">${c.cliente||c.peca||'—'}</div></div>
       <div class="dot ${s.dot}"></div>
     </div>`;
   }).join("");
 }
-function selectCell(k) { selected = k; renderSidebar(); renderDetail(); closeSidebar(); }
+function selectCell(k){selected=k;renderSidebar();renderDetail();closeSidebar();}
 
-function openXlsxModal() {
-  xlsxPendingData = null;
-  document.getElementById("xlsxPreview").style.display = "none";
-  document.getElementById("btnConfirmXlsx").style.display = "none";
-  document.getElementById("xlsxFileInput").value = "";
-  document.getElementById("xlsxModalEl").classList.add("open");
-}
-function closeXlsxModal() { document.getElementById("xlsxModalEl").classList.remove("open"); xlsxPendingData = null; }
-function handleXlsxFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
-      if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
-      xlsxPendingData = []; let previewHTML = ""; let found = 0, notFound = 0;
-      dataRows.forEach(row => {
-        let rawKey = String(row[0]).trim().replace(/\D/g, "");
-        const key = rawKey.padStart(2, "0");
-        const ciclos = parseInt(row[1]) || 0;
-        const meta = parseInt(row[2]) || 0;
-        const exists = !!celulas[key];
-        if (exists) found++; else notFound++;
-        xlsxPendingData.push({ key, ciclos, meta, exists });
-        previewHTML += `<div class="xlsx-row">
-          <span class="xlsx-cell-num">C${key}</span>
-          <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
-          <span class="xlsx-val">Meta: <b>${meta}</b></span>
-          <span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span>
-        </div>`;
+function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
+function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
+function handleXlsxFile(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const dataRows=rows.slice(1).filter(r=>r[0]!==""&&r[0]!==undefined);
+      if(dataRows.length===0){showToast("Planilha vazia!",true);return;}
+      xlsxPendingData=[];let previewHTML="";let found=0,notFound=0;
+      dataRows.forEach(row=>{
+        let rawKey=String(row[0]).trim().replace(/\D/g,"");
+        const key=rawKey.padStart(2,"0");
+        const ciclos=parseInt(row[1])||0;const meta=parseInt(row[2])||0;
+        const exists=!!celulas[key];
+        if(exists)found++;else notFound++;
+        xlsxPendingData.push({key,ciclos,meta,exists});
+        previewHTML+=`<div class="xlsx-row"><span class="xlsx-cell-num">C${key}</span><span class="xlsx-val">Ciclos: <b>${ciclos}</b></span><span class="xlsx-val">Meta: <b>${meta}</b></span><span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span></div>`;
       });
-      document.getElementById("xlsxPreviewList").innerHTML = previewHTML;
-      document.getElementById("xlsxSummary").innerHTML =
-        `<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>` +
-        (notFound > 0 ? ` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>` : "");
-      document.getElementById("xlsxPreview").style.display = "block";
-      document.getElementById("btnConfirmXlsx").style.display = found > 0 ? "inline-block" : "none";
-    } catch(err) { showToast("Erro ao ler o arquivo!", true); }
+      document.getElementById("xlsxPreviewList").innerHTML=previewHTML;
+      document.getElementById("xlsxSummary").innerHTML=`<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>`+(notFound>0?` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>`:"");
+      document.getElementById("xlsxPreview").style.display="block";
+      document.getElementById("btnConfirmXlsx").style.display=found>0?"inline-block":"none";
+    }catch(err){showToast("Erro ao ler o arquivo!",true);}
   };
   reader.readAsArrayBuffer(file);
 }
-function confirmXlsxImport() {
-  if (!xlsxPendingData) return;
-  let updated = 0;
-  xlsxPendingData.forEach(({ key, ciclos, meta, exists }) => {
-    if (exists) { celulas[key].ciclos_hoje = ciclos; if (meta > 0) celulas[key].meta_dia = meta; updated++; }
-  });
-  saveToAPI(celulas); closeXlsxModal(); renderSidebar(); renderDetail();
+function confirmXlsxImport(){
+  if(!xlsxPendingData)return;let updated=0;
+  xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
+  saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();
   showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
-function renderArmario() {
-  const c = celulas[selected];
-  const espacos = c.espacos || {};
-  const ro = !isAdmin ? 'readonly' : '';
-  let espacosHTML = '';
-  for (let i = 1; i <= 18; i++) {
-    const e = espacos[i] || { gabarito: '—', status: 'Livre' };
-    const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
-    const statusBg   = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
-    const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
-    espacosHTML += `
+function renderArmario(){
+  const c=celulas[selected];const espacos=c.espacos||{};const ro=!isAdmin?'readonly':'';
+  let espacosHTML='';
+  for(let i=1;i<=18;i++){
+    const e=espacos[i]||{gabarito:'—',status:'Livre'};
+    const sc=e.status==='Ocupado'?'#00e87a':e.status==='Manutenção'?'#ffb300':'#4a5568';
+    const sb=e.status==='Ocupado'?'#00e87a15':e.status==='Manutenção'?'#ffb30015':'#ffffff05';
+    const gv=e.gabarito&&e.gabarito!=='—'?esc(e.gabarito):'';
+    espacosHTML+=`
       <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
-        style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;transition:outline 0.2s">
+        style="background:${sb};border:1px solid ${sc}40;border-radius:12px;padding:14px 16px">
         <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
-            ${gabValor ? `<span style="font-size:12px;color:${statusColor};font-weight:700;background:${statusBg};border:1px solid ${statusColor}40;border-radius:5px;padding:2px 8px">${gabValor}</span>` : ''}
+            ${gv?`<span style="font-size:12px;color:${sc};font-weight:700;background:${sb};border:1px solid ${sc}40;border-radius:5px;padding:2px 8px">${gv}</span>`:''}
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
-              style="background:#0f1318;border:1px solid ${statusColor}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${statusColor};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
+              style="background:#0f1318;border:1px solid ${sc}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${sc};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
               <option ${e.status==='Livre'?'selected':''}>Livre</option>
               <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
               <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
@@ -825,8 +825,7 @@ function renderArmario() {
         </div>
         <div id="gab-${i}" class="arm-gabarito">
           <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
-          <input value="${esc(e.gabarito||'')}" ${ro}
-            placeholder="Digite o gabarito..."
+          <input value="${esc(e.gabarito||'')}" ${ro} placeholder="Digite o gabarito..."
             onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
             style="background:transparent;border:1px solid #1e2530;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:16px;color:#00e87a;font-weight:700;width:100%;outline:none"
             onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
@@ -834,7 +833,7 @@ function renderArmario() {
         </div>
       </div>`;
   }
-  document.getElementById("mainPanel").innerHTML = `
+  document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
@@ -860,40 +859,36 @@ function renderArmario() {
   </div>`;
 }
 
-function updateEspaco(key, num, field, value) {
-  if (!celulas[key].espacos) celulas[key].espacos = {};
-  if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', status: 'Livre' };
-  celulas[key].espacos[num][field] = value;
+function updateEspaco(key,num,field,value){
+  if(!celulas[key].espacos) celulas[key].espacos={};
+  if(!celulas[key].espacos[num]) celulas[key].espacos[num]={gabarito:'—',status:'Livre'};
+  celulas[key].espacos[num][field]=value;
   saveToAPI(celulas);
-  if (field === 'status') renderArmario();
+  if(field==='status') renderArmario();
 }
 
-function renderDetail() {
-  if (!selected || !celulas[selected]) return;
-  const nomeCell = (celulas[selected].nome || '').toLowerCase();
-  if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) { renderArmario(); return; }
-  if (nomeCell.includes('produ') && nomeCell.includes('di')) { renderProducaoDiaria(); return; }
-  if (nomeCell.includes('meta') && nomeCell.includes('di')) { renderMetasDiaria(); return; }
+function renderDetail(){
+  if(!selected||!celulas[selected]) return;
+  const nomeCell=(celulas[selected].nome||'').toLowerCase();
+  if(nomeCell.includes('armario')||nomeCell.includes('armário')||nomeCell.includes('gabarito')){renderArmario();return;}
+  if(nomeCell.includes('produ')&&nomeCell.includes('di')){renderProducaoDiaria();return;}
+  if(nomeCell.includes('meta')&&nomeCell.includes('di')){renderMetasDiaria();return;}
 
-  const c = celulas[selected];
-  const s = SC[c.status] || SC["Parado"];
-  const ro = !isAdmin ? 'readonly' : '';
-  const statusOpts = ["Produzindo","Manutenção","Aguardando","Parado"]
-    .map(st => `<option ${st===c.status?"selected":""}>${st}</option>`).join("");
-  const alertsHTML = (c.alertas||[]).map((a,i) => `
+  const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
+  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+  const alertsHTML=(c.alertas||[]).map((a,i)=>`
     <div class="alert-item">
       <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
       ${isAdmin?`<button class="btn-x" onclick="delAlert('${selected}',${i})">✕</button>`:""}
     </div>`).join("");
+  const ritmo=calcRitmo(c.meta_hora,c.tempo_peca);
+  const imgSrc=c.img_peca||"";
+  const imgBlock=imgSrc
+    ?`<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
+      ${isAdmin?`<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button></div>`:''}`
+    :`<div class="img-placeholder">${isAdmin?'📷<br>Clique para<br>enviar':'—'}</div>`;
 
-  const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
-  const imgSrc = c.img_peca || "";
-  const imgBlock = imgSrc
-    ? `<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
-       ${isAdmin ? `<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button></div>` : ''}`
-    : `<div class="img-placeholder">${isAdmin ? '📷<br>Clique para<br>enviar' : '—'}</div>`;
-
-  document.getElementById("mainPanel").innerHTML = `
+  document.getElementById("mainPanel").innerHTML=`
   <div>
     <div class="detail-hdr">
       <div>
@@ -904,21 +899,18 @@ function renderDetail() {
         <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
           <div class="dot ${s.dot}"></div>
           ${isAdmin
-            ? `<select onchange="update('${selected}','status',this.value);renderDetail()" style="background:transparent;border:none;color:${s.text};font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;cursor:pointer;outline:none">${statusOpts}</select>`
-            : `<span style="font-size:12px;font-weight:700;color:${s.text};letter-spacing:0.08em">${c.status.toUpperCase()}</span>`
-          }
+            ?`<select onchange="update('${selected}','status',this.value);renderDetail()" style="background:transparent;border:none;color:${s.text};font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;cursor:pointer;outline:none">${statusOpts}</select>`
+            :`<span style="font-size:12px;font-weight:700;color:${s.text};letter-spacing:0.08em">${c.status.toUpperCase()}</span>`}
         </div>
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Peça em Produção</div>
       <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
         <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
         <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
-        <div class="field">
-          <label>Imagem da peça</label>
+        <div class="field"><label>Imagem da peça</label>
           <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
         </div>
       </div>
@@ -926,7 +918,6 @@ function renderDetail() {
         <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Eletrodo</div>
       <div class="grid2">
@@ -935,7 +926,6 @@ function renderDetail() {
         <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Parâmetros de Soldagem</div>
       <div class="grid4">
@@ -945,7 +935,6 @@ function renderDetail() {
         <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Responsável Técnico</div>
       <div class="grid2">
@@ -954,7 +943,6 @@ function renderDetail() {
         <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Membros da Equipe</div>
       <div class="grid2">
@@ -964,7 +952,6 @@ function renderDetail() {
         <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
       </div>
     </div>
-
     <div class="section">
       <div class="sec-title">◈ Meta por Hora</div>
       <div class="grid2">
@@ -972,23 +959,20 @@ function renderDetail() {
         <div class="field"><label>📊 Ritmo por peça / hora</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#00e87a;font-weight:700"></div>
       </div>
     </div>
-
     <div class="section">
-      <div class="sec-title">⚠ Alertas
-        ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}
-      </div>
-      ${alertsHTML || '<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
+      <div class="sec-title">⚠ Alertas ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}</div>
+      ${alertsHTML||'<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
     </div>
   </div>`;
 }
 
-function updAlert(k,i,v){ celulas[k].alertas[i]=v; saveToAPI(celulas); }
-function delAlert(k,i){ celulas[k].alertas.splice(i,1); saveToAPI(celulas); renderDetail(); }
-function addAlert(k){ celulas[k].alertas.push("Novo alerta"); saveToAPI(celulas); renderDetail(); }
-function deleteCell(k){ if(!confirm("Excluir "+celulas[k].nome+"?"))return; delete celulas[k]; saveToAPI(celulas); selected=Object.keys(celulas).sort()[0]||null; renderSidebar(); renderDetail(); }
+function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
+function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
+function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
+function deleteCell(k){if(!confirm("Excluir "+celulas[k].nome+"?"))return;delete celulas[k];saveToAPI(celulas);selected=Object.keys(celulas).sort()[0]||null;renderSidebar();renderDetail();}
 
-function openModal(){ document.getElementById("modalEl").classList.add("open"); document.getElementById("mNum").focus(); }
-function closeModal(){ document.getElementById("modalEl").classList.remove("open"); document.getElementById("mNum").value=""; document.getElementById("mNome").value=""; }
+function openModal(){document.getElementById("modalEl").classList.add("open");document.getElementById("mNum").focus();}
+function closeModal(){document.getElementById("modalEl").classList.remove("open");document.getElementById("mNum").value="";document.getElementById("mNome").value="";}
 function createCell(){
   const n=document.getElementById("mNum").value.trim();
   const nm=document.getElementById("mNome").value.trim();
@@ -996,23 +980,20 @@ function createCell(){
   const k=String(n).padStart(2,"0");
   if(celulas[k]){showToast("Célula já existe!",true);return;}
   celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
-  saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
+  saveToAPI(celulas);closeModal();selected=k;renderSidebar();renderDetail();
 }
 
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
-function showToast(msg, err=false){
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function showToast(msg,err=false){
   const t=document.getElementById("toastEl");
-  t.textContent=msg; t.className="toast "+(err?"error":"ok");
-  void t.offsetWidth; t.classList.add("show");
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
+  t.textContent=msg;t.className="toast "+(err?"error":"ok");
+  void t.offsetWidth;t.classList.add("show");
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); closeSidebar(); }
-});
-document.getElementById("modalEl").addEventListener("click", closeModal);
-document.getElementById("xlsxModalEl").addEventListener("click", closeXlsxModal);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();}});
+document.getElementById("modalEl").addEventListener("click",closeModal);
+document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
 </script>
 </body>
 </html>
