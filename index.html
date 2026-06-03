@@ -4,313 +4,333 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Células Robóticas</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospace; min-height: 100vh; }
+body { background: #f0f2f5; color: #1a1d23; font-family: 'Inter', sans-serif; min-height: 100vh; }
 
+/* ── TOPBAR ── */
 .topbar {
-  background: #0f1318; border-bottom: 1px solid #1e2530;
-  height: 52px; padding: 0 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 100;
+ background: #fff;
+ border-bottom: 1px solid #e5e7eb;
+ height: 56px; padding: 0 20px;
+ display: flex; align-items: center; justify-content: space-between;
+ position: sticky; top: 0; z-index: 100;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
-.brand { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.1em; }
-.brand span { color: #00e87a; }
-.badge { font-size: 10px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.1em; text-transform: uppercase; }
-.badge-admin { background: #00e87a20; border: 1px solid #00e87a40; color: #00e87a; }
-.badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
+.brand { font-size: 15px; font-weight: 800; color: #111; letter-spacing: 0.02em; display: flex; align-items: center; gap: 8px; }
+.brand-dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; }
+.brand span { color: #16a34a; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 600; letter-spacing: 0.04em; }
+.badge-admin { background: #dcfce7; color: #15803d; }
+.badge-viewer { background: #dbeafe; color: #1d4ed8; }
 
-.layout { display: flex; height: calc(100vh - 52px); }
+/* ── LAYOUT ── */
+.layout { display: flex; height: calc(100vh - 56px); }
 
+/* ── SIDEBAR ── */
 .sidebar {
-  width: 200px; background: #0f1318;
-  border-right: 1px solid #1e2530;
-  overflow-y: auto; flex-shrink: 0;
-  transition: transform 0.25s;
+ width: 220px; background: #fff;
+ border-right: 1px solid #e5e7eb;
+ overflow-y: auto; flex-shrink: 0;
+ transition: transform 0.25s;
 }
 .sidebar-hdr {
-  padding: 10px 14px; font-size: 10px; color: #4a5568;
-  text-transform: uppercase; letter-spacing: 0.15em;
-  border-bottom: 1px solid #1e2530;
-  display: flex; justify-content: space-between; align-items: center;
+ padding: 14px 16px; font-size: 11px; color: #9ca3af;
+ text-transform: uppercase; letter-spacing: 0.12em;
+ border-bottom: 1px solid #f3f4f6;
+ display: flex; justify-content: space-between; align-items: center;
+ font-weight: 600;
 }
 .cell-item {
-  padding: 11px 14px; border-bottom: 1px solid #1e2530;
-  cursor: pointer; display: flex; align-items: center; gap: 8px;
-  border-left: 3px solid transparent; transition: all 0.15s;
+ padding: 12px 16px; border-bottom: 1px solid #f3f4f6;
+ cursor: pointer; display: flex; align-items: center; gap: 10px;
+ border-left: 3px solid transparent; transition: all 0.12s;
 }
-.cell-item:hover { background: #ffffff06; }
-.cell-item.active { background: #00e87a08; border-left-color: #00e87a; }
-.cell-num { font-size: 18px; font-weight: 800; color: #fff; min-width: 26px; }
+.cell-item:hover { background: #f9fafb; }
+.cell-item.active { background: #f0fdf4; border-left-color: #16a34a; }
+.cell-num { font-size: 16px; font-weight: 800; color: #111; min-width: 26px; }
 .cell-info { flex: 1; min-width: 0; }
-.cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cell-peca { font-size: 10px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.cell-name { font-size: 12px; font-weight: 600; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-peca { font-size: 11px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-green { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
-.dot-amber { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
-.dot-blue  { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
-.dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
-.dot-gray  { background: #4a5568; }
+.dot-green { background: #16a34a; }
+.dot-amber { background: #d97706; }
+.dot-blue  { background: #2563eb; }
+.dot-red   { background: #dc2626; }
+.dot-gray  { background: #9ca3af; }
 
-.btn-menu {
-  display: none;
-  background: none; border: none; color: #d8dde6;
-  font-size: 22px; cursor: pointer; padding: 4px 8px;
-  line-height: 1;
-}
-.sidebar-overlay {
-  display: none;
-  position: fixed; inset: 0; background: #000000aa;
-  z-index: 149;
-}
+/* ── MENU MOBILE ── */
+.btn-menu { display: none; background: none; border: none; color: #374151; font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 149; }
 .sidebar-overlay.open { display: block; }
 
-.main { flex: 1; overflow-y: auto; padding: 20px; }
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; padding: 24px; background: #f0f2f5; }
 
-.section { background: #0f1318; border: 1px solid #1e2530; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; }
+/* ── SECTIONS ── */
+.section {
+ background: #fff; border: 1px solid #e5e7eb;
+ border-radius: 12px; padding: 20px 22px; margin-bottom: 16px;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
 .sec-title {
-  font-size: 10px; color: #4a5568; text-transform: uppercase;
-  letter-spacing: 0.15em; margin-bottom: 12px; padding-bottom: 8px;
-  border-bottom: 1px solid #1e2530;
-  display: flex; justify-content: space-between; align-items: center;
+ font-size: 11px; color: #6b7280; text-transform: uppercase;
+ letter-spacing: 0.12em; margin-bottom: 16px; padding-bottom: 10px;
+ border-bottom: 1px solid #f3f4f6;
+ display: flex; justify-content: space-between; align-items: center;
+ font-weight: 700;
 }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 4px; }
-.field label { font-size: 13px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── GRIDS ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+
+/* ── FIELDS ── */
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
 .field input, .field select {
-  background: transparent; border: 1px solid transparent;
-  border-radius: 6px; padding: 8px 10px;
-  font-family: 'Courier New', monospace; font-size: 20px; color: #d8dde6;
-  width: 100%; transition: all 0.15s;
+ background: #f9fafb; border: 1.5px solid #e5e7eb;
+ border-radius: 8px; padding: 9px 12px;
+ font-family: 'Inter', sans-serif; font-size: 16px; color: #111;
+ width: 100%; transition: all 0.15s; font-weight: 500;
 }
-.field input:focus, .field select:focus { outline: none; border-color: #00e87a; background: #00e87a08; color: #fff; }
-.field input[readonly] { cursor: default; color: #6b7280; }
-.field input.green { color: #00e87a; font-weight: 700; }
-.field select { background: #0f1318; cursor: pointer; }
+.field input:focus, .field select:focus {
+ outline: none; border-color: #16a34a; background: #fff;
+ box-shadow: 0 0 0 3px rgba(22,163,74,0.08);
+}
+.field input[readonly] { cursor: default; color: #6b7280; background: #f3f4f6; border-color: #f3f4f6; }
+.field input.green { color: #15803d; font-weight: 700; }
+.field select { background: #f9fafb; cursor: pointer; }
 
+/* ── ALERTS ── */
 .alert-item {
-  display: flex; align-items: center; gap: 8px;
-  background: #ffb30010; border: 1px solid #ffb30025;
-  border-radius: 6px; padding: 7px 10px; margin-bottom: 7px;
+ display: flex; align-items: center; gap: 8px;
+ background: #fffbeb; border: 1px solid #fde68a;
+ border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;
 }
-.alert-item input { flex: 1; background: transparent; border: none; font-family: 'Courier New', monospace; font-size: 20px; color: #ffd166; outline: none; }
-.alert-item input[readonly] { color: #b8960a; cursor: default; }
-.btn-x { background: none; border: none; color: #4a5568; cursor: pointer; font-size: 13px; padding: 2px 6px; }
-.btn-x:hover { color: #ff4d4d; }
+.alert-item input { flex: 1; background: transparent; border: none; font-family: 'Inter', sans-serif; font-size: 14px; color: #92400e; outline: none; font-weight: 500; }
+.alert-item input[readonly] { color: #b45309; cursor: default; }
+.btn-x { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.btn-x:hover { color: #dc2626; }
 
-.btn { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.08em; padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
-.btn:hover { filter: brightness(1.2); }
-.btn-green { background: #00e87a; color: #000; font-weight: 800; }
-.btn-gray { background: #1e2530; color: #d8dde6; border: 1px solid #2e3b4e; }
-.btn-red { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d30; }
-.btn-blue { background: #3d9eff20; color: #3d9eff; border: 1px solid #3d9eff40; }
+/* ── BUTTONS ── */
+.btn { font-family: 'Inter', sans-serif; font-size: 12px; letter-spacing: 0.03em; padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.15s; }
+.btn:hover { filter: brightness(0.95); }
+.btn-green { background: #16a34a; color: #fff; }
+.btn-gray { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.btn-red { background: #fff; color: #dc2626; border: 1px solid #fecaca; }
+.btn-blue { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 
-.detail-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
-.detail-title { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: 0.04em; }
-.detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
-.status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
+/* ── DETAIL HEADER ── */
+.detail-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.detail-title { font-size: 22px; font-weight: 800; color: #111; }
+.detail-sub { font-size: 12px; color: #6b7280; margin-top: 4px; font-weight: 500; }
+.status-badge { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 10px; }
 
+/* ── IMG UPLOAD ── */
 .img-upload-box {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border: 2px dashed #1e2530; border-radius: 8px;
-  transition: all 0.2s; overflow: hidden; position: relative;
-  background: #080b0f; width: 100%; height: 90px;
+ display: flex; flex-direction: column; align-items: center; justify-content: center;
+ border: 2px dashed #d1d5db; border-radius: 10px;
+ transition: all 0.2s; overflow: hidden; position: relative;
+ background: #f9fafb; width: 100%; height: 90px;
 }
-.img-upload-box:hover { border-color: #00e87a40; }
+.img-upload-box:hover { border-color: #16a34a; background: #f0fdf4; }
 .img-upload-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.img-upload-box .img-placeholder { font-size: 10px; color: #2a3040; text-align: center; padding: 8px; line-height: 1.6; }
-.img-upload-box .img-overlay {
-  position: absolute; inset: 0; background: #000000cc;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity 0.2s; gap: 4px;
-}
+.img-upload-box .img-placeholder { font-size: 11px; color: #9ca3af; text-align: center; padding: 10px; line-height: 1.6; }
+.img-upload-box .img-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; gap: 6px; }
 .img-upload-box:hover .img-overlay { opacity: 1; }
-.img-overlay span { font-size: 10px; color: #fff; letter-spacing: 0.06em; }
+.img-overlay span { font-size: 11px; color: #fff; }
 
-.lightbox {
-  position: fixed; inset: 0; background: #000000ee;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out;
-}
+/* ── LIGHTBOX ── */
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out; }
 .lightbox.open { opacity: 1; pointer-events: all; }
-.lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 8px; box-shadow: 0 0 60px #00000080; transform: scale(0.95); transition: transform 0.2s; }
+.lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 10px; transform: scale(0.95); transition: transform 0.2s; }
 .lightbox.open img { transform: scale(1); }
-.lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.7; font-family: 'Courier New', monospace; }
-.lightbox-close:hover { opacity: 1; }
+.lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.8; font-family: 'Inter', sans-serif; }
 
-.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
-.login-icon { font-size: 38px; margin-bottom: 8px; }
-.login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; }
-.login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
-.login-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 11px 14px; font-family: 'Courier New', monospace; font-size: 14px; color: #d8dde6; text-align: center; letter-spacing: 0.15em; margin-bottom: 10px; outline: none; transition: all 0.2s; }
-.login-input:focus { border-color: #00e87a; color: #fff; }
-.login-input.err { border-color: #ff4d4d60; color: #ff8888; }
-.login-err { color: #ff6b6b; font-size: 12px; margin-bottom: 8px; }
-.login-btn-main { width: 100%; background: #00e87a; color: #000; border: none; border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; cursor: pointer; margin-bottom: 8px; text-transform: uppercase; }
-.login-btn-sec { width: 100%; background: transparent; color: #4a5568; border: 1px solid #1e2530; border-radius: 8px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; letter-spacing: 0.06em; }
-.login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
+/* ── LOGIN ── */
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: #f0f2f5; }
+.login-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 40px 32px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+.login-icon { font-size: 40px; margin-bottom: 10px; }
+.login-title { font-size: 22px; font-weight: 800; color: #111; margin-bottom: 4px; }
+.login-sub { font-size: 12px; color: #9ca3af; letter-spacing: 0.08em; margin-bottom: 28px; text-transform: uppercase; font-weight: 600; }
+.login-input { width: 100%; background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 16px; font-family: 'Inter', sans-serif; font-size: 15px; color: #111; text-align: center; margin-bottom: 10px; outline: none; transition: all 0.2s; font-weight: 500; }
+.login-input:focus { border-color: #16a34a; background: #fff; box-shadow: 0 0 0 3px rgba(22,163,74,0.08); }
+.login-input.err { border-color: #fca5a5; background: #fff5f5; }
+.login-err { color: #dc2626; font-size: 12px; margin-bottom: 8px; font-weight: 500; }
+.login-btn-main { width: 100%; background: #16a34a; color: #fff; border: none; border-radius: 10px; padding: 13px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 8px; letter-spacing: 0.04em; transition: background 0.15s; }
+.login-btn-main:hover { background: #15803d; }
+.login-btn-sec { width: 100%; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; padding: 11px; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; font-weight: 600; transition: background 0.15s; }
+.login-btn-sec:hover { background: #e5e7eb; }
+.login-hint { margin-top: 20px; font-size: 11px; color: #d1d5db; font-weight: 500; }
 
-.overlay { position: fixed; inset: 0; background: #000000bb; display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+/* ── MODAL ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .overlay.open { opacity: 1; pointer-events: all; }
-.modal { background: #0f1318; border: 1px solid #1e2530; border-radius: 12px; padding: 26px; width: 360px; max-width: 95vw; }
-.modal-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 18px; letter-spacing: 0.06em; }
-.modal-field { margin-bottom: 12px; }
-.modal-field label { display: block; font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-.modal-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 6px; padding: 8px 10px; font-family: 'Courier New', monospace; font-size: 13px; color: #d8dde6; outline: none; }
-.modal-input:focus { border-color: #00e87a; color: #fff; }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+.modal { background: #fff; border-radius: 16px; padding: 28px; width: 380px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+.modal-title { font-size: 18px; font-weight: 800; color: #111; margin-bottom: 20px; }
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; font-weight: 700; }
+.modal-input { width: 100%; background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 14px; color: #111; outline: none; font-weight: 500; }
+.modal-input:focus { border-color: #16a34a; background: #fff; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 
-.xlsx-preview { background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 12px; margin-top: 12px; max-height: 220px; overflow-y: auto; font-size: 11px; }
-.xlsx-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1e2530; align-items: center; }
+/* ── XLSX ── */
+.xlsx-preview { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-top: 12px; max-height: 220px; overflow-y: auto; font-size: 12px; }
+.xlsx-row { display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px solid #f3f4f6; align-items: center; }
 .xlsx-row:last-child { border-bottom: none; }
-.xlsx-cell-num { color: #00e87a; font-weight: 800; min-width: 30px; }
-.xlsx-val { color: #d8dde6; }
-.xlsx-found { color: #00e87a; font-size: 10px; }
-.xlsx-notfound { color: #ff4d4d; font-size: 10px; }
+.xlsx-cell-num { color: #16a34a; font-weight: 700; min-width: 30px; }
+.xlsx-val { color: #374151; font-weight: 500; }
+.xlsx-found { color: #16a34a; font-size: 11px; font-weight: 600; }
+.xlsx-notfound { color: #dc2626; font-size: 11px; font-weight: 600; }
 
-.toast { position: fixed; bottom: 20px; right: 20px; padding: 10px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; }
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; right: 24px; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; font-family: 'Inter', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .toast.show { opacity: 1; transform: translateY(0); }
-.toast.ok { background: #00e87a; color: #000; }
-.toast.error { background: #ff4d4d; color: #fff; }
+.toast.ok { background: #16a34a; color: #fff; }
+.toast.error { background: #dc2626; color: #fff; }
 
-.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
-.empty-icon { font-size: 40px; }
+/* ── EMPTY ── */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #d1d5db; gap: 12px; }
+.empty-icon { font-size: 44px; }
+.empty p { font-size: 14px; font-weight: 500; }
 
+/* ── ARMÁRIO ── */
 .arm-gabarito { overflow: hidden; max-height: 0; transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease; opacity: 0; margin-top: 0; }
 .arm-gabarito.open { max-height: 80px; opacity: 1; margin-top: 10px; }
-.arm-highlight { outline: 2px solid #00e87a; background: #00e87a08 !important; }
+.arm-highlight { outline: 2px solid #16a34a !important; background: #f0fdf4 !important; }
 
+/* ── PRODUÇÃO DIÁRIA ── */
 .prod-day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-.prod-day-card { background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color 0.15s; }
-.prod-day-card:hover { border-color: #2e3b4e; }
-.prod-day-card.today { border-color: #00e87a60; background: #00e87a08; }
-.prod-day-num { font-size: 11px; color: #4a5568; font-weight: 700; letter-spacing: 0.1em; }
-.prod-day-card.today .prod-day-num { color: #00e87a; }
-.prod-day-input { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #d8dde6; text-align: center; width: 100%; padding: 2px 0; transition: color 0.15s; }
-.prod-day-input:focus { color: #00e87a; }
-.prod-day-input[readonly] { cursor: default; color: #4a5568; }
-.prod-day-input.has-value { color: #00e87a; }
-.prod-day-bar-wrap { width: 100%; height: 4px; background: #1e2530; border-radius: 99px; overflow: hidden; }
-.prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; transition: width 0.4s; }
-.prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.prod-day-card { background: #f9fafb; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.15s; }
+.prod-day-card:hover { border-color: #d1d5db; background: #fff; }
+.prod-day-card.today { border-color: #16a34a; background: #f0fdf4; }
+.prod-day-num { font-size: 10px; color: #9ca3af; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.prod-day-card.today .prod-day-num { color: #16a34a; }
+.prod-day-input { background: transparent; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; color: #374151; text-align: center; width: 100%; padding: 2px 0; transition: color 0.15s; }
+.prod-day-input:focus { color: #15803d; }
+.prod-day-input[readonly] { cursor: default; color: #d1d5db; }
+.prod-day-input.has-value { color: #15803d; }
+.prod-day-bar-wrap { width: 100%; height: 3px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+.prod-day-bar { height: 100%; border-radius: 99px; background: #16a34a; transition: width 0.4s; }
+.prod-total-box { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
 
 @media (max-width: 700px) {
-  .btn-menu { display: block; }
-  .sidebar { position: fixed; top: 52px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .main { padding: 12px; width: 100%; }
-  .grid2 { grid-template-columns: 1fr; }
-  .grid3 { grid-template-columns: 1fr; }
-  .grid4 { grid-template-columns: 1fr 1fr; }
-  .peca-grid { grid-template-columns: 1fr !important; }
-  .detail-title { font-size: 18px; }
-  #savedLabel { display: none; }
-  .prod-day-grid { grid-template-columns: repeat(4, 1fr); }
+ .btn-menu { display: block; }
+ .sidebar { position: fixed; top: 56px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); box-shadow: 4px 0 16px rgba(0,0,0,0.1); }
+ .sidebar.open { transform: translateX(0); }
+ .main { padding: 14px; width: 100%; }
+ .grid2 { grid-template-columns: 1fr; }
+ .grid3 { grid-template-columns: 1fr; }
+ .grid4 { grid-template-columns: 1fr 1fr; }
+ .peca-grid { grid-template-columns: 1fr !important; }
+ .detail-title { font-size: 18px; }
+ #savedLabel { display: none; }
+ .prod-day-grid { grid-template-columns: repeat(4, 1fr); }
 }
 </style>
 </head>
 <body>
 
 <div class="login-wrap" id="loginScreen">
-  <div class="login-box">
-    <div class="login-icon">⬡</div>
-    <div class="login-title">CÉLULAS ROBÓTICAS</div>
-    <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
-    <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-    <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
-    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
-    <div class="login-hint">Senha padrão: admin123</div>
-  </div>
+ <div class="login-box">
+   <div class="login-icon">⬡</div>
+   <div class="login-title">Células Robóticas</div>
+   <div class="login-sub">Monitor Industrial</div>
+   <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
+   <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
+   <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
+   <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
+   <div class="login-hint">Senha padrão: admin123</div>
+ </div>
 </div>
 
 <div id="appScreen" style="display:none">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
-      <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
-      <span class="badge" id="modeBadge"></span>
-      <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
-      <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
-    </div>
-  </div>
+ <div class="topbar">
+   <div style="display:flex;align-items:center;gap:10px">
+     <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
+     <div class="brand"><div class="brand-dot"></div>Células <span>Robóticas</span></div>
+   </div>
+   <div style="display:flex;align-items:center;gap:10px">
+     <span id="savedLabel" style="font-size:11px;color:#9ca3af;font-weight:500"></span>
+     <span class="badge" id="modeBadge"></span>
+     <button id="btnXlsx" class="btn btn-blue" style="padding:6px 12px;font-size:11px;display:none" onclick="openXlsxModal()">📊 Excel</button>
+     <button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="doLogout()">Sair</button>
+   </div>
+ </div>
 
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+ <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <div class="layout">
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-hdr">
-        <span id="cellCount">Células</span>
-        <button id="btnAdd" class="btn btn-green" style="padding:2px 8px;font-size:13px;display:none" onclick="openModal()">+</button>
-      </div>
-      <div id="sidebarList"></div>
-    </div>
-    <div class="main" id="mainPanel">
-      <div class="empty"><div class="empty-icon">⬡</div><div>Selecione uma célula</div></div>
-    </div>
-  </div>
+ <div class="layout">
+   <div class="sidebar" id="sidebar">
+     <div class="sidebar-hdr">
+       <span id="cellCount">Células</span>
+       <button id="btnAdd" class="btn btn-green" style="padding:3px 10px;font-size:12px;display:none" onclick="openModal()">+</button>
+     </div>
+     <div id="sidebarList"></div>
+   </div>
+   <div class="main" id="mainPanel">
+     <div class="empty"><div class="empty-icon">⬡</div><p>Selecione uma célula</p></div>
+   </div>
+ </div>
 </div>
 
 <div class="overlay" id="modalEl">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title">Nova Célula</div>
-    <div class="modal-field">
-      <label>Número</label>
-      <input class="modal-input" id="mNum" type="number" placeholder="Ex: 4" onkeydown="if(event.key==='Enter')createCell()">
-    </div>
-    <div class="modal-field">
-      <label>Nome</label>
-      <input class="modal-input" id="mNome" placeholder="Ex: Célula Robótica 04" onkeydown="if(event.key==='Enter')createCell()">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-green" onclick="createCell()">Criar</button>
-    </div>
-  </div>
+ <div class="modal" onclick="event.stopPropagation()">
+   <div class="modal-title">Nova Célula</div>
+   <div class="modal-field">
+     <label>Número</label>
+     <input class="modal-input" id="mNum" type="number" placeholder="Ex: 4" onkeydown="if(event.key==='Enter')createCell()">
+   </div>
+   <div class="modal-field">
+     <label>Nome</label>
+     <input class="modal-input" id="mNome" placeholder="Ex: Célula Robótica 04" onkeydown="if(event.key==='Enter')createCell()">
+   </div>
+   <div class="modal-actions">
+     <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
+     <button class="btn btn-green" onclick="createCell()">Criar</button>
+   </div>
+ </div>
 </div>
 
 <div class="overlay" id="xlsxModalEl">
-  <div class="modal" style="width:460px" onclick="event.stopPropagation()">
-    <div class="modal-title">📊 Importar Produção do Excel</div>
-    <div style="font-size:11px;color:#4a5568;margin-bottom:14px;line-height:1.6">
-      A planilha deve ter as colunas nessa ordem:<br>
-      <span style="color:#00e87a">Célula</span> · <span style="color:#00e87a">Ciclos Hoje</span> · <span style="color:#00e87a">Meta Dia</span><br>
-      <span style="color:#2a3040">A primeira linha é ignorada (cabeçalho)</span>
-    </div>
-    <div style="border:2px dashed #1e2530;border-radius:8px;padding:20px;text-align:center;cursor:pointer"
-      onclick="document.getElementById('xlsxFileInput').click()"
-      ondragover="event.preventDefault();this.style.borderColor='#00e87a'"
-      ondragleave="this.style.borderColor='#1e2530'"
-      ondrop="event.preventDefault();this.style.borderColor='#1e2530';handleXlsxFile(event.dataTransfer.files[0])">
-      <div style="font-size:28px;margin-bottom:6px">📂</div>
-      <div style="font-size:12px;color:#4a5568">Clique ou arraste o arquivo <span style="color:#3d9eff">.xlsx</span> aqui</div>
-    </div>
-    <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsxFile(this.files[0])">
-    <div id="xlsxPreview" style="display:none">
-      <div class="xlsx-preview" id="xlsxPreviewList"></div>
-      <div id="xlsxSummary" style="font-size:11px;color:#4a5568;margin-top:8px"></div>
-    </div>
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-gray" onclick="closeXlsxModal()">Cancelar</button>
-      <button class="btn btn-green" id="btnConfirmXlsx" style="display:none" onclick="confirmXlsxImport()">✓ Confirmar Importação</button>
-    </div>
-  </div>
+ <div class="modal" style="width:460px" onclick="event.stopPropagation()">
+   <div class="modal-title">Importar Produção do Excel</div>
+   <div style="font-size:12px;color:#6b7280;margin-bottom:14px;line-height:1.7;font-weight:500">
+     A planilha deve ter as colunas nessa ordem:<br>
+     <span style="color:#16a34a;font-weight:700">Célula</span> · <span style="color:#16a34a;font-weight:700">Ciclos Hoje</span> · <span style="color:#16a34a;font-weight:700">Meta Dia</span><br>
+     <span style="color:#9ca3af">A primeira linha é ignorada (cabeçalho)</span>
+   </div>
+   <div style="border:2px dashed #d1d5db;border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:all 0.2s;background:#f9fafb"
+     onclick="document.getElementById('xlsxFileInput').click()"
+     ondragover="event.preventDefault();this.style.borderColor='#16a34a';this.style.background='#f0fdf4'"
+     ondragleave="this.style.borderColor='#d1d5db';this.style.background='#f9fafb'"
+     ondrop="event.preventDefault();this.style.borderColor='#d1d5db';this.style.background='#f9fafb';handleXlsxFile(event.dataTransfer.files[0])">
+     <div style="font-size:28px;margin-bottom:6px">📂</div>
+     <div style="font-size:13px;color:#6b7280;font-weight:500">Clique ou arraste o arquivo <span style="color:#2563eb;font-weight:700">.xlsx</span> aqui</div>
+   </div>
+   <input type="file" id="xlsxFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleXlsxFile(this.files[0])">
+   <div id="xlsxPreview" style="display:none">
+     <div class="xlsx-preview" id="xlsxPreviewList"></div>
+     <div id="xlsxSummary" style="font-size:12px;color:#6b7280;margin-top:8px;font-weight:500"></div>
+   </div>
+   <div class="modal-actions" style="margin-top:16px">
+     <button class="btn btn-gray" onclick="closeXlsxModal()">Cancelar</button>
+     <button class="btn btn-green" id="btnConfirmXlsx" style="display:none" onclick="confirmXlsxImport()">✓ Confirmar</button>
+   </div>
+ </div>
 </div>
 
 <div class="lightbox" id="lightboxEl" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
+ <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+ <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
 </div>
 
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
@@ -332,577 +352,539 @@ let pollTimer = null;
 let xlsxPendingData = null;
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"11:00", alertas:[] }
+ "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
+ "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
+ "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"11:00", alertas:[] }
 };
 
 const SC = {
-  "Produzindo": { dot:"dot-green", bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
-  "Manutenção": { dot:"dot-amber", bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
-  "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
-  "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+ "Produzindo": { dot:"dot-green", bg:"#f0fdf4", border:"#bbf7d0", text:"#15803d" },
+ "Manutenção": { dot:"dot-amber", bg:"#fffbeb", border:"#fde68a", text:"#b45309" },
+ "Aguardando": { dot:"dot-blue",  bg:"#eff6ff", border:"#bfdbfe", text:"#1d4ed8" },
+ "Parado":     { dot:"dot-red",   bg:"#fef2f2", border:"#fecaca", text:"#dc2626" },
 };
 
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("open");
-  document.getElementById("sidebarOverlay").classList.toggle("open");
+ document.getElementById("sidebar").classList.toggle("open");
+ document.getElementById("sidebarOverlay").classList.toggle("open");
 }
 function closeSidebar() {
-  document.getElementById("sidebar").classList.remove("open");
-  document.getElementById("sidebarOverlay").classList.remove("open");
+ document.getElementById("sidebar").classList.remove("open");
+ document.getElementById("sidebarOverlay").classList.remove("open");
 }
-
 function toggleGabarito(num) {
-  const el = document.getElementById("gab-" + num);
-  if (el) el.classList.toggle("open");
+ const el = document.getElementById("gab-" + num);
+ if (el) el.classList.toggle("open");
 }
-
 function buscarGabarito(termo) {
-  const t = termo.trim().toLowerCase();
-  const cards = document.querySelectorAll(".arm-card");
-  let encontrados = 0;
-  cards.forEach(card => {
-    const gab = (card.dataset.gabarito || "").toLowerCase();
-    const num = card.dataset.num;
-    const match = t && gab.includes(t);
-    card.classList.remove("arm-highlight");
-    if (!t) {
-      card.style.display = "";
-      const gabEl = document.getElementById("gab-" + num);
-      if (gabEl) gabEl.classList.remove("open");
-    } else if (match) {
-      card.style.display = "";
-      card.classList.add("arm-highlight");
-      const gabEl = document.getElementById("gab-" + num);
-      if (gabEl) gabEl.classList.add("open");
-      encontrados++;
-    } else {
-      card.style.display = "none";
-    }
-  });
-  const info = document.getElementById("busca-info");
-  if (info) {
-    info.textContent = t ? (encontrados > 0 ? `${encontrados} encontrado(s)` : "Nenhum encontrado") : "";
-    info.style.color = encontrados > 0 ? "#00e87a" : "#ff4d4d";
-  }
+ const t = termo.trim().toLowerCase();
+ const cards = document.querySelectorAll(".arm-card");
+ let encontrados = 0;
+ cards.forEach(card => {
+   const gab = (card.dataset.gabarito || "").toLowerCase();
+   const num = card.dataset.num;
+   const match = t && gab.includes(t);
+   card.classList.remove("arm-highlight");
+   if (!t) {
+     card.style.display = "";
+     const gabEl = document.getElementById("gab-" + num);
+     if (gabEl) gabEl.classList.remove("open");
+   } else if (match) {
+     card.style.display = "";
+     card.classList.add("arm-highlight");
+     const gabEl = document.getElementById("gab-" + num);
+     if (gabEl) gabEl.classList.add("open");
+     encontrados++;
+   } else {
+     card.style.display = "none";
+   }
+ });
+ const info = document.getElementById("busca-info");
+ if (info) {
+   info.textContent = t ? (encontrados > 0 ? `${encontrados} encontrado(s)` : "Nenhum encontrado") : "";
+   info.style.color = encontrados > 0 ? "#16a34a" : "#dc2626";
+ }
 }
 
 function parseTempoPeca(str) {
-  if (!str || str === '—') return null;
-  str = String(str).trim();
-  const minseg = str.match(/(\d+)\s*min\s*(\d*)\s*s?/i);
-  if (minseg) return parseInt(minseg[1]) * 60 + (parseInt(minseg[2]) || 0);
-  const colon = str.match(/^(\d+):(\d{2})$/);
-  if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
-  const seg = str.match(/^(\d+)\s*s$/i);
-  if (seg) return parseInt(seg[1]);
-  const num = parseFloat(str);
-  if (!isNaN(num)) return Math.round(num * 60);
-  return null;
+ if (!str || str === '—') return null;
+ str = String(str).trim();
+ const minseg = str.match(/(\d+)\s*min\s*(\d*)\s*s?/i);
+ if (minseg) return parseInt(minseg[1]) * 60 + (parseInt(minseg[2]) || 0);
+ const colon = str.match(/^(\d+):(\d{2})$/);
+ if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
+ const seg = str.match(/^(\d+)\s*s$/i);
+ if (seg) return parseInt(seg[1]);
+ const num = parseFloat(str);
+ if (!isNaN(num)) return Math.round(num * 60);
+ return null;
 }
 
 function calcRitmo(meta_hora, tempo_peca_str) {
-  const metaNum = parseFloat(meta_hora);
-  const segsTP = parseTempoPeca(tempo_peca_str);
-  if (!metaNum || metaNum <= 0 || !segsTP) return '—';
-  const disponivel = 3600 / metaNum;
-  const efic = Math.round((segsTP / disponivel) * 100);
-  const m = Math.floor(disponivel / 60);
-  const s = Math.round(disponivel % 60);
-  const tempoStr = m > 0 ? `${m}min ${s > 0 ? s+'s' : ''}`.trim() : `${s}s`;
-  return `${tempoStr} / peça (${efic}% do tempo)`;
+ const metaNum = parseFloat(meta_hora);
+ const segsTP = parseTempoPeca(tempo_peca_str);
+ if (!metaNum || metaNum <= 0 || !segsTP) return '—';
+ const disponivel = 3600 / metaNum;
+ const efic = Math.round((segsTP / disponivel) * 100);
+ const m = Math.floor(disponivel / 60);
+ const s = Math.round(disponivel % 60);
+ const tempoStr = m > 0 ? `${m}min ${s > 0 ? s+'s' : ''}`.trim() : `${s}s`;
+ return `${tempoStr} / peça (${efic}% do tempo)`;
 }
 
 async function loadFromAPI() {
-  const active = document.activeElement;
-  const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
-  if (isEditing) return;
-  try {
-    const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
-    const d = await r.json();
-    if (d.record && Object.keys(d.record).length > 0) {
-      celulas = d.record;
-    } else {
-      celulas = defaultData;
-      await saveToAPI(celulas);
-    }
-  } catch(e) { celulas = defaultData; }
-  renderSidebar();
-  if (!selected) {
-    const keys = Object.keys(celulas).sort();
-    if (keys.length) { selected = keys[0]; renderDetail(); }
-  } else { renderDetail(); }
+ const active = document.activeElement;
+ const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+ if (isEditing) return;
+ try {
+   const r = await fetch(BASE_URL + "/latest", { headers: HEADERS_R });
+   const d = await r.json();
+   if (d.record && Object.keys(d.record).length > 0) {
+     celulas = d.record;
+   } else {
+     celulas = defaultData;
+     await saveToAPI(celulas);
+   }
+ } catch(e) { celulas = defaultData; }
+ renderSidebar();
+ if (!selected) {
+   const keys = Object.keys(celulas).sort();
+   if (keys.length) { selected = keys[0]; renderDetail(); }
+ } else { renderDetail(); }
 }
 
 async function saveToAPI(data) {
-  try {
-    await fetch(BASE_URL, { method:"PUT", headers: HEADERS_W, body: JSON.stringify(data) });
-    const now = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    document.getElementById("savedLabel").textContent = "salvo " + now;
-    showToast("Salvo ✓");
-  } catch(e) { showToast("Erro ao salvar", true); }
+ try {
+   await fetch(BASE_URL, { method:"PUT", headers: HEADERS_W, body: JSON.stringify(data) });
+   const now = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+   document.getElementById("savedLabel").textContent = "salvo " + now;
+   showToast("Salvo ✓");
+ } catch(e) { showToast("Erro ao salvar", true); }
 }
 
 function update(key, field, value) { celulas[key][field] = value; saveToAPI(celulas); }
 
 function updateAndRefreshRitmo(key, field, value) {
-  celulas[key][field] = value;
-  saveToAPI(celulas);
-  const ritmoEl = document.getElementById("ritmoDisplay");
-  if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
+ celulas[key][field] = value;
+ saveToAPI(celulas);
+ const ritmoEl = document.getElementById("ritmoDisplay");
+ if (ritmoEl) ritmoEl.value = calcRitmo(celulas[key].meta_hora, celulas[key].tempo_peca);
 }
 
-// ── PRODUÇÃO DIÁRIA ───────────────────────────
 function getChave(key) {
-  const mes = celulas[key].mes_selecionado !== undefined ? celulas[key].mes_selecionado : new Date().getMonth();
-  const ano = celulas[key].ano_selecionado || new Date().getFullYear();
-  return ano + "_" + mes;
+ const mes = celulas[key].mes_selecionado !== undefined ? celulas[key].mes_selecionado : new Date().getMonth();
+ const ano = celulas[key].ano_selecionado || new Date().getFullYear();
+ return ano + "_" + mes;
 }
 
 function updateDia(key, dia, value) {
-  const chave = getChave(key);
-  if (!celulas[key].producao_meses) celulas[key].producao_meses = {};
-  if (!celulas[key].producao_meses[chave]) celulas[key].producao_meses[chave] = {};
-
-  const val = parseInt(value) || 0;
-  celulas[key].producao_meses[chave][dia] = val;
-  saveToAPI(celulas);
-
-  const dias = celulas[key].producao_meses[chave];
-  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
-  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
-
-  const totalEl = document.getElementById("prod-total");
-  if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR");
-
-  const inp = document.getElementById("inp-dia-" + dia);
-  if (inp) inp.className = "prod-day-input" + (val > 0 ? " has-value" : "") + (!isAdmin ? " readonly" : "");
-
-  for (let d = 1; d <= 31; d++) {
-    const bar = document.getElementById("bar-dia-" + d);
-    const v = parseInt(dias[d]) || 0;
-    if (bar) bar.style.width = (maxVal > 0 ? Math.round(v / maxVal * 100) : 0) + "%";
-  }
+ const chave = getChave(key);
+ if (!celulas[key].producao_meses) celulas[key].producao_meses = {};
+ if (!celulas[key].producao_meses[chave]) celulas[key].producao_meses[chave] = {};
+ const val = parseInt(value) || 0;
+ celulas[key].producao_meses[chave][dia] = val;
+ saveToAPI(celulas);
+ const dias = celulas[key].producao_meses[chave];
+ const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
+ const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
+ const totalEl = document.getElementById("prod-total");
+ if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR");
+ const inp = document.getElementById("inp-dia-" + dia);
+ if (inp) inp.className = "prod-day-input" + (val > 0 ? " has-value" : "") + (!isAdmin ? " readonly" : "");
+ for (let d = 1; d <= 31; d++) {
+   const bar = document.getElementById("bar-dia-" + d);
+   const v = parseInt(dias[d]) || 0;
+   if (bar) bar.style.width = (maxVal > 0 ? Math.round(v / maxVal * 100) : 0) + "%";
+ }
 }
 
 function updateMesAno(key, campo, valor) {
-  if (campo === 'mes') celulas[key].mes_selecionado = valor;
-  if (campo === 'ano') celulas[key].ano_selecionado = valor;
-  saveToAPI(celulas);
-  renderProducaoDiaria();
+ if (campo === 'mes') celulas[key].mes_selecionado = valor;
+ if (campo === 'ano') celulas[key].ano_selecionado = valor;
+ saveToAPI(celulas);
+ renderProducaoDiaria();
 }
 
 function renderProducaoDiaria() {
-  const c = celulas[selected];
-  const anoAtual = new Date().getFullYear();
-  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
-  const anoSel = c.ano_selecionado || anoAtual;
-  const chave = anoSel + "_" + mesIdx;
-
-  const dias = (c.producao_meses && c.producao_meses[chave]) ? c.producao_meses[chave] : {};
-  const hoje = new Date().getDate();
-  const ro = !isAdmin ? 'readonly' : '';
-
-  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
-  const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
-  const diasComValor = Object.values(dias).filter(v => parseInt(v) > 0).length;
-
-  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-
-  let diasHTML = '';
-  for (let d = 1; d <= 31; d++) {
-    const val = parseInt(dias[d]) || 0;
-    const isHoje = d === hoje && mesIdx === new Date().getMonth() && anoSel === anoAtual;
-    const pct = maxVal > 0 ? Math.round(val / maxVal * 100) : 0;
-    diasHTML += `
-      <div class="prod-day-card ${isHoje ? 'today' : ''}">
-        <div class="prod-day-num">DIA ${d}</div>
-        <input id="inp-dia-${d}" type="number" min="0"
-          class="prod-day-input${val > 0 ? ' has-value' : ''}${!isAdmin ? ' readonly' : ''}"
-          value="${val > 0 ? val : ''}"
-          placeholder="0"
-          ${ro}
-          onchange="updateDia('${selected}',${d},this.value)">
-        <div class="prod-day-bar-wrap">
-          <div id="bar-dia-${d}" class="prod-day-bar" style="width:${pct}%"></div>
-        </div>
-      </div>`;
-  }
-
-  document.getElementById("mainPanel").innerHTML = `
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
-      </div>
-      ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>` : ""}
-    </div>
-
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <select onchange="updateMesAno('${selected}','mes',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
-        ${meses.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
-      </select>
-      <select onchange="updateMesAno('${selected}','ano',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
-        ${[anoAtual-1, anoAtual, anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
-      </select>
-    </div>
-
-    <div class="prod-total-box">
-      <div>
-        <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Total do mês</div>
-        <div style="font-size:32px;font-weight:800;color:#00e87a;letter-spacing:0.04em" id="prod-total">${total.toLocaleString("pt-BR")}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Média diária</div>
-        <div style="font-size:20px;font-weight:700;color:#3d9eff">
-          ${diasComValor > 0 ? Math.round(total / diasComValor).toLocaleString("pt-BR") : '—'}
-        </div>
-      </div>
-    </div>
-
-    <div class="prod-day-grid">${diasHTML}</div>
-  </div>`;
+ const c = celulas[selected];
+ const anoAtual = new Date().getFullYear();
+ const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
+ const anoSel = c.ano_selecionado || anoAtual;
+ const chave = anoSel + "_" + mesIdx;
+ const dias = (c.producao_meses && c.producao_meses[chave]) ? c.producao_meses[chave] : {};
+ const hoje = new Date().getDate();
+ const ro = !isAdmin ? 'readonly' : '';
+ const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
+ const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
+ const diasComValor = Object.values(dias).filter(v => parseInt(v) > 0).length;
+ const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+ let diasHTML = '';
+ for (let d = 1; d <= 31; d++) {
+   const val = parseInt(dias[d]) || 0;
+   const isHoje = d === hoje && mesIdx === new Date().getMonth() && anoSel === anoAtual;
+   const pct = maxVal > 0 ? Math.round(val / maxVal * 100) : 0;
+   diasHTML += `
+     <div class="prod-day-card ${isHoje ? 'today' : ''}">
+       <div class="prod-day-num">DIA ${d}</div>
+       <input id="inp-dia-${d}" type="number" min="0"
+         class="prod-day-input${val > 0 ? ' has-value' : ''}${!isAdmin ? ' readonly' : ''}"
+         value="${val > 0 ? val : ''}" placeholder="0" ${ro}
+         onchange="updateDia('${selected}',${d},this.value)">
+       <div class="prod-day-bar-wrap"><div id="bar-dia-${d}" class="prod-day-bar" style="width:${pct}%"></div></div>
+     </div>`;
+ }
+ document.getElementById("mainPanel").innerHTML = `
+ <div>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+     <div>
+       <div style="font-size:22px;font-weight:800;color:#111">📅 ${esc(c.nome)}</div>
+       <div style="font-size:12px;color:#9ca3af;margin-top:4px;font-weight:500">Produção total por dia do mês</div>
+     </div>
+     ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑 Excluir</button>` : ""}
+   </div>
+   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+     <select onchange="updateMesAno('${selected}','mes',+this.value)"
+       style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:14px;color:#374151;cursor:pointer;outline:none;font-weight:600">
+       ${meses.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
+     </select>
+     <select onchange="updateMesAno('${selected}','ano',+this.value)"
+       style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:14px;color:#374151;cursor:pointer;outline:none;font-weight:600">
+       ${[anoAtual-1, anoAtual, anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
+     </select>
+   </div>
+   <div class="prod-total-box">
+     <div>
+       <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;font-weight:700">Total do mês</div>
+       <div style="font-size:32px;font-weight:800;color:#15803d" id="prod-total">${total.toLocaleString("pt-BR")}</div>
+     </div>
+     <div style="text-align:right">
+       <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;font-weight:700">Média diária</div>
+       <div style="font-size:22px;font-weight:700;color:#2563eb">${diasComValor > 0 ? Math.round(total / diasComValor).toLocaleString("pt-BR") : '—'}</div>
+     </div>
+   </div>
+   <div class="prod-day-grid">${diasHTML}</div>
+ </div>`;
 }
 
 function triggerImgUpload() {
-  if (!isAdmin) return;
-  document.getElementById("imgFileInput").click();
+ if (!isAdmin) return;
+ document.getElementById("imgFileInput").click();
 }
-
 function handleImgUpload(file) {
-  if (!file || !selected) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    celulas[selected].img_peca = e.target.result;
-    saveToAPI(celulas);
-    renderDetail();
-  };
-  reader.readAsDataURL(file);
+ if (!file || !selected) return;
+ const reader = new FileReader();
+ reader.onload = function(e) {
+   celulas[selected].img_peca = e.target.result;
+   saveToAPI(celulas); renderDetail();
+ };
+ reader.readAsDataURL(file);
 }
-
 function removeImg() {
-  if (!selected) return;
-  celulas[selected].img_peca = "";
-  saveToAPI(celulas);
-  renderDetail();
+ if (!selected) return;
+ celulas[selected].img_peca = "";
+ saveToAPI(celulas); renderDetail();
 }
-
 function openLightbox(src) {
-  document.getElementById("lightboxImg").src = src;
-  document.getElementById("lightboxEl").classList.add("open");
+ document.getElementById("lightboxImg").src = src;
+ document.getElementById("lightboxEl").classList.add("open");
 }
-function closeLightbox() {
-  document.getElementById("lightboxEl").classList.remove("open");
-}
+function closeLightbox() { document.getElementById("lightboxEl").classList.remove("open"); }
 
 function tryLogin() {
-  const pw = document.getElementById("pwInput").value;
-  if (pw === ADMIN_PW) { isAdmin = true; startApp(); }
-  else {
-    document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display = "block";
-    setTimeout(() => {
-      document.getElementById("pwInput").classList.remove("err");
-      document.getElementById("loginErr").style.display = "none";
-    }, 1500);
-  }
+ const pw = document.getElementById("pwInput").value;
+ if (pw === ADMIN_PW) { isAdmin = true; startApp(); }
+ else {
+   document.getElementById("pwInput").classList.add("err");
+   document.getElementById("loginErr").style.display = "block";
+   setTimeout(() => {
+     document.getElementById("pwInput").classList.remove("err");
+     document.getElementById("loginErr").style.display = "none";
+   }, 1500);
+ }
 }
 function startViewer() { isAdmin = false; startApp(); }
 function startApp() {
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("appScreen").style.display = "block";
-  document.getElementById("modeBadge").textContent = isAdmin ? "⚙ Admin" : "👁 Viewer";
-  document.getElementById("modeBadge").className = "badge " + (isAdmin ? "badge-admin" : "badge-viewer");
-  if (isAdmin) {
-    document.getElementById("btnAdd").style.display = "inline-block";
-    document.getElementById("btnXlsx").style.display = "inline-block";
-  }
-  loadFromAPI();
-  pollTimer = setInterval(loadFromAPI, 6000);
+ document.getElementById("loginScreen").style.display = "none";
+ document.getElementById("appScreen").style.display = "block";
+ document.getElementById("modeBadge").textContent = isAdmin ? "⚙ Admin" : "👁 Viewer";
+ document.getElementById("modeBadge").className = "badge " + (isAdmin ? "badge-admin" : "badge-viewer");
+ if (isAdmin) {
+   document.getElementById("btnAdd").style.display = "inline-block";
+   document.getElementById("btnXlsx").style.display = "inline-block";
+ }
+ loadFromAPI();
+ pollTimer = setInterval(loadFromAPI, 6000);
 }
 function doLogout() {
-  clearInterval(pollTimer);
-  document.getElementById("appScreen").style.display = "none";
-  document.getElementById("loginScreen").style.display = "flex";
-  document.getElementById("pwInput").value = "";
-  isAdmin = false; selected = null;
+ clearInterval(pollTimer);
+ document.getElementById("appScreen").style.display = "none";
+ document.getElementById("loginScreen").style.display = "flex";
+ document.getElementById("pwInput").value = "";
+ isAdmin = false; selected = null;
 }
 
 function renderSidebar() {
-  const keys = Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent = "Células (" + keys.length + ")";
-  document.getElementById("sidebarList").innerHTML = keys.map(k => {
-    const c = celulas[k];
-    const s = SC[c.status] || SC["Parado"];
-    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
-      <div class="cell-num">${parseInt(k)}</div>
-      <div class="cell-info">
-        <div class="cell-name">${c.nome}</div>
-        <div class="cell-peca">${c.cliente||c.peca||'—'}</div>
-      </div>
-      <div class="dot ${s.dot}"></div>
-    </div>`;
-  }).join("");
+ const keys = Object.keys(celulas).sort();
+ document.getElementById("cellCount").textContent = "Células (" + keys.length + ")";
+ document.getElementById("sidebarList").innerHTML = keys.map(k => {
+   const c = celulas[k];
+   const s = SC[c.status] || SC["Parado"];
+   return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
+     <div class="cell-num">${parseInt(k)}</div>
+     <div class="cell-info">
+       <div class="cell-name">${c.nome}</div>
+       <div class="cell-peca">${c.cliente||c.peca||'—'}</div>
+     </div>
+     <div class="dot ${s.dot}"></div>
+   </div>`;
+ }).join("");
 }
-
-function selectCell(k) {
-  selected = k; renderSidebar(); renderDetail(); closeSidebar();
-}
+function selectCell(k) { selected = k; renderSidebar(); renderDetail(); closeSidebar(); }
 
 function openXlsxModal() {
-  xlsxPendingData = null;
-  document.getElementById("xlsxPreview").style.display = "none";
-  document.getElementById("btnConfirmXlsx").style.display = "none";
-  document.getElementById("xlsxFileInput").value = "";
-  document.getElementById("xlsxModalEl").classList.add("open");
+ xlsxPendingData = null;
+ document.getElementById("xlsxPreview").style.display = "none";
+ document.getElementById("btnConfirmXlsx").style.display = "none";
+ document.getElementById("xlsxFileInput").value = "";
+ document.getElementById("xlsxModalEl").classList.add("open");
 }
-function closeXlsxModal() {
-  document.getElementById("xlsxModalEl").classList.remove("open");
-  xlsxPendingData = null;
-}
+function closeXlsxModal() { document.getElementById("xlsxModalEl").classList.remove("open"); xlsxPendingData = null; }
 function handleXlsxFile(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
-      if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
-      xlsxPendingData = []; let previewHTML = ""; let found = 0, notFound = 0;
-      dataRows.forEach(row => {
-        let rawKey = String(row[0]).trim().replace(/\D/g, "");
-        const key = rawKey.padStart(2, "0");
-        const ciclos = parseInt(row[1]) || 0;
-        const meta = parseInt(row[2]) || 0;
-        const exists = !!celulas[key];
-        if (exists) found++; else notFound++;
-        xlsxPendingData.push({ key, ciclos, meta, exists });
-        previewHTML += `<div class="xlsx-row">
-          <span class="xlsx-cell-num">C${key}</span>
-          <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
-          <span class="xlsx-val">Meta: <b>${meta}</b></span>
-          <span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span>
-        </div>`;
-      });
-      document.getElementById("xlsxPreviewList").innerHTML = previewHTML;
-      document.getElementById("xlsxSummary").innerHTML =
-        `<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>` +
-        (notFound > 0 ? ` · <span style="color:#ff4d4d">${notFound} não encontrada(s) (ignoradas)</span>` : "");
-      document.getElementById("xlsxPreview").style.display = "block";
-      document.getElementById("btnConfirmXlsx").style.display = found > 0 ? "inline-block" : "none";
-    } catch(err) { showToast("Erro ao ler o arquivo!", true); }
-  };
-  reader.readAsArrayBuffer(file);
+ if (!file) return;
+ const reader = new FileReader();
+ reader.onload = function(e) {
+   try {
+     const data = new Uint8Array(e.target.result);
+     const wb = XLSX.read(data, { type: "array" });
+     const ws = wb.Sheets[wb.SheetNames[0]];
+     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+     const dataRows = rows.slice(1).filter(r => r[0] !== "" && r[0] !== undefined);
+     if (dataRows.length === 0) { showToast("Planilha vazia!", true); return; }
+     xlsxPendingData = []; let previewHTML = ""; let found = 0, notFound = 0;
+     dataRows.forEach(row => {
+       let rawKey = String(row[0]).trim().replace(/\D/g, "");
+       const key = rawKey.padStart(2, "0");
+       const ciclos = parseInt(row[1]) || 0;
+       const meta = parseInt(row[2]) || 0;
+       const exists = !!celulas[key];
+       if (exists) found++; else notFound++;
+       xlsxPendingData.push({ key, ciclos, meta, exists });
+       previewHTML += `<div class="xlsx-row">
+         <span class="xlsx-cell-num">C${key}</span>
+         <span class="xlsx-val">Ciclos: <b>${ciclos}</b></span>
+         <span class="xlsx-val">Meta: <b>${meta}</b></span>
+         <span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span>
+       </div>`;
+     });
+     document.getElementById("xlsxPreviewList").innerHTML = previewHTML;
+     document.getElementById("xlsxSummary").innerHTML =
+       `<span style="color:#16a34a;font-weight:600">${found} célula(s) serão atualizadas</span>` +
+       (notFound > 0 ? ` · <span style="color:#dc2626;font-weight:600">${notFound} não encontrada(s)</span>` : "");
+     document.getElementById("xlsxPreview").style.display = "block";
+     document.getElementById("btnConfirmXlsx").style.display = found > 0 ? "inline-block" : "none";
+   } catch(err) { showToast("Erro ao ler o arquivo!", true); }
+ };
+ reader.readAsArrayBuffer(file);
 }
 function confirmXlsxImport() {
-  if (!xlsxPendingData) return;
-  let updated = 0;
-  xlsxPendingData.forEach(({ key, ciclos, meta, exists }) => {
-    if (exists) {
-      celulas[key].ciclos_hoje = ciclos;
-      if (meta > 0) celulas[key].meta_dia = meta;
-      updated++;
-    }
-  });
-  saveToAPI(celulas); closeXlsxModal(); renderSidebar(); renderDetail();
-  showToast(`${updated} célula(s) atualizada(s) ✓`);
+ if (!xlsxPendingData) return;
+ let updated = 0;
+ xlsxPendingData.forEach(({ key, ciclos, meta, exists }) => {
+   if (exists) {
+     celulas[key].ciclos_hoje = ciclos;
+     if (meta > 0) celulas[key].meta_dia = meta;
+     updated++;
+   }
+ });
+ saveToAPI(celulas); closeXlsxModal(); renderSidebar(); renderDetail();
+ showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
 function renderArmario() {
-  const c = celulas[selected];
-  const espacos = c.espacos || {};
-  const ro = !isAdmin ? 'readonly' : '';
-  let espacosHTML = '';
-  for (let i = 1; i <= 18; i++) {
-    const e = espacos[i] || { gabarito: '—', status: 'Livre' };
-    const statusColor = e.status === 'Ocupado' ? '#00e87a' : e.status === 'Manutenção' ? '#ffb300' : '#4a5568';
-    const statusBg   = e.status === 'Ocupado' ? '#00e87a15' : e.status === 'Manutenção' ? '#ffb30015' : '#ffffff05';
-    const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
-    espacosHTML += `
-      <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
-        style="background:${statusBg};border:1px solid ${statusColor}40;border-radius:12px;padding:14px 16px;transition:outline 0.2s">
-        <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
-            ${gabValor ? `<span style="font-size:12px;color:${statusColor};font-weight:700;background:${statusBg};border:1px solid ${statusColor}40;border-radius:5px;padding:2px 8px">${gabValor}</span>` : ''}
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
-              style="background:#0f1318;border:1px solid ${statusColor}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${statusColor};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
-              <option ${e.status==='Livre'?'selected':''}>Livre</option>
-              <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
-              <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
-            </select>
-            <span style="font-size:11px;color:#4a5568">▼</span>
-          </div>
-        </div>
-        <div id="gab-${i}" class="arm-gabarito">
-          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
-          <input value="${esc(e.gabarito||'')}" ${ro}
-            placeholder="Digite o gabarito..."
-            onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
-            style="background:transparent;border:1px solid #1e2530;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:16px;color:#00e87a;font-weight:700;width:100%;outline:none"
-            onfocus="this.style.borderColor='#00e87a';this.style.background='#00e87a08'"
-            onblur="this.style.borderColor='#1e2530';this.style.background='transparent'">
-        </div>
-      </div>`;
-  }
-  document.getElementById("mainPanel").innerHTML = `
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
-          ${Object.values(espacos).filter(e=>e.status==='Ocupado').length} / 18 ocupados
-        </div>
-        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px">
-      <span style="font-size:16px">🔍</span>
-      <input id="buscaGabarito" placeholder="Procurar gabarito..." oninput="buscarGabarito(this.value)"
-        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none" autocomplete="off">
-      <span id="busca-info" style="font-size:11px;letter-spacing:0.06em;white-space:nowrap"></span>
-      <button onclick="document.getElementById('buscaGabarito').value='';buscarGabarito('')"
-        style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">${espacosHTML}</div>
-  </div>`;
+ const c = celulas[selected];
+ const espacos = c.espacos || {};
+ const ro = !isAdmin ? 'readonly' : '';
+ let espacosHTML = '';
+ for (let i = 1; i <= 18; i++) {
+   const e = espacos[i] || { gabarito: '—', status: 'Livre' };
+   const statusColor = e.status === 'Ocupado' ? '#16a34a' : e.status === 'Manutenção' ? '#d97706' : '#9ca3af';
+   const statusBg   = e.status === 'Ocupado' ? '#f0fdf4' : e.status === 'Manutenção' ? '#fffbeb' : '#f9fafb';
+   const statusBorder = e.status === 'Ocupado' ? '#bbf7d0' : e.status === 'Manutenção' ? '#fde68a' : '#e5e7eb';
+   const gabValor   = e.gabarito && e.gabarito !== '—' ? esc(e.gabarito) : '';
+   espacosHTML += `
+     <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
+       style="background:${statusBg};border:1.5px solid ${statusBorder};border-radius:12px;padding:14px 16px;transition:all 0.2s">
+       <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
+         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+           <span style="font-size:14px;font-weight:700;color:#111">Armário ${i}</span>
+           ${gabValor ? `<span style="font-size:12px;color:${statusColor};font-weight:700;background:${statusBg};border:1px solid ${statusBorder};border-radius:6px;padding:2px 8px">${gabValor}</span>` : ''}
+         </div>
+         <div style="display:flex;align-items:center;gap:8px">
+           <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
+             style="background:#fff;border:1px solid ${statusBorder};border-radius:6px;padding:4px 8px;font-family:'Inter',sans-serif;font-size:11px;color:${statusColor};cursor:pointer;outline:none;font-weight:600">
+             <option ${e.status==='Livre'?'selected':''}>Livre</option>
+             <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
+             <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
+           </select>
+           <span style="font-size:10px;color:#9ca3af">▼</span>
+         </div>
+       </div>
+       <div id="gab-${i}" class="arm-gabarito">
+         <label style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px;font-weight:700">Gabarito</label>
+         <input value="${esc(e.gabarito||'')}" ${ro}
+           placeholder="Digite o gabarito..."
+           onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
+           style="background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 10px;font-family:'Inter',sans-serif;font-size:15px;color:#15803d;font-weight:700;width:100%;outline:none"
+           onfocus="this.style.borderColor='#16a34a'"
+           onblur="this.style.borderColor='#e5e7eb'">
+       </div>
+     </div>`;
+ }
+ document.getElementById("mainPanel").innerHTML = `
+ <div>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+     <div>
+       <div style="font-size:22px;font-weight:800;color:#111">🗄 ${esc(c.nome)}</div>
+       <div style="font-size:12px;color:#9ca3af;margin-top:4px;font-weight:500">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+     </div>
+     <div style="display:flex;gap:8px;align-items:center">
+       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 14px;font-size:12px;color:#15803d;font-weight:700">
+         ${Object.values(espacos).filter(e=>e.status==='Ocupado').length} / 18 ocupados
+       </div>
+       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+     </div>
+   </div>
+   <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+     <span style="font-size:16px;color:#9ca3af">🔍</span>
+     <input id="buscaGabarito" placeholder="Procurar gabarito..." oninput="buscarGabarito(this.value)"
+       style="flex:1;background:transparent;border:none;font-family:'Inter',sans-serif;font-size:15px;color:#374151;outline:none;font-weight:500" autocomplete="off">
+     <span id="busca-info" style="font-size:11px;font-weight:600;white-space:nowrap"></span>
+     <button onclick="document.getElementById('buscaGabarito').value='';buscarGabarito('')"
+       style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
+   </div>
+   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">${espacosHTML}</div>
+ </div>`;
 }
 
 function updateEspaco(key, num, field, value) {
-  if (!celulas[key].espacos) celulas[key].espacos = {};
-  if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', status: 'Livre' };
-  celulas[key].espacos[num][field] = value;
-  saveToAPI(celulas);
-  if (field === 'status') renderArmario();
+ if (!celulas[key].espacos) celulas[key].espacos = {};
+ if (!celulas[key].espacos[num]) celulas[key].espacos[num] = { gabarito: '—', status: 'Livre' };
+ celulas[key].espacos[num][field] = value;
+ saveToAPI(celulas);
+ if (field === 'status') renderArmario();
 }
 
 function renderDetail() {
-  if (!selected || !celulas[selected]) return;
-  const nomeCell = (celulas[selected].nome || '').toLowerCase();
-  if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
-    renderArmario(); return;
-  }
-  if (nomeCell.includes('produ') && nomeCell.includes('di')) {
-    renderProducaoDiaria(); return;
-  }
+ if (!selected || !celulas[selected]) return;
+ const nomeCell = (celulas[selected].nome || '').toLowerCase();
+ if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) { renderArmario(); return; }
+ if (nomeCell.includes('produ') && nomeCell.includes('di')) { renderProducaoDiaria(); return; }
 
-  const c = celulas[selected];
-  const s = SC[c.status] || SC["Parado"];
-  const ro = !isAdmin ? 'readonly' : '';
-  const statusOpts = ["Produzindo","Manutenção","Aguardando","Parado"]
-    .map(st => `<option ${st===c.status?"selected":""}>${st}</option>`).join("");
-  const alertsHTML = (c.alertas||[]).map((a,i) => `
-    <div class="alert-item">
-      <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
-      ${isAdmin?`<button class="btn-x" onclick="delAlert('${selected}',${i})">✕</button>`:""}
-    </div>`).join("");
+ const c = celulas[selected];
+ const s = SC[c.status] || SC["Parado"];
+ const ro = !isAdmin ? 'readonly' : '';
+ const statusOpts = ["Produzindo","Manutenção","Aguardando","Parado"]
+   .map(st => `<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+ const alertsHTML = (c.alertas||[]).map((a,i) => `
+   <div class="alert-item">
+     <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)">
+     ${isAdmin?`<button class="btn-x" onclick="delAlert('${selected}',${i})">✕</button>`:""}
+   </div>`).join("");
 
-  const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
-  const imgSrc = c.img_peca || "";
-  const imgBlock = imgSrc
-    ? `<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
-       ${isAdmin ? `<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button></div>` : ''}`
-    : `<div class="img-placeholder">${isAdmin ? '📷<br>Clique para<br>enviar' : '—'}</div>`;
+ const ritmo = calcRitmo(c.meta_hora, c.tempo_peca);
+ const imgSrc = c.img_peca || "";
+ const imgBlock = imgSrc
+   ? `<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
+      ${isAdmin ? `<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#dc2626;border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600">✕ Remover</button></div>` : ''}`
+   : `<div class="img-placeholder">${isAdmin ? '📷<br>Clique para enviar' : '—'}</div>`;
 
-  document.getElementById("mainPanel").innerHTML = `
-  <div>
-    <div class="detail-hdr">
-      <div>
-        <div class="detail-title">${esc(c.nome)}</div>
-        <div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
-          <div class="dot ${s.dot}"></div>
-          ${isAdmin
-            ? `<select onchange="update('${selected}','status',this.value);renderDetail()" style="background:transparent;border:none;color:${s.text};font-family:'Courier New',monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;cursor:pointer;outline:none">${statusOpts}</select>`
-            : `<span style="font-size:12px;font-weight:700;color:${s.text};letter-spacing:0.08em">${c.status.toUpperCase()}</span>`
-          }
-        </div>
-        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
-      </div>
-    </div>
+ document.getElementById("mainPanel").innerHTML = `
+ <div>
+   <div class="detail-hdr">
+     <div>
+       <div class="detail-title">${esc(c.nome)}</div>
+       <div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+     </div>
+     <div style="display:flex;gap:8px;align-items:center">
+       <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
+         <div class="dot ${s.dot}"></div>
+         ${isAdmin
+           ? `<select onchange="update('${selected}','status',this.value);renderDetail()" style="background:transparent;border:none;color:${s.text};font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;outline:none">${statusOpts}</select>`
+           : `<span style="font-size:13px;font-weight:700;color:${s.text}">${c.status}</span>`
+         }
+       </div>
+       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Peça em Produção</div>
-      <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
-        <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
-        <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
-        <div class="field">
-          <label>Imagem da peça</label>
-          <div class="img-upload-box" id="imgBox" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
-        </div>
-      </div>
-      <div style="margin-top:12px;max-width:50%">
-        <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Peça em Produção</div>
+     <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:14px;align-items:end">
+       <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
+       <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
+       <div class="field">
+         <label>Imagem da peça</label>
+         <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
+       </div>
+     </div>
+     <div style="margin-top:14px;max-width:50%">
+       <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Eletrodo</div>
-      <div class="grid2">
-        <div class="field"><label>Eletrodo</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
-        <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
-        <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Eletrodo</div>
+     <div class="grid2">
+       <div class="field"><label>Eletrodo</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
+       <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
+       <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Parâmetros de Soldagem</div>
-      <div class="grid4">
-        <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
-        <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
-        <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
-        <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Parâmetros de Soldagem</div>
+     <div class="grid4">
+       <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
+       <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
+       <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
+       <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Responsável Técnico</div>
-      <div class="grid2">
-        <div class="field"><label>Nome da célula</label><input value="${esc(c.nome)}" ${ro} onchange="update('${selected}','nome',this.value);renderSidebar()"></div>
-        <div class="field"><label>Responsável Técnico</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
-        <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Responsável Técnico</div>
+     <div class="grid2">
+       <div class="field"><label>Nome da célula</label><input value="${esc(c.nome)}" ${ro} onchange="update('${selected}','nome',this.value);renderSidebar()"></div>
+       <div class="field"><label>Responsável Técnico</label><input value="${esc(c.operador)}" ${ro} onchange="update('${selected}','operador',this.value)"></div>
+       <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Membros da Equipe</div>
-      <div class="grid2">
-        <div class="field"><label>👷 Membro 1</label><input value="${esc(c.membro1||'—')}" ${ro} onchange="update('${selected}','membro1',this.value)"></div>
-        <div class="field"><label>👷 Membro 2</label><input value="${esc(c.membro2||'—')}" ${ro} onchange="update('${selected}','membro2',this.value)"></div>
-        <div class="field"><label>👷 Membro 3</label><input value="${esc(c.membro3||'—')}" ${ro} onchange="update('${selected}','membro3',this.value)"></div>
-        <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Membros da Equipe</div>
+     <div class="grid2">
+       <div class="field"><label>👷 Membro 1</label><input value="${esc(c.membro1||'—')}" ${ro} onchange="update('${selected}','membro1',this.value)"></div>
+       <div class="field"><label>👷 Membro 2</label><input value="${esc(c.membro2||'—')}" ${ro} onchange="update('${selected}','membro2',this.value)"></div>
+       <div class="field"><label>👷 Membro 3</label><input value="${esc(c.membro3||'—')}" ${ro} onchange="update('${selected}','membro3',this.value)"></div>
+       <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">◈ Meta por Hora</div>
-      <div class="grid2">
-        <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" id="metaHoraInput" value="${c.meta_hora||0}" ${ro} onchange="updateAndRefreshRitmo('${selected}','meta_hora',+this.value)"></div>
-        <div class="field"><label>📊 Ritmo por peça / hora</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#00e87a;font-weight:700"></div>
-      </div>
-    </div>
+   <div class="section">
+     <div class="sec-title">Meta por Hora</div>
+     <div class="grid2">
+       <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" id="metaHoraInput" value="${c.meta_hora||0}" ${ro} onchange="updateAndRefreshRitmo('${selected}','meta_hora',+this.value)"></div>
+       <div class="field"><label>📊 Ritmo por peça / hora</label><input id="ritmoDisplay" readonly value="${ritmo}" style="color:#15803d;font-weight:700;background:#f0fdf4;border-color:#bbf7d0"></div>
+     </div>
+   </div>
 
-    <div class="section">
-      <div class="sec-title">⚠ Alertas
-        ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}
-      </div>
-      ${alertsHTML || '<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
-    </div>
-  </div>`;
+   <div class="section">
+     <div class="sec-title">⚠ Alertas
+       ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px;font-size:11px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}
+     </div>
+     ${alertsHTML || '<div style="font-size:13px;color:#9ca3af;font-weight:500">Nenhum alerta</div>'}
+   </div>
+ </div>`;
 }
 
 function updAlert(k,i,v){ celulas[k].alertas[i]=v; saveToAPI(celulas); }
@@ -913,26 +895,26 @@ function deleteCell(k){ if(!confirm("Excluir "+celulas[k].nome+"?"))return; dele
 function openModal(){ document.getElementById("modalEl").classList.add("open"); document.getElementById("mNum").focus(); }
 function closeModal(){ document.getElementById("modalEl").classList.remove("open"); document.getElementById("mNum").value=""; document.getElementById("mNome").value=""; }
 function createCell(){
-  const n=document.getElementById("mNum").value.trim();
-  const nm=document.getElementById("mNome").value.trim();
-  if(!n){showToast("Informe o número",true);return;}
-  const k=String(n).padStart(2,"0");
-  if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
-  saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
+ const n=document.getElementById("mNum").value.trim();
+ const nm=document.getElementById("mNome").value.trim();
+ if(!n){showToast("Informe o número",true);return;}
+ const k=String(n).padStart(2,"0");
+ if(celulas[k]){showToast("Célula já existe!",true);return;}
+ celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
+ saveToAPI(celulas); closeModal(); selected=k; renderSidebar(); renderDetail();
 }
 
 function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 function showToast(msg, err=false){
-  const t=document.getElementById("toastEl");
-  t.textContent=msg; t.className="toast "+(err?"error":"ok");
-  void t.offsetWidth; t.classList.add("show");
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
+ const t=document.getElementById("toastEl");
+ t.textContent=msg; t.className="toast "+(err?"error":"ok");
+ void t.offsetWidth; t.classList.add("show");
+ clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); closeSidebar(); }
+ if (e.key === "Escape") { closeModal(); closeXlsxModal(); closeLightbox(); closeSidebar(); }
 });
 document.getElementById("modalEl").addEventListener("click", closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click", closeXlsxModal);
