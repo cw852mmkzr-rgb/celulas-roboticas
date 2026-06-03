@@ -184,58 +184,19 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .arm-gabarito.open { max-height: 80px; opacity: 1; margin-top: 10px; }
 .arm-highlight { outline: 2px solid #00e87a; background: #00e87a08 !important; }
 
-/* PRODUÇÃO DIÁRIA */
-.prod-day-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-}
-.prod-day-card {
-  background: #080b0f;
-  border: 1px solid #1e2530;
-  border-radius: 10px;
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  transition: border-color 0.15s;
-}
+.prod-day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.prod-day-card { background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: border-color 0.15s; }
 .prod-day-card:hover { border-color: #2e3b4e; }
 .prod-day-card.today { border-color: #00e87a60; background: #00e87a08; }
-.prod-day-num {
-  font-size: 11px; color: #4a5568;
-  font-weight: 700; letter-spacing: 0.1em;
-}
+.prod-day-num { font-size: 11px; color: #4a5568; font-weight: 700; letter-spacing: 0.1em; }
 .prod-day-card.today .prod-day-num { color: #00e87a; }
-.prod-day-input {
-  background: transparent; border: none; outline: none;
-  font-family: 'Courier New', monospace;
-  font-size: 18px; font-weight: 700;
-  color: #d8dde6; text-align: center;
-  width: 100%; padding: 2px 0;
-  transition: color 0.15s;
-}
+.prod-day-input { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #d8dde6; text-align: center; width: 100%; padding: 2px 0; transition: color 0.15s; }
 .prod-day-input:focus { color: #00e87a; }
 .prod-day-input[readonly] { cursor: default; color: #4a5568; }
 .prod-day-input.has-value { color: #00e87a; }
-.prod-day-bar-wrap {
-  width: 100%; height: 4px;
-  background: #1e2530; border-radius: 99px; overflow: hidden;
-}
-.prod-day-bar {
-  height: 100%; border-radius: 99px;
-  background: #00e87a;
-  transition: width 0.4s;
-}
-.prod-total-box {
-  background: #00e87a15;
-  border: 1px solid #00e87a30;
-  border-radius: 10px;
-  padding: 14px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 16px;
-}
+.prod-day-bar-wrap { width: 100%; height: 4px; background: #1e2530; border-radius: 99px; overflow: hidden; }
+.prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; transition: width 0.4s; }
+.prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -493,61 +454,61 @@ function updateAndRefreshRitmo(key, field, value) {
 }
 
 // ── PRODUÇÃO DIÁRIA ───────────────────────────
+function getChave(key) {
+  const mes = celulas[key].mes_selecionado !== undefined ? celulas[key].mes_selecionado : new Date().getMonth();
+  const ano = celulas[key].ano_selecionado || new Date().getFullYear();
+  return ano + "_" + mes;
+}
+
 function updateDia(key, dia, value) {
-
-  const c = celulas[key];
-
-  if (!c.historico_producao) c.historico_producao = {};
-
-  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
-  const anoSel = c.ano_selecionado || new Date().getFullYear();
-  const chave = `${anoSel}-${mesIdx}`;
-
-  if (!c.historico_producao[chave]) c.historico_producao[chave] = {};
+  const chave = getChave(key);
+  if (!celulas[key].producao_meses) celulas[key].producao_meses = {};
+  if (!celulas[key].producao_meses[chave]) celulas[key].producao_meses[chave] = {};
 
   const val = parseInt(value) || 0;
-  c.historico_producao[chave][dia] = val;
-  c.producao_dias = c.historico_producao[chave];
-
+  celulas[key].producao_meses[chave][dia] = val;
   saveToAPI(celulas);
 
-  const dias = c.producao_dias;
-  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b) || 0), 0);
+  const dias = celulas[key].producao_meses[chave];
+  const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
   const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
 
   const totalEl = document.getElementById("prod-total");
   if (totalEl) totalEl.textContent = total.toLocaleString("pt-BR");
 
-  // atualiza cor do input
   const inp = document.getElementById("inp-dia-" + dia);
   if (inp) inp.className = "prod-day-input" + (val > 0 ? " has-value" : "") + (!isAdmin ? " readonly" : "");
 
-  // atualiza barra de todos os dias
   for (let d = 1; d <= 31; d++) {
     const bar = document.getElementById("bar-dia-" + d);
-    const v = parseInt((celulas[key].producao_dias || {})[d]) || 0;
+    const v = parseInt(dias[d]) || 0;
     if (bar) bar.style.width = (maxVal > 0 ? Math.round(v / maxVal * 100) : 0) + "%";
   }
 }
 
+function updateMesAno(key, campo, valor) {
+  if (campo === 'mes') celulas[key].mes_selecionado = valor;
+  if (campo === 'ano') celulas[key].ano_selecionado = valor;
+  saveToAPI(celulas);
+  renderProducaoDiaria();
+}
+
 function renderProducaoDiaria() {
   const c = celulas[selected];
-  if (!c.historico_producao) c.historico_producao = {};
+  const anoAtual = new Date().getFullYear();
+  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
+  const anoSel = c.ano_selecionado || anoAtual;
+  const chave = anoSel + "_" + mesIdx;
 
-  const chaveAtual = `${anoSel}-${mesIdx}`;
-
-  const dias = c.historico_producao[chaveAtual] || c.producao_dias || {};
+  const dias = (c.producao_meses && c.producao_meses[chave]) ? c.producao_meses[chave] : {};
   const hoje = new Date().getDate();
-  const mesAtual = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   const ro = !isAdmin ? 'readonly' : '';
 
   const total = Object.values(dias).reduce((a, b) => a + (parseInt(b)||0), 0);
   const maxVal = Math.max(...Object.values(dias).map(v => parseInt(v)||0), 1);
+  const diasComValor = Object.values(dias).filter(v => parseInt(v) > 0).length;
 
   const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const anoAtual = new Date().getFullYear();
-  const mesIdx = c.mes_selecionado !== undefined ? c.mes_selecionado : new Date().getMonth();
-  const anoSel = c.ano_selecionado || anoAtual;
 
   let diasHTML = '';
   for (let d = 1; d <= 31; d++) {
@@ -579,7 +540,6 @@ function renderProducaoDiaria() {
       ${isAdmin ? `<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>` : ""}
     </div>
 
-    <!-- Seletor de mês/ano -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <select onchange="updateMesAno('${selected}','mes',+this.value)"
         style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
@@ -591,7 +551,6 @@ function renderProducaoDiaria() {
       </select>
     </div>
 
-    <!-- Total do mês -->
     <div class="prod-total-box">
       <div>
         <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Total do mês</div>
@@ -600,36 +559,13 @@ function renderProducaoDiaria() {
       <div style="text-align:right">
         <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px">Média diária</div>
         <div style="font-size:20px;font-weight:700;color:#3d9eff">
-          ${Object.values(dias).filter(v => parseInt(v) > 0).length > 0
-            ? Math.round(total / Object.values(dias).filter(v => parseInt(v) > 0).length).toLocaleString("pt-BR")
-            : '—'}
+          ${diasComValor > 0 ? Math.round(total / diasComValor).toLocaleString("pt-BR") : '—'}
         </div>
       </div>
     </div>
 
-    <!-- Grid dos dias -->
     <div class="prod-day-grid">${diasHTML}</div>
   </div>`;
-}
-
-function updateMesAno(key, campo, valor) {
-
-  if (!celulas[key].historico_producao) celulas[key].historico_producao = {};
-
-  const mesAtual = celulas[key].mes_selecionado !== undefined ? celulas[key].mes_selecionado : new Date().getMonth();
-  const anoAtual = celulas[key].ano_selecionado || new Date().getFullYear();
-
-  const chaveAtual = `${anoAtual}-${mesAtual}`;
-  celulas[key].historico_producao[chaveAtual] = JSON.parse(JSON.stringify(celulas[key].producao_dias || {}));
-
-  if (campo === 'mes') celulas[key].mes_selecionado = valor;
-  if (campo === 'ano') celulas[key].ano_selecionado = valor;
-
-  const novaChave = `${celulas[key].ano_selecionado || anoAtual}-${celulas[key].mes_selecionado}`;
-  celulas[key].producao_dias = celulas[key].historico_producao[novaChave] || {};
-
-  saveToAPI(celulas);
-  renderProducaoDiaria();
 }
 
 function triggerImgUpload() {
@@ -858,7 +794,7 @@ function renderDetail() {
   if (nomeCell.includes('armario') || nomeCell.includes('armário') || nomeCell.includes('gabarito')) {
     renderArmario(); return;
   }
-  if (nomeCell.includes('produção diária') || nomeCell.includes('producao diaria') || nomeCell.includes('produção diaria') || nomeCell.includes('producao diária')) {
+  if (nomeCell.includes('produ') && nomeCell.includes('di')) {
     renderProducaoDiaria(); return;
   }
 
