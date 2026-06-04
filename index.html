@@ -808,10 +808,16 @@ function doLogout(){
   isAdmin=false;selected=null;
 }
 
+let sidebarExpandida = false;
+
 function renderSidebar(){
   const keys=Object.keys(celulas).sort();
   document.getElementById("cellCount").textContent="Células ("+keys.length+")";
-  document.getElementById("sidebarList").innerHTML=keys.map(k=>{
+
+  const visiveis = sidebarExpandida ? keys : keys.slice(0,1);
+  const restantes = keys.length - 1;
+
+  let html = visiveis.map(k=>{
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
     return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
       <div class="cell-num">${parseInt(k)}</div>
@@ -819,8 +825,30 @@ function renderSidebar(){
       <div class="dot ${s.dot}"></div>
     </div>`;
   }).join("");
+
+  if (!sidebarExpandida && restantes > 0) {
+    html += `<div onclick="toggleSidebarExpand()" style="padding:10px 14px;cursor:pointer;text-align:center;border-bottom:1px solid #1e2530;color:#00e87a;font-size:11px;font-weight:700;letter-spacing:0.08em;background:#00e87a08;transition:background 0.15s" onmouseover="this.style.background='#00e87a15'" onmouseout="this.style.background='#00e87a08'">
+      ▼ Ver mais ${restantes} célula(s)
+    </div>`;
+  } else if (sidebarExpandida && keys.length > 1) {
+    html += `<div onclick="toggleSidebarExpand()" style="padding:10px 14px;cursor:pointer;text-align:center;border-bottom:1px solid #1e2530;color:#4a5568;font-size:11px;font-weight:700;letter-spacing:0.08em;transition:background 0.15s" onmouseover="this.style.background='#ffffff06'" onmouseout="this.style.background='transparent'">
+      ▲ Recolher
+    </div>`;
+  }
+
+  document.getElementById("sidebarList").innerHTML = html;
 }
-function selectCell(k){selected=k;renderSidebar();renderDetail();closeSidebar();}
+
+function toggleSidebarExpand(){
+  sidebarExpandida = !sidebarExpandida;
+  renderSidebar();
+}
+function selectCell(k){
+  // se a célula não está na lista visível, expande
+  const keys=Object.keys(celulas).sort();
+  if(!sidebarExpandida && keys.indexOf(k) > 0) sidebarExpandida = true;
+  selected=k;renderSidebar();renderDetail();closeSidebar();
+}
 
 function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
 function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
@@ -925,8 +953,8 @@ function renderDetail(){
   const nomeCell=(celulas[selected].nome||'').toLowerCase();
   if(nomeCell.includes('armario')||nomeCell.includes('armário')||nomeCell.includes('gabarito')){renderArmario();return;}
   if(nomeCell.includes('produ')&&nomeCell.includes('pe')){renderProducaoPorPeca();return;}
-  if(nomeCell.includes('produ')&&nomeCell.includes('di')){renderProducaoDiaria();return;}
-  if(nomeCell.includes('meta')&&nomeCell.includes('di')){renderMetasDiaria();return;}
+  if(nomeCell.includes('produ')&&(nomeCell.includes('men')||nomeCell.includes('di'))){renderProducaoDiaria();return;}
+  if(nomeCell.includes('meta')){renderMetasDiaria();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -1078,10 +1106,10 @@ function syncMetasToProducao(metasKey) {
     sum + [...HORAS_DIA,...HORAS_NOITE].reduce((s, h) =>
       s + (parseCelVal(((data[r]||{})[campoH(h)])||'').num), 0), 0);
 
-  // localiza a célula de Produção Diária
+  // localiza a célula de Produção Mensal (antigo nome: Produção Diária)
   const prodKey = Object.keys(celulas).find(k => {
     const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('produ') && n.includes('di');
+    return n.includes('produ') && (n.includes('men') || n.includes('di')) && !n.includes('pe');
   });
   if (!prodKey) return; // célula não existe, não faz nada
 
@@ -1097,10 +1125,10 @@ function syncMetasToProducao(metasKey) {
 // Lê todas as entradas de metas_dias da célula "Metas Diária"
 // e agrupa por código de peça, somando o total geral de cada dia.
 function calcProducaoPorPeca() {
-  // localiza a célula de Metas Diária
+  // localiza a célula de Metas (qualquer nome que contenha "meta")
   const metasKey = Object.keys(celulas).find(k => {
     const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('meta') && n.includes('di');
+    return n.includes('meta');
   });
   if (!metasKey) return {};
 
