@@ -161,20 +161,44 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 13px; background: #a78bfa08; border-left: 1px solid #a78bfa20; }
 .metas-table td.total-geral-val { font-weight: 800; font-size: 14px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; }
 
-/* inputs de hora — base amarelo */
+/* inputs de hora — BRANCO por padrão */
 .metas-table input.hora-inp {
   background: transparent; border: none; outline: none;
   font-family: 'Courier New', monospace; font-size: 13px;
-  color: #ffb300; /* AMARELO padrão */
+  color: #d8dde6; /* BRANCO padrão */
   text-align: center; width: 100%; padding: 2px 0; font-weight: 700;
 }
-.metas-table input.hora-inp:focus { color: #ffe066; }
-.metas-table input.hora-inp[readonly] { cursor: default; color: #5a4a00; }
+.metas-table input.hora-inp:focus { color: #fff; }
+.metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 12px; width: 100%; padding: 2px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
 .metas-table input.cod-inp { color: #ffb300; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
+
+/* ── COLUNA CAFÉ 10:00 ── */
+/* Cabeçalho 10:00 — destaque café */
+.metas-table th.col-cafe {
+  background: #ffb30022 !important;
+  color: #ffb300 !important;
+  border-bottom: 2px solid #ffb30070 !important;
+  min-width: 62px;
+}
+/* Célula de dado na coluna 10:00 — fundo levemente amarelado */
+.metas-table td.col-cafe-cell {
+  background: #ffb3000d !important;
+}
+/* Input dentro de 10:00: amarelo quando vazio (padrão) */
+.metas-table td.col-cafe-cell input.hora-inp {
+  color: #ffb300;
+}
+.metas-table td.col-cafe-cell input.hora-inp[readonly] {
+  color: #5a4a00;
+}
+/* Quando tem classe de resultado, sobrepõe o amarelo com a cor correta */
+.metas-table td.col-cafe-cell input.hora-inp.cell-ok   { color: #00e87a !important; }
+.metas-table td.col-cafe-cell input.hora-inp.cell-fail  { color: #ff4d4d !important; }
+.metas-table td.col-cafe-cell input.hora-inp.cell-adj   { color: #3d9eff !important; }
 
 /* cores de célula */
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
@@ -299,7 +323,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <script>
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "tremps3102"; // ← senha alterada
+const ADMIN_PW = "tremps3102";
 
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
@@ -329,8 +353,6 @@ const SC = {
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
 
-// ── detecta tipo de valor digitado ────────────
-// "#" no final = ajuste (azul), valor puro = normal (amarelo/verde/vermelho)
 function parseCelVal(raw) {
   const s = String(raw || '').trim();
   if (!s) return { num: 0, tipo: 'normal' };
@@ -497,12 +519,11 @@ function renderProducaoDiaria(){
 // ── METAS DIÁRIA ──────────────────────────────
 function campoH(h){ return 'h'+h.replace(':',''); }
 
-// aplica cor considerando o tipo (ajuste = azul, normal = verde/vermelho/amarelo)
 function aplicarCor(inp, rawVal, meta) {
   inp.classList.remove('cell-ok','cell-fail','cell-adj');
   const { num, tipo } = parseCelVal(rawVal);
   if (tipo === 'ajuste') { inp.classList.add('cell-adj'); inp.style.color=''; return; }
-  if (num <= 0) { inp.style.color=''; return; } // vazio = amarelo padrão (CSS base)
+  if (num <= 0) { inp.style.color=''; return; }
   if (meta > 0 && num >= meta) inp.classList.add('cell-ok');
   else if (meta > 0 && num < meta) inp.classList.add('cell-fail');
   else inp.classList.add('cell-ok');
@@ -514,14 +535,12 @@ function updateMetasCell(key, robo, campo, valor) {
   if (!celulas[key].metas_dias) celulas[key].metas_dias = {};
   if (!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave] = {};
   if (!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo] = {};
-  // salva o valor raw (pode ter #)
   celulas[key].metas_dias[chave][robo][campo] = valor;
   saveToAPI(celulas);
 
   const rd = celulas[key].metas_dias[chave][robo];
   const meta = parseInt(rd.meta) || 0;
 
-  // recalcula subtotais (usa só o número, ignora #)
   const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
   const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
   const totalG   = subDia + subNoite;
@@ -533,12 +552,10 @@ function updateMetasCell(key, robo, campo, valor) {
   if(elN){elN.textContent=subNoite>0?subNoite:'—';elN.style.color=subNoite>0?'#a78bfa':'#4a5568';}
   if(elT){elT.textContent=totalG>0?totalG:'—';}
 
-  // cor da célula editada
   if (campo.startsWith('h')) {
     const inp=document.getElementById(`inp-${robo}-${campo}`);
     if(inp) aplicarCor(inp, valor, meta);
   }
-  // se mudou meta, reaplica em todas
   if (campo==='meta') {
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
       const c=campoH(h);
@@ -562,7 +579,14 @@ function buildTurnoTable(c, turno, chave) {
   const subId    = isNoite?'sub-noite':'sub-dia';
   const subColor = isNoite?'#a78bfa':'#00e87a';
 
-  const horasHeader = HORAS.map(h=>`<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`).join('');
+  // Cabeçalho: 10:00 recebe classe col-cafe com ícone ☕
+  const horasHeader = HORAS.map(h => {
+    const isCafe = h === '10:00';
+    const baseClass = isNoite ? 'col-hora-noite' : 'col-hora';
+    const cafeClass = isCafe ? ' col-cafe' : '';
+    const label = isCafe ? `☕ ${h}` : h;
+    return `<th class="${baseClass}${cafeClass}">${label}</th>`;
+  }).join('');
 
   const linhas = ROBOS.map(robo=>{
     const rd=(data[robo])||{};
@@ -576,9 +600,10 @@ function buildTurnoTable(c, turno, chave) {
       let cc='';
       if(tipo==='ajuste') cc='cell-adj';
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
-      // mostra o valor salvo (com # se tiver)
       const displayVal = rawVal!==''&&rawVal!=='0'?rawVal:'';
-      return `<td><input id="inp-${robo}-${campo}" type="text"
+      // 10:00 recebe classe col-cafe-cell na <td>
+      const tdClass = h === '10:00' ? ' class="col-cafe-cell"' : '';
+      return `<td${tdClass}><input id="inp-${robo}-${campo}" type="text"
         class="hora-inp${cc?' '+cc:''}"
         value="${esc(String(displayVal))}" placeholder="—" ${ro}
         onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
@@ -603,11 +628,13 @@ function buildTurnoTable(c, turno, chave) {
     </tr>`;
   }).join('');
 
-  // rodapé totais por hora
+  // Rodapé totais por hora
   const rodapeHoras = HORAS.map(h=>{
     const campo=campoH(h);
+    const isCafe = h === '10:00';
     const soma=ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campo])||'').num),0);
-    return `<td style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:12px;background:${isNoite?'#a78bfa10':'#ffb30010'}">${soma>0?soma:'—'}</td>`;
+    const tdClass = isCafe ? ' class="col-cafe-cell"' : '';
+    return `<td${tdClass} style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:12px;background:${isCafe?'#ffb30018':isNoite?'#a78bfa10':'#ffb30010'}">${soma>0?soma:'—'}</td>`;
   }).join('');
 
   const subTotalTurno = ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
@@ -665,7 +692,6 @@ function renderMetasDiaria(){
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
 
-    <!-- SELETOR DE DATA -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📆</span>
       <div class="date-sel"><label>Dia</label><select onchange="updateMetasData('${selected}','metas_dia',+this.value)">${diasOpts}</select></div>
@@ -678,7 +704,6 @@ function renderMetasDiaria(){
       </div>
     </div>
 
-    <!-- LEGENDA -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 14px;margin-bottom:12px;display:flex;gap:18px;font-size:10px;color:#4a5568;letter-spacing:0.08em;flex-wrap:wrap;align-items:center">
       <span><span style="color:#00e87a;font-weight:800">■</span> Atingiu a meta</span>
       <span><span style="color:#ff4d4d;font-weight:800">■</span> Abaixo da meta</span>
@@ -687,7 +712,6 @@ function renderMetasDiaria(){
       <span style="color:#2a3040">  ← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
     </div>
 
-    <!-- TURNO DIA -->
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">☀</span>
@@ -696,7 +720,6 @@ function renderMetasDiaria(){
       ${buildTurnoTable(c,'dia',chave)}
     </div>
 
-    <!-- TURNO NOITE -->
     <div style="margin-top:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
