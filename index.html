@@ -148,8 +148,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 60px; }
 .metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 65px; }
 .metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 100px; }
-.metas-table th.col-hora { background: #ffb30012; color: #ffb300; min-width: 62px; border-bottom: 2px solid #ffb30040; }
-.metas-table th.col-hora-noite { background: #ffb30012; color: #ffb300; min-width: 62px; border-bottom: 2px solid #ffb30040; }
+.metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 62px; }
+.metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 62px; }
+.metas-table th.col-hora-cafe { background: #ffb30018; color: #ffb300; min-width: 62px; border-bottom: 2px solid #ffb30060; }
 .metas-table th.col-sub { background: #0d1117; min-width: 70px; }
 .metas-table th.col-total-geral { background: #0a0d11; color: #ffb300; min-width: 80px; border-left: 2px solid #ffb30040; }
 .metas-table td { border: 1px solid #1e2530; padding: 4px 5px; text-align: center; vertical-align: middle; }
@@ -161,55 +162,47 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 13px; background: #a78bfa08; border-left: 1px solid #a78bfa20; }
 .metas-table td.total-geral-val { font-weight: 800; font-size: 14px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; }
 
-/* inputs de hora — BRANCO por padrão */
+/* inputs de hora — base BRANCO */
 .metas-table input.hora-inp {
   background: transparent; border: none; outline: none;
   font-family: 'Courier New', monospace; font-size: 13px;
-  color: #d8dde6; /* BRANCO padrão */
+  color: #d8dde6;
   text-align: center; width: 100%; padding: 2px 0; font-weight: 700;
 }
 .metas-table input.hora-inp:focus { color: #fff; }
 .metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
+
+/* somente 10:00 = amarelo */
+.metas-table input.hora-inp.cafe { color: #ffb300; }
+.metas-table input.hora-inp.cafe[readonly] { color: #5a4a00; }
+.metas-table input.hora-inp.cafe:focus { color: #ffe066; }
+
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 12px; width: 100%; padding: 2px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
 .metas-table input.cod-inp { color: #ffb300; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
 
-/* ── COLUNA CAFÉ 10:00 ── */
-/* Cabeçalho 10:00 — destaque café */
-.metas-table th.col-cafe {
-  background: #ffb30022 !important;
-  color: #ffb300 !important;
-  border-bottom: 2px solid #ffb30070 !important;
-  min-width: 62px;
-}
-/* Célula de dado na coluna 10:00 — fundo levemente amarelado */
-.metas-table td.col-cafe-cell {
-  background: #ffb3000d !important;
-}
-/* Input dentro de 10:00: amarelo quando vazio (padrão) */
-.metas-table td.col-cafe-cell input.hora-inp {
-  color: #ffb300;
-}
-.metas-table td.col-cafe-cell input.hora-inp[readonly] {
-  color: #5a4a00;
-}
-/* Quando tem classe de resultado, sobrepõe o amarelo com a cor correta */
-.metas-table td.col-cafe-cell input.hora-inp.cell-ok   { color: #00e87a !important; }
-.metas-table td.col-cafe-cell input.hora-inp.cell-fail  { color: #ff4d4d !important; }
-.metas-table td.col-cafe-cell input.hora-inp.cell-adj   { color: #3d9eff !important; }
-
-/* cores de célula */
+/* cores de célula — sobrepõem o padrão branco/amarelo */
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
 .cell-fail { background: #ff4d4d20 !important; color: #ff4d4d !important; }
-.cell-adj  { background: #3d9eff20 !important; color: #3d9eff !important; } /* azul = ajuste */
+.cell-adj  { background: #3d9eff20 !important; color: #3d9eff !important; }
 
 /* seletor de data */
 .date-sel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .date-sel select { background: #0f1318; border: 1px solid #1e2530; border-radius: 6px; padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px; color: #d8dde6; cursor: pointer; outline: none; transition: border-color 0.15s; }
 .date-sel select:focus { border-color: #00e87a; }
 .date-sel label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ── HISTÓRICO ELETRODO ── */
+.hist-item {
+  display: flex; align-items: center; gap: 8px;
+  background: #080b0f; border: 1px solid #1e2530;
+  border-radius: 6px; padding: 6px 10px; margin-bottom: 6px;
+}
+.hist-item-data { font-size: 11px; color: #4a5568; min-width: 110px; white-space: nowrap; }
+.hist-item-val { flex: 1; font-size: 13px; color: #d8dde6; font-weight: 600; }
+.hist-empty { font-size: 12px; color: #2a3040; }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -339,6 +332,7 @@ const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const HORAS_CAFE = ["10:00"]; // horários marcados como café (amarelo)
 
 const defaultData = {
   "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
@@ -519,15 +513,25 @@ function renderProducaoDiaria(){
 // ── METAS DIÁRIA ──────────────────────────────
 function campoH(h){ return 'h'+h.replace(':',''); }
 
-function aplicarCor(inp, rawVal, meta) {
-  inp.classList.remove('cell-ok','cell-fail','cell-adj');
+// aplica cor na célula
+// prioridade: ajuste (azul) > ok (verde) > fail (vermelho) > cafe (amarelo) > normal (branco)
+function aplicarCor(inp, rawVal, meta, isCafe) {
+  inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
   const { num, tipo } = parseCelVal(rawVal);
-  if (tipo === 'ajuste') { inp.classList.add('cell-adj'); inp.style.color=''; return; }
-  if (num <= 0) { inp.style.color=''; return; }
-  if (meta > 0 && num >= meta) inp.classList.add('cell-ok');
-  else if (meta > 0 && num < meta) inp.classList.add('cell-fail');
-  else inp.classList.add('cell-ok');
-  inp.style.color='';
+
+  if (tipo === 'ajuste') {
+    inp.classList.add('cell-adj');
+    return;
+  }
+  if (num > 0) {
+    if (meta > 0 && num >= meta) { inp.classList.add('cell-ok'); return; }
+    if (meta > 0 && num < meta)  { inp.classList.add('cell-fail'); return; }
+    // meta não definida: verde
+    inp.classList.add('cell-ok');
+    return;
+  }
+  // vazio — só café fica amarelo
+  if (isCafe) inp.classList.add('cafe');
 }
 
 function updateMetasCell(key, robo, campo, valor) {
@@ -536,6 +540,7 @@ function updateMetasCell(key, robo, campo, valor) {
   if (!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave] = {};
   if (!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo] = {};
   celulas[key].metas_dias[chave][robo][campo] = valor;
+  syncMetasToProducao(key);
   saveToAPI(celulas);
 
   const rd = celulas[key].metas_dias[chave][robo];
@@ -553,20 +558,26 @@ function updateMetasCell(key, robo, campo, valor) {
   if(elT){elT.textContent=totalG>0?totalG:'—';}
 
   if (campo.startsWith('h')) {
+    // descobre se é campo de café
+    const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h => campoH(h) === campo) || '';
+    const isCafe = HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp) aplicarCor(inp, valor, meta);
+    if(inp) aplicarCor(inp, valor, meta, isCafe);
   }
   if (campo==='meta') {
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
       const c=campoH(h);
+      const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp) aplicarCor(inp, rd[c]||'', parseInt(valor)||0);
+      if(inp) aplicarCor(inp, rd[c]||'', parseInt(valor)||0, isCafe);
     });
   }
 }
 
 function updateMetasData(key,campo,valor){
-  celulas[key][campo]=valor; saveToAPI(celulas); renderMetasDiaria();
+  celulas[key][campo]=valor;
+  syncMetasToProducao(key);
+  saveToAPI(celulas); renderMetasDiaria();
 }
 
 function buildTurnoTable(c, turno, chave) {
@@ -579,13 +590,11 @@ function buildTurnoTable(c, turno, chave) {
   const subId    = isNoite?'sub-noite':'sub-dia';
   const subColor = isNoite?'#a78bfa':'#00e87a';
 
-  // Cabeçalho: 10:00 recebe classe col-cafe com ícone ☕
+  // cabeçalhos — 10:00 recebe classe especial de café
   const horasHeader = HORAS.map(h => {
-    const isCafe = h === '10:00';
-    const baseClass = isNoite ? 'col-hora-noite' : 'col-hora';
-    const cafeClass = isCafe ? ' col-cafe' : '';
-    const label = isCafe ? `☕ ${h}` : h;
-    return `<th class="${baseClass}${cafeClass}">${label}</th>`;
+    const isCafe = HORAS_CAFE.includes(h);
+    if (isCafe) return `<th class="col-hora-cafe">☕ ${h}</th>`;
+    return `<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
   }).join('');
 
   const linhas = ROBOS.map(robo=>{
@@ -597,13 +606,23 @@ function buildTurnoTable(c, turno, chave) {
       const campo=campoH(h);
       const rawVal=rd[campo]||'';
       const {num,tipo}=parseCelVal(rawVal);
-      let cc='';
-      if(tipo==='ajuste') cc='cell-adj';
-      else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
+      const isCafe = HORAS_CAFE.includes(h);
+
+      // determina classe CSS
+      let cc = '';
+      if (tipo==='ajuste') {
+        cc = 'cell-adj';
+      } else if (num > 0) {
+        if (meta>0&&num>=meta) cc='cell-ok';
+        else if (meta>0&&num<meta) cc='cell-fail';
+        else cc='cell-ok';
+      } else if (isCafe) {
+        cc = 'cafe'; // vazio no café = amarelo
+      }
+
       const displayVal = rawVal!==''&&rawVal!=='0'?rawVal:'';
-      // 10:00 recebe classe col-cafe-cell na <td>
-      const tdClass = h === '10:00' ? ' class="col-cafe-cell"' : '';
-      return `<td${tdClass}><input id="inp-${robo}-${campo}" type="text"
+      const tdStyle = isCafe ? 'style="background:#ffb30008;"' : '';
+      return `<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text"
         class="hora-inp${cc?' '+cc:''}"
         value="${esc(String(displayVal))}" placeholder="—" ${ro}
         onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
@@ -628,13 +647,14 @@ function buildTurnoTable(c, turno, chave) {
     </tr>`;
   }).join('');
 
-  // Rodapé totais por hora
+  // rodapé totais por hora
   const rodapeHoras = HORAS.map(h=>{
     const campo=campoH(h);
-    const isCafe = h === '10:00';
+    const isCafe=HORAS_CAFE.includes(h);
     const soma=ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campo])||'').num),0);
-    const tdClass = isCafe ? ' class="col-cafe-cell"' : '';
-    return `<td${tdClass} style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:12px;background:${isCafe?'#ffb30018':isNoite?'#a78bfa10':'#ffb30010'}">${soma>0?soma:'—'}</td>`;
+    const cor = isCafe ? '#ffb300' : (isNoite ? '#a78bfa' : '#d8dde6');
+    const bg  = isCafe ? '#ffb30010' : (isNoite ? '#a78bfa08' : '#ffffff06');
+    return `<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
   }).join('');
 
   const subTotalTurno = ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
@@ -709,7 +729,7 @@ function renderMetasDiaria(){
       <span><span style="color:#ff4d4d;font-weight:800">■</span> Abaixo da meta</span>
       <span><span style="color:#ffb300;font-weight:800">■</span> Horário de café — meta reduzida</span>
       <span><span style="color:#3d9eff;font-weight:800">■</span> Ajuste técnico na célula</span>
-      <span style="color:#2a3040">  ← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
+      <span style="color:#2a3040">← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
     </div>
 
     <div style="margin-bottom:6px">
@@ -929,11 +949,27 @@ function renderDetail(){
         <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
-    <div class="section"><div class="sec-title">◈ Eletrodo</div>
+    <div class="section"><div class="sec-title">◈ Eletrodo
+      ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca</button>`:""}
+    </div>
       <div class="grid2">
-        <div class="field"><label>Eletrodo</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
+        <div class="field"><label>Eletrodo Atual</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
         <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
         <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas</div>
+        <div style="max-height:160px;overflow-y:auto">
+          ${(c.historico_eletrodo&&c.historico_eletrodo.length>0)
+            ? [...c.historico_eletrodo].reverse().map((h,i)=>`
+              <div class="hist-item">
+                <span class="hist-item-data">📅 ${esc(h.data)}</span>
+                <span class="hist-item-val">⚡ ${esc(h.eletrodo)} <span style="color:#4a5568;font-size:11px">(${esc(h.tipo||'—')})</span></span>
+                ${isAdmin?`<button class="btn-x" title="Remover" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
+              </div>`).join('')
+            : '<div class="hist-empty">Nenhuma troca registrada</div>'
+          }
+        </div>
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Parâmetros de Soldagem</div>
@@ -971,7 +1007,67 @@ function renderDetail(){
   </div>`;
 }
 
+// ── HISTÓRICO ELETRODO ───────────────────────
+function registrarTrocaEletrodo(key) {
+  const c = celulas[key];
+  if (!c.eletrodo || c.eletrodo === '—') { showToast("Informe o eletrodo primeiro", true); return; }
+  if (!c.historico_eletrodo) c.historico_eletrodo = [];
+  const agora = new Date().toLocaleString("pt-BR", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
+  c.historico_eletrodo.push({
+    data: agora,
+    eletrodo: c.eletrodo,
+    tipo: c.tipo_eletrodo || '—'
+  });
+  // atualiza última troca
+  c.ultima_troca = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  saveToAPI(celulas);
+  renderDetail();
+  showToast("Troca registrada ✓");
+}
+
+function removerHistEletrodo(key, idx) {
+  if (!celulas[key].historico_eletrodo) return;
+  celulas[key].historico_eletrodo.splice(idx, 1);
+  saveToAPI(celulas);
+  renderDetail();
+}
+
+// ── SYNC: Metas Diária → Produção Diária ─────
+// Chamado sempre que o total geral de metas muda.
+// Grava o total na célula "Produção Diária" no dia/mês/ano correspondente.
+function syncMetasToProducao(metasKey) {
+  const mc = celulas[metasKey];
+  const ano = mc.metas_ano  || new Date().getFullYear();
+  const mes = mc.metas_mes  !== undefined ? mc.metas_mes : new Date().getMonth();
+  const dia = mc.metas_dia  || new Date().getDate();
+  const chave = `${ano}_${mes}_${dia}`;
+  const data  = (mc.metas_dias && mc.metas_dias[chave]) ? mc.metas_dias[chave] : {};
+
+  // calcula total geral (dia + noite)
+  const totalGeral = ROBOS.reduce((sum, r) =>
+    sum + [...HORAS_DIA,...HORAS_NOITE].reduce((s, h) =>
+      s + (parseCelVal(((data[r]||{})[campoH(h)])||'').num), 0), 0);
+
+  // localiza a célula de Produção Diária
+  const prodKey = Object.keys(celulas).find(k => {
+    const n = (celulas[k].nome||'').toLowerCase();
+    return n.includes('produ') && n.includes('di');
+  });
+  if (!prodKey) return; // célula não existe, não faz nada
+
+  // chave da produção diária (usa o mesmo ano/mês)
+  const prodChave = `${ano}_${mes}`;
+  if (!celulas[prodKey].producao_meses) celulas[prodKey].producao_meses = {};
+  if (!celulas[prodKey].producao_meses[prodChave]) celulas[prodKey].producao_meses[prodChave] = {};
+  celulas[prodKey].producao_meses[prodChave][dia] = totalGeral;
+  // não chama saveToAPI aqui — quem chama é updateMetasCell logo depois
+}
+
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
+
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
 function deleteCell(k){if(!confirm("Excluir "+celulas[k].nome+"?"))return;delete celulas[k];saveToAPI(celulas);selected=Object.keys(celulas).sort()[0]||null;renderSidebar();renderDetail();}
