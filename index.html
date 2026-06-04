@@ -271,6 +271,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="modal-title">Nova Célula</div>
     <div class="modal-field"><label>Número</label><input class="modal-input" id="mNum" type="number" placeholder="Ex: 4" onkeydown="if(event.key==='Enter')createCell()"></div>
     <div class="modal-field"><label>Nome</label><input class="modal-input" id="mNome" placeholder="Ex: Célula Robótica 04" onkeydown="if(event.key==='Enter')createCell()"></div>
+    <div class="modal-field"><label>Tipo</label>
+      <select class="modal-input" id="mTipo" style="font-size:13px;cursor:pointer">
+        <option value="robo">⚙ Robô (padrão)</option>
+        <option value="armario">🗄 Armário de Gabaritos</option>
+        <option value="producao_mensal">📅 Produção Mensal</option>
+        <option value="metas">📋 Metas</option>
+        <option value="producao_peca">📦 Produção por Peça</option>
+      </select>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-green" onclick="createCell()">Criar</button>
@@ -481,7 +490,7 @@ function renderProducaoDiaria(){
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
@@ -708,7 +717,7 @@ function renderMetasDiaria(){
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
 
@@ -810,30 +819,66 @@ function doLogout(){
 
 let sidebarExpandida = false;
 
+// Retorna o tipo fixo da célula (independente do nome)
+function getCellTipo(k) {
+  return celulas[k].tipo_celula || 'robo';
+}
+
 function renderSidebar(){
-  const keys=Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
+  const keys = Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent = "Células ("+keys.length+")";
 
-  const visiveis = sidebarExpandida ? keys : keys.slice(0,1);
-  const restantes = keys.length - 1;
+  // Separa as células especiais dos robôs
+  const especiais = keys.filter(k => {
+    const t = getCellTipo(k);
+    return t === 'armario' || t === 'producao_mensal' || t === 'metas' || t === 'producao_peca';
+  });
+  const robos = keys.filter(k => getCellTipo(k) === 'robo');
 
-  let html = visiveis.map(k=>{
-    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
+  // Ordem fixa das especiais para exibição
+  const ordemTipo = ['armario','producao_mensal','metas','producao_peca'];
+  const especiaisOrdenadas = ordemTipo.map(t => especiais.find(k => getCellTipo(k) === t)).filter(Boolean);
+
+  // Robôs: mostra só o primeiro, o restante fica atrás do "ver mais"
+  const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
+  const robosRestantes = robos.length - 1;
+
+  function itemHTML(k) {
+    const c = celulas[k]; const s = SC[c.status]||SC["Parado"];
+    const tipo = getCellTipo(k);
+    const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
+    const ic = icones[tipo] || '⚙';
     return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
-      <div class="cell-num">${parseInt(k)}</div>
-      <div class="cell-info"><div class="cell-name">${c.nome}</div><div class="cell-peca">${c.cliente||c.peca||'—'}</div></div>
+      <div class="cell-num" style="font-size:14px">${ic}</div>
+      <div class="cell-info">
+        <div class="cell-name">${c.nome}</div>
+        <div class="cell-peca">${tipo==='robo'?(c.cliente||c.peca||'—'):''}</div>
+      </div>
       <div class="dot ${s.dot}"></div>
     </div>`;
-  }).join("");
+  }
 
-  if (!sidebarExpandida && restantes > 0) {
-    html += `<div onclick="toggleSidebarExpand()" style="padding:10px 14px;cursor:pointer;text-align:center;border-bottom:1px solid #1e2530;color:#00e87a;font-size:11px;font-weight:700;letter-spacing:0.08em;background:#00e87a08;transition:background 0.15s" onmouseover="this.style.background='#00e87a15'" onmouseout="this.style.background='#00e87a08'">
-      ▼ Ver mais ${restantes} célula(s)
-    </div>`;
-  } else if (sidebarExpandida && keys.length > 1) {
-    html += `<div onclick="toggleSidebarExpand()" style="padding:10px 14px;cursor:pointer;text-align:center;border-bottom:1px solid #1e2530;color:#4a5568;font-size:11px;font-weight:700;letter-spacing:0.08em;transition:background 0.15s" onmouseover="this.style.background='#ffffff06'" onmouseout="this.style.background='transparent'">
-      ▲ Recolher
-    </div>`;
+  let html = '';
+
+  // Células especiais sempre visíveis
+  if (especiaisOrdenadas.length > 0) {
+    html += `<div style="padding:6px 14px 4px;font-size:9px;color:#2a3040;text-transform:uppercase;letter-spacing:0.15em;font-weight:700">Painéis</div>`;
+    html += especiaisOrdenadas.map(itemHTML).join('');
+  }
+
+  // Robôs
+  if (robos.length > 0) {
+    html += `<div style="padding:6px 14px 4px;font-size:9px;color:#2a3040;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
+    html += robosVisiveis.map(itemHTML).join('');
+    if (!sidebarExpandida && robosRestantes > 0) {
+      html += `<div onclick="toggleSidebarExpand()" style="padding:9px 14px;cursor:pointer;text-align:center;color:#00e87a;font-size:11px;font-weight:700;letter-spacing:0.08em;background:#00e87a08;border-top:1px solid #1e2530" onmouseover="this.style.background='#00e87a15'" onmouseout="this.style.background='#00e87a08'">
+        ▼ Ver mais ${robosRestantes} robô(s)
+      </div>`;
+    } else if (sidebarExpandida && robos.length > 1) {
+      html += `<div onclick="toggleSidebarExpand()" style="padding:9px 14px;cursor:pointer;text-align:center;color:#4a5568;font-size:11px;font-weight:700;letter-spacing:0.08em;border-top:1px solid #1e2530" onmouseover="this.style.background='#ffffff06'" onmouseout="this.style.background='transparent'">
+        ▲ Recolher
+      </div>`;
+    }
   }
 
   document.getElementById("sidebarList").innerHTML = html;
@@ -843,11 +888,9 @@ function toggleSidebarExpand(){
   sidebarExpandida = !sidebarExpandida;
   renderSidebar();
 }
+
 function selectCell(k){
-  // se a célula não está na lista visível, expande
-  const keys=Object.keys(celulas).sort();
-  if(!sidebarExpandida && keys.indexOf(k) > 0) sidebarExpandida = true;
-  selected=k;renderSidebar();renderDetail();closeSidebar();
+  selected=k; renderSidebar(); renderDetail(); closeSidebar();
 }
 
 function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
@@ -919,7 +962,7 @@ function renderArmario(){
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -950,11 +993,11 @@ function updateEspaco(key,num,field,value){
 
 function renderDetail(){
   if(!selected||!celulas[selected])return;
-  const nomeCell=(celulas[selected].nome||'').toLowerCase();
-  if(nomeCell.includes('armario')||nomeCell.includes('armário')||nomeCell.includes('gabarito')){renderArmario();return;}
-  if(nomeCell.includes('produ')&&nomeCell.includes('pe')){renderProducaoPorPeca();return;}
-  if(nomeCell.includes('produ')&&(nomeCell.includes('men')||nomeCell.includes('di'))){renderProducaoDiaria();return;}
-  if(nomeCell.includes('meta')){renderMetasDiaria();return;}
+  const tipo = getCellTipo(selected);
+  if(tipo==='armario'){renderArmario();return;}
+  if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
+  if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
+  if(tipo==='metas'){renderMetasDiaria();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -973,7 +1016,7 @@ function renderDetail(){
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div class="detail-hdr">
-      <div><div class="detail-title">${esc(c.nome)}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
+      <div><div class="detail-title">${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
           <div class="dot ${s.dot}"></div>
@@ -1106,11 +1149,8 @@ function syncMetasToProducao(metasKey) {
     sum + [...HORAS_DIA,...HORAS_NOITE].reduce((s, h) =>
       s + (parseCelVal(((data[r]||{})[campoH(h)])||'').num), 0), 0);
 
-  // localiza a célula de Produção Mensal (antigo nome: Produção Diária)
-  const prodKey = Object.keys(celulas).find(k => {
-    const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('produ') && (n.includes('men') || n.includes('di')) && !n.includes('pe');
-  });
+  // localiza a célula de Produção Mensal pelo tipo
+  const prodKey = Object.keys(celulas).find(k => getCellTipo(k) === 'producao_mensal');
   if (!prodKey) return; // célula não existe, não faz nada
 
   // chave da produção diária (usa o mesmo ano/mês)
@@ -1125,11 +1165,8 @@ function syncMetasToProducao(metasKey) {
 // Lê todas as entradas de metas_dias da célula "Metas Diária"
 // e agrupa por código de peça, somando o total geral de cada dia.
 function calcProducaoPorPeca() {
-  // localiza a célula de Metas (qualquer nome que contenha "meta")
-  const metasKey = Object.keys(celulas).find(k => {
-    const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('meta');
-  });
+  // localiza a célula de Metas pelo tipo
+  const metasKey = Object.keys(celulas).find(k => getCellTipo(k) === 'metas');
   if (!metasKey) return {};
 
   const mc = celulas[metasKey];
@@ -1235,7 +1272,7 @@ function renderProducaoPorPeca() {
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas Diária</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
@@ -1309,13 +1346,28 @@ function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderD
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
 function deleteCell(k){if(!confirm("Excluir "+celulas[k].nome+"?"))return;delete celulas[k];saveToAPI(celulas);selected=Object.keys(celulas).sort()[0]||null;renderSidebar();renderDetail();}
 function openModal(){document.getElementById("modalEl").classList.add("open");document.getElementById("mNum").focus();}
-function closeModal(){document.getElementById("modalEl").classList.remove("open");document.getElementById("mNum").value="";document.getElementById("mNome").value="";}
+function closeModal(){document.getElementById("modalEl").classList.remove("open");document.getElementById("mNum").value="";document.getElementById("mNome").value="";document.getElementById("mTipo").value="robo";}
 function createCell(){
-  const n=document.getElementById("mNum").value.trim();const nm=document.getElementById("mNome").value.trim();
+  const n=document.getElementById("mNum").value.trim();
+  const nm=document.getElementById("mNome").value.trim();
+  const tp=document.getElementById("mTipo").value||"robo";
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula "+k,tipo_celula:tp,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas);closeModal();selected=k;renderSidebar();renderDetail();
+}
+
+// Abre prompt inline para renomear a célula (só admin)
+function renomearCelula(key) {
+  const atual = celulas[key].nome;
+  const novo = prompt('Novo nome para a célula:', atual);
+  if (novo && novo.trim() && novo.trim() !== atual) {
+    celulas[key].nome = novo.trim();
+    saveToAPI(celulas);
+    renderSidebar();
+    renderDetail();
+    showToast('Nome atualizado ✓');
+  }
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
