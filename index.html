@@ -643,7 +643,7 @@ function buildTurnoTable(c, turno, chave) {
         onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
-      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val">${totalG>0?totalG:'—'}</td>`:''}
+      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;letter-spacing:0.04em;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
     </tr>`;
   }).join('');
 
@@ -672,7 +672,7 @@ function buildTurnoTable(c, turno, chave) {
           <th class="col-cod">Cód. Peça</th>
           ${horasHeader}
           <th class="col-sub" style="color:${subColor}">${subLabel}</th>
-          ${isNoite?`<th class="col-total-geral">Total Geral</th>`:''}
+          ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
         </tr>
       </thead>
       <tbody>
@@ -681,7 +681,7 @@ function buildTurnoTable(c, turno, chave) {
           <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
           ${rodapeHoras}
           <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
-          ${isNoite?`<td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30015;border-left:2px solid #ffb30040">${totalGeralRod>0?totalGeralRod:'—'}</td>`:''}
+          ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060;letter-spacing:0.04em">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
         </tr>
       </tbody>
     </table>
@@ -744,9 +744,28 @@ function renderMetasDiaria(){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
         <span style="font-size:12px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
-        <span style="font-size:10px;color:#4a5568;margin-left:6px">← Total Geral = Sub Dia + Sub Noite</span>
+        <span style="font-size:10px;color:#4a5568;margin-left:6px">← coluna "Total Geral do Dia" = Sub Dia + Sub Noite</span>
       </div>
       ${buildTurnoTable(c,'noite',chave)}
+    </div>
+
+    <!-- TOTAL GERAL DO DIA — DESTAQUE GRANDE -->
+    <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;margin-bottom:6px">⚑ Total Geral do Dia — ${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}</div>
+        <div style="font-size:48px;font-weight:900;color:#ffb300;letter-spacing:0.04em;line-height:1">${totalG.toLocaleString("pt-BR")}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia · automaticamente salvo na Produção Diária</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">☀ Turno Dia</div>
+          <div style="font-size:24px;font-weight:800;color:#00e87a">${totalDia.toLocaleString("pt-BR")}</div>
+        </div>
+        <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:8px;padding:8px 16px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">🌙 Turno Noite</div>
+          <div style="font-size:24px;font-weight:800;color:#a78bfa">${totalNoite.toLocaleString("pt-BR")}</div>
+        </div>
+      </div>
     </div>
   </div>`;
 }
@@ -950,16 +969,18 @@ function renderDetail(){
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Eletrodo
-      ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca</button>`:""}
+      ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}
     </div>
       <div class="grid2">
         <div class="field"><label>Eletrodo Atual</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
         <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
-        <div class="field"><label>Última troca</label><input value="${esc(c.ultima_troca)}" ${ro} onchange="update('${selected}','ultima_troca',this.value)"></div>
+        <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca)}" style="color:#ffb300;cursor:default;color:#ffb300"></div>
       </div>
-      <div style="margin-top:12px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas</div>
-        <div style="max-height:160px;overflow-y:auto">
+      <div style="margin-top:14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530;display:flex;justify-content:space-between;align-items:center">
+          <span>📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</span>
+        </div>
+        <div style="max-height:180px;overflow-y:auto">
           ${(c.historico_eletrodo&&c.historico_eletrodo.length>0)
             ? [...c.historico_eletrodo].reverse().map((h,i)=>`
               <div class="hist-item">
@@ -967,7 +988,7 @@ function renderDetail(){
                 <span class="hist-item-val">⚡ ${esc(h.eletrodo)} <span style="color:#4a5568;font-size:11px">(${esc(h.tipo||'—')})</span></span>
                 ${isAdmin?`<button class="btn-x" title="Remover" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
               </div>`).join('')
-            : '<div class="hist-empty">Nenhuma troca registrada</div>'
+            : '<div class="hist-empty">Nenhuma troca registrada ainda. Clique em "+ Registrar Troca Agora" para adicionar.</div>'
           }
         </div>
       </div>
@@ -1016,13 +1037,16 @@ function registrarTrocaEletrodo(key) {
     day:"2-digit", month:"2-digit", year:"numeric",
     hour:"2-digit", minute:"2-digit"
   });
+  const horaAgora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  // salva no histórico o eletrodo ATUAL (antes de qualquer mudança)
   c.historico_eletrodo.push({
     data: agora,
     eletrodo: c.eletrodo,
     tipo: c.tipo_eletrodo || '—'
   });
-  // atualiza última troca
-  c.ultima_troca = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  // atualiza campo "Última troca" para refletir agora
+  c.ultima_troca = horaAgora;
+  celulas[key] = c;
   saveToAPI(celulas);
   renderDetail();
   showToast("Troca registrada ✓");
