@@ -363,6 +363,7 @@ const SC = {
 function getCellTipo(k) {
   const n = (celulas[k].nome||'').toLowerCase();
   if (n.includes('armario')||n.includes('armário')||n.includes('gabarito')) return 'armario';
+  if (n.includes('relat')) return 'relatorio';
   if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
   if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
   if (n.includes('meta')) return 'metas';
@@ -464,7 +465,7 @@ function renderSidebar(){
   const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
   const robosRestantes = robos.length-1;
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
 
   function itemHTML(k){
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
@@ -994,6 +995,7 @@ function renderDetail(){
   if(!selected||!celulas[selected])return;
   const tipo=getCellTipo(selected);
   if(tipo==='armario'){renderArmario();return;}
+  if(tipo==='relatorio'){renderRelatorio();return;}
   if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
@@ -1209,6 +1211,235 @@ function renderHistoricoRobo(key) {
   </div>`;
 }
 
+// ── RELATÓRIOS ────────────────────────────────
+function updateRelFiltro(key,campo,valor){
+  celulas[key][campo]=valor; saveToAPI(celulas); renderRelatorio();
+}
+
+function renderRelatorio(){
+  const c = celulas[selected];
+  const anoAtual = new Date().getFullYear();
+  const mesIdx = c.rel_mes!==undefined ? c.rel_mes : new Date().getMonth();
+  const anoSel = c.rel_ano || anoAtual;
+
+  // Localiza células auxiliares
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const mc = metasKey ? celulas[metasKey] : null;
+
+  // ── 1. Coleta todos os dias do mês selecionado ──
+  const diasDoMes = {};  // dia -> {robos: {600: {total,meta,cod}}, totalGeral}
+  if (mc && mc.metas_dias) {
+    Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
+      const [a,m,d] = chave.split('_');
+      if (parseInt(a)!==anoSel || parseInt(m)!==mesIdx) return;
+      const dia = parseInt(d);
+      if (!diasDoMes[dia]) diasDoMes[dia] = {robos:{}, totalGeral:0};
+      ROBOS.forEach(robo => {
+        const rd = (diaData[robo])||{};
+        const meta = parseInt(rd.meta)||0;
+        const cod  = rd.cod||'—';
+        const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const total = totalDia+totalNoite;
+        diasDoMes[dia].robos[robo] = {total, meta, cod, totalDia, totalNoite};
+        diasDoMes[dia].totalGeral += total;
+      });
+    });
+  }
+
+  const diasComDados = Object.keys(diasDoMes).map(Number).sort((a,b)=>a-b);
+  const totalMes = diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0);
+  const mediaDia = diasComDados.length>0 ? Math.round(totalMes/diasComDados.length) : 0;
+  const melhorDia = diasComDados.reduce((best,d)=>diasDoMes[d].totalGeral>diasDoMes[best]?.totalGeral?d:best, diasComDados[0]);
+
+  // ── 2. Eficiência por robô no mês ──
+  const eficienciaRobo = ROBOS.map(robo => {
+    let totalProd=0, diasAtivo=0, diasBateu=0, metaMedia=0, metaCount=0;
+    diasComDados.forEach(d=>{
+      const r = (diasDoMes[d].robos[robo])||{};
+      if(r.total>0){totalProd+=r.total;diasAtivo++;}
+      if(r.meta>0){metaMedia+=r.meta;metaCount++;}
+      const metaEstimada = r.meta>0?r.meta*9:0;
+      if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
+    });
+    const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
+    const efic = diasAtivo>0&&mediaMetaHora>0 ? Math.round(totalProd/(diasAtivo*mediaMetaHora*9)*100) : 0;
+    return {robo, totalProd, diasAtivo, diasBateu, mediaMetaHora, efic};
+  }).filter(r=>r.diasAtivo>0).sort((a,b)=>b.totalProd-a.totalProd);
+
+  // ── 3. Top peças do mês ──
+  const pecas = {};
+  diasComDados.forEach(d=>{
+    ROBOS.forEach(robo=>{
+      const r=(diasDoMes[d].robos[robo])||{};
+      if(!r.cod||r.cod==='—'||r.total<=0)return;
+      if(!pecas[r.cod])pecas[r.cod]=0;
+      pecas[r.cod]+=r.total;
+    });
+  });
+  const topPecas = Object.entries(pecas).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxPeca  = topPecas.length>0?topPecas[0][1]:1;
+
+  // ── HTML ──
+  const mesesOpts = MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
+  const anosOpts  = [anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <!-- Cabeçalho -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📊 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Análise consolidada do período</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+    </div>
+
+    <!-- Seletor mês/ano -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:16px">📅</span>
+      <div class="date-sel"><label>Mês</label><select onchange="updateRelFiltro('${selected}','rel_mes',+this.value)">${mesesOpts}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
+      <div style="margin-left:auto;font-size:11px;color:#4a5568">${diasComDados.length} dia(s) com dados</div>
+    </div>
+
+    ${diasComDados.length===0?`
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center;color:#2a3040;font-size:13px">
+      Nenhum dado para ${MESES[mesIdx]} ${anoSel}.<br>
+      <span style="font-size:11px">Os dados vêm automaticamente da célula Metas.</span>
+    </div>`:`
+
+    <!-- Cards resumo do mês -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:26px;font-weight:900;color:#00e87a">${totalMes.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças produzidas</div>
+      </div>
+      <div style="background:#3d9eff15;border:1px solid #3d9eff30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:26px;font-weight:900;color:#3d9eff">${mediaDia.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças/dia</div>
+      </div>
+      <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:26px;font-weight:900;color:#ffb300">${melhorDia?diasDoMes[melhorDia].totalGeral.toLocaleString("pt-BR"):'—'}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${melhorDia?`dia ${melhorDia}`:''}</div>
+      </div>
+      <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
+        <div style="font-size:26px;font-weight:900;color:#a78bfa">${eficienciaRobo.length}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">de ${ROBOS.length} robôs</div>
+      </div>
+    </div>
+
+    <!-- Produção diária mini gráfico -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção diária do mês</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:60px">
+        ${Array.from({length:31},(_,i)=>i+1).map(d=>{
+          const val = diasDoMes[d]?diasDoMes[d].totalGeral:0;
+          const maxD = Math.max(...diasComDados.map(dd=>diasDoMes[dd].totalGeral),1);
+          const h = val>0?Math.max(Math.round(val/maxD*56),4):2;
+          const hoje = d===new Date().getDate()&&mesIdx===new Date().getMonth()&&anoSel===anoAtual;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+            <div title="Dia ${d}: ${val}" style="width:100%;height:${h}px;background:${val>0?(hoje?'#ffb300':'#00e87a'):'#1e2530'};border-radius:3px 3px 0 0;transition:height 0.3s"></div>
+            ${d%5===0||d===1?`<span style="font-size:7px;color:#2a3040">${d}</span>`:'<span style="font-size:7px;color:transparent">.</span>'}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+
+      <!-- Eficiência por robô -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Eficiência por Robô</div>
+        ${eficienciaRobo.length>0?eficienciaRobo.map((r,i)=>{
+          const cor = r.efic>=90?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:11px;color:#00e87a;font-weight:700;min-width:36px">${r.robo}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:${cor};min-width:36px;text-align:right">${r.efic}%</span>
+            <span style="font-size:10px;color:#4a5568;min-width:50px;text-align:right">${r.totalProd.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+
+      <!-- Top peças -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Mês</div>
+        ${topPecas.length>0?topPecas.map(([cod,total],i)=>{
+          const medalhas=['🥇','🥈','🥉','4º','5º'];
+          const pct=Math.round(total/maxPeca*100);
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;min-width:22px">${medalhas[i]}</span>
+            <span style="font-size:11px;color:#ffb300;font-weight:700;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cod)}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#d8dde6;min-width:50px;text-align:right">${total.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+    </div>
+
+    <!-- Tabela detalhada por dia -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
+        Detalhe por Dia — todos os robôs
+      </div>
+      <div style="overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%;min-width:500px;font-family:'Courier New',monospace">
+          <thead>
+            <tr style="background:#0a0d11">
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Dia</th>
+              <th style="padding:9px 12px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
+              <th style="padding:9px 12px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
+              <th style="padding:9px 12px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Robôs</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${diasComDados.map(d=>{
+              const dia = diasDoMes[d];
+              const totalDiaT  = ROBOS.reduce((s,r)=>s+(dia.robos[r]?.totalDia||0),0);
+              const totalNoiteT = ROBOS.reduce((s,r)=>s+(dia.robos[r]?.totalNoite||0),0);
+              const robosAtivos = ROBOS.filter(r=>(dia.robos[r]?.total||0)>0).length;
+              const maxDia = Math.max(...diasComDados.map(dd=>diasDoMes[dd].totalGeral),1);
+              const pct = Math.round(dia.totalGeral/maxDia*100);
+              const dataFmt = `${String(d).padStart(2,'0')}/${String(mesIdx+1).padStart(2,'0')}/${anoSel}`;
+              return`<tr style="border-bottom:1px solid #1e2530" onmouseover="this.style.background='#ffffff04'" onmouseout="this.style.background=''">
+                <td style="padding:9px 12px;font-size:12px;color:#4a5568">${dataFmt}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#00e87a;text-align:center;font-weight:700">${totalDiaT.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#a78bfa;text-align:center;font-weight:700">${totalNoiteT.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;background:#1e2530;border-radius:99px;height:5px;min-width:80px;overflow:hidden">
+                      <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+                    </div>
+                    <span style="font-size:14px;font-weight:800;color:#ffb300;min-width:50px;text-align:right">${dia.totalGeral.toLocaleString("pt-BR")}</span>
+                  </div>
+                </td>
+                <td style="padding:9px 12px;font-size:12px;color:#4a5568;text-align:center">${robosAtivos} ativo(s)</td>
+              </tr>`;
+            }).join('')}
+            <tr style="background:#ffb30010;border-top:2px solid #ffb30040">
+              <td style="padding:10px 12px;font-size:11px;color:#ffb300;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">TOTAL</td>
+              <td style="padding:10px 12px;font-size:14px;color:#00e87a;text-align:center;font-weight:800">${diasComDados.reduce((s,d)=>s+ROBOS.reduce((ss,r)=>ss+(diasDoMes[d].robos[r]?.totalDia||0),0),0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:14px;color:#a78bfa;text-align:center;font-weight:800">${diasComDados.reduce((s,d)=>s+ROBOS.reduce((ss,r)=>ss+(diasDoMes[d].robos[r]?.totalNoite||0),0),0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:16px;color:#ffb300;font-weight:900">${totalMes.toLocaleString("pt-BR")}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`}
+  </div>`;
+}
+
 function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
 function handleImgUpload(file){
   if(!file||!selected)return;
@@ -1306,7 +1537,7 @@ function renomearCelula(key){
 
 async function openGerenciar(){
   const keys = Object.keys(celulas).sort();
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
 
   document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
     const c = celulas[k];
