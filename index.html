@@ -1091,6 +1091,121 @@ function renderDetail(){
     <div class="section"><div class="sec-title">⚠ Alertas ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}</div>
       ${alertsHTML||'<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
     </div>
+    ${renderHistoricoRobo(selected)}
+  </div>`;
+}
+
+function renderHistoricoRobo(key) {
+  // Descobre o número do robô (ex: "600") a partir do nome da célula
+  const nomeCell = (celulas[key].nome||'').toLowerCase();
+  const matchRobo = nomeCell.match(/\d{3}/);
+  const roboNum = matchRobo ? parseInt(matchRobo[0]) : null;
+  if (!roboNum || !ROBOS.includes(roboNum)) return ''; // não é célula de robô com número válido
+
+  // Localiza a célula Metas
+  const metasKey = Object.keys(celulas).find(k => getCellTipo(k)==='metas');
+  if (!metasKey || !celulas[metasKey].metas_dias) return '';
+
+  const mc = celulas[metasKey];
+
+  // Coleta todos os dias que têm dados para este robô
+  const registros = []; // [{data, cod, totalDia, totalNoite, totalGeral, meta}]
+
+  Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
+    const [ano, mes, dia] = chave.split('_');
+    const rd = (diaData[roboNum]) || {};
+    const meta = parseInt(rd.meta) || 0;
+    const cod  = rd.cod || '—';
+    const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const totalGeral = totalDia + totalNoite;
+    if (totalGeral === 0 && !rd.meta) return; // ignora dias completamente vazios
+
+    registros.push({
+      chave, ano:parseInt(ano), mes:parseInt(mes), dia:parseInt(dia),
+      cod, meta, totalDia, totalNoite, totalGeral
+    });
+  });
+
+  if (registros.length === 0) {
+    return `<div class="section">
+      <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}</div>
+      <div style="font-size:12px;color:#2a3040;padding:8px 0">Nenhum registro ainda. Os dados vêm automaticamente da célula Metas.</div>
+    </div>`;
+  }
+
+  // Ordena do mais recente para o mais antigo
+  registros.sort((a,b) => {
+    if (b.ano !== a.ano) return b.ano - a.ano;
+    if (b.mes !== a.mes) return b.mes - a.mes;
+    return b.dia - a.dia;
+  });
+
+  const maxTotal = Math.max(...registros.map(r => r.totalGeral), 1);
+  const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
+  const mediaDiaria = Math.round(totalAcumulado / registros.length);
+  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= r.meta * 9).length; // ~9h produtivas/dia
+  const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
+
+  const linhas = registros.map(r => {
+    const pct = Math.round(r.totalGeral / maxTotal * 100);
+    const dataFmt = `${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}`;
+    const metaTotal = r.meta > 0 ? r.meta * 9 : 0; // estimativa dia completo
+    const atingiu = metaTotal > 0 && r.totalGeral >= metaTotal;
+    const corTotal = atingiu ? '#00e87a' : (metaTotal > 0 ? '#ff4d4d' : '#d8dde6');
+    return `<tr style="border-bottom:1px solid #1e2530">
+      <td style="padding:8px 10px;font-size:12px;color:#4a5568;white-space:nowrap">${dataFmt}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#d8dde6;white-space:nowrap">${esc(r.cod)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#00e87a;text-align:center">${r.totalDia||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#a78bfa;text-align:center">${r.totalNoite||'—'}</td>
+      <td style="padding:8px 10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:#1e2530;border-radius:99px;height:5px;min-width:60px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${corTotal};border-radius:99px"></div>
+          </div>
+          <span style="font-size:13px;font-weight:800;color:${corTotal};min-width:36px;text-align:right">${r.totalGeral}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="section">
+    <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}
+      <span style="font-size:9px;color:#2a3040;font-weight:400">${registros.length} dia(s) registrado(s)</span>
+    </div>
+
+    <!-- Cards de resumo -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Total acumulado</div>
+        <div style="font-size:24px;font-weight:800;color:#00e87a">${totalAcumulado.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Média diária</div>
+        <div style="font-size:24px;font-weight:800;color:#3d9eff">${mediaDiaria.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Melhor dia</div>
+        <div style="font-size:24px;font-weight:800;color:#ffb300">${melhorDia.totalGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${String(melhorDia.dia).padStart(2,'0')}/${String(melhorDia.mes+1).padStart(2,'0')}/${melhorDia.ano}</div>
+      </div>
+    </div>
+
+    <!-- Tabela de registros -->
+    <div style="overflow-x:auto;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
+      <table style="border-collapse:collapse;width:100%;min-width:440px;font-family:'Courier New',monospace">
+        <thead>
+          <tr style="background:#0a0d11">
+            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Data</th>
+            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Cód. Peça</th>
+            <th style="padding:9px 10px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">☀ Dia</th>
+            <th style="padding:9px 10px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">🌙 Noite</th>
+            <th style="padding:9px 10px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Total Geral</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
   </div>`;
 }
 
