@@ -312,15 +312,13 @@ const HEADERS_R = { "X-Master-Key": API_KEY };
 const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
-const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyfm7Gka6bPBXN76RjDsL0qwpuA9I7mQyH-nAYPPSxANaLhCYhIEbgWVRG8evvtmOYs4w/exec";
-let backupContador = 0; // faz backup a cada 5 salvamentos para não sobrecarregar
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbwlKSH81gpDrZ-isxgM2LJY1c6p7kVAUqg6ewN0KjZggFyacMSxH_GOgZSiGHubNN98/exec";
+let backupContador = 0;
 
 async function backupToSheets(data) {
   try {
-    await fetch(SHEETS_URL + "?action=set", {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    await fetch(`${SHEETS_URL}?action=set&data=${encoded}`);
   } catch(e) {
     console.warn("Backup Sheets falhou (não crítico):", e);
   }
