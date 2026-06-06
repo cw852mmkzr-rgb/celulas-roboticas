@@ -141,7 +141,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; transition: width 0.4s; }
 .prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
-/* ── METAS DIÁRIA ── */
+/* METAS */
 .metas-table-wrap { overflow-x: auto; }
 .metas-table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
@@ -161,48 +161,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.sub-dia-val { font-weight: 800; font-size: 16px; background: #00e87a08; border-left: 1px solid #00e87a20; padding: 6px 8px; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
-
-/* inputs de hora — base BRANCO */
-.metas-table input.hora-inp {
-  background: transparent; border: none; outline: none;
-  font-family: 'Courier New', monospace; font-size: 16px;
-  color: #d8dde6;
-  text-align: center; width: 100%; padding: 4px 0; font-weight: 700;
-}
+.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
 .metas-table input.hora-inp:focus { color: #fff; }
 .metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
-
-/* somente 10:00 = amarelo */
 .metas-table input.hora-inp.cafe { color: #ffb300; }
 .metas-table input.hora-inp.cafe[readonly] { color: #5a4a00; }
 .metas-table input.hora-inp.cafe:focus { color: #ffe066; }
-
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; width: 100%; padding: 4px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
 .metas-table input.cod-inp { color: #ffb300; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
-
-/* cores de célula — sobrepõem o padrão branco/amarelo */
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
 .cell-fail { background: #ff4d4d20 !important; color: #ff4d4d !important; }
 .cell-adj  { background: #3d9eff20 !important; color: #3d9eff !important; }
 
 /* seletor de data */
 .date-sel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.date-sel select { background: #0f1318; border: 1px solid #1e2530; border-radius: 6px; padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px; color: #d8dde6; cursor: pointer; outline: none; transition: border-color 0.15s; }
-.date-sel select:focus { border-color: #00e87a; }
+.date-sel select { background: #0f1318; border: 1px solid #1e2530; border-radius: 6px; padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px; color: #d8dde6; cursor: pointer; outline: none; }
 .date-sel label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 
-/* ── HISTÓRICO ELETRODO ── */
-.hist-item {
-  display: flex; align-items: center; gap: 8px;
-  background: #080b0f; border: 1px solid #1e2530;
-  border-radius: 6px; padding: 6px 10px; margin-bottom: 6px;
-}
-.hist-item-data { font-size: 11px; color: #4a5568; min-width: 110px; white-space: nowrap; }
+/* histórico eletrodo */
+.hist-item { display: flex; align-items: center; gap: 8px; background: #080b0f; border: 1px solid #1e2530; border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; }
+.hist-item-data { font-size: 11px; color: #4a5568; min-width: 140px; white-space: nowrap; }
 .hist-item-val { flex: 1; font-size: 13px; color: #d8dde6; font-weight: 600; }
 .hist-empty { font-size: 12px; color: #2a3040; }
+
+/* sidebar grupos */
+.sidebar-group-label { padding: 6px 14px 4px; font-size: 9px; color: #2a3040; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; }
+.sidebar-ver-mais { padding: 9px 14px; cursor: pointer; text-align: center; color: #00e87a; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; background: #00e87a08; border-top: 1px solid #1e2530; }
+.sidebar-ver-mais:hover { background: #00e87a15; }
+.sidebar-recolher { padding: 9px 14px; cursor: pointer; text-align: center; color: #4a5568; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; border-top: 1px solid #1e2530; }
+.sidebar-recolher:hover { background: #ffffff06; }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -224,7 +214,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </style>
 </head>
 <body>
-
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
     <div class="login-icon">⬡</div>
@@ -247,6 +236,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
+      <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="forcarBackup()" title="Backup no Google Sheets">☁ Backup</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
@@ -317,27 +307,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
 const ADMIN_PW = "tremps3102";
-
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
 const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
 
-let celulas = {};
-let selected = null;
-let isAdmin = false;
-let pollTimer = null;
-let xlsxPendingData = null;
+// ── BACKUP GOOGLE SHEETS ──────────────────────
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyfm7Gka6bPBXN76RjDsL0qwpuA9I7mQyH-nAYPPSxANaLhCYhIEbgWVRG8evvtmOYs4w/exec";
+let backupContador = 0; // faz backup a cada 5 salvamentos para não sobrecarregar
+
+async function backupToSheets(data) {
+  try {
+    await fetch(SHEETS_URL + "?action=set", {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  } catch(e) {
+    console.warn("Backup Sheets falhou (não crítico):", e);
+  }
+}
+
+let celulas = {}, selected = null, isAdmin = false, pollTimer = null, xlsxPendingData = null;
+let sidebarExpandida = false;
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
+const HORAS_CAFE  = ["10:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const HORAS_CAFE = ["10:00"]; // horários marcados como café (amarelo)
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"—", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] }
 };
 
 const SC = {
@@ -347,26 +348,35 @@ const SC = {
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
 
+// ── tipo da célula detectado pelo nome ───────
+function getCellTipo(k) {
+  const n = (celulas[k].nome||'').toLowerCase();
+  if (n.includes('armario')||n.includes('armário')||n.includes('gabarito')) return 'armario';
+  if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
+  if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
+  if (n.includes('meta')) return 'metas';
+  return 'robo';
+}
+
 function parseCelVal(raw) {
-  const s = String(raw || '').trim();
-  if (!s) return { num: 0, tipo: 'normal' };
-  if (s.endsWith('#')) {
-    const n = parseInt(s.replace('#','')) || 0;
-    return { num: n, tipo: 'ajuste' };
-  }
-  return { num: parseInt(s) || 0, tipo: 'normal' };
+  const s = String(raw||'').trim();
+  if (!s) return {num:0,tipo:'normal'};
+  if (s.endsWith('#')) return {num:parseInt(s)||0, tipo:'ajuste'};
+  return {num:parseInt(s)||0, tipo:'normal'};
 }
 
 function getMetasChave(key) {
-  const c = celulas[key];
-  const ano = c.metas_ano  || new Date().getFullYear();
-  const mes = c.metas_mes  !== undefined ? c.metas_mes : new Date().getMonth();
-  const dia = c.metas_dia  || new Date().getDate();
+  const c=celulas[key];
+  const ano=c.metas_ano||new Date().getFullYear();
+  const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
+  const dia=c.metas_dia||new Date().getDate();
   return `${ano}_${mes}_${dia}`;
 }
 
+function campoH(h){ return 'h'+h.replace(':',''); }
+
 function toggleSidebar(){ document.getElementById("sidebar").classList.toggle("open"); document.getElementById("sidebarOverlay").classList.toggle("open"); }
-function closeSidebar() { document.getElementById("sidebar").classList.remove("open");  document.getElementById("sidebarOverlay").classList.remove("open"); }
+function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("sidebarOverlay").classList.remove("open"); }
 function toggleGabarito(num){ const el=document.getElementById("gab-"+num); if(el) el.classList.toggle("open"); }
 
 function buscarGabarito(termo){
@@ -417,6 +427,12 @@ async function saveToAPI(data){
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
+    // Backup no Google Sheets a cada 5 salvamentos
+    backupContador++;
+    if(backupContador>=5){
+      backupContador=0;
+      backupToSheets(data);
+    }
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
@@ -426,7 +442,61 @@ function updateAndRefreshRitmo(key,field,value){
   const el=document.getElementById("ritmoDisplay");if(el)el.value=calcRitmo(celulas[key].meta_hora,celulas[key].tempo_peca);
 }
 
-// ── PRODUÇÃO DIÁRIA ────────────────────────────
+// ── SIDEBAR ──────────────────────────────────
+function renderSidebar(){
+  const keys=Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
+
+  // Separa painéis e robôs
+  const paineis = keys.filter(k=>getCellTipo(k)!=='robo');
+  const robos   = keys.filter(k=>getCellTipo(k)==='robo');
+  const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
+  const robosRestantes = robos.length-1;
+
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
+
+  function itemHTML(k){
+    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
+    const t=getCellTipo(k);const ic=icones[t]||'⚙';
+    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
+      <div class="cell-num" style="font-size:15px">${ic}</div>
+      <div class="cell-info">
+        <div class="cell-name">${c.nome}${isAdmin?` <span onclick="event.stopPropagation();renomearCelula('${k}')" style="color:#2a3040;cursor:pointer;font-size:10px" title="Renomear">✏</span>`:''}</div>
+        <div class="cell-peca">${t==='robo'?(c.cliente||c.peca||'—'):''}</div>
+      </div>
+      <div class="dot ${s.dot}"></div>
+    </div>`;
+  }
+
+  let html='';
+  if(paineis.length>0){
+    html+=`<div class="sidebar-group-label">Painéis</div>`;
+    html+=paineis.map(itemHTML).join('');
+  }
+  if(robos.length>0){
+    html+=`<div class="sidebar-group-label" style="border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
+    html+=robosVisiveis.map(itemHTML).join('');
+    if(!sidebarExpandida&&robosRestantes>0){
+      html+=`<div class="sidebar-ver-mais" onclick="toggleSidebarExpand()">▼ Ver mais ${robosRestantes} robô(s)</div>`;
+    }else if(sidebarExpandida&&robos.length>1){
+      html+=`<div class="sidebar-recolher" onclick="toggleSidebarExpand()">▲ Recolher</div>`;
+    }
+  }
+  document.getElementById("sidebarList").innerHTML=html;
+}
+
+function toggleSidebarExpand(){ sidebarExpandida=!sidebarExpandida; renderSidebar(); }
+function selectCell(k){ selected=k; renderSidebar(); renderDetail(); closeSidebar(); }
+
+function renomearCelula(key){
+  if(!isAdmin)return;
+  const novo=prompt('Novo nome:',celulas[key].nome);
+  if(novo&&novo.trim()&&novo.trim()!==celulas[key].nome){
+    celulas[key].nome=novo.trim();saveToAPI(celulas);renderSidebar();renderDetail();showToast('Nome atualizado ✓');
+  }
+}
+
+// ── PRODUÇÃO MENSAL ───────────────────────────
 function getChave(key){
   const mes=celulas[key].mes_selecionado!==undefined?celulas[key].mes_selecionado:new Date().getMonth();
   const ano=celulas[key].ano_selecionado||new Date().getFullYear();
@@ -487,12 +557,10 @@ function renderProducaoDiaria(){
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <select onchange="updateMesAno('${selected}','mes',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+      <select onchange="updateMesAno('${selected}','mes',+this.value)" style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
         ${MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
       </select>
-      <select onchange="updateMesAno('${selected}','ano',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+      <select onchange="updateMesAno('${selected}','ano',+this.value)" style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
         ${[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
       </select>
     </div>
@@ -510,182 +578,135 @@ function renderProducaoDiaria(){
   </div>`;
 }
 
-// ── METAS DIÁRIA ──────────────────────────────
-function campoH(h){ return 'h'+h.replace(':',''); }
-
-// aplica cor na célula
-// prioridade: ajuste (azul) > ok (verde) > fail (vermelho) > cafe (amarelo) > normal (branco)
-function aplicarCor(inp, rawVal, meta, isCafe) {
+// ── METAS ────────────────────────────────────
+function aplicarCor(inp,rawVal,meta,isCafe){
   inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
-  const { num, tipo } = parseCelVal(rawVal);
-
-  if (tipo === 'ajuste') {
-    inp.classList.add('cell-adj');
-    return;
+  const{num,tipo}=parseCelVal(rawVal);
+  if(tipo==='ajuste'){inp.classList.add('cell-adj');return;}
+  if(num>0){
+    if(meta>0&&num>=meta){inp.classList.add('cell-ok');return;}
+    if(meta>0&&num<meta){inp.classList.add('cell-fail');return;}
+    inp.classList.add('cell-ok');return;
   }
-  if (num > 0) {
-    if (meta > 0 && num >= meta) { inp.classList.add('cell-ok'); return; }
-    if (meta > 0 && num < meta)  { inp.classList.add('cell-fail'); return; }
-    // meta não definida: verde
-    inp.classList.add('cell-ok');
-    return;
-  }
-  // vazio — só café fica amarelo
-  if (isCafe) inp.classList.add('cafe');
+  if(isCafe)inp.classList.add('cafe');
 }
 
-function updateMetasCell(key, robo, campo, valor) {
-  const chave = getMetasChave(key);
-  if (!celulas[key].metas_dias) celulas[key].metas_dias = {};
-  if (!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave] = {};
-  if (!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo] = {};
-  celulas[key].metas_dias[chave][robo][campo] = valor;
+function syncMetasToProducao(metasKey){
+  const mc=celulas[metasKey];
+  const ano=mc.metas_ano||new Date().getFullYear();
+  const mes=mc.metas_mes!==undefined?mc.metas_mes:new Date().getMonth();
+  const dia=mc.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const data=(mc.metas_dias&&mc.metas_dias[chave])?mc.metas_dias[chave]:{};
+  const totalGeral=ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
+  if(!prodKey)return;
+  const prodChave=`${ano}_${mes}`;
+  if(!celulas[prodKey].producao_meses)celulas[prodKey].producao_meses={};
+  if(!celulas[prodKey].producao_meses[prodChave])celulas[prodKey].producao_meses[prodChave]={};
+  celulas[prodKey].producao_meses[prodChave][dia]=totalGeral;
+}
+
+function updateMetasCell(key,robo,campo,valor){
+  const chave=getMetasChave(key);
+  if(!celulas[key].metas_dias)celulas[key].metas_dias={};
+  if(!celulas[key].metas_dias[chave])celulas[key].metas_dias[chave]={};
+  if(!celulas[key].metas_dias[chave][robo])celulas[key].metas_dias[chave][robo]={};
+  celulas[key].metas_dias[chave][robo][campo]=valor;
   syncMetasToProducao(key);
   saveToAPI(celulas);
-
-  const rd = celulas[key].metas_dias[chave][robo];
-  const meta = parseInt(rd.meta) || 0;
-
-  const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-  const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-  const totalG   = subDia + subNoite;
-
+  const rd=celulas[key].metas_dias[chave][robo];
+  const meta=parseInt(rd.meta)||0;
+  const subDia=HORAS_DIA.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+  const subNoite=HORAS_NOITE.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+  const totalG=subDia+subNoite;
   const elD=document.getElementById(`sub-dia-${robo}`);
   const elN=document.getElementById(`sub-noite-${robo}`);
   const elT=document.getElementById(`total-g-${robo}`);
   if(elD){elD.textContent=subDia>0?subDia:'—';elD.style.color=subDia>0?'#00e87a':'#4a5568';}
   if(elN){elN.textContent=subNoite>0?subNoite:'—';elN.style.color=subNoite>0?'#a78bfa':'#4a5568';}
-  if(elT){elT.textContent=totalG>0?totalG:'—';}
-
-  if (campo.startsWith('h')) {
-    // descobre se é campo de café
-    const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h => campoH(h) === campo) || '';
-    const isCafe = HORAS_CAFE.includes(horaOrigem);
+  if(elT)elT.textContent=totalG>0?totalG:'—';
+  if(campo.startsWith('h')){
+    const horaOrigem=[...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
+    const isCafe=HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp) aplicarCor(inp, valor, meta, isCafe);
+    if(inp)aplicarCor(inp,valor,meta,isCafe);
   }
-  if (campo==='meta') {
+  if(campo==='meta'){
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
-      const c=campoH(h);
-      const isCafe=HORAS_CAFE.includes(h);
+      const c=campoH(h);const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp) aplicarCor(inp, rd[c]||'', parseInt(valor)||0, isCafe);
+      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe);
     });
   }
 }
 
 function updateMetasData(key,campo,valor){
-  celulas[key][campo]=valor;
-  syncMetasToProducao(key);
-  saveToAPI(celulas); renderMetasDiaria();
+  celulas[key][campo]=valor;syncMetasToProducao(key);saveToAPI(celulas);renderMetasDiaria();
 }
 
-function buildTurnoTable(c, turno, chave) {
-  const data = (c.metas_dias&&c.metas_dias[chave]) ? c.metas_dias[chave] : {};
-  const ro = !isAdmin?'readonly':'';
-  const HORAS = turno==='dia' ? HORAS_DIA : HORAS_NOITE;
-  const isNoite = turno==='noite';
-  const subLabel = isNoite?'Sub Noite':'Sub Dia';
-  const subClass = isNoite?'sub-noite-val':'sub-dia-val';
-  const subId    = isNoite?'sub-noite':'sub-dia';
-  const subColor = isNoite?'#a78bfa':'#00e87a';
-
-  // cabeçalhos — 10:00 recebe classe especial de café
-  const horasHeader = HORAS.map(h => {
-    const isCafe = HORAS_CAFE.includes(h);
-    if (isCafe) return `<th class="col-hora-cafe">☕ ${h}</th>`;
-    return `<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
+function buildTurnoTable(c,turno,chave){
+  const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
+  const ro=!isAdmin?'readonly':'';
+  const HORAS=turno==='dia'?HORAS_DIA:HORAS_NOITE;
+  const isNoite=turno==='noite';
+  const subLabel=isNoite?'Sub Noite':'Sub Dia';
+  const subClass=isNoite?'sub-noite-val':'sub-dia-val';
+  const subId=isNoite?'sub-noite':'sub-dia';
+  const subColor=isNoite?'#a78bfa':'#00e87a';
+  const horasHeader=HORAS.map(h=>{
+    const isCafe=HORAS_CAFE.includes(h);
+    if(isCafe)return`<th class="col-hora-cafe">☕ ${h}</th>`;
+    return`<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
   }).join('');
-
-  const linhas = ROBOS.map(robo=>{
-    const rd=(data[robo])||{};
-    const meta=parseInt(rd.meta)||0;
-    const cod=rd.cod||'';
-
-    const horasCells = HORAS.map(h=>{
-      const campo=campoH(h);
-      const rawVal=rd[campo]||'';
-      const {num,tipo}=parseCelVal(rawVal);
-      const isCafe = HORAS_CAFE.includes(h);
-
-      // determina classe CSS
-      let cc = '';
-      if (tipo==='ajuste') {
-        cc = 'cell-adj';
-      } else if (num > 0) {
-        if (meta>0&&num>=meta) cc='cell-ok';
-        else if (meta>0&&num<meta) cc='cell-fail';
-        else cc='cell-ok';
-      } else if (isCafe) {
-        cc = 'cafe'; // vazio no café = amarelo
-      }
-
-      const displayVal = rawVal!==''&&rawVal!=='0'?rawVal:'';
-      const tdStyle = isCafe ? 'style="background:#ffb30008;"' : '';
-      return `<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text"
-        class="hora-inp${cc?' '+cc:''}"
-        value="${esc(String(displayVal))}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
+  const linhas=ROBOS.map(robo=>{
+    const rd=(data[robo])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
+    const horasCells=HORAS.map(h=>{
+      const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
+      const isCafe=HORAS_CAFE.includes(h);
+      let cc='';
+      if(tipo==='ajuste')cc='cell-adj';
+      else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
+      else if(isCafe)cc='cafe';
+      const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
+      const tdStyle=isCafe?'style="background:#ffb30008;"':'';
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
     }).join('');
-
-    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-    const totalG = isNoite
-      ? ([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0))
-      : null;
-
-    return `<tr>
+    const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+    const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    return`<tr>
       <td class="robo-label">${robo}</td>
-      <td class="meta-val"><input class="meta-inp" type="number" min="0"
-        value="${meta>0?meta:''}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text"
-        value="${esc(cod)}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
-      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;letter-spacing:0.04em;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
+      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
     </tr>`;
   }).join('');
-
-  // rodapé totais por hora
-  const rodapeHoras = HORAS.map(h=>{
-    const campo=campoH(h);
-    const isCafe=HORAS_CAFE.includes(h);
+  const rodapeHoras=HORAS.map(h=>{
+    const campo=campoH(h);const isCafe=HORAS_CAFE.includes(h);
     const soma=ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campo])||'').num),0);
-    const cor = isCafe ? '#ffb300' : (isNoite ? '#a78bfa' : '#d8dde6');
-    const bg  = isCafe ? '#ffb30010' : (isNoite ? '#a78bfa08' : '#ffffff06');
-    return `<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
+    const cor=isCafe?'#ffb300':(isNoite?'#a78bfa':'#d8dde6');
+    const bg=isCafe?'#ffb30010':(isNoite?'#a78bfa08':'#ffffff06');
+    return`<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
   }).join('');
-
-  const subTotalTurno = ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
-  const totalGeralRod = isNoite
-    ? ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0)
-    : null;
-
-  return `
-  <div class="metas-table-wrap">
-    <table class="metas-table">
-      <thead>
-        <tr>
-          <th class="col-robo">Robô</th>
-          <th class="col-meta">Meta/h</th>
-          <th class="col-cod">Cód. Peça</th>
-          ${horasHeader}
-          <th class="col-sub" style="color:${subColor}">${subLabel}</th>
-          ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
-        </tr>
-      </thead>
-      <tbody>
-        ${linhas}
-        <tr style="border-top:2px solid #1e2530">
-          <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
-          ${rodapeHoras}
-          <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
-          ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060;letter-spacing:0.04em">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
-        </tr>
-      </tbody>
-    </table>
-  </div>`;
+  const subTotalTurno=ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalGeralRod=isNoite?ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0):null;
+  return`<div class="metas-table-wrap"><table class="metas-table">
+    <thead><tr>
+      <th class="col-robo">Robô</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
+      ${horasHeader}
+      <th class="col-sub" style="color:${subColor}">${subLabel}</th>
+      ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
+    </tr></thead>
+    <tbody>${linhas}
+    <tr style="border-top:2px solid #1e2530">
+      <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
+      ${rodapeHoras}
+      <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
+      ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
+    </tr></tbody>
+  </table></div>`;
 }
 
 function renderMetasDiaria(){
@@ -696,22 +717,18 @@ function renderMetasDiaria(){
   const dia=c.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
-
-  const totalDia  =ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalDia=ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
   const totalNoite=ROBOS.reduce((s,r)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
   const totalG=totalDia+totalNoite;
-
   const diasOpts=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
-
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
-
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📆</span>
       <div class="date-sel"><label>Dia</label><select onchange="updateMetasData('${selected}','metas_dia',+this.value)">${diasOpts}</select></div>
@@ -723,7 +740,6 @@ function renderMetasDiaria(){
         <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:4px 10px;font-size:11px;color:#ffb300;font-weight:700">∑ ${totalG.toLocaleString("pt-BR")}</div>
       </div>
     </div>
-
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;gap:20px;font-size:12px;color:#9ca3af;letter-spacing:0.04em;flex-wrap:wrap;align-items:center">
       <span><span style="color:#00e87a;font-weight:800;font-size:14px">■</span> Atingiu a meta</span>
       <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
@@ -731,7 +747,6 @@ function renderMetasDiaria(){
       <span><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico na célula</span>
       <span style="color:#4a5568;font-size:11px">← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
     </div>
-
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">☀</span>
@@ -739,7 +754,6 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'dia',chave)}
     </div>
-
     <div style="margin-top:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
@@ -748,13 +762,11 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'noite',chave)}
     </div>
-
-    <!-- TOTAL GERAL DO DIA — DESTAQUE GRANDE -->
     <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
         <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;margin-bottom:6px">⚑ Total Geral do Dia — ${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}</div>
         <div style="font-size:48px;font-weight:900;color:#ffb300;letter-spacing:0.04em;line-height:1">${totalG.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia · automaticamente salvo na Produção Diária</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia · automaticamente salvo na Produção Mensal</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
@@ -770,87 +782,121 @@ function renderMetasDiaria(){
   </div>`;
 }
 
-function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
-function handleImgUpload(file){
-  if(!file||!selected)return;
-  const r=new FileReader();
-  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
-  r.readAsDataURL(file);
-}
-function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
-function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
-function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
-
-function tryLogin(){
-  const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_PW){isAdmin=true;startApp();}
-  else{
-    document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display="block";
-    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
-  }
-}
-function startViewer(){isAdmin=false;startApp();}
-function startApp(){
-  document.getElementById("loginScreen").style.display="none";
-  document.getElementById("appScreen").style.display="block";
-  document.getElementById("modeBadge").textContent=isAdmin?"⚙ Admin":"👁 Viewer";
-  document.getElementById("modeBadge").className="badge "+(isAdmin?"badge-admin":"badge-viewer");
-  if(isAdmin){document.getElementById("btnAdd").style.display="inline-block";document.getElementById("btnXlsx").style.display="inline-block";}
-  loadFromAPI();
-  pollTimer=setInterval(loadFromAPI,6000);
-}
-function doLogout(){
-  clearInterval(pollTimer);
-  document.getElementById("appScreen").style.display="none";
-  document.getElementById("loginScreen").style.display="flex";
-  document.getElementById("pwInput").value="";
-  isAdmin=false;selected=null;
+// ── PRODUÇÃO POR PEÇA ────────────────────────
+function calcProducaoPorPeca(){
+  const metasKey=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!metasKey||!celulas[metasKey].metas_dias)return{};
+  const resultado={};
+  Object.entries(celulas[metasKey].metas_dias).forEach(([chave,diaData])=>{
+    ROBOS.forEach(robo=>{
+      const rd=(diaData[robo])||{};
+      const cod=(rd.cod||'').trim();
+      if(!cod||cod==='—'||cod==='')return;
+      const totalRobo=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+      if(totalRobo<=0)return;
+      if(!resultado[cod])resultado[cod]={total:0,dias:{}};
+      if(!resultado[cod].dias[chave])resultado[cod].dias[chave]=0;
+      resultado[cod].dias[chave]+=totalRobo;
+      resultado[cod].total+=totalRobo;
+    });
+  });
+  return resultado;
 }
 
-function renderSidebar(){
-  const keys=Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
-  document.getElementById("sidebarList").innerHTML=keys.map(k=>{
-    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
-    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
-      <div class="cell-num">${parseInt(k)}</div>
-      <div class="cell-info"><div class="cell-name">${c.nome}</div><div class="cell-peca">${c.cliente||c.peca||'—'}</div></div>
-      <div class="dot ${s.dot}"></div>
-    </div>`;
-  }).join("");
+function renderProducaoPorPeca(){
+  const c=celulas[selected];
+  const dados=calcProducaoPorPeca();
+  const anoAtual=new Date().getFullYear();
+  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
+  const anoSel=c.peca_ano||anoAtual;
+  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
+  const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+  const dadosFiltrados={};
+  Object.keys(dados).forEach(cod=>{
+    let totalMes=0;const diasMes={};
+    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
+      const[a,m,d]=chave.split('_');
+      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx){diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;totalMes+=qtd;}
+    });
+    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes};
+  });
+  const codigosFiltrados=Object.keys(dadosFiltrados).sort();
+  const totalGeral=codigosFiltrados.reduce((s,cod)=>s+dadosFiltrados[cod].total,0);
+  const maxTotal=Math.max(...codigosFiltrados.map(cod=>dadosFiltrados[cod].total),1);
+  const linhasHTML=codigosFiltrados.length>0
+    ?codigosFiltrados.map(cod=>{
+      const{total,dias}=dadosFiltrados[cod];const pct=Math.round(total/maxTotal*100);
+      const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
+      const maxDia=Math.max(...diasOrdenados,1);
+      const sparkBars=diasOrdenados.map((v,i)=>{
+        const h=v>0?Math.max(Math.round(v/maxDia*24),3):1;
+        const cor=v>0?'#00e87a':'#1e2530';
+        return`<div title="Dia ${i+1}: ${v}" style="width:6px;height:${h}px;background:${cor};border-radius:2px;flex-shrink:0"></div>`;
+      }).join('');
+      return`<tr>
+        <td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30006;padding:10px 12px;white-space:nowrap">${esc(cod)}</td>
+        <td style="padding:10px 12px"><div style="display:flex;align-items:flex-end;gap:2px;height:28px">${sparkBars}</div></td>
+        <td style="padding:8px 10px"><div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;min-width:80px"><div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div></div></td>
+        <td style="color:#00e87a;font-weight:900;font-size:20px;padding:10px 14px;text-align:right;white-space:nowrap">${total.toLocaleString("pt-BR")}</td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="4" style="text-align:center;color:#2a3040;padding:32px;font-size:13px">Nenhum dado para ${MESES[mesIdx]} ${anoSel}.<br><span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula Metas.</span></td></tr>`;
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+    </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:16px">📅</span>
+      <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${codigosFiltrados.length} código(s)</div>
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
+      </div>
+    </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%;min-width:500px">
+          <thead>
+            <tr style="background:#0a0d11">
+              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Código</th>
+              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Dias do mês</th>
+              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Proporção</th>
+              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:right;border-bottom:1px solid #1e2530;font-weight:700;min-width:100px">Total</th>
+            </tr>
+          </thead>
+          <tbody style="font-family:'Courier New',monospace">${linhasHTML}</tbody>
+        </table>
+      </div>
+    </div>
+    ${codigosFiltrados.length>0?`
+    <div style="margin-top:16px;background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:700">🏆 Ranking do Mês</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${[...codigosFiltrados].sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total).slice(0,5).map((cod,i)=>{
+          const medalhas=['🥇','🥈','🥉','4º','5º'];const pct=Math.round(dadosFiltrados[cod].total/maxTotal*100);
+          return`<div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:16px;min-width:26px">${medalhas[i]||''}</span>
+            <span style="color:#ffb300;font-weight:700;font-size:13px;min-width:100px">${esc(cod)}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${i===0?'#ffb300':i===1?'#9ca3af':i===2?'#b45309':'#00e87a'};border-radius:99px"></div>
+            </div>
+            <span style="color:#d8dde6;font-weight:700;font-size:14px;min-width:70px;text-align:right">${dadosFiltrados[cod].total.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+  </div>`;
 }
-function selectCell(k){selected=k;renderSidebar();renderDetail();closeSidebar();}
+function updatePecaFiltro(key,campo,valor){celulas[key][campo]=valor;saveToAPI(celulas);renderProducaoPorPeca();}
 
-function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
-function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
-function handleXlsxFile(file){
-  if(!file)return;const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const data=new Uint8Array(e.target.result);const wb=XLSX.read(data,{type:"array"});
-      const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-      const dataRows=rows.slice(1).filter(r=>r[0]!==""&&r[0]!==undefined);
-      if(dataRows.length===0){showToast("Planilha vazia!",true);return;}
-      xlsxPendingData=[];let previewHTML="";let found=0,notFound=0;
-      dataRows.forEach(row=>{
-        let rawKey=String(row[0]).trim().replace(/\D/g,"");const key=rawKey.padStart(2,"0");
-        const ciclos=parseInt(row[1])||0;const meta=parseInt(row[2])||0;const exists=!!celulas[key];
-        if(exists)found++;else notFound++;xlsxPendingData.push({key,ciclos,meta,exists});
-        previewHTML+=`<div class="xlsx-row"><span class="xlsx-cell-num">C${key}</span><span class="xlsx-val">Ciclos: <b>${ciclos}</b></span><span class="xlsx-val">Meta: <b>${meta}</b></span><span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span></div>`;
-      });
-      document.getElementById("xlsxPreviewList").innerHTML=previewHTML;
-      document.getElementById("xlsxSummary").innerHTML=`<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>`+(notFound>0?` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>`:"");
-      document.getElementById("xlsxPreview").style.display="block";
-      document.getElementById("btnConfirmXlsx").style.display=found>0?"inline-block":"none";
-    }catch(err){showToast("Erro ao ler o arquivo!",true);}
-  };reader.readAsArrayBuffer(file);
-}
-function confirmXlsxImport(){
-  if(!xlsxPendingData)return;let updated=0;
-  xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
-  saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();showToast(`${updated} célula(s) atualizada(s) ✓`);
-}
+// ── ARMÁRIO ───────────────────────────────────
+function toggleGabarito(num){const el=document.getElementById("gab-"+num);if(el)el.classList.toggle("open");}
 
 function renderArmario(){
   const c=celulas[selected];const espacos=c.espacos||{};const ro=!isAdmin?'readonly':'';
@@ -859,14 +905,11 @@ function renderArmario(){
     const e=espacos[i]||{gabarito:'—',status:'Livre'};
     const sc=e.status==='Ocupado'?'#00e87a':e.status==='Manutenção'?'#ffb300':'#4a5568';
     const sb=e.status==='Ocupado'?'#00e87a15':e.status==='Manutenção'?'#ffb30015':'#ffffff05';
-    const gv=e.gabarito&&e.gabarito!=='—'?esc(e.gabarito):'';
     espacosHTML+=`
       <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
         style="background:${sb};border:1px solid ${sc}40;border-radius:12px;padding:14px 16px">
         <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
-          </div>
+          <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
           <div style="display:flex;align-items:center;gap:8px">
             <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
               style="background:#0f1318;border:1px solid ${sc}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${sc};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
@@ -892,7 +935,7 @@ function renderArmario(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador||'—')} · ⏰ ${esc(c.turno||'—')}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
@@ -920,13 +963,29 @@ function updateEspaco(key,num,field,value){
   if(field==='status')renderArmario();
 }
 
+// ── HISTÓRICO ELETRODO ───────────────────────
+function registrarTrocaEletrodo(key){
+  const c=celulas[key];
+  if(!c.eletrodo||c.eletrodo==='—'){showToast("Informe o eletrodo primeiro",true);return;}
+  if(!c.historico_eletrodo)c.historico_eletrodo=[];
+  const agora=new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  c.historico_eletrodo.push({data:agora,eletrodo:c.eletrodo,tipo:c.tipo_eletrodo||'—'});
+  c.ultima_troca=agora;
+  celulas[key]=c;saveToAPI(celulas);renderDetail();showToast("Troca registrada ✓");
+}
+function removerHistEletrodo(key,idx){
+  if(!celulas[key].historico_eletrodo)return;
+  celulas[key].historico_eletrodo.splice(idx,1);saveToAPI(celulas);renderDetail();
+}
+
+// ── ROBÔ (layout padrão) ──────────────────────
 function renderDetail(){
   if(!selected||!celulas[selected])return;
-  const nomeCell=(celulas[selected].nome||'').toLowerCase();
-  if(nomeCell.includes('armario')||nomeCell.includes('armário')||nomeCell.includes('gabarito')){renderArmario();return;}
-  if(nomeCell.includes('produ')&&nomeCell.includes('pe')){renderProducaoPorPeca();return;}
-  if(nomeCell.includes('produ')&&nomeCell.includes('di')){renderProducaoDiaria();return;}
-  if(nomeCell.includes('meta')&&nomeCell.includes('di')){renderMetasDiaria();return;}
+  const tipo=getCellTipo(selected);
+  if(tipo==='armario'){renderArmario();return;}
+  if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
+  if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
+  if(tipo==='metas'){renderMetasDiaria();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -968,27 +1027,23 @@ function renderDetail(){
         <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
-    <div class="section"><div class="sec-title">◈ Eletrodo
-      ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}
-    </div>
+    <div class="section"><div class="sec-title">◈ Eletrodo ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}</div>
       <div class="grid2">
         <div class="field"><label>Eletrodo Atual</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
         <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
-        <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca)}" style="color:#ffb300;cursor:default;color:#ffb300"></div>
+        <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca||'—')}" style="color:#ffb300;cursor:default"></div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530;display:flex;justify-content:space-between;align-items:center">
-          <span>📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</span>
-        </div>
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</div>
         <div style="max-height:180px;overflow-y:auto">
           ${(c.historico_eletrodo&&c.historico_eletrodo.length>0)
-            ? [...c.historico_eletrodo].reverse().map((h,i)=>`
+            ?[...c.historico_eletrodo].reverse().map((h,i)=>`
               <div class="hist-item">
                 <span class="hist-item-data">📅 ${esc(h.data)}</span>
                 <span class="hist-item-val">⚡ ${esc(h.eletrodo)} <span style="color:#4a5568;font-size:11px">(${esc(h.tipo||'—')})</span></span>
-                ${isAdmin?`<button class="btn-x" title="Remover" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
+                ${isAdmin?`<button class="btn-x" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
               </div>`).join('')
-            : '<div class="hist-empty">Nenhuma troca registrada ainda. Clique em "+ Registrar Troca Agora" para adicionar.</div>'
+            :'<div class="hist-empty">Nenhuma troca registrada ainda.</div>'
           }
         </div>
       </div>
@@ -1028,255 +1083,79 @@ function renderDetail(){
   </div>`;
 }
 
-// ── HISTÓRICO ELETRODO ───────────────────────
-function registrarTrocaEletrodo(key) {
-  const c = celulas[key];
-  if (!c.eletrodo || c.eletrodo === '—') { showToast("Informe o eletrodo primeiro", true); return; }
-  if (!c.historico_eletrodo) c.historico_eletrodo = [];
-  const agora = new Date().toLocaleString("pt-BR", {
-    day:"2-digit", month:"2-digit", year:"numeric",
-    hour:"2-digit", minute:"2-digit"
-  });
-  const horaAgora = new Date().toLocaleString("pt-BR", {
-    day:"2-digit", month:"2-digit", year:"numeric",
-    hour:"2-digit", minute:"2-digit"
-  });
-  // salva no histórico o eletrodo ATUAL (antes de qualquer mudança)
-  c.historico_eletrodo.push({
-    data: agora,
-    eletrodo: c.eletrodo,
-    tipo: c.tipo_eletrodo || '—'
-  });
-  // atualiza campo "Última troca" para refletir agora
-  c.ultima_troca = horaAgora;
-  celulas[key] = c;
-  saveToAPI(celulas);
-  renderDetail();
-  showToast("Troca registrada ✓");
+function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
+function handleImgUpload(file){
+  if(!file||!selected)return;
+  const r=new FileReader();
+  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
+  r.readAsDataURL(file);
+}
+function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
+function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
+function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
+
+function tryLogin(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_PW){isAdmin=true;startApp();}
+  else{
+    document.getElementById("pwInput").classList.add("err");
+    document.getElementById("loginErr").style.display="block";
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+  }
+}
+function startViewer(){isAdmin=false;startApp();}
+function startApp(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+  document.getElementById("modeBadge").textContent=isAdmin?"⚙ Admin":"👁 Viewer";
+  document.getElementById("modeBadge").className="badge "+(isAdmin?"badge-admin":"badge-viewer");
+  if(isAdmin){
+    document.getElementById("btnAdd").style.display="inline-block";
+    document.getElementById("btnXlsx").style.display="inline-block";
+    document.getElementById("btnBackup").style.display="inline-block";
+  }
+  loadFromAPI();
+  pollTimer=setInterval(loadFromAPI,6000);
+}
+function doLogout(){
+  clearInterval(pollTimer);
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("pwInput").value="";
+  isAdmin=false;selected=null;
 }
 
-function removerHistEletrodo(key, idx) {
-  if (!celulas[key].historico_eletrodo) return;
-  celulas[key].historico_eletrodo.splice(idx, 1);
-  saveToAPI(celulas);
-  renderDetail();
+function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
+function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
+function handleXlsxFile(file){
+  if(!file)return;const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);const wb=XLSX.read(data,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const dataRows=rows.slice(1).filter(r=>r[0]!==""&&r[0]!==undefined);
+      if(dataRows.length===0){showToast("Planilha vazia!",true);return;}
+      xlsxPendingData=[];let previewHTML="";let found=0,notFound=0;
+      dataRows.forEach(row=>{
+        let rawKey=String(row[0]).trim().replace(/\D/g,"");const key=rawKey.padStart(2,"0");
+        const ciclos=parseInt(row[1])||0;const meta=parseInt(row[2])||0;const exists=!!celulas[key];
+        if(exists)found++;else notFound++;xlsxPendingData.push({key,ciclos,meta,exists});
+        previewHTML+=`<div class="xlsx-row"><span class="xlsx-cell-num">C${key}</span><span class="xlsx-val">Ciclos: <b>${ciclos}</b></span><span class="xlsx-val">Meta: <b>${meta}</b></span><span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span></div>`;
+      });
+      document.getElementById("xlsxPreviewList").innerHTML=previewHTML;
+      document.getElementById("xlsxSummary").innerHTML=`<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>`+(notFound>0?` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>`:"");
+      document.getElementById("xlsxPreview").style.display="block";
+      document.getElementById("btnConfirmXlsx").style.display=found>0?"inline-block":"none";
+    }catch(err){showToast("Erro ao ler o arquivo!",true);}
+  };reader.readAsArrayBuffer(file);
 }
-
-// ── SYNC: Metas Diária → Produção Diária ─────
-// Chamado sempre que o total geral de metas muda.
-// Grava o total na célula "Produção Diária" no dia/mês/ano correspondente.
-function syncMetasToProducao(metasKey) {
-  const mc = celulas[metasKey];
-  const ano = mc.metas_ano  || new Date().getFullYear();
-  const mes = mc.metas_mes  !== undefined ? mc.metas_mes : new Date().getMonth();
-  const dia = mc.metas_dia  || new Date().getDate();
-  const chave = `${ano}_${mes}_${dia}`;
-  const data  = (mc.metas_dias && mc.metas_dias[chave]) ? mc.metas_dias[chave] : {};
-
-  // calcula total geral (dia + noite)
-  const totalGeral = ROBOS.reduce((sum, r) =>
-    sum + [...HORAS_DIA,...HORAS_NOITE].reduce((s, h) =>
-      s + (parseCelVal(((data[r]||{})[campoH(h)])||'').num), 0), 0);
-
-  // localiza a célula de Produção Diária
-  const prodKey = Object.keys(celulas).find(k => {
-    const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('produ') && n.includes('di');
-  });
-  if (!prodKey) return; // célula não existe, não faz nada
-
-  // chave da produção diária (usa o mesmo ano/mês)
-  const prodChave = `${ano}_${mes}`;
-  if (!celulas[prodKey].producao_meses) celulas[prodKey].producao_meses = {};
-  if (!celulas[prodKey].producao_meses[prodChave]) celulas[prodKey].producao_meses[prodChave] = {};
-  celulas[prodKey].producao_meses[prodChave][dia] = totalGeral;
-  // não chama saveToAPI aqui — quem chama é updateMetasCell logo depois
-}
-
-// ── PRODUÇÃO POR PEÇA ────────────────────────
-// Lê todas as entradas de metas_dias da célula "Metas Diária"
-// e agrupa por código de peça, somando o total geral de cada dia.
-function calcProducaoPorPeca() {
-  // localiza a célula de Metas Diária
-  const metasKey = Object.keys(celulas).find(k => {
-    const n = (celulas[k].nome||'').toLowerCase();
-    return n.includes('meta') && n.includes('di');
-  });
-  if (!metasKey) return {};
-
-  const mc = celulas[metasKey];
-  if (!mc.metas_dias) return {};
-
-  // resultado: { "50698": { total: 123, dias: { "2026_5_2": 45, ... } } }
-  const resultado = {};
-
-  Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
-    // chave = "2026_5_2" → ano_mes_dia
-    const partes = chave.split('_');
-    const ano = partes[0], mes = partes[1], dia = partes[2];
-
-    ROBOS.forEach(robo => {
-      const rd = (diaData[robo]) || {};
-      const cod = (rd.cod || '').trim();
-      if (!cod || cod === '—' || cod === '') return;
-
-      // total geral do dia para este robô neste dia
-      const totalRobo = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h) =>
-        s + (parseCelVal((rd[campoH(h)])||'').num), 0);
-
-      if (totalRobo <= 0) return;
-
-      if (!resultado[cod]) resultado[cod] = { total: 0, dias: {} };
-      if (!resultado[cod].dias[chave]) resultado[cod].dias[chave] = 0;
-      resultado[cod].dias[chave] += totalRobo;
-      resultado[cod].total += totalRobo;
-    });
-  });
-
-  return resultado;
-}
-
-function renderProducaoPorPeca() {
-  const c = celulas[selected];
-  const dados = calcProducaoPorPeca();
-  const codigos = Object.keys(dados).sort();
-
-  // mês/ano selecionado para filtrar (usa mesmo padrão da célula)
-  const anoAtual = new Date().getFullYear();
-  const mesIdx = c.peca_mes !== undefined ? c.peca_mes : new Date().getMonth();
-  const anoSel = c.peca_ano || anoAtual;
-
-  const MESES_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const mesesOpts = MESES.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
-  const anosOpts  = [anoAtual-1,anoAtual,anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
-
-  // filtra só dias do mês/ano selecionado
-  const dadosFiltrados = {};
-  codigos.forEach(cod => {
-    let totalMes = 0;
-    const diasMes = {};
-    Object.entries(dados[cod].dias).forEach(([chave, qtd]) => {
-      const [a, m, d] = chave.split('_');
-      if (parseInt(a) === anoSel && parseInt(m) === mesIdx) {
-        diasMes[parseInt(d)] = (diasMes[parseInt(d)] || 0) + qtd;
-        totalMes += qtd;
-      }
-    });
-    if (totalMes > 0) dadosFiltrados[cod] = { total: totalMes, dias: diasMes };
-  });
-
-  const codigosFiltrados = Object.keys(dadosFiltrados).sort();
-  const totalGeral = codigosFiltrados.reduce((s,cod) => s + dadosFiltrados[cod].total, 0);
-
-  // max para barra proporcional
-  const maxTotal = Math.max(...codigosFiltrados.map(cod => dadosFiltrados[cod].total), 1);
-
-  // monta linhas da tabela
-  const linhasHTML = codigosFiltrados.length > 0
-    ? codigosFiltrados.map(cod => {
-        const { total, dias } = dadosFiltrados[cod];
-        const pct = Math.round(total / maxTotal * 100);
-        // mini sparkline de dias
-        const diasOrdenados = Array.from({length:31},(_,i)=>i+1).map(d => dias[d] || 0);
-        const maxDia = Math.max(...diasOrdenados, 1);
-        const sparkBars = diasOrdenados.map((v,i) => {
-          const h = v > 0 ? Math.max(Math.round(v/maxDia*24),3) : 1;
-          const cor = v > 0 ? '#00e87a' : '#1e2530';
-          return `<div title="Dia ${i+1}: ${v}" style="width:6px;height:${h}px;background:${cor};border-radius:2px;flex-shrink:0"></div>`;
-        }).join('');
-
-        return `<tr>
-          <td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30006;padding:10px 12px;white-space:nowrap">${esc(cod)}</td>
-          <td style="padding:10px 12px">
-            <div style="display:flex;align-items:flex-end;gap:2px;height:28px">${sparkBars}</div>
-          </td>
-          <td style="padding:8px 10px">
-            <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;min-width:80px">
-              <div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div>
-            </div>
-          </td>
-          <td style="color:#00e87a;font-weight:900;font-size:20px;padding:10px 14px;text-align:right;white-space:nowrap">${total.toLocaleString("pt-BR")}</td>
-        </tr>`;
-      }).join('')
-    : `<tr><td colspan="4" style="text-align:center;color:#2a3040;padding:32px;font-size:13px">
-        Nenhum dado encontrado para ${MESES_PT[mesIdx]} ${anoSel}.<br>
-        <span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula "Metas Diária".</span>
-      </td></tr>`;
-
-  document.getElementById("mainPanel").innerHTML = `
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas Diária</div>
-      </div>
-      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
-    </div>
-
-    <!-- SELETOR MÊS/ANO -->
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <span style="font-size:16px">📅</span>
-      <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
-      <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${codigosFiltrados.length} código(s)</div>
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
-      </div>
-    </div>
-
-    <!-- TABELA POR PEÇA -->
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">Código da Peça</span>
-        <span style="font-size:11px;color:#4a5568;margin-left:auto;letter-spacing:0.06em">Sparkline 31 dias · Barra proporcional · Total do mês</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="border-collapse:collapse;width:100%;min-width:500px">
-          <thead>
-            <tr style="background:#0a0d11">
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Código</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Dias do mês</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Proporção</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:right;border-bottom:1px solid #1e2530;font-weight:700;min-width:100px">Total</th>
-            </tr>
-          </thead>
-          <tbody style="font-family:'Courier New',monospace">
-            ${linhasHTML}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    ${codigosFiltrados.length > 0 ? `
-    <!-- RANKING -->
-    <div style="margin-top:16px;background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:700">🏆 Ranking do Mês</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${[...codigosFiltrados].sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total).slice(0,5).map((cod,i)=>{
-          const medalhas = ['🥇','🥈','🥉','4º','5º'];
-          const pct = Math.round(dadosFiltrados[cod].total / maxTotal * 100);
-          return `<div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:16px;min-width:26px">${medalhas[i]||''}</span>
-            <span style="color:#ffb300;font-weight:700;font-size:13px;min-width:100px">${esc(cod)}</span>
-            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${i===0?'#ffb300':i===1?'#9ca3af':i===2?'#b45309':'#00e87a'};border-radius:99px;transition:width 0.5s"></div>
-            </div>
-            <span style="color:#d8dde6;font-weight:700;font-size:14px;min-width:70px;text-align:right">${dadosFiltrados[cod].total.toLocaleString("pt-BR")}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : ''}
-  </div>`;
-}
-
-function updatePecaFiltro(key, campo, valor) {
-  celulas[key][campo] = valor;
-  saveToAPI(celulas);
-  renderProducaoPorPeca();
+function confirmXlsxImport(){
+  if(!xlsxPendingData)return;let updated=0;
+  xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
+  saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();showToast(`${updated} célula(s) atualizada(s) ✓`);
 }
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
-
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
 function deleteCell(k){if(!confirm("Excluir "+celulas[k].nome+"?"))return;delete celulas[k];saveToAPI(celulas);selected=Object.keys(celulas).sort()[0]||null;renderSidebar();renderDetail();}
@@ -1288,6 +1167,22 @@ function createCell(){
   const k=String(n).padStart(2,"0");if(celulas[k]){showToast("Célula já existe!",true);return;}
   celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas);closeModal();selected=k;renderSidebar();renderDetail();
+}
+
+function renomearCelula(key){
+  if(!isAdmin)return;
+  const novo=prompt('Novo nome:',celulas[key].nome);
+  if(novo&&novo.trim()&&novo.trim()!==celulas[key].nome){
+    celulas[key].nome=novo.trim();saveToAPI(celulas);renderSidebar();renderDetail();showToast('Nome atualizado ✓');
+  }
+}
+
+async function forcarBackup(){
+  const btn = document.getElementById("btnBackup");
+  if(btn) btn.textContent = "☁ ...";
+  await backupToSheets(celulas);
+  if(btn) btn.textContent = "☁ Backup";
+  showToast("Backup no Google Sheets ✓");
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
