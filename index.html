@@ -237,6 +237,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="forcarBackup()" title="Backup no Google Sheets">☁ Backup</button>
+      <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
@@ -292,6 +293,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="modal-actions" style="margin-top:16px">
       <button class="btn btn-gray" onclick="closeXlsxModal()">Cancelar</button>
       <button class="btn btn-green" id="btnConfirmXlsx" style="display:none" onclick="confirmXlsxImport()">✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="gerenciarModalEl">
+  <div class="modal" style="width:520px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="modal-title">⚙ Gerenciar Células</div>
+    <div id="gerenciarLista"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-gray" onclick="closeGerenciar()">Fechar</button>
     </div>
   </div>
 </div>
@@ -1113,6 +1124,7 @@ function startApp(){
     document.getElementById("btnAdd").style.display="inline-block";
     document.getElementById("btnXlsx").style.display="inline-block";
     document.getElementById("btnBackup").style.display="inline-block";
+    document.getElementById("btnGerenciar").style.display="inline-block";
   }
   loadFromAPI();
   pollTimer=setInterval(loadFromAPI,6000);
@@ -1177,7 +1189,74 @@ function renomearCelula(key){
   }
 }
 
-async function forcarBackup(){
+async function openGerenciar(){
+  const keys = Object.keys(celulas).sort();
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
+
+  document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
+    const c = celulas[k];
+    const t = getCellTipo(k);
+    const ic = icones[t]||'⚙';
+    return `<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:16px">${ic}</span>
+        <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${t}</span>
+        <span style="font-size:10px;color:#2a3040;margin-left:auto">ID atual: <b style="color:#00e87a">${k}</b></span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Nome</label>
+          <input id="edit-nome-${k}" value="${esc(c.nome)}"
+            style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#d8dde6;outline:none"
+            onfocus="this.style.borderColor='#00e87a'" onblur="this.style.borderColor='#1e2530'">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Número/ID</label>
+          <input id="edit-num-${k}" value="${k}" maxlength="4"
+            style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#ffb300;outline:none"
+            onfocus="this.style.borderColor='#ffb300'" onblur="this.style.borderColor='#1e2530'">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+        <button class="btn btn-green" style="font-size:10px;padding:5px 12px" onclick="salvarEdicaoCell('${k}')">✓ Salvar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById("gerenciarModalEl").classList.add("open");
+}
+
+function closeGerenciar(){
+  document.getElementById("gerenciarModalEl").classList.remove("open");
+}
+
+function salvarEdicaoCell(keyAntigo){
+  const novoNome = document.getElementById(`edit-nome-${keyAntigo}`).value.trim();
+  const novoNum  = document.getElementById(`edit-num-${keyAntigo}`).value.trim().padStart(2,'0');
+
+  if (!novoNome) { showToast("Nome não pode ser vazio", true); return; }
+  if (!novoNum || isNaN(parseInt(novoNum))) { showToast("Número inválido", true); return; }
+
+  // Atualiza o nome
+  celulas[keyAntigo].nome = novoNome;
+
+  // Se o número mudou, muda a chave
+  if (novoNum !== keyAntigo) {
+    if (celulas[novoNum]) { showToast("Número " + novoNum + " já existe!", true); return; }
+    celulas[novoNum] = celulas[keyAntigo];
+    delete celulas[keyAntigo];
+    // Se era a célula selecionada, atualiza
+    if (selected === keyAntigo) selected = novoNum;
+  }
+
+  saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  openGerenciar(); // recarrega o modal
+  showToast("Célula atualizada ✓");
+}
+
+function forcarBackup(){
   const btn = document.getElementById("btnBackup");
   if(btn) btn.textContent = "☁ ...";
   await backupToSheets(celulas);
@@ -1191,9 +1270,10 @@ function showToast(msg,err=false){
   void t.offsetWidth;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
+document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenciar);
 </script>
 </body>
 </html>
