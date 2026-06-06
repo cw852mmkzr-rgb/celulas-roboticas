@@ -170,7 +170,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; width: 100%; padding: 4px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
-.metas-table input.cod-inp { color: #ffb300; }
+.metas-table input.cod-inp { color: #d8dde6; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
 .cell-fail { background: #ff4d4d20 !important; color: #ff4d4d !important; }
@@ -592,6 +592,7 @@ function renderProducaoDiaria(){
 // ── METAS ────────────────────────────────────
 function aplicarCor(inp,rawVal,meta,isCafe){
   inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
+  if(isCafe){inp.classList.add('cafe');return;} // 10:00 SEMPRE amarelo
   const{num,tipo}=parseCelVal(rawVal);
   if(tipo==='ajuste'){inp.classList.add('cell-adj');return;}
   if(num>0){
@@ -599,7 +600,6 @@ function aplicarCor(inp,rawVal,meta,isCafe){
     if(meta>0&&num<meta){inp.classList.add('cell-fail');return;}
     inp.classList.add('cell-ok');return;
   }
-  if(isCafe)inp.classList.add('cafe');
 }
 
 function syncMetasToProducao(metasKey){
@@ -676,9 +676,9 @@ function buildTurnoTable(c,turno,chave){
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
       let cc='';
-      if(tipo==='ajuste')cc='cell-adj';
+      if(isCafe) cc='cafe'; // 10:00 SEMPRE amarelo, independente de meta
+      else if(tipo==='ajuste')cc='cell-adj';
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
-      else if(isCafe)cc='cafe';
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
       return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
