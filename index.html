@@ -1256,7 +1256,7 @@ function salvarEdicaoCell(keyAntigo){
   showToast("Célula atualizada ✓");
 }
 
-function forcarBackup(){
+async function forcarBackup(){
   const btn = document.getElementById("btnBackup");
   if(btn) btn.textContent = "☁ ...";
   await backupToSheets(celulas);
