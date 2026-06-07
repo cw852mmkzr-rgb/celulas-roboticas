@@ -1217,7 +1217,10 @@ function renderMetasDiaria(){
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
-      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      </div>
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📆</span>
@@ -2152,6 +2155,169 @@ function confirmXlsxImport(){
   if(!xlsxPendingData)return;let updated=0;
   xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
   saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();showToast(`${updated} célula(s) atualizada(s) ✓`);
+}
+
+// ── EXPORTAR PDF DO DIA ──────────────────────
+function exportarPDFDia() {
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if (!metasKey) { showToast("Célula Metas não encontrada", true); return; }
+  const mc = celulas[metasKey];
+  const ano = mc.metas_ano  || new Date().getFullYear();
+  const mes = mc.metas_mes  !== undefined ? mc.metas_mes : new Date().getMonth();
+  const dia = mc.metas_dia  || new Date().getDate();
+  const chave = `${ano}_${mes}_${dia}`;
+  const data  = (mc.metas_dias && mc.metas_dias[chave]) ? mc.metas_dias[chave] : {};
+  const dataFmt = `${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
+
+  // calcula totais
+  const totalDia   = ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalNoite = ROBOS.reduce((s,r)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalG = totalDia + totalNoite;
+
+  // monta linhas por robô
+  const linhasRobos = ROBOS.map(robo => {
+    const rd = (data[robo]) || {};
+    const meta = parseInt(rd.meta) || 0;
+    const cod  = rd.cod || '—';
+    const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const total    = subDia + subNoite;
+    const metaEstimada = meta > 0 ? meta * 9 : 0;
+    const efic = metaEstimada > 0 ? Math.round(total / metaEstimada * 100) : null;
+    const corEfic = efic === null ? '#888' : efic >= 100 ? '#00b84a' : efic >= 80 ? '#ff8c00' : '#cc0000';
+    if (total === 0 && !meta) return '';
+    return `<tr>
+      <td style="padding:8px 12px;font-weight:700;color:#000">${robo}</td>
+      <td style="padding:8px 12px;color:#555">${esc(cod)}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:#00802b">${subDia || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:#4a00cc">${subNoite || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:800;font-size:15px">${total || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;color:#555">${meta > 0 ? meta+'/h' : '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:${corEfic}">${efic !== null ? efic+'%' : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // monta horas turno dia
+  const horasDiaHTML = HORAS_DIA.map(h => {
+    const isCafe = HORAS_CAFE.includes(h);
+    const soma = ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return `<td style="padding:6px 8px;text-align:center;font-weight:700;background:${isCafe?'#fff3cd':'#fff'};color:${isCafe?'#8a6200':'#000'}">${soma||'—'}</td>`;
+  }).join('');
+
+  const horasNoiteHTML = HORAS_NOITE.map(h => {
+    const soma = ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return `<td style="padding:6px 8px;text-align:center;font-weight:700;color:#000">${soma||'—'}</td>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <title>Relatório do Dia — ${dataFmt}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #fff; color: #000; padding: 24px; font-size: 12px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 14px; }
+    .titulo { font-size: 22px; font-weight: 900; letter-spacing: 0.08em; }
+    .subtitulo { font-size: 11px; color: #555; margin-top: 3px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .data-badge { background: #000; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 16px; font-weight: 800; letter-spacing: 0.1em; }
+    .cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+    .card { border: 2px solid #000; border-radius: 8px; padding: 10px 14px; text-align: center; }
+    .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: #555; margin-bottom: 4px; }
+    .card-val { font-size: 26px; font-weight: 900; }
+    .card-val.verde { color: #00802b; }
+    .card-val.azul  { color: #0044cc; }
+    .card-val.preto { color: #000; }
+    .card-val.laranja { color: #cc5500; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th { background: #000; color: #fff; padding: 9px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; }
+    th.left { text-align: left; }
+    td { border-bottom: 1px solid #ddd; }
+    tr:nth-child(even) td { background: #f9f9f9; }
+    .sec-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; margin-top: 18px; padding-bottom: 4px; border-bottom: 1px solid #ccc; color: #333; }
+    .footer { margin-top: 24px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+    .assinatura { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .ass-box { border-top: 1px solid #000; padding-top: 6px; text-align: center; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+    @media print { body { padding: 12px; } }
+  </style>
+</head><body>
+  <div class="header">
+    <div>
+      <div class="titulo">⬡ CÉLULAS ROBÓTICAS</div>
+      <div class="subtitulo">Relatório de Produção Diária</div>
+    </div>
+    <div class="data-badge">📅 ${dataFmt}</div>
+  </div>
+
+  <!-- Cards resumo -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Total do Dia</div>
+      <div class="card-val preto">${totalG.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">☀ Turno Dia</div>
+      <div class="card-val verde">${totalDia.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">🌙 Turno Noite</div>
+      <div class="card-val azul">${totalNoite.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Robôs Ativos</div>
+      <div class="card-val laranja">${ROBOS.filter(r=>{
+        const rd=data[r]||{};
+        return [...HORAS_DIA,...HORAS_NOITE].some(h=>parseCelVal((rd[campoH(h)])||'').num>0);
+      }).length}</div>
+    </div>
+  </div>
+
+  <!-- Tabela por robô -->
+  <div class="sec-title">Produção por Robô</div>
+  <table>
+    <thead>
+      <tr>
+        <th class="left">Robô</th>
+        <th class="left">Cód. Peça</th>
+        <th>☀ Dia</th>
+        <th>🌙 Noite</th>
+        <th>Total</th>
+        <th>Meta/h</th>
+        <th>Efic.</th>
+      </tr>
+    </thead>
+    <tbody>${linhasRobos || '<tr><td colspan="7" style="padding:12px;text-align:center;color:#888">Nenhum dado registrado</td></tr>'}</tbody>
+  </table>
+
+  <!-- Totais por hora -->
+  <div class="sec-title">☀ Totais por Hora — Turno Dia</div>
+  <table>
+    <thead><tr>
+      ${HORAS_DIA.map(h=>`<th style="${HORAS_CAFE.includes(h)?'background:#8a6200':''}">${h}</th>`).join('')}
+    </tr></thead>
+    <tbody><tr>${horasDiaHTML}</tr></tbody>
+  </table>
+
+  <div class="sec-title">🌙 Totais por Hora — Turno Noite</div>
+  <table>
+    <thead><tr>${HORAS_NOITE.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody><tr>${horasNoiteHTML}</tr></tbody>
+  </table>
+
+  <!-- Assinaturas -->
+  <div class="assinatura">
+    <div class="ass-box">Supervisor</div>
+    <div class="ass-box">Responsável Técnico</div>
+    <div class="ass-box">Operador</div>
+  </div>
+
+  <div class="footer">
+    <span>Células Robóticas — Monitor Industrial</span>
+    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+  </div>
+
+  <script>window.onload=()=>window.print();<\/script>
+</body></html>`);
+  win.document.close();
 }
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
