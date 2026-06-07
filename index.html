@@ -591,28 +591,39 @@ const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" 
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
-const GIST_ID    = "81dc66825d30c1b4dca63c5bda2033b2";
-const GIST_TOKEN = "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";
+const BACKUP_BIN_ID = ""; // será criado automaticamente no primeiro backup
 let backupContador = 0;
+let _backupBinId = "";
 
 async function backupToSheets(data) {
   try {
-    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: "PATCH",
-      headers: {
-        "Authorization": `token ${GIST_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        files: {
-          "backup.json": {
-            content: JSON.stringify(data, null, 2)
-          }
-        }
-      })
-    });
+    // Se ainda não tem BIN de backup, cria um
+    if (!_backupBinId) {
+      // tenta ler do localStorage
+      _backupBinId = localStorage.getItem("backup_bin_id") || "";
+    }
+    if (!_backupBinId) {
+      // cria um novo BIN de backup
+      const r = await fetch("https://api.jsonbin.io/v3/b", {
+        method: "POST",
+        headers: { ...HEADERS_W, "X-Bin-Name": "CelulasRoboticas-Backup" },
+        body: JSON.stringify(data)
+      });
+      const d = await r.json();
+      _backupBinId = d.metadata.id;
+      localStorage.setItem("backup_bin_id", _backupBinId);
+      console.log("Backup BIN criado:", _backupBinId);
+    } else {
+      // atualiza o BIN existente
+      await fetch(`https://api.jsonbin.io/v3/b/${_backupBinId}`, {
+        method: "PUT",
+        headers: HEADERS_W,
+        body: JSON.stringify(data)
+      });
+    }
+    console.log("Backup JSONBin OK — BIN:", _backupBinId);
   } catch(e) {
-    console.warn("Backup Gist falhou:", e);
+    console.warn("Backup JSONBin falhou:", e);
   }
 }
 
@@ -1968,7 +1979,8 @@ async function forcarBackup(){
   if(btn) btn.textContent = "☁ ...";
   await backupToSheets(celulas);
   if(btn) btn.textContent = "☁ Backup";
-  showToast("Backup no Google Sheets ✓");
+  const binId = _backupBinId || localStorage.getItem("backup_bin_id") || "";
+  showToast("Backup salvo ✓" + (binId ? " — BIN: "+binId.slice(-6) : ""));
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
