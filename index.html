@@ -217,7 +217,96 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <body>
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
-    <div class="login-icon">⬡</div>
+    <div class="login-icon" style="display:flex;justify-content:center;margin-bottom:8px">
+      <svg width="160" height="100" viewBox="0 0 440 280">
+        <defs>
+          <filter id="lgn"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lgb"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lgg"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="440" height="280" fill="#04070d"/>
+        <g filter="url(#lgn)">
+          <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+          <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+          <circle cx="70" cy="200" r="20" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="70" cy="200" r="12" fill="none" stroke="#00e87a" stroke-width="1"/>
+          <circle cx="70" cy="200" r="5" fill="#00e87a" opacity="0.9"/>
+          <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <line x1="52" y1="178" x2="88" y2="178" stroke="#00e87a" stroke-width="0.8" opacity="0.4"/>
+          <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="70" cy="148" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="70" cy="148" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+          <circle cx="70" cy="148" r="4" fill="#00e87a"/>
+          <g transform="rotate(-52 70 148)">
+            <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <line x1="54" y1="118" x2="86" y2="118" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
+          </g>
+          <circle cx="110" cy="72" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="110" cy="72" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+          <circle cx="110" cy="72" r="4" fill="#00e87a"/>
+          <g transform="rotate(20 110 72)">
+            <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#00e87a" stroke-width="2"/>
+          </g>
+          <circle cx="128" cy="34" r="14" fill="none" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="128" cy="34" r="8" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+          <circle cx="128" cy="34" r="3" fill="#00e87a"/>
+          <g transform="rotate(8 128 34)">
+            <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <circle cx="168" cy="22" r="2.5" fill="#00e87a"/>
+            <circle cx="168" cy="36" r="2.5" fill="#00e87a"/>
+          </g>
+          <circle cx="24" cy="245" r="4" fill="#00e87a"/>
+          <circle cx="24" cy="245" r="8" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+        </g>
+        <g filter="url(#lgb)">
+          <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+          <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+          <circle cx="370" cy="200" r="20" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="370" cy="200" r="12" fill="none" stroke="#3d9eff" stroke-width="1"/>
+          <circle cx="370" cy="200" r="5" fill="#3d9eff" opacity="0.9"/>
+          <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <line x1="352" y1="178" x2="388" y2="178" stroke="#3d9eff" stroke-width="0.8" opacity="0.4"/>
+          <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="370" cy="148" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="370" cy="148" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+          <circle cx="370" cy="148" r="4" fill="#3d9eff"/>
+          <g transform="rotate(52 370 148)">
+            <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <line x1="354" y1="118" x2="386" y2="118" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
+          </g>
+          <circle cx="330" cy="72" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="330" cy="72" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+          <circle cx="330" cy="72" r="4" fill="#3d9eff"/>
+          <g transform="rotate(-20 330 72)">
+            <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          </g>
+          <circle cx="312" cy="34" r="14" fill="none" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="312" cy="34" r="8" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+          <circle cx="312" cy="34" r="3" fill="#3d9eff"/>
+          <g transform="rotate(-8 312 34)">
+            <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <circle cx="272" cy="22" r="2.5" fill="#3d9eff"/>
+            <circle cx="272" cy="36" r="2.5" fill="#3d9eff"/>
+          </g>
+          <circle cx="416" cy="245" r="4" fill="#3d9eff"/>
+          <circle cx="416" cy="245" r="8" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+        </g>
+        <g filter="url(#lgg)">
+          <circle cx="220" cy="29" r="5" fill="#ffb300"/>
+          <line x1="220" y1="23" x2="220" y2="13" stroke="#ffb300" stroke-width="2.5"/>
+          <line x1="215" y1="25" x2="207" y2="16" stroke="#ffb300" stroke-width="2"/>
+          <line x1="225" y1="25" x2="233" y2="16" stroke="#ffb300" stroke-width="2"/>
+          <line x1="212" y1="29" x2="202" y2="29" stroke="#ffb300" stroke-width="2"/>
+          <line x1="228" y1="29" x2="238" y2="29" stroke="#ffb300" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
     <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
@@ -232,7 +321,184 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:8px">
       <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
-      <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
+      <div class="brand" style="display:flex;align-items:center;gap:10px">
+        <svg width="64" height="38" viewBox="0 0 440 280" style="flex-shrink:0">
+          <defs>
+            <filter id="gn"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gb"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <rect width="440" height="280" fill="#04070d"/>
+          <!-- robô esquerdo verde wireframe -->
+          <g filter="url(#gn)">
+            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <circle cx="70" cy="200" r="20" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="70" cy="200" r="12" fill="none" stroke="#00e87a" stroke-width="1"/>
+            <circle cx="70" cy="200" r="5" fill="#00e87a" opacity="0.9"/>
+            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <line x1="52" y1="178" x2="88" y2="178" stroke="#00e87a" stroke-width="0.8" opacity="0.4"/>
+            <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="70" cy="148" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="70" cy="148" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="70" cy="148" r="4" fill="#00e87a"/>
+            <g transform="rotate(-52 70 148)">
+              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#00e87a" stroke-width="2"/>
+              <line x1="54" y1="118" x2="86" y2="118" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
+              <rect x="60" y="88" width="20" height="36" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="110" cy="72" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="110" cy="72" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="110" cy="72" r="4" fill="#00e87a"/>
+            <g transform="rotate(20 110 72)">
+              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#00e87a" stroke-width="2"/>
+              <line x1="96" y1="50" x2="124" y2="50" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="128" cy="34" r="14" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="128" cy="34" r="8" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="128" cy="34" r="3" fill="#00e87a"/>
+            <g transform="rotate(8 128 34)">
+              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <circle cx="168" cy="22" r="2.5" fill="#00e87a"/>
+              <circle cx="168" cy="36" r="2.5" fill="#00e87a"/>
+            </g>
+            <circle cx="24" cy="245" r="4" fill="#00e87a"/>
+            <circle cx="24" cy="245" r="8" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- robô direito azul wireframe -->
+          <g filter="url(#gb)">
+            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <circle cx="370" cy="200" r="20" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="370" cy="200" r="12" fill="none" stroke="#3d9eff" stroke-width="1"/>
+            <circle cx="370" cy="200" r="5" fill="#3d9eff" opacity="0.9"/>
+            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <line x1="352" y1="178" x2="388" y2="178" stroke="#3d9eff" stroke-width="0.8" opacity="0.4"/>
+            <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="370" cy="148" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="370" cy="148" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="370" cy="148" r="4" fill="#3d9eff"/>
+            <g transform="rotate(52 370 148)">
+              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#3d9eff" stroke-width="2"/>
+              <line x1="354" y1="118" x2="386" y2="118" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
+              <rect x="360" y="88" width="20" height="36" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="330" cy="72" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="330" cy="72" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="330" cy="72" r="4" fill="#3d9eff"/>
+            <g transform="rotate(-20 330 72)">
+              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#3d9eff" stroke-width="2"/>
+              <line x1="312" y1="50" x2="340" y2="50" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="312" cy="34" r="14" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="312" cy="34" r="8" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="312" cy="34" r="3" fill="#3d9eff"/>
+            <g transform="rotate(-8 312 34)">
+              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <circle cx="272" cy="22" r="2.5" fill="#3d9eff"/>
+              <circle cx="272" cy="36" r="2.5" fill="#3d9eff"/>
+            </g>
+            <circle cx="416" cy="245" r="4" fill="#3d9eff"/>
+            <circle cx="416" cy="245" r="8" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- faísca -->
+          <g filter="url(#gg)">
+            <circle cx="220" cy="29" r="5" fill="#ffb300"/>
+            <line x1="220" y1="23" x2="220" y2="13" stroke="#ffb300" stroke-width="2.5"/>
+            <line x1="215" y1="25" x2="207" y2="16" stroke="#ffb300" stroke-width="2"/>
+            <line x1="225" y1="25" x2="233" y2="16" stroke="#ffb300" stroke-width="2"/>
+            <line x1="212" y1="29" x2="202" y2="29" stroke="#ffb300" stroke-width="2"/>
+            <line x1="228" y1="29" x2="238" y2="29" stroke="#ffb300" stroke-width="2"/>
+          </g>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.1em;line-height:1">CÉLULAS <span style="color:#00e87a">ROBÓTICAS</span></div>
+          <div style="font-size:8px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase">Monitor Industrial</div>
+        </div>
+      </div>
+          <!-- robô esquerdo verde -->
+          <rect x="20" y="168" width="80" height="14" rx="4" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <rect x="30" y="158" width="60" height="12" rx="3" fill="#1a2030" stroke="#00e87a" stroke-width="1.5"/>
+          <rect x="48" y="146" width="24" height="14" rx="3" fill="#0f1520" stroke="#00e87a" stroke-width="1.2"/>
+          <ellipse cx="60" cy="147" rx="18" ry="7" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="60" cy="147" r="6" fill="#00e87a"/>
+          <circle cx="60" cy="147" r="3" fill="#080b0f"/>
+          <rect x="50" y="95" width="20" height="54" rx="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <rect x="54" y="99" width="12" height="46" rx="4" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          <ellipse cx="60" cy="95" rx="16" ry="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="60" cy="95" r="5" fill="#00e87a"/>
+          <circle cx="60" cy="95" r="2.5" fill="#080b0f"/>
+          <g transform="rotate(-50 60 95)">
+            <rect x="50" y="38" width="20" height="60" rx="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+            <rect x="54" y="42" width="12" height="52" rx="4" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          </g>
+          <circle cx="96" cy="52" r="13" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="96" cy="52" r="7" fill="#00e87a"/>
+          <circle cx="96" cy="52" r="3.5" fill="#080b0f"/>
+          <g transform="rotate(15 96 52)">
+            <rect x="87" y="8" width="18" height="46" rx="5" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+            <rect x="91" y="12" width="10" height="38" rx="3" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          </g>
+          <circle cx="112" cy="20" r="9" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="112" cy="20" r="5" fill="#00e87a"/>
+          <g transform="rotate(5 112 20)">
+            <rect x="112" y="14" width="22" height="13" rx="3" fill="#1a2030" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="132" y="9" width="9" height="9" rx="2" fill="#1a2030" stroke="#00e87a" stroke-width="1.2"/>
+            <rect x="132" y="20" width="9" height="9" rx="2" fill="#1a2030" stroke="#00e87a" stroke-width="1.2"/>
+          </g>
+          <circle cx="25" cy="172" r="4" fill="#00e87a"/>
+          <circle cx="25" cy="172" r="7" fill="#00e87a" opacity="0.25"/>
+          <!-- robô direito azul -->
+          <rect x="260" y="168" width="80" height="14" rx="4" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <rect x="270" y="158" width="60" height="12" rx="3" fill="#1a2030" stroke="#3d9eff" stroke-width="1.5"/>
+          <rect x="288" y="146" width="24" height="14" rx="3" fill="#0f1520" stroke="#3d9eff" stroke-width="1.2"/>
+          <ellipse cx="300" cy="147" rx="18" ry="7" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="300" cy="147" r="6" fill="#3d9eff"/>
+          <circle cx="300" cy="147" r="3" fill="#080b0f"/>
+          <rect x="290" y="95" width="20" height="54" rx="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <rect x="294" y="99" width="12" height="46" rx="4" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          <ellipse cx="300" cy="95" rx="16" ry="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="300" cy="95" r="5" fill="#3d9eff"/>
+          <circle cx="300" cy="95" r="2.5" fill="#080b0f"/>
+          <g transform="rotate(50 300 95)">
+            <rect x="290" y="38" width="20" height="60" rx="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="294" y="42" width="12" height="52" rx="4" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          </g>
+          <circle cx="264" cy="52" r="13" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="264" cy="52" r="7" fill="#3d9eff"/>
+          <circle cx="264" cy="52" r="3.5" fill="#080b0f"/>
+          <g transform="rotate(-15 264 52)">
+            <rect x="255" y="8" width="18" height="46" rx="5" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="259" y="12" width="10" height="38" rx="3" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          </g>
+          <circle cx="248" cy="20" r="9" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="248" cy="20" r="5" fill="#3d9eff"/>
+          <g transform="rotate(-5 248 20)">
+            <rect x="226" y="14" width="22" height="13" rx="3" fill="#1a2030" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="219" y="9" width="9" height="9" rx="2" fill="#1a2030" stroke="#3d9eff" stroke-width="1.2"/>
+            <rect x="219" y="20" width="9" height="9" rx="2" fill="#1a2030" stroke="#3d9eff" stroke-width="1.2"/>
+          </g>
+          <circle cx="335" cy="172" r="4" fill="#3d9eff"/>
+          <circle cx="335" cy="172" r="7" fill="#3d9eff" opacity="0.25"/>
+          <!-- faísca central -->
+          <circle cx="180" cy="18" r="4" fill="#ffb300" opacity="0.9"/>
+          <line x1="175" y1="13" x2="169" y2="7" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="185" y1="13" x2="191" y2="7" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="180" y1="14" x2="180" y2="6" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="174" y1="22" x2="167" y2="27" stroke="#ffb300" stroke-width="1.5" opacity="0.6"/>
+          <line x1="186" y1="22" x2="193" y2="27" stroke="#ffb300" stroke-width="1.5" opacity="0.6"/>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.1em;line-height:1">CÉLULAS <span style="color:#00e87a">ROBÓTICAS</span></div>
+          <div style="font-size:8px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase">Monitor Industrial</div>
+        </div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
