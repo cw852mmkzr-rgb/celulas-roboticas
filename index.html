@@ -503,7 +503,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
-      <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="forcarBackup()" title="Backup no Google Sheets">☁ Backup</button>
+      <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
       <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
@@ -591,40 +591,24 @@ const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" 
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
-const BACKUP_BIN_ID = ""; // será criado automaticamente no primeiro backup
 let backupContador = 0;
 let _backupBinId = "";
 
 async function backupToSheets(data) {
-  try {
-    // Se ainda não tem BIN de backup, cria um
-    if (!_backupBinId) {
-      // tenta ler do localStorage
-      _backupBinId = localStorage.getItem("backup_bin_id") || "";
-    }
-    if (!_backupBinId) {
-      // cria um novo BIN de backup
-      const r = await fetch("https://api.jsonbin.io/v3/b", {
-        method: "POST",
-        headers: { ...HEADERS_W, "X-Bin-Name": "CelulasRoboticas-Backup" },
-        body: JSON.stringify(data)
-      });
-      const d = await r.json();
-      _backupBinId = d.metadata.id;
-      localStorage.setItem("backup_bin_id", _backupBinId);
-      console.log("Backup BIN criado:", _backupBinId);
-    } else {
-      // atualiza o BIN existente
-      await fetch(`https://api.jsonbin.io/v3/b/${_backupBinId}`, {
-        method: "PUT",
-        headers: HEADERS_W,
-        body: JSON.stringify(data)
-      });
-    }
-    console.log("Backup JSONBin OK — BIN:", _backupBinId);
-  } catch(e) {
-    console.warn("Backup JSONBin falhou:", e);
-  }
+  // backup silencioso — não faz nada, o JSONBin principal já é o backup
+}
+
+function baixarBackupLocal() {
+  const json = JSON.stringify(celulas, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date().toLocaleString('pt-BR').replace(/[/:, ]/g,'_');
+  a.download = `backup_celulas_${now}.json`;
+  a.href = url;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup baixado ✓");
 }
 
 let celulas = {}, selected = null, isAdmin = false, pollTimer = null, xlsxPendingData = null;
