@@ -310,9 +310,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha do host" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-    <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
+    <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
     <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
     <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
     <div class="login-hint"></div>
@@ -1085,53 +1085,140 @@ function calcProducaoPorPeca(){
       if(!cod||cod==='—'||cod==='')return;
       const totalRobo=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
       if(totalRobo<=0)return;
-      if(!resultado[cod])resultado[cod]={total:0,dias:{}};
+      if(!resultado[cod])resultado[cod]={total:0,dias:{},robos:{}};
       if(!resultado[cod].dias[chave])resultado[cod].dias[chave]=0;
       resultado[cod].dias[chave]+=totalRobo;
       resultado[cod].total+=totalRobo;
+      if(!resultado[cod].robos[robo])resultado[cod].robos[robo]={total:0,dias:{}};
+      resultado[cod].robos[robo].total+=totalRobo;
+      if(!resultado[cod].robos[robo].dias[chave])resultado[cod].robos[robo].dias[chave]=0;
+      resultado[cod].robos[robo].dias[chave]+=totalRobo;
     });
   });
   return resultado;
 }
 
-function renderProducaoPorPeca(){
+let pecaBusca='';
+
+function buscarPeca(termo){
+  pecaBusca=termo.trim().toLowerCase();
+  renderProducaoPorPecaResultado();
+}
+
+function renderProducaoPorPecaResultado(){
   const c=celulas[selected];
   const dados=calcProducaoPorPeca();
   const anoAtual=new Date().getFullYear();
   const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
   const anoSel=c.peca_ano||anoAtual;
-  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
-  const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
   const dadosFiltrados={};
   Object.keys(dados).forEach(cod=>{
-    let totalMes=0;const diasMes={};
+    if(pecaBusca&&!cod.toLowerCase().includes(pecaBusca))return;
+    let totalMes=0;const diasMes={};const robosMes={};
     Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
       const[a,m,d]=chave.split('_');
       if(parseInt(a)===anoSel&&parseInt(m)===mesIdx){diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;totalMes+=qtd;}
     });
-    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes};
+    Object.entries(dados[cod].robos).forEach(([robo,rdata])=>{
+      let totalRoboMes=0;
+      Object.entries(rdata.dias).forEach(([chave,qtd])=>{
+        const[a,m,d]=chave.split('_');
+        if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalRoboMes+=qtd;
+      });
+      if(totalRoboMes>0)robosMes[robo]=totalRoboMes;
+    });
+    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes,robos:robosMes};
   });
-  const codigosFiltrados=Object.keys(dadosFiltrados).sort();
-  const totalGeral=codigosFiltrados.reduce((s,cod)=>s+dadosFiltrados[cod].total,0);
+  const codigosFiltrados=Object.keys(dadosFiltrados).sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total);
   const maxTotal=Math.max(...codigosFiltrados.map(cod=>dadosFiltrados[cod].total),1);
-  const linhasHTML=codigosFiltrados.length>0
-    ?codigosFiltrados.map(cod=>{
-      const{total,dias}=dadosFiltrados[cod];const pct=Math.round(total/maxTotal*100);
-      const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
-      const maxDia=Math.max(...diasOrdenados,1);
-      const sparkBars=diasOrdenados.map((v,i)=>{
-        const h=v>0?Math.max(Math.round(v/maxDia*24),3):1;
-        const cor=v>0?'#00e87a':'#1e2530';
-        return`<div title="Dia ${i+1}: ${v}" style="width:6px;height:${h}px;background:${cor};border-radius:2px;flex-shrink:0"></div>`;
-      }).join('');
-      return`<tr>
-        <td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30006;padding:10px 12px;white-space:nowrap">${esc(cod)}</td>
-        <td style="padding:10px 12px"><div style="display:flex;align-items:flex-end;gap:2px;height:28px">${sparkBars}</div></td>
-        <td style="padding:8px 10px"><div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;min-width:80px"><div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div></div></td>
-        <td style="color:#00e87a;font-weight:900;font-size:20px;padding:10px 14px;text-align:right;white-space:nowrap">${total.toLocaleString("pt-BR")}</td>
-      </tr>`;
-    }).join('')
-    :`<tr><td colspan="4" style="text-align:center;color:#2a3040;padding:32px;font-size:13px">Nenhum dado para ${MESES[mesIdx]} ${anoSel}.<br><span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula Metas.</span></td></tr>`;
+  const container=document.getElementById('peca-resultado');
+  if(!container)return;
+  if(codigosFiltrados.length===0){
+    container.innerHTML=`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
+      ${pecaBusca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(pecaBusca)}</b>"`:'Nenhum dado para este período.'}
+      <br><span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula Metas.</span>
+    </div>`;
+    return;
+  }
+  container.innerHTML=codigosFiltrados.map(cod=>{
+    const{total,dias,robos}=dadosFiltrados[cod];
+    const pct=Math.round(total/maxTotal*100);
+    const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
+    const maxDia=Math.max(...diasOrdenados,1);
+    const sparkBars=diasOrdenados.map((v,i)=>{
+      const h=v>0?Math.max(Math.round(v/maxDia*22),3):1;
+      return`<div title="Dia ${i+1}: ${v}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+    }).join('');
+    const robosOrdenados=Object.entries(robos).sort((a,b)=>b[1]-a[1]);
+    const robosHTML=robosOrdenados.length>1
+      ?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2530">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:700">Produção por robô</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${robosOrdenados.map(([robo,qtd])=>{
+              const pctR=Math.round(qtd/total*100);
+              return`<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;min-width:100px;flex:1">
+                <div style="font-size:11px;color:#00e87a;font-weight:700;margin-bottom:4px">⚙ Robô ${robo}</div>
+                <div style="font-size:18px;font-weight:800;color:#d8dde6">${qtd.toLocaleString("pt-BR")}</div>
+                <div style="margin-top:4px;background:#1e2530;border-radius:99px;height:4px;overflow:hidden">
+                  <div style="height:100%;width:${pctR}%;background:#00e87a;border-radius:99px"></div>
+                </div>
+                <div style="font-size:10px;color:#4a5568;margin-top:3px">${pctR}% do total</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:8px;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${robosOrdenados.length} robô(s) · Total combinado</span>
+            <span style="font-size:20px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</span>
+          </div>
+        </div>`
+      :robosOrdenados.length===1
+        ?`<div style="margin-top:8px;font-size:11px;color:#4a5568">⚙ Produzido pelo Robô <b style="color:#00e87a">${robosOrdenados[0][0]}</b></div>`
+        :'';
+    return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="min-width:100px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Código</div>
+          <div style="font-size:20px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Dias do mês</div>
+          <div style="display:flex;align-items:flex-end;gap:2px;height:26px">${sparkBars}</div>
+        </div>
+        <div style="min-width:140px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
+          <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div>
+          </div>
+          <div style="font-size:10px;color:#4a5568;margin-top:3px">${pct}% do maior</div>
+        </div>
+        <div style="text-align:right;min-width:90px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total</div>
+          <div style="font-size:26px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</div>
+        </div>
+      </div>
+      ${robosHTML}
+    </div>`;
+  }).join('');
+}
+
+function renderProducaoPorPeca(){
+  const c=celulas[selected];
+  const anoAtual=new Date().getFullYear();
+  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
+  const anoSel=c.peca_ano||anoAtual;
+  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
+  const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+  const dados=calcProducaoPorPeca();
+  const dadosFiltrados={};
+  Object.keys(dados).forEach(cod=>{
+    let totalMes=0;
+    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
+      const[a,m,d]=chave.split('_');
+      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalMes+=qtd;
+    });
+    if(totalMes>0)dadosFiltrados[cod]=totalMes;
+  });
+  const totalGeral=Object.values(dadosFiltrados).reduce((s,v)=>s+v,0);
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
@@ -1141,49 +1228,28 @@ function renderProducaoPorPeca(){
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <span style="font-size:16px">📅</span>
       <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
       <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${codigosFiltrados.length} código(s)</div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${Object.keys(dadosFiltrados).length} código(s)</div>
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
       </div>
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
-      <div style="overflow-x:auto">
-        <table style="border-collapse:collapse;width:100%;min-width:500px">
-          <thead>
-            <tr style="background:#0a0d11">
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Código</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Dias do mês</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Proporção</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:right;border-bottom:1px solid #1e2530;font-weight:700;min-width:100px">Total</th>
-            </tr>
-          </thead>
-          <tbody style="font-family:'Courier New',monospace">${linhasHTML}</tbody>
-        </table>
-      </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">🔍</span>
+      <input id="buscaPeca" placeholder="Buscar código de peça..." oninput="buscarPeca(this.value)"
+        value="${esc(pecaBusca)}"
+        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none" autocomplete="off">
+      <button onclick="document.getElementById('buscaPeca').value='';buscarPeca('')"
+        style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
     </div>
-    ${codigosFiltrados.length>0?`
-    <div style="margin-top:16px;background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:700">🏆 Ranking do Mês</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${[...codigosFiltrados].sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total).slice(0,5).map((cod,i)=>{
-          const medalhas=['🥇','🥈','🥉','4º','5º'];const pct=Math.round(dadosFiltrados[cod].total/maxTotal*100);
-          return`<div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:16px;min-width:26px">${medalhas[i]||''}</span>
-            <span style="color:#ffb300;font-weight:700;font-size:13px;min-width:100px">${esc(cod)}</span>
-            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${i===0?'#ffb300':i===1?'#9ca3af':i===2?'#b45309':'#00e87a'};border-radius:99px"></div>
-            </div>
-            <span style="color:#d8dde6;font-weight:700;font-size:14px;min-width:70px;text-align:right">${dadosFiltrados[cod].total.toLocaleString("pt-BR")}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`:''}
+    <div id="peca-resultado"></div>
   </div>`;
+  renderProducaoPorPecaResultado();
 }
+
 function updatePecaFiltro(key,campo,valor){celulas[key][campo]=valor;saveToAPI(celulas);renderProducaoPorPeca();}
 
 // ── ARMÁRIO ───────────────────────────────────
@@ -1827,7 +1893,7 @@ function startApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
   if(isAdmin){
-    document.getElementById("modeBadge").textContent="⚙ Admin";
+    document.getElementById("modeBadge").textContent="⚙ Host";
     document.getElementById("modeBadge").className="badge badge-admin";
     document.getElementById("btnAdd").style.display="inline-block";
     document.getElementById("btnXlsx").style.display="inline-block";
