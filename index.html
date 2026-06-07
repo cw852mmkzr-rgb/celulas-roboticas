@@ -591,15 +591,28 @@ const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" 
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
+const GIST_ID    = "81dc66825d30c1b4dca63c5bda2033b2";
+const GIST_TOKEN = "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";
 let backupContador = 0;
 
 async function backupToSheets(data) {
   try {
-    const encoded = encodeURIComponent(JSON.stringify(data));
-    const img = new Image();
-    img.src = `${SHEETS_URL}?action=set&d=${encoded}`;
+    await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      method: "PATCH",
+      headers: {
+        "Authorization": `token ${GIST_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        files: {
+          "backup.json": {
+            content: JSON.stringify(data, null, 2)
+          }
+        }
+      })
+    });
   } catch(e) {
-    console.warn("Backup Sheets falhou:", e);
+    console.warn("Backup Gist falhou:", e);
   }
 }
 
