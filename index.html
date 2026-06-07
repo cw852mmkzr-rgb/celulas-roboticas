@@ -16,6 +16,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .badge { font-size: 10px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.1em; text-transform: uppercase; }
 .badge-admin { background: #00e87a20; border: 1px solid #00e87a40; color: #00e87a; }
 .badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
+.badge-metas { background: #a78bfa20; border: 1px solid #a78bfa40; color: #a78bfa; }
 
 .layout { display: flex; height: calc(100vh - 52px); }
 .sidebar { width: 200px; background: #0f1318; border-right: 1px solid #1e2530; overflow-y: auto; flex-shrink: 0; transition: transform 0.25s; }
@@ -312,6 +313,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
+    <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
     <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
     <div class="login-hint"></div>
   </div>
@@ -584,7 +586,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <script>
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "tremps3102";
+const ADMIN_PW      = "tremps3102";
+const ADMIN_METAS_PW = "katia26";
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
 const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
@@ -611,7 +614,7 @@ function baixarBackupLocal() {
   showToast("Backup baixado ✓");
 }
 
-let celulas = {}, selected = null, isAdmin = false, pollTimer = null, xlsxPendingData = null;
+let celulas = {}, selected = null, isAdmin = false, isAdminMetas = false, pollTimer = null, xlsxPendingData = null;
 let sidebarExpandida = false;
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
@@ -933,7 +936,8 @@ function updateMetasData(key,campo,valor){
 
 function buildTurnoTable(c,turno,chave){
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
-  const ro=!isAdmin?'readonly':'';
+  const podeEditar = isAdmin || isAdminMetas;
+  const ro=!podeEditar?'readonly':'';
   const HORAS=turno==='dia'?HORAS_DIA:HORAS_NOITE;
   const isNoite=turno==='noite';
   const subLabel=isNoite?'Sub Noite':'Sub Dia';
@@ -997,6 +1001,7 @@ function buildTurnoTable(c,turno,chave){
 
 function renderMetasDiaria(){
   const c=celulas[selected];
+  const podeEditar = isAdmin || isAdminMetas;
   const anoAtual=new Date().getFullYear();
   const ano=c.metas_ano||anoAtual;
   const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
@@ -1800,27 +1805,42 @@ function closeLightbox(){document.getElementById("lightboxEl").classList.remove(
 
 function tryLogin(){
   const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_PW){isAdmin=true;startApp();}
+  if(pw===ADMIN_PW){isAdmin=true;isAdminMetas=false;startApp();}
+  else if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
   else{
     document.getElementById("pwInput").classList.add("err");
     document.getElementById("loginErr").style.display="block";
     setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
   }
 }
-function startViewer(){isAdmin=false;startApp();}
+function tryLoginMetas(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
+  else{
+    document.getElementById("pwInput").classList.add("err");
+    document.getElementById("loginErr").style.display="block";
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+  }
+}
+function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
 function startApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
-  document.getElementById("modeBadge").textContent=isAdmin?"⚙ Admin":"👁 Viewer";
-  document.getElementById("modeBadge").className="badge "+(isAdmin?"badge-admin":"badge-viewer");
   if(isAdmin){
+    document.getElementById("modeBadge").textContent="⚙ Admin";
+    document.getElementById("modeBadge").className="badge badge-admin";
     document.getElementById("btnAdd").style.display="inline-block";
     document.getElementById("btnXlsx").style.display="inline-block";
     document.getElementById("btnBackup").style.display="inline-block";
     document.getElementById("btnGerenciar").style.display="inline-block";
+  } else if(isAdminMetas){
+    document.getElementById("modeBadge").textContent="📋 Metas";
+    document.getElementById("modeBadge").className="badge badge-metas";
+  } else {
+    document.getElementById("modeBadge").textContent="👁 Viewer";
+    document.getElementById("modeBadge").className="badge badge-viewer";
   }
   loadFromAPI().then(() => {
-    // Suporte a ?celula=XX na URL (abertura via QR code)
     const params = new URLSearchParams(window.location.search);
     const celulaParam = params.get('celula');
     if (celulaParam && celulas[celulaParam]) {
@@ -1836,7 +1856,7 @@ function doLogout(){
   document.getElementById("appScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   document.getElementById("pwInput").value="";
-  isAdmin=false;selected=null;
+  isAdmin=false;isAdminMetas=false;selected=null;
 }
 
 function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
