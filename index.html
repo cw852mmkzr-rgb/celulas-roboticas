@@ -1843,7 +1843,7 @@ function startApp(){
       renderDetail();
     }
   });
-  pollTimer=setInterval(loadFromAPI,6000);
+  pollTimer=setInterval(loadFromAPI,120000);
 }
 function doLogout(){
   clearInterval(pollTimer);
