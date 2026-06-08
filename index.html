@@ -478,12 +478,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
+const API_KEY  = "$2a$10$Hun0m.vWkzm.Tgj7jX4ZeeTVIRmLdFSIqFVJhYsYqq6ex4d43vDOW";
+const BIN_ID   = "6a27464ff5f4af5e29ce2ba0";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
-const FIREBASE_URL  = "https://celulas-roboticas-default-rtdb.firebaseio.com/dados.json";
-const BASE_URL  = FIREBASE_URL;
-const HEADERS_R = { "Content-Type": "application/json" };
-const HEADERS_W = { "Content-Type": "application/json" };
+const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS_R = { "X-Master-Key": API_KEY };
+const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
@@ -593,9 +594,9 @@ async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   try{
-    const r=await fetch(FIREBASE_URL);
+    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
     const d=await r.json();
-    if(d&&typeof d==='object'&&Object.keys(d).length>0)celulas=d;
+    if(d.record&&Object.keys(d.record).length>0)celulas=d.record;
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
   renderSidebar();
