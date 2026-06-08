@@ -121,6 +121,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.ok { background: #00e87a; color: #000; }
 .toast.error { background: #ff4d4d; color: #fff; }
+@keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
@@ -398,6 +399,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
+      <span id="newDataBadge" onclick="recarregarDados()" title="Clique para atualizar" style="display:none;cursor:pointer;background:#ff6a00;color:#fff;font-size:10px;padding:3px 10px;border-radius:99px;font-weight:700;animation:pisca 1s infinite">🔔 Dados novos — clique aqui</span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
       <button id="btnRestore" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none;background:#ff6a00" onclick="restaurarDados()" title="Restaurar dados padrão">🔄 Restaurar</button>
@@ -503,6 +505,13 @@ async function restaurarDados(){
   renderSidebar();
   renderDetail();
   showToast("Dados restaurados ✓");
+}
+
+function recarregarDados(){
+  const badge = document.getElementById("newDataBadge");
+  if(badge) badge.style.display = "none";
+  renderDetail();
+  showToast("Tela atualizada ✓");
 }
 
 function baixarBackupLocal() {
@@ -620,7 +629,16 @@ async function loadFromAPI(){
   try{
     const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0)celulas=d.record;
+    if(d.record&&Object.keys(d.record).length>0){
+      const anterior = JSON.stringify(celulas);
+      const novo = JSON.stringify(d.record);
+      if(anterior && anterior !== '{}' && novo !== anterior){
+        // tem dado novo — mostra indicador
+        const badge = document.getElementById("newDataBadge");
+        if(badge) badge.style.display = "inline-block";
+      }
+      celulas=d.record;
+    }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
   renderSidebar();
