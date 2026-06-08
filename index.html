@@ -478,13 +478,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
-const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
-const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
-const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const HEADERS_R = { "X-Master-Key": API_KEY };
-const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
+const FIREBASE_URL  = "https://celulas-roboticas-default-rtdb.firebaseio.com/dados.json";
+const BASE_URL  = FIREBASE_URL;
+const HEADERS_R = { "Content-Type": "application/json" };
+const HEADERS_W = { "Content-Type": "application/json" };
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
@@ -594,18 +593,16 @@ async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   try{
-    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const r=await fetch(FIREBASE_URL);
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0)celulas=d.record;
+    if(d&&typeof d==='object'&&Object.keys(d).length>0)celulas=d;
     else{celulas=defaultData;await saveToAPI(celulas);}
-  }catch(e){celulas=defaultData;}
+  }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
-  else {
-    // só rerenderiza painéis especiais (metas, prod mensal, etc)
-    // células de robô NÃO são rerenderizadas pelo poll para evitar scroll bug
-    const tipo = getCellTipo(selected);
-    if(tipo !== 'robo') renderDetail();
+  else{
+    const tipo=getCellTipo(selected);
+    if(tipo!=='robo')renderDetail();
   }
 }
 
