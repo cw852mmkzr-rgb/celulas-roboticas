@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Células Robóticas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospace; min-height: 100vh; }
@@ -15,6 +16,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .badge { font-size: 10px; padding: 4px 12px; border-radius: 99px; letter-spacing: 0.1em; text-transform: uppercase; }
 .badge-admin { background: #00e87a20; border: 1px solid #00e87a40; color: #00e87a; }
 .badge-viewer { background: #3d9eff20; border: 1px solid #3d9eff40; color: #3d9eff; }
+.badge-metas { background: #a78bfa20; border: 1px solid #a78bfa40; color: #a78bfa; }
 
 .layout { display: flex; height: calc(100vh - 52px); }
 .sidebar { width: 200px; background: #0f1318; border-right: 1px solid #1e2530; overflow-y: auto; flex-shrink: 0; transition: transform 0.25s; }
@@ -141,7 +143,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; transition: width 0.4s; }
 .prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
-/* ── METAS DIÁRIA ── */
+/* METAS */
 .metas-table-wrap { overflow-x: auto; }
 .metas-table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
@@ -161,48 +163,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.sub-dia-val { font-weight: 800; font-size: 16px; background: #00e87a08; border-left: 1px solid #00e87a20; padding: 6px 8px; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
-
-/* inputs de hora — base BRANCO */
-.metas-table input.hora-inp {
-  background: transparent; border: none; outline: none;
-  font-family: 'Courier New', monospace; font-size: 16px;
-  color: #d8dde6;
-  text-align: center; width: 100%; padding: 4px 0; font-weight: 700;
-}
+.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
 .metas-table input.hora-inp:focus { color: #fff; }
 .metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
-
-/* somente 10:00 = amarelo */
 .metas-table input.hora-inp.cafe { color: #ffb300; }
 .metas-table input.hora-inp.cafe[readonly] { color: #5a4a00; }
 .metas-table input.hora-inp.cafe:focus { color: #ffe066; }
-
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; width: 100%; padding: 4px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
 .metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
-.metas-table input.cod-inp { color: #ffb300; }
+.metas-table input.cod-inp { color: #d8dde6; }
 .metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
-
-/* cores de célula — sobrepõem o padrão branco/amarelo */
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
 .cell-fail { background: #ff4d4d20 !important; color: #ff4d4d !important; }
 .cell-adj  { background: #3d9eff20 !important; color: #3d9eff !important; }
 
 /* seletor de data */
 .date-sel { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.date-sel select { background: #0f1318; border: 1px solid #1e2530; border-radius: 6px; padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px; color: #d8dde6; cursor: pointer; outline: none; transition: border-color 0.15s; }
-.date-sel select:focus { border-color: #00e87a; }
+.date-sel select { background: #0f1318; border: 1px solid #1e2530; border-radius: 6px; padding: 5px 10px; font-family: 'Courier New', monospace; font-size: 12px; color: #d8dde6; cursor: pointer; outline: none; }
 .date-sel label { font-size: 10px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 
-/* ── HISTÓRICO ELETRODO ── */
-.hist-item {
-  display: flex; align-items: center; gap: 8px;
-  background: #080b0f; border: 1px solid #1e2530;
-  border-radius: 6px; padding: 6px 10px; margin-bottom: 6px;
-}
-.hist-item-data { font-size: 11px; color: #4a5568; min-width: 110px; white-space: nowrap; }
+/* histórico eletrodo */
+.hist-item { display: flex; align-items: center; gap: 8px; background: #080b0f; border: 1px solid #1e2530; border-radius: 6px; padding: 6px 10px; margin-bottom: 6px; }
+.hist-item-data { font-size: 11px; color: #4a5568; min-width: 140px; white-space: nowrap; }
 .hist-item-val { flex: 1; font-size: 13px; color: #d8dde6; font-weight: 600; }
 .hist-empty { font-size: 12px; color: #2a3040; }
+
+/* sidebar grupos */
+.sidebar-group-label { padding: 6px 14px 4px; font-size: 9px; color: #2a3040; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; }
+.sidebar-ver-mais { padding: 9px 14px; cursor: pointer; text-align: center; color: #00e87a; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; background: #00e87a08; border-top: 1px solid #1e2530; }
+.sidebar-ver-mais:hover { background: #00e87a15; }
+.sidebar-recolher { padding: 9px 14px; cursor: pointer; text-align: center; color: #4a5568; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; border-top: 1px solid #1e2530; }
+.sidebar-recolher:hover { background: #ffffff06; }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -224,15 +216,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </style>
 </head>
 <body>
-
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
     <div class="login-icon">⬡</div>
+
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')tryLogin()">
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha do host" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-    <button class="login-btn-main" onclick="tryLogin()">Entrar como Admin</button>
+    <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
+    <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
     <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
     <div class="login-hint"></div>
   </div>
@@ -242,11 +235,389 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:8px">
       <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
-      <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
+      <div class="brand" style="display:flex;align-items:center;gap:10px">
+        <svg width="64" height="38" viewBox="0 0 440 280" style="flex-shrink:0">
+          <defs>
+            <filter id="gn"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gb"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <rect width="440" height="280" fill="#04070d"/>
+          <!-- robô esquerdo verde wireframe -->
+          <g filter="url(#gn)">
+            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+            <circle cx="70" cy="200" r="20" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <circle cx="70" cy="200" r="12" fill="none" stroke="#ffd600" stroke-width="1"/>
+            <circle cx="70" cy="200" r="5" fill="#ffd600" opacity="0.9"/>
+            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <line x1="52" y1="178" x2="88" y2="178" stroke="#ffd600" stroke-width="0.8" opacity="0.4"/>
+            <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="70" cy="148" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <circle cx="70" cy="148" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+            <circle cx="70" cy="148" r="4" fill="#ffd600"/>
+            <g transform="rotate(-52 70 148)">
+              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#ffd600" stroke-width="2"/>
+              <line x1="54" y1="118" x2="86" y2="118" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
+              <rect x="60" y="88" width="20" height="36" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="110" cy="72" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <circle cx="110" cy="72" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+            <circle cx="110" cy="72" r="4" fill="#ffd600"/>
+            <g transform="rotate(20 110 72)">
+              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#ffd600" stroke-width="2"/>
+              <line x1="96" y1="50" x2="124" y2="50" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="128" cy="34" r="14" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <circle cx="128" cy="34" r="8" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+            <circle cx="128" cy="34" r="3" fill="#ffd600"/>
+            <g transform="rotate(8 128 34)">
+              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+              <circle cx="168" cy="22" r="2.5" fill="#ffd600"/>
+              <circle cx="168" cy="36" r="2.5" fill="#ffd600"/>
+            </g>
+            <circle cx="24" cy="245" r="4" fill="#ffd600"/>
+            <circle cx="24" cy="245" r="8" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- robô direito azul wireframe -->
+          <g filter="url(#gb)">
+            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+            <circle cx="370" cy="200" r="20" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <circle cx="370" cy="200" r="12" fill="none" stroke="#ff6a00" stroke-width="1"/>
+            <circle cx="370" cy="200" r="5" fill="#ff6a00" opacity="0.9"/>
+            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <line x1="352" y1="178" x2="388" y2="178" stroke="#ff6a00" stroke-width="0.8" opacity="0.4"/>
+            <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="370" cy="148" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <circle cx="370" cy="148" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+            <circle cx="370" cy="148" r="4" fill="#ff6a00"/>
+            <g transform="rotate(52 370 148)">
+              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#ff6a00" stroke-width="2"/>
+              <line x1="354" y1="118" x2="386" y2="118" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
+              <rect x="360" y="88" width="20" height="36" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="330" cy="72" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <circle cx="330" cy="72" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+            <circle cx="330" cy="72" r="4" fill="#ff6a00"/>
+            <g transform="rotate(-20 330 72)">
+              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#ff6a00" stroke-width="2"/>
+              <line x1="312" y1="50" x2="340" y2="50" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="312" cy="34" r="14" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <circle cx="312" cy="34" r="8" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+            <circle cx="312" cy="34" r="3" fill="#ff6a00"/>
+            <g transform="rotate(-8 312 34)">
+              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+              <circle cx="272" cy="22" r="2.5" fill="#ff6a00"/>
+              <circle cx="272" cy="36" r="2.5" fill="#ff6a00"/>
+            </g>
+            <circle cx="416" cy="245" r="4" fill="#ff6a00"/>
+            <circle cx="416" cy="245" r="8" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- faísca -->
+          <g filter="url(#gg)">
+            <circle cx="220" cy="29" r="5" fill="#ff2200"/>
+            <line x1="220" y1="23" x2="220" y2="13" stroke="#ff2200" stroke-width="2.5"/>
+            <line x1="215" y1="25" x2="207" y2="16" stroke="#ff2200" stroke-width="2"/>
+            <line x1="225" y1="25" x2="233" y2="16" stroke="#ff2200" stroke-width="2"/>
+            <line x1="212" y1="29" x2="202" y2="29" stroke="#ff2200" stroke-width="2"/>
+            <line x1="228" y1="29" x2="238" y2="29" stroke="#ff2200" stroke-width="2"/>
+          </g>
+        </svg><svg width="160" height="100" viewBox="0 0 440 280">
+        <defs>
+          <filter id="lgn"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lgb"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <filter id="lgg"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="440" height="280" fill="#04070d"/>
+        <g filter="url(#lgn)">
+          <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+          <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+          <circle cx="70" cy="200" r="20" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <circle cx="70" cy="200" r="12" fill="none" stroke="#ffd600" stroke-width="1"/>
+          <circle cx="70" cy="200" r="5" fill="#ffd600" opacity="0.9"/>
+          <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <line x1="52" y1="178" x2="88" y2="178" stroke="#ffd600" stroke-width="0.8" opacity="0.4"/>
+          <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="70" cy="148" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <circle cx="70" cy="148" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+          <circle cx="70" cy="148" r="4" fill="#ffd600"/>
+          <g transform="rotate(-52 70 148)">
+            <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#ffd600" stroke-width="2"/>
+            <line x1="54" y1="118" x2="86" y2="118" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
+          </g>
+          <circle cx="110" cy="72" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <circle cx="110" cy="72" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+          <circle cx="110" cy="72" r="4" fill="#ffd600"/>
+          <g transform="rotate(20 110 72)">
+            <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#ffd600" stroke-width="2"/>
+          </g>
+          <circle cx="128" cy="34" r="14" fill="none" stroke="#ffd600" stroke-width="2"/>
+          <circle cx="128" cy="34" r="8" fill="none" stroke="#ffd600" stroke-width="1.2"/>
+          <circle cx="128" cy="34" r="3" fill="#ffd600"/>
+          <g transform="rotate(8 128 34)">
+            <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+            <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+            <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
+            <circle cx="168" cy="22" r="2.5" fill="#ffd600"/>
+            <circle cx="168" cy="36" r="2.5" fill="#ffd600"/>
+          </g>
+          <circle cx="24" cy="245" r="4" fill="#ffd600"/>
+          <circle cx="24" cy="245" r="8" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
+        </g>
+        <g filter="url(#lgb)">
+          <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+          <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+          <circle cx="370" cy="200" r="20" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <circle cx="370" cy="200" r="12" fill="none" stroke="#ff6a00" stroke-width="1"/>
+          <circle cx="370" cy="200" r="5" fill="#ff6a00" opacity="0.9"/>
+          <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <line x1="352" y1="178" x2="388" y2="178" stroke="#ff6a00" stroke-width="0.8" opacity="0.4"/>
+          <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="370" cy="148" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <circle cx="370" cy="148" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+          <circle cx="370" cy="148" r="4" fill="#ff6a00"/>
+          <g transform="rotate(52 370 148)">
+            <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#ff6a00" stroke-width="2"/>
+            <line x1="354" y1="118" x2="386" y2="118" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
+          </g>
+          <circle cx="330" cy="72" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <circle cx="330" cy="72" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+          <circle cx="330" cy="72" r="4" fill="#ff6a00"/>
+          <g transform="rotate(-20 330 72)">
+            <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          </g>
+          <circle cx="312" cy="34" r="14" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <circle cx="312" cy="34" r="8" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
+          <circle cx="312" cy="34" r="3" fill="#ff6a00"/>
+          <g transform="rotate(-8 312 34)">
+            <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+            <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+            <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
+            <circle cx="272" cy="22" r="2.5" fill="#ff6a00"/>
+            <circle cx="272" cy="36" r="2.5" fill="#ff6a00"/>
+          </g>
+          <circle cx="416" cy="245" r="4" fill="#ff6a00"/>
+          <circle cx="416" cy="245" r="8" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
+        </g>
+        <g filter="url(#lgg)">
+          <circle cx="220" cy="29" r="5" fill="#ff2200"/>
+          <line x1="220" y1="23" x2="220" y2="13" stroke="#ff2200" stroke-width="2.5"/>
+          <line x1="215" y1="25" x2="207" y2="16" stroke="#ff2200" stroke-width="2"/>
+          <line x1="225" y1="25" x2="233" y2="16" stroke="#ff2200" stroke-width="2"/>
+          <line x1="212" y1="29" x2="202" y2="29" stroke="#ff2200" stroke-width="2"/>
+          <line x1="228" y1="29" x2="238" y2="29" stroke="#ff2200" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
+    <div class="login-title">CÉLULAS ROBÓTICAS</div>
+    <div class="login-sub">MONITOR INDUSTRIAL</div>
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha do host" onkeydown="if(event.key==='Enter')tryLogin()">
+    <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
+    <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
+    <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
+    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
+    <div class="login-hint"></div>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
+      <div class="brand" style="display:flex;align-items:center;gap:10px">
+        <svg width="64" height="38" viewBox="0 0 440 280" style="flex-shrink:0">
+          <defs>
+            <filter id="gn"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gb"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <rect width="440" height="280" fill="#04070d"/>
+          <!-- robô esquerdo verde wireframe -->
+          <g filter="url(#gn)">
+            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+            <circle cx="70" cy="200" r="20" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="70" cy="200" r="12" fill="none" stroke="#00e87a" stroke-width="1"/>
+            <circle cx="70" cy="200" r="5" fill="#00e87a" opacity="0.9"/>
+            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <line x1="52" y1="178" x2="88" y2="178" stroke="#00e87a" stroke-width="0.8" opacity="0.4"/>
+            <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="70" cy="148" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="70" cy="148" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="70" cy="148" r="4" fill="#00e87a"/>
+            <g transform="rotate(-52 70 148)">
+              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#00e87a" stroke-width="2"/>
+              <line x1="54" y1="118" x2="86" y2="118" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
+              <rect x="60" y="88" width="20" height="36" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="110" cy="72" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="110" cy="72" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="110" cy="72" r="4" fill="#00e87a"/>
+            <g transform="rotate(20 110 72)">
+              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#00e87a" stroke-width="2"/>
+              <line x1="96" y1="50" x2="124" y2="50" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="128" cy="34" r="14" fill="none" stroke="#00e87a" stroke-width="2"/>
+            <circle cx="128" cy="34" r="8" fill="none" stroke="#00e87a" stroke-width="1.2"/>
+            <circle cx="128" cy="34" r="3" fill="#00e87a"/>
+            <g transform="rotate(8 128 34)">
+              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
+              <circle cx="168" cy="22" r="2.5" fill="#00e87a"/>
+              <circle cx="168" cy="36" r="2.5" fill="#00e87a"/>
+            </g>
+            <circle cx="24" cy="245" r="4" fill="#00e87a"/>
+            <circle cx="24" cy="245" r="8" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- robô direito azul wireframe -->
+          <g filter="url(#gb)">
+            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+            <circle cx="370" cy="200" r="20" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="370" cy="200" r="12" fill="none" stroke="#3d9eff" stroke-width="1"/>
+            <circle cx="370" cy="200" r="5" fill="#3d9eff" opacity="0.9"/>
+            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <line x1="352" y1="178" x2="388" y2="178" stroke="#3d9eff" stroke-width="0.8" opacity="0.4"/>
+            <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+            <circle cx="370" cy="148" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="370" cy="148" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="370" cy="148" r="4" fill="#3d9eff"/>
+            <g transform="rotate(52 370 148)">
+              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#3d9eff" stroke-width="2"/>
+              <line x1="354" y1="118" x2="386" y2="118" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
+              <rect x="360" y="88" width="20" height="36" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+            </g>
+            <circle cx="330" cy="72" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="330" cy="72" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="330" cy="72" r="4" fill="#3d9eff"/>
+            <g transform="rotate(-20 330 72)">
+              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#3d9eff" stroke-width="2"/>
+              <line x1="312" y1="50" x2="340" y2="50" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
+            </g>
+            <circle cx="312" cy="34" r="14" fill="none" stroke="#3d9eff" stroke-width="2"/>
+            <circle cx="312" cy="34" r="8" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
+            <circle cx="312" cy="34" r="3" fill="#3d9eff"/>
+            <g transform="rotate(-8 312 34)">
+              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
+              <circle cx="272" cy="22" r="2.5" fill="#3d9eff"/>
+              <circle cx="272" cy="36" r="2.5" fill="#3d9eff"/>
+            </g>
+            <circle cx="416" cy="245" r="4" fill="#3d9eff"/>
+            <circle cx="416" cy="245" r="8" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
+          </g>
+          <!-- faísca -->
+          <g filter="url(#gg)">
+            <circle cx="220" cy="29" r="5" fill="#ffb300"/>
+            <line x1="220" y1="23" x2="220" y2="13" stroke="#ffb300" stroke-width="2.5"/>
+            <line x1="215" y1="25" x2="207" y2="16" stroke="#ffb300" stroke-width="2"/>
+            <line x1="225" y1="25" x2="233" y2="16" stroke="#ffb300" stroke-width="2"/>
+            <line x1="212" y1="29" x2="202" y2="29" stroke="#ffb300" stroke-width="2"/>
+            <line x1="228" y1="29" x2="238" y2="29" stroke="#ffb300" stroke-width="2"/>
+          </g>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.1em;line-height:1">CÉLULAS <span style="color:#00e87a">ROBÓTICAS</span></div>
+          <div style="font-size:8px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase">Monitor Industrial</div>
+        </div>
+      </div>
+          <!-- robô esquerdo verde -->
+          <rect x="20" y="168" width="80" height="14" rx="4" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <rect x="30" y="158" width="60" height="12" rx="3" fill="#1a2030" stroke="#00e87a" stroke-width="1.5"/>
+          <rect x="48" y="146" width="24" height="14" rx="3" fill="#0f1520" stroke="#00e87a" stroke-width="1.2"/>
+          <ellipse cx="60" cy="147" rx="18" ry="7" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="60" cy="147" r="6" fill="#00e87a"/>
+          <circle cx="60" cy="147" r="3" fill="#080b0f"/>
+          <rect x="50" y="95" width="20" height="54" rx="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <rect x="54" y="99" width="12" height="46" rx="4" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          <ellipse cx="60" cy="95" rx="16" ry="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="60" cy="95" r="5" fill="#00e87a"/>
+          <circle cx="60" cy="95" r="2.5" fill="#080b0f"/>
+          <g transform="rotate(-50 60 95)">
+            <rect x="50" y="38" width="20" height="60" rx="6" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+            <rect x="54" y="42" width="12" height="52" rx="4" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          </g>
+          <circle cx="96" cy="52" r="13" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="96" cy="52" r="7" fill="#00e87a"/>
+          <circle cx="96" cy="52" r="3.5" fill="#080b0f"/>
+          <g transform="rotate(15 96 52)">
+            <rect x="87" y="8" width="18" height="46" rx="5" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+            <rect x="91" y="12" width="10" height="38" rx="3" fill="#0f1520" stroke="#00e87a" stroke-width="1"/>
+          </g>
+          <circle cx="112" cy="20" r="9" fill="#1a2030" stroke="#00e87a" stroke-width="2"/>
+          <circle cx="112" cy="20" r="5" fill="#00e87a"/>
+          <g transform="rotate(5 112 20)">
+            <rect x="112" y="14" width="22" height="13" rx="3" fill="#1a2030" stroke="#00e87a" stroke-width="1.5"/>
+            <rect x="132" y="9" width="9" height="9" rx="2" fill="#1a2030" stroke="#00e87a" stroke-width="1.2"/>
+            <rect x="132" y="20" width="9" height="9" rx="2" fill="#1a2030" stroke="#00e87a" stroke-width="1.2"/>
+          </g>
+          <circle cx="25" cy="172" r="4" fill="#00e87a"/>
+          <circle cx="25" cy="172" r="7" fill="#00e87a" opacity="0.25"/>
+          <!-- robô direito azul -->
+          <rect x="260" y="168" width="80" height="14" rx="4" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <rect x="270" y="158" width="60" height="12" rx="3" fill="#1a2030" stroke="#3d9eff" stroke-width="1.5"/>
+          <rect x="288" y="146" width="24" height="14" rx="3" fill="#0f1520" stroke="#3d9eff" stroke-width="1.2"/>
+          <ellipse cx="300" cy="147" rx="18" ry="7" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="300" cy="147" r="6" fill="#3d9eff"/>
+          <circle cx="300" cy="147" r="3" fill="#080b0f"/>
+          <rect x="290" y="95" width="20" height="54" rx="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <rect x="294" y="99" width="12" height="46" rx="4" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          <ellipse cx="300" cy="95" rx="16" ry="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="300" cy="95" r="5" fill="#3d9eff"/>
+          <circle cx="300" cy="95" r="2.5" fill="#080b0f"/>
+          <g transform="rotate(50 300 95)">
+            <rect x="290" y="38" width="20" height="60" rx="6" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="294" y="42" width="12" height="52" rx="4" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          </g>
+          <circle cx="264" cy="52" r="13" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="264" cy="52" r="7" fill="#3d9eff"/>
+          <circle cx="264" cy="52" r="3.5" fill="#080b0f"/>
+          <g transform="rotate(-15 264 52)">
+            <rect x="255" y="8" width="18" height="46" rx="5" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+            <rect x="259" y="12" width="10" height="38" rx="3" fill="#0f1520" stroke="#3d9eff" stroke-width="1"/>
+          </g>
+          <circle cx="248" cy="20" r="9" fill="#1a2030" stroke="#3d9eff" stroke-width="2"/>
+          <circle cx="248" cy="20" r="5" fill="#3d9eff"/>
+          <g transform="rotate(-5 248 20)">
+            <rect x="226" y="14" width="22" height="13" rx="3" fill="#1a2030" stroke="#3d9eff" stroke-width="1.5"/>
+            <rect x="219" y="9" width="9" height="9" rx="2" fill="#1a2030" stroke="#3d9eff" stroke-width="1.2"/>
+            <rect x="219" y="20" width="9" height="9" rx="2" fill="#1a2030" stroke="#3d9eff" stroke-width="1.2"/>
+          </g>
+          <circle cx="335" cy="172" r="4" fill="#3d9eff"/>
+          <circle cx="335" cy="172" r="7" fill="#3d9eff" opacity="0.25"/>
+          <!-- faísca central -->
+          <circle cx="180" cy="18" r="4" fill="#ffb300" opacity="0.9"/>
+          <line x1="175" y1="13" x2="169" y2="7" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="185" y1="13" x2="191" y2="7" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="180" y1="14" x2="180" y2="6" stroke="#ffb300" stroke-width="2" opacity="0.8"/>
+          <line x1="174" y1="22" x2="167" y2="27" stroke="#ffb300" stroke-width="1.5" opacity="0.6"/>
+          <line x1="186" y1="22" x2="193" y2="27" stroke="#ffb300" stroke-width="1.5" opacity="0.6"/>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.1em;line-height:1">CÉLULAS <span style="color:#00e87a">ROBÓTICAS</span></div>
+          <div style="font-size:8px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase">Monitor Industrial</div>
+        </div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
+      <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
+      <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
     </div>
@@ -271,15 +642,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="modal-title">Nova Célula</div>
     <div class="modal-field"><label>Número</label><input class="modal-input" id="mNum" type="number" placeholder="Ex: 4" onkeydown="if(event.key==='Enter')createCell()"></div>
     <div class="modal-field"><label>Nome</label><input class="modal-input" id="mNome" placeholder="Ex: Célula Robótica 04" onkeydown="if(event.key==='Enter')createCell()"></div>
-    <div class="modal-field"><label>Tipo</label>
-      <select class="modal-input" id="mTipo" style="font-size:13px;cursor:pointer">
-        <option value="robo">⚙ Robô (padrão)</option>
-        <option value="armario">🗄 Armário de Gabaritos</option>
-        <option value="producao_mensal">📅 Produção Mensal</option>
-        <option value="metas">📋 Metas</option>
-        <option value="producao_peca">📦 Produção por Peça</option>
-      </select>
-    </div>
     <div class="modal-actions">
       <button class="btn btn-gray" onclick="closeModal()">Cancelar</button>
       <button class="btn btn-green" onclick="createCell()">Criar</button>
@@ -315,6 +677,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<div class="overlay" id="gerenciarModalEl">
+  <div class="modal" style="width:520px;max-height:80vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="modal-title">⚙ Gerenciar Células</div>
+    <div id="gerenciarLista"></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-gray" onclick="closeGerenciar()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightboxEl" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
@@ -325,28 +697,47 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <script>
 const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
 const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
-const ADMIN_PW = "tremps3102";
-
+const ADMIN_PW      = "tremps3102";
+const ADMIN_METAS_PW = "katia26";
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 const HEADERS_R = { "X-Master-Key": API_KEY };
 const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
 
-let celulas = {};
-let selected = null;
-let isAdmin = false;
-let pollTimer = null;
-let xlsxPendingData = null;
+// ── BACKUP GOOGLE SHEETS ──────────────────────
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
+let backupContador = 0;
+let _backupBinId = "";
+
+async function backupToSheets(data) {
+  // backup silencioso — não faz nada, o JSONBin principal já é o backup
+}
+
+function baixarBackupLocal() {
+  const json = JSON.stringify(celulas, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date().toLocaleString('pt-BR').replace(/[/:, ]/g,'_');
+  a.download = `backup_celulas_${now}.json`;
+  a.href = url;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup baixado ✓");
+}
+
+let celulas = {}, selected = null, isAdmin = false, isAdminMetas = false, pollTimer = null, xlsxPendingData = null;
+let sidebarExpandida = false;
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
+const HORAS_CAFE  = ["10:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const HORAS_CAFE = ["10:00"]; // horários marcados como café (amarelo)
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"09:45", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"08:10", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"11:00", alertas:[] }
+  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] },
+  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"—", alertas:["Parada para troca de eletrodo"] },
+  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] }
 };
 
 const SC = {
@@ -356,26 +747,36 @@ const SC = {
   "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
 };
 
+// ── tipo da célula detectado pelo nome ───────
+function getCellTipo(k) {
+  const n = (celulas[k].nome||'').toLowerCase();
+  if (n.includes('armario')||n.includes('armário')||n.includes('gabarito')) return 'armario';
+  if (n.includes('relat')) return 'relatorio';
+  if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
+  if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
+  if (n.includes('meta')) return 'metas';
+  return 'robo';
+}
+
 function parseCelVal(raw) {
-  const s = String(raw || '').trim();
-  if (!s) return { num: 0, tipo: 'normal' };
-  if (s.endsWith('#')) {
-    const n = parseInt(s.replace('#','')) || 0;
-    return { num: n, tipo: 'ajuste' };
-  }
-  return { num: parseInt(s) || 0, tipo: 'normal' };
+  const s = String(raw||'').trim();
+  if (!s) return {num:0,tipo:'normal'};
+  if (s.endsWith('#')) return {num:parseInt(s)||0, tipo:'ajuste'};
+  return {num:parseInt(s)||0, tipo:'normal'};
 }
 
 function getMetasChave(key) {
-  const c = celulas[key];
-  const ano = c.metas_ano  || new Date().getFullYear();
-  const mes = c.metas_mes  !== undefined ? c.metas_mes : new Date().getMonth();
-  const dia = c.metas_dia  || new Date().getDate();
+  const c=celulas[key];
+  const ano=c.metas_ano||new Date().getFullYear();
+  const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
+  const dia=c.metas_dia||new Date().getDate();
   return `${ano}_${mes}_${dia}`;
 }
 
+function campoH(h){ return 'h'+h.replace(':',''); }
+
 function toggleSidebar(){ document.getElementById("sidebar").classList.toggle("open"); document.getElementById("sidebarOverlay").classList.toggle("open"); }
-function closeSidebar() { document.getElementById("sidebar").classList.remove("open");  document.getElementById("sidebarOverlay").classList.remove("open"); }
+function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("sidebarOverlay").classList.remove("open"); }
 function toggleGabarito(num){ const el=document.getElementById("gab-"+num); if(el) el.classList.toggle("open"); }
 
 function buscarGabarito(termo){
@@ -417,7 +818,12 @@ async function loadFromAPI(){
   }catch(e){celulas=defaultData;}
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
-  else renderDetail();
+  else {
+    // só rerenderiza painéis especiais (metas, prod mensal, etc)
+    // células de robô NÃO são rerenderizadas pelo poll para evitar scroll bug
+    const tipo = getCellTipo(selected);
+    if(tipo !== 'robo') renderDetail();
+  }
 }
 
 async function saveToAPI(data){
@@ -426,6 +832,12 @@ async function saveToAPI(data){
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
+    // Backup no Google Sheets a cada 5 salvamentos
+    backupContador++;
+    if(backupContador>=5){
+      backupContador=0;
+      backupToSheets(data);
+    }
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
@@ -435,7 +847,61 @@ function updateAndRefreshRitmo(key,field,value){
   const el=document.getElementById("ritmoDisplay");if(el)el.value=calcRitmo(celulas[key].meta_hora,celulas[key].tempo_peca);
 }
 
-// ── PRODUÇÃO DIÁRIA ────────────────────────────
+// ── SIDEBAR ──────────────────────────────────
+function renderSidebar(){
+  const keys=Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
+
+  // Separa painéis e robôs
+  const paineis = keys.filter(k=>getCellTipo(k)!=='robo');
+  const robos   = keys.filter(k=>getCellTipo(k)==='robo');
+  const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
+  const robosRestantes = robos.length-1;
+
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+
+  function itemHTML(k){
+    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
+    const t=getCellTipo(k);const ic=icones[t]||'⚙';
+    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
+      <div class="cell-num" style="font-size:15px">${ic}</div>
+      <div class="cell-info">
+        <div class="cell-name">${c.nome}${isAdmin?` <span onclick="event.stopPropagation();renomearCelula('${k}')" style="color:#2a3040;cursor:pointer;font-size:10px" title="Renomear">✏</span>`:''}</div>
+        <div class="cell-peca">${t==='robo'?(c.cliente||c.peca||'—'):''}</div>
+      </div>
+      <div class="dot ${s.dot}"></div>
+    </div>`;
+  }
+
+  let html='';
+  if(paineis.length>0){
+    html+=`<div class="sidebar-group-label">Painéis</div>`;
+    html+=paineis.map(itemHTML).join('');
+  }
+  if(robos.length>0){
+    html+=`<div class="sidebar-group-label" style="border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
+    html+=robosVisiveis.map(itemHTML).join('');
+    if(!sidebarExpandida&&robosRestantes>0){
+      html+=`<div class="sidebar-ver-mais" onclick="toggleSidebarExpand()">▼ Ver mais ${robosRestantes} robô(s)</div>`;
+    }else if(sidebarExpandida&&robos.length>1){
+      html+=`<div class="sidebar-recolher" onclick="toggleSidebarExpand()">▲ Recolher</div>`;
+    }
+  }
+  document.getElementById("sidebarList").innerHTML=html;
+}
+
+function toggleSidebarExpand(){ sidebarExpandida=!sidebarExpandida; renderSidebar(); }
+function selectCell(k){ selected=k; renderSidebar(); renderDetail(); closeSidebar(); }
+
+function renomearCelula(key){
+  if(!isAdmin)return;
+  const novo=prompt('Novo nome:',celulas[key].nome);
+  if(novo&&novo.trim()&&novo.trim()!==celulas[key].nome){
+    celulas[key].nome=novo.trim();saveToAPI(celulas);renderSidebar();renderDetail();showToast('Nome atualizado ✓');
+  }
+}
+
+// ── PRODUÇÃO MENSAL ───────────────────────────
 function getChave(key){
   const mes=celulas[key].mes_selecionado!==undefined?celulas[key].mes_selecionado:new Date().getMonth();
   const ano=celulas[key].ano_selecionado||new Date().getFullYear();
@@ -490,18 +956,16 @@ function renderProducaoDiaria(){
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <select onchange="updateMesAno('${selected}','mes',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+      <select onchange="updateMesAno('${selected}','mes',+this.value)" style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
         ${MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('')}
       </select>
-      <select onchange="updateMesAno('${selected}','ano',+this.value)"
-        style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
+      <select onchange="updateMesAno('${selected}','ano',+this.value)" style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;cursor:pointer;outline:none">
         ${[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('')}
       </select>
     </div>
@@ -519,208 +983,162 @@ function renderProducaoDiaria(){
   </div>`;
 }
 
-// ── METAS DIÁRIA ──────────────────────────────
-function campoH(h){ return 'h'+h.replace(':',''); }
-
-// aplica cor na célula
-// prioridade: ajuste (azul) > ok (verde) > fail (vermelho) > cafe (amarelo) > normal (branco)
-function aplicarCor(inp, rawVal, meta, isCafe) {
+// ── METAS ────────────────────────────────────
+function aplicarCor(inp,rawVal,meta,isCafe){
   inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
-  const { num, tipo } = parseCelVal(rawVal);
-
-  if (tipo === 'ajuste') {
-    inp.classList.add('cell-adj');
-    return;
+  if(isCafe){inp.classList.add('cafe');return;} // 10:00 SEMPRE amarelo
+  const{num,tipo}=parseCelVal(rawVal);
+  if(tipo==='ajuste'){inp.classList.add('cell-adj');return;}
+  if(num>0){
+    if(meta>0&&num>=meta){inp.classList.add('cell-ok');return;}
+    if(meta>0&&num<meta){inp.classList.add('cell-fail');return;}
+    inp.classList.add('cell-ok');return;
   }
-  if (num > 0) {
-    if (meta > 0 && num >= meta) { inp.classList.add('cell-ok'); return; }
-    if (meta > 0 && num < meta)  { inp.classList.add('cell-fail'); return; }
-    // meta não definida: verde
-    inp.classList.add('cell-ok');
-    return;
-  }
-  // vazio — só café fica amarelo
-  if (isCafe) inp.classList.add('cafe');
 }
 
-function updateMetasCell(key, robo, campo, valor) {
-  const chave = getMetasChave(key);
-  if (!celulas[key].metas_dias) celulas[key].metas_dias = {};
-  if (!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave] = {};
-  if (!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo] = {};
-  celulas[key].metas_dias[chave][robo][campo] = valor;
+function syncMetasToProducao(metasKey){
+  const mc=celulas[metasKey];
+  const ano=mc.metas_ano||new Date().getFullYear();
+  const mes=mc.metas_mes!==undefined?mc.metas_mes:new Date().getMonth();
+  const dia=mc.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const data=(mc.metas_dias&&mc.metas_dias[chave])?mc.metas_dias[chave]:{};
+  const totalGeral=ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
+  if(!prodKey)return;
+  const prodChave=`${ano}_${mes}`;
+  if(!celulas[prodKey].producao_meses)celulas[prodKey].producao_meses={};
+  if(!celulas[prodKey].producao_meses[prodChave])celulas[prodKey].producao_meses[prodChave]={};
+  celulas[prodKey].producao_meses[prodChave][dia]=totalGeral;
+}
+
+function updateMetasCell(key,robo,campo,valor){
+  const chave=getMetasChave(key);
+  if(!celulas[key].metas_dias)celulas[key].metas_dias={};
+  if(!celulas[key].metas_dias[chave])celulas[key].metas_dias[chave]={};
+  if(!celulas[key].metas_dias[chave][robo])celulas[key].metas_dias[chave][robo]={};
+  celulas[key].metas_dias[chave][robo][campo]=valor;
   syncMetasToProducao(key);
   saveToAPI(celulas);
-
-  const rd = celulas[key].metas_dias[chave][robo];
-  const meta = parseInt(rd.meta) || 0;
-
-  const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-  const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-  const totalG   = subDia + subNoite;
-
+  const rd=celulas[key].metas_dias[chave][robo];
+  const meta=parseInt(rd.meta)||0;
+  const subDia=HORAS_DIA.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+  const subNoite=HORAS_NOITE.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+  const totalG=subDia+subNoite;
   const elD=document.getElementById(`sub-dia-${robo}`);
   const elN=document.getElementById(`sub-noite-${robo}`);
   const elT=document.getElementById(`total-g-${robo}`);
   if(elD){elD.textContent=subDia>0?subDia:'—';elD.style.color=subDia>0?'#00e87a':'#4a5568';}
   if(elN){elN.textContent=subNoite>0?subNoite:'—';elN.style.color=subNoite>0?'#a78bfa':'#4a5568';}
-  if(elT){elT.textContent=totalG>0?totalG:'—';}
-
-  if (campo.startsWith('h')) {
-    // descobre se é campo de café
-    const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h => campoH(h) === campo) || '';
-    const isCafe = HORAS_CAFE.includes(horaOrigem);
+  if(elT)elT.textContent=totalG>0?totalG:'—';
+  if(campo.startsWith('h')){
+    const horaOrigem=[...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
+    const isCafe=HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp) aplicarCor(inp, valor, meta, isCafe);
+    if(inp)aplicarCor(inp,valor,meta,isCafe);
   }
-  if (campo==='meta') {
+  if(campo==='meta'){
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
-      const c=campoH(h);
-      const isCafe=HORAS_CAFE.includes(h);
+      const c=campoH(h);const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp) aplicarCor(inp, rd[c]||'', parseInt(valor)||0, isCafe);
+      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe);
     });
   }
 }
 
 function updateMetasData(key,campo,valor){
-  celulas[key][campo]=valor;
-  syncMetasToProducao(key);
-  saveToAPI(celulas); renderMetasDiaria();
+  celulas[key][campo]=valor;syncMetasToProducao(key);saveToAPI(celulas);renderMetasDiaria();
 }
 
-function buildTurnoTable(c, turno, chave) {
-  const data = (c.metas_dias&&c.metas_dias[chave]) ? c.metas_dias[chave] : {};
-  const ro = !isAdmin?'readonly':'';
-  const HORAS = turno==='dia' ? HORAS_DIA : HORAS_NOITE;
-  const isNoite = turno==='noite';
-  const subLabel = isNoite?'Sub Noite':'Sub Dia';
-  const subClass = isNoite?'sub-noite-val':'sub-dia-val';
-  const subId    = isNoite?'sub-noite':'sub-dia';
-  const subColor = isNoite?'#a78bfa':'#00e87a';
-
-  // cabeçalhos — 10:00 recebe classe especial de café
-  const horasHeader = HORAS.map(h => {
-    const isCafe = HORAS_CAFE.includes(h);
-    if (isCafe) return `<th class="col-hora-cafe">☕ ${h}</th>`;
-    return `<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
+function buildTurnoTable(c,turno,chave){
+  const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
+  const podeEditar = isAdmin || isAdminMetas;
+  const ro=!podeEditar?'readonly':'';
+  const HORAS=turno==='dia'?HORAS_DIA:HORAS_NOITE;
+  const isNoite=turno==='noite';
+  const subLabel=isNoite?'Sub Noite':'Sub Dia';
+  const subClass=isNoite?'sub-noite-val':'sub-dia-val';
+  const subId=isNoite?'sub-noite':'sub-dia';
+  const subColor=isNoite?'#a78bfa':'#00e87a';
+  const horasHeader=HORAS.map(h=>{
+    const isCafe=HORAS_CAFE.includes(h);
+    if(isCafe)return`<th class="col-hora-cafe">☕ ${h}</th>`;
+    return`<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
   }).join('');
-
-  const linhas = ROBOS.map(robo=>{
-    const rd=(data[robo])||{};
-    const meta=parseInt(rd.meta)||0;
-    const cod=rd.cod||'';
-
-    const horasCells = HORAS.map(h=>{
-      const campo=campoH(h);
-      const rawVal=rd[campo]||'';
-      const {num,tipo}=parseCelVal(rawVal);
-      const isCafe = HORAS_CAFE.includes(h);
-
-      // determina classe CSS
-      let cc = '';
-      if (tipo==='ajuste') {
-        cc = 'cell-adj';
-      } else if (num > 0) {
-        if (meta>0&&num>=meta) cc='cell-ok';
-        else if (meta>0&&num<meta) cc='cell-fail';
-        else cc='cell-ok';
-      } else if (isCafe) {
-        cc = 'cafe'; // vazio no café = amarelo
-      }
-
-      const displayVal = rawVal!==''&&rawVal!=='0'?rawVal:'';
-      const tdStyle = isCafe ? 'style="background:#ffb30008;"' : '';
-      return `<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text"
-        class="hora-inp${cc?' '+cc:''}"
-        value="${esc(String(displayVal))}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
+  const linhas=ROBOS.map(robo=>{
+    const rd=(data[robo])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
+    const horasCells=HORAS.map(h=>{
+      const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
+      const isCafe=HORAS_CAFE.includes(h);
+      let cc='';
+      if(isCafe) cc='cafe'; // 10:00 SEMPRE amarelo, independente de meta
+      else if(tipo==='ajuste')cc='cell-adj';
+      else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
+      const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
+      const tdStyle=isCafe?'style="background:#ffb30008;"':'';
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
     }).join('');
-
-    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-    const totalG = isNoite
-      ? ([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0))
-      : null;
-
-    return `<tr>
+    const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
+    const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    return`<tr>
       <td class="robo-label">${robo}</td>
-      <td class="meta-val"><input class="meta-inp" type="number" min="0"
-        value="${meta>0?meta:''}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text"
-        value="${esc(cod)}" placeholder="—" ${ro}
-        onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
-      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;letter-spacing:0.04em;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
+      ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
     </tr>`;
   }).join('');
-
-  // rodapé totais por hora
-  const rodapeHoras = HORAS.map(h=>{
-    const campo=campoH(h);
-    const isCafe=HORAS_CAFE.includes(h);
+  const rodapeHoras=HORAS.map(h=>{
+    const campo=campoH(h);const isCafe=HORAS_CAFE.includes(h);
     const soma=ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campo])||'').num),0);
-    const cor = isCafe ? '#ffb300' : (isNoite ? '#a78bfa' : '#d8dde6');
-    const bg  = isCafe ? '#ffb30010' : (isNoite ? '#a78bfa08' : '#ffffff06');
-    return `<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
+    const cor=isCafe?'#ffb300':(isNoite?'#a78bfa':'#d8dde6');
+    const bg=isCafe?'#ffb30010':(isNoite?'#a78bfa08':'#ffffff06');
+    return`<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
   }).join('');
-
-  const subTotalTurno = ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
-  const totalGeralRod = isNoite
-    ? ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0)
-    : null;
-
-  return `
-  <div class="metas-table-wrap">
-    <table class="metas-table">
-      <thead>
-        <tr>
-          <th class="col-robo">Robô</th>
-          <th class="col-meta">Meta/h</th>
-          <th class="col-cod">Cód. Peça</th>
-          ${horasHeader}
-          <th class="col-sub" style="color:${subColor}">${subLabel}</th>
-          ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
-        </tr>
-      </thead>
-      <tbody>
-        ${linhas}
-        <tr style="border-top:2px solid #1e2530">
-          <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
-          ${rodapeHoras}
-          <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
-          ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060;letter-spacing:0.04em">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
-        </tr>
-      </tbody>
-    </table>
-  </div>`;
+  const subTotalTurno=ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalGeralRod=isNoite?ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0):null;
+  return`<div class="metas-table-wrap"><table class="metas-table">
+    <thead><tr>
+      <th class="col-robo">Robô</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
+      ${horasHeader}
+      <th class="col-sub" style="color:${subColor}">${subLabel}</th>
+      ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
+    </tr></thead>
+    <tbody>${linhas}
+    <tr style="border-top:2px solid #1e2530">
+      <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
+      ${rodapeHoras}
+      <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
+      ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
+    </tr></tbody>
+  </table></div>`;
 }
 
 function renderMetasDiaria(){
   const c=celulas[selected];
+  const podeEditar = isAdmin || isAdminMetas;
   const anoAtual=new Date().getFullYear();
   const ano=c.metas_ano||anoAtual;
   const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
   const dia=c.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
-
-  const totalDia  =ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalDia=ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
   const totalNoite=ROBOS.reduce((s,r)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
   const totalG=totalDia+totalNoite;
-
   const diasOpts=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
-
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
-      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+      </div>
     </div>
-
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📆</span>
       <div class="date-sel"><label>Dia</label><select onchange="updateMetasData('${selected}','metas_dia',+this.value)">${diasOpts}</select></div>
@@ -732,7 +1150,6 @@ function renderMetasDiaria(){
         <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:4px 10px;font-size:11px;color:#ffb300;font-weight:700">∑ ${totalG.toLocaleString("pt-BR")}</div>
       </div>
     </div>
-
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;gap:20px;font-size:12px;color:#9ca3af;letter-spacing:0.04em;flex-wrap:wrap;align-items:center">
       <span><span style="color:#00e87a;font-weight:800;font-size:14px">■</span> Atingiu a meta</span>
       <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
@@ -740,7 +1157,6 @@ function renderMetasDiaria(){
       <span><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico na célula</span>
       <span style="color:#4a5568;font-size:11px">← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
     </div>
-
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">☀</span>
@@ -748,7 +1164,6 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'dia',chave)}
     </div>
-
     <div style="margin-top:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
@@ -757,13 +1172,11 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'noite',chave)}
     </div>
-
-    <!-- TOTAL GERAL DO DIA — DESTAQUE GRANDE -->
     <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
         <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;margin-bottom:6px">⚑ Total Geral do Dia — ${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}</div>
         <div style="font-size:48px;font-weight:900;color:#ffb300;letter-spacing:0.04em;line-height:1">${totalG.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia · automaticamente salvo na Produção Diária</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia · automaticamente salvo na Produção Mensal</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
@@ -779,165 +1192,202 @@ function renderMetasDiaria(){
   </div>`;
 }
 
-function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
-function handleImgUpload(file){
-  if(!file||!selected)return;
-  const r=new FileReader();
-  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
-  r.readAsDataURL(file);
-}
-function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
-function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
-function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
-
-function tryLogin(){
-  const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_PW){isAdmin=true;startApp();}
-  else{
-    document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display="block";
-    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
-  }
-}
-function startViewer(){isAdmin=false;startApp();}
-function startApp(){
-  document.getElementById("loginScreen").style.display="none";
-  document.getElementById("appScreen").style.display="block";
-  document.getElementById("modeBadge").textContent=isAdmin?"⚙ Admin":"👁 Viewer";
-  document.getElementById("modeBadge").className="badge "+(isAdmin?"badge-admin":"badge-viewer");
-  if(isAdmin){document.getElementById("btnAdd").style.display="inline-block";document.getElementById("btnXlsx").style.display="inline-block";}
-  loadFromAPI();
-  pollTimer=setInterval(loadFromAPI,6000);
-}
-function doLogout(){
-  clearInterval(pollTimer);
-  document.getElementById("appScreen").style.display="none";
-  document.getElementById("loginScreen").style.display="flex";
-  document.getElementById("pwInput").value="";
-  isAdmin=false;selected=null;
-}
-
-let sidebarExpandida = false;
-
-// Retorna o tipo fixo da célula (independente do nome)
-function getCellTipo(k) {
-  return celulas[k].tipo_celula || 'robo';
-}
-
-function renderSidebar(){
-  const keys = Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent = "Células ("+keys.length+")";
-
-  // Separa as células especiais dos robôs
-  const especiais = keys.filter(k => {
-    const t = getCellTipo(k);
-    return t === 'armario' || t === 'producao_mensal' || t === 'metas' || t === 'producao_peca';
+// ── PRODUÇÃO POR PEÇA ────────────────────────
+function calcProducaoPorPeca(){
+  const metasKey=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!metasKey||!celulas[metasKey].metas_dias)return{};
+  const resultado={};
+  Object.entries(celulas[metasKey].metas_dias).forEach(([chave,diaData])=>{
+    ROBOS.forEach(robo=>{
+      const rd=(diaData[robo])||{};
+      const cod=(rd.cod||'').trim();
+      if(!cod||cod==='—'||cod==='')return;
+      const totalRobo=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+      if(totalRobo<=0)return;
+      if(!resultado[cod])resultado[cod]={total:0,dias:{},robos:{}};
+      if(!resultado[cod].dias[chave])resultado[cod].dias[chave]=0;
+      resultado[cod].dias[chave]+=totalRobo;
+      resultado[cod].total+=totalRobo;
+      if(!resultado[cod].robos[robo])resultado[cod].robos[robo]={total:0,dias:{}};
+      resultado[cod].robos[robo].total+=totalRobo;
+      if(!resultado[cod].robos[robo].dias[chave])resultado[cod].robos[robo].dias[chave]=0;
+      resultado[cod].robos[robo].dias[chave]+=totalRobo;
+    });
   });
-  const robos = keys.filter(k => getCellTipo(k) === 'robo');
-
-  // Ordem fixa das especiais para exibição
-  const ordemTipo = ['armario','producao_mensal','metas','producao_peca'];
-  const especiaisOrdenadas = ordemTipo.map(t => especiais.find(k => getCellTipo(k) === t)).filter(Boolean);
-
-  // Robôs: mostra só o primeiro, o restante fica atrás do "ver mais"
-  const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
-  const robosRestantes = robos.length - 1;
-
-  function itemHTML(k) {
-    const c = celulas[k]; const s = SC[c.status]||SC["Parado"];
-    const tipo = getCellTipo(k);
-    const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',robo:'⚙'};
-    const ic = icones[tipo] || '⚙';
-    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
-      <div class="cell-num" style="font-size:14px">${ic}</div>
-      <div class="cell-info">
-        <div class="cell-name">${c.nome}</div>
-        <div class="cell-peca">${tipo==='robo'?(c.cliente||c.peca||'—'):''}</div>
-      </div>
-      <div class="dot ${s.dot}"></div>
-    </div>`;
-  }
-
-  let html = '';
-
-  // Células especiais sempre visíveis
-  if (especiaisOrdenadas.length > 0) {
-    html += `<div style="padding:6px 14px 4px;font-size:9px;color:#2a3040;text-transform:uppercase;letter-spacing:0.15em;font-weight:700">Painéis</div>`;
-    html += especiaisOrdenadas.map(itemHTML).join('');
-  }
-
-  // Robôs
-  if (robos.length > 0) {
-    html += `<div style="padding:6px 14px 4px;font-size:9px;color:#2a3040;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
-    html += robosVisiveis.map(itemHTML).join('');
-    if (!sidebarExpandida && robosRestantes > 0) {
-      html += `<div onclick="toggleSidebarExpand()" style="padding:9px 14px;cursor:pointer;text-align:center;color:#00e87a;font-size:11px;font-weight:700;letter-spacing:0.08em;background:#00e87a08;border-top:1px solid #1e2530" onmouseover="this.style.background='#00e87a15'" onmouseout="this.style.background='#00e87a08'">
-        ▼ Ver mais ${robosRestantes} robô(s)
-      </div>`;
-    } else if (sidebarExpandida && robos.length > 1) {
-      html += `<div onclick="toggleSidebarExpand()" style="padding:9px 14px;cursor:pointer;text-align:center;color:#4a5568;font-size:11px;font-weight:700;letter-spacing:0.08em;border-top:1px solid #1e2530" onmouseover="this.style.background='#ffffff06'" onmouseout="this.style.background='transparent'">
-        ▲ Recolher
-      </div>`;
-    }
-  }
-
-  document.getElementById("sidebarList").innerHTML = html;
+  return resultado;
 }
 
-function toggleSidebarExpand(){
-  sidebarExpandida = !sidebarExpandida;
-  renderSidebar();
+let pecaBusca='';
+
+function buscarPeca(termo){
+  pecaBusca=termo.trim().toLowerCase();
+  renderProducaoPorPecaResultado();
 }
 
-function selectCell(k){
-  selected=k; renderSidebar(); renderDetail(); closeSidebar();
-}
-
-function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
-function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
-function handleXlsxFile(file){
-  if(!file)return;const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const data=new Uint8Array(e.target.result);const wb=XLSX.read(data,{type:"array"});
-      const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
-      const dataRows=rows.slice(1).filter(r=>r[0]!==""&&r[0]!==undefined);
-      if(dataRows.length===0){showToast("Planilha vazia!",true);return;}
-      xlsxPendingData=[];let previewHTML="";let found=0,notFound=0;
-      dataRows.forEach(row=>{
-        let rawKey=String(row[0]).trim().replace(/\D/g,"");const key=rawKey.padStart(2,"0");
-        const ciclos=parseInt(row[1])||0;const meta=parseInt(row[2])||0;const exists=!!celulas[key];
-        if(exists)found++;else notFound++;xlsxPendingData.push({key,ciclos,meta,exists});
-        previewHTML+=`<div class="xlsx-row"><span class="xlsx-cell-num">C${key}</span><span class="xlsx-val">Ciclos: <b>${ciclos}</b></span><span class="xlsx-val">Meta: <b>${meta}</b></span><span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span></div>`;
+function renderProducaoPorPecaResultado(){
+  const c=celulas[selected];
+  const dados=calcProducaoPorPeca();
+  const anoAtual=new Date().getFullYear();
+  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
+  const anoSel=c.peca_ano||anoAtual;
+  const dadosFiltrados={};
+  Object.keys(dados).forEach(cod=>{
+    if(pecaBusca&&!cod.toLowerCase().includes(pecaBusca))return;
+    let totalMes=0;const diasMes={};const robosMes={};
+    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
+      const[a,m,d]=chave.split('_');
+      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx){diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;totalMes+=qtd;}
+    });
+    Object.entries(dados[cod].robos).forEach(([robo,rdata])=>{
+      let totalRoboMes=0;
+      Object.entries(rdata.dias).forEach(([chave,qtd])=>{
+        const[a,m,d]=chave.split('_');
+        if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalRoboMes+=qtd;
       });
-      document.getElementById("xlsxPreviewList").innerHTML=previewHTML;
-      document.getElementById("xlsxSummary").innerHTML=`<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>`+(notFound>0?` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>`:"");
-      document.getElementById("xlsxPreview").style.display="block";
-      document.getElementById("btnConfirmXlsx").style.display=found>0?"inline-block":"none";
-    }catch(err){showToast("Erro ao ler o arquivo!",true);}
-  };reader.readAsArrayBuffer(file);
+      if(totalRoboMes>0)robosMes[robo]=totalRoboMes;
+    });
+    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes,robos:robosMes};
+  });
+  const codigosFiltrados=Object.keys(dadosFiltrados).sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total);
+  const maxTotal=Math.max(...codigosFiltrados.map(cod=>dadosFiltrados[cod].total),1);
+  const container=document.getElementById('peca-resultado');
+  if(!container)return;
+  if(codigosFiltrados.length===0){
+    container.innerHTML=`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
+      ${pecaBusca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(pecaBusca)}</b>"`:'Nenhum dado para este período.'}
+      <br><span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula Metas.</span>
+    </div>`;
+    return;
+  }
+  container.innerHTML=codigosFiltrados.map(cod=>{
+    const{total,dias,robos}=dadosFiltrados[cod];
+    const pct=Math.round(total/maxTotal*100);
+    const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
+    const maxDia=Math.max(...diasOrdenados,1);
+    const sparkBars=diasOrdenados.map((v,i)=>{
+      const h=v>0?Math.max(Math.round(v/maxDia*22),3):1;
+      return`<div title="Dia ${i+1}: ${v}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+    }).join('');
+    const robosOrdenados=Object.entries(robos).sort((a,b)=>b[1]-a[1]);
+    const robosHTML=robosOrdenados.length>1
+      ?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2530">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:700">Produção por robô</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${robosOrdenados.map(([robo,qtd])=>{
+              const pctR=Math.round(qtd/total*100);
+              return`<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;min-width:100px;flex:1">
+                <div style="font-size:11px;color:#00e87a;font-weight:700;margin-bottom:4px">⚙ Robô ${robo}</div>
+                <div style="font-size:18px;font-weight:800;color:#d8dde6">${qtd.toLocaleString("pt-BR")}</div>
+                <div style="margin-top:4px;background:#1e2530;border-radius:99px;height:4px;overflow:hidden">
+                  <div style="height:100%;width:${pctR}%;background:#00e87a;border-radius:99px"></div>
+                </div>
+                <div style="font-size:10px;color:#4a5568;margin-top:3px">${pctR}% do total</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="margin-top:8px;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${robosOrdenados.length} robô(s) · Total combinado</span>
+            <span style="font-size:20px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</span>
+          </div>
+        </div>`
+      :robosOrdenados.length===1
+        ?`<div style="margin-top:8px;font-size:11px;color:#4a5568">⚙ Produzido pelo Robô <b style="color:#00e87a">${robosOrdenados[0][0]}</b></div>`
+        :'';
+    return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="min-width:100px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Código</div>
+          <div style="font-size:20px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Dias do mês</div>
+          <div style="display:flex;align-items:flex-end;gap:2px;height:26px">${sparkBars}</div>
+        </div>
+        <div style="min-width:140px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
+          <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div>
+          </div>
+          <div style="font-size:10px;color:#4a5568;margin-top:3px">${pct}% do maior</div>
+        </div>
+        <div style="text-align:right;min-width:90px">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total</div>
+          <div style="font-size:26px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</div>
+        </div>
+      </div>
+      ${robosHTML}
+    </div>`;
+  }).join('');
 }
-function confirmXlsxImport(){
-  if(!xlsxPendingData)return;let updated=0;
-  xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
-  saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();showToast(`${updated} célula(s) atualizada(s) ✓`);
+
+function renderProducaoPorPeca(){
+  const c=celulas[selected];
+  const anoAtual=new Date().getFullYear();
+  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
+  const anoSel=c.peca_ano||anoAtual;
+  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
+  const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+  const dados=calcProducaoPorPeca();
+  const dadosFiltrados={};
+  Object.keys(dados).forEach(cod=>{
+    let totalMes=0;
+    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
+      const[a,m,d]=chave.split('_');
+      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalMes+=qtd;
+    });
+    if(totalMes>0)dadosFiltrados[cod]=totalMes;
+  });
+  const totalGeral=Object.values(dadosFiltrados).reduce((s,v)=>s+v,0);
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+    </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:16px">📅</span>
+      <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${Object.keys(dadosFiltrados).length} código(s)</div>
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
+      </div>
+    </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">🔍</span>
+      <input id="buscaPeca" placeholder="Buscar código de peça..." oninput="buscarPeca(this.value)"
+        value="${esc(pecaBusca)}"
+        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none" autocomplete="off">
+      <button onclick="document.getElementById('buscaPeca').value='';buscarPeca('')"
+        style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
+    </div>
+    <div id="peca-resultado"></div>
+  </div>`;
+  renderProducaoPorPecaResultado();
 }
+
+function updatePecaFiltro(key,campo,valor){celulas[key][campo]=valor;saveToAPI(celulas);renderProducaoPorPeca();}
+
+// ── ARMÁRIO ───────────────────────────────────
+function toggleGabarito(num){const el=document.getElementById("gab-"+num);if(el)el.classList.toggle("open");}
 
 function renderArmario(){
-  const c=celulas[selected];const espacos=c.espacos||{};const ro=!isAdmin?'readonly':'';
+  const c=celulas[selected];const espacos=c.espacos||{};
+  // só o host (isAdmin) pode editar o armário — viewer e adminMetas não podem
+  const ro=!isAdmin?'readonly':'';
   let espacosHTML='';
   for(let i=1;i<=18;i++){
     const e=espacos[i]||{gabarito:'—',status:'Livre'};
     const sc=e.status==='Ocupado'?'#00e87a':e.status==='Manutenção'?'#ffb300':'#4a5568';
     const sb=e.status==='Ocupado'?'#00e87a15':e.status==='Manutenção'?'#ffb30015':'#ffffff05';
-    const gv=e.gabarito&&e.gabarito!=='—'?esc(e.gabarito):'';
     espacosHTML+=`
       <div class="arm-card" data-num="${i}" data-gabarito="${esc(e.gabarito||'')}"
         style="background:${sb};border:1px solid ${sc}40;border-radius:12px;padding:14px 16px">
         <div onclick="toggleGabarito(${i})" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
-          </div>
+          <span style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.06em">ARMÁRIO ${i}</span>
           <div style="display:flex;align-items:center;gap:8px">
             <select onclick="event.stopPropagation()" onchange="updateEspaco('${selected}',${i},'status',this.value)" ${ro}
               style="background:#0f1318;border:1px solid ${sc}50;border-radius:5px;padding:3px 8px;font-family:'Courier New',monospace;font-size:11px;color:${sc};cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.06em">
@@ -962,8 +1412,8 @@ function renderArmario(){
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador||'—')} · ⏰ ${esc(c.turno||'—')}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
@@ -985,16 +1435,34 @@ function renderArmario(){
 }
 
 function updateEspaco(key,num,field,value){
+  if(!isAdmin){showToast("Apenas o Host pode alterar o armário",true);renderArmario();return;}
   if(!celulas[key].espacos)celulas[key].espacos={};
   if(!celulas[key].espacos[num])celulas[key].espacos[num]={gabarito:'—',status:'Livre'};
   celulas[key].espacos[num][field]=value;saveToAPI(celulas);
   if(field==='status')renderArmario();
 }
 
+// ── HISTÓRICO ELETRODO ───────────────────────
+function registrarTrocaEletrodo(key){
+  const c=celulas[key];
+  if(!c.eletrodo||c.eletrodo==='—'){showToast("Informe o eletrodo primeiro",true);return;}
+  if(!c.historico_eletrodo)c.historico_eletrodo=[];
+  const agora=new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  c.historico_eletrodo.push({data:agora,eletrodo:c.eletrodo,tipo:c.tipo_eletrodo||'—'});
+  c.ultima_troca=agora;
+  celulas[key]=c;saveToAPI(celulas);renderDetail();showToast("Troca registrada ✓");
+}
+function removerHistEletrodo(key,idx){
+  if(!celulas[key].historico_eletrodo)return;
+  celulas[key].historico_eletrodo.splice(idx,1);saveToAPI(celulas);renderDetail();
+}
+
+// ── ROBÔ (layout padrão) ──────────────────────
 function renderDetail(){
   if(!selected||!celulas[selected])return;
-  const tipo = getCellTipo(selected);
+  const tipo=getCellTipo(selected);
   if(tipo==='armario'){renderArmario();return;}
+  if(tipo==='relatorio'){renderRelatorio();return;}
   if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
@@ -1016,7 +1484,7 @@ function renderDetail(){
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div class="detail-hdr">
-      <div><div class="detail-title">${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
+      <div><div class="detail-title">${esc(c.nome)}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="status-badge" style="background:${s.bg};border:1px solid ${s.border}">
           <div class="dot ${s.dot}"></div>
@@ -1039,27 +1507,23 @@ function renderDetail(){
         <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
       </div>
     </div>
-    <div class="section"><div class="sec-title">◈ Eletrodo
-      ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}
-    </div>
+    <div class="section"><div class="sec-title">◈ Eletrodo ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}</div>
       <div class="grid2">
         <div class="field"><label>Eletrodo Atual</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
         <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
-        <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca)}" style="color:#ffb300;cursor:default;color:#ffb300"></div>
+        <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca||'—')}" style="color:#ffb300;cursor:default"></div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530;display:flex;justify-content:space-between;align-items:center">
-          <span>📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</span>
-        </div>
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</div>
         <div style="max-height:180px;overflow-y:auto">
           ${(c.historico_eletrodo&&c.historico_eletrodo.length>0)
-            ? [...c.historico_eletrodo].reverse().map((h,i)=>`
+            ?[...c.historico_eletrodo].reverse().map((h,i)=>`
               <div class="hist-item">
                 <span class="hist-item-data">📅 ${esc(h.data)}</span>
                 <span class="hist-item-val">⚡ ${esc(h.eletrodo)} <span style="color:#4a5568;font-size:11px">(${esc(h.tipo||'—')})</span></span>
-                ${isAdmin?`<button class="btn-x" title="Remover" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
+                ${isAdmin?`<button class="btn-x" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
               </div>`).join('')
-            : '<div class="hist-empty">Nenhuma troca registrada ainda. Clique em "+ Registrar Troca Agora" para adicionar.</div>'
+            :'<div class="hist-empty">Nenhuma troca registrada ainda.</div>'
           }
         </div>
       </div>
@@ -1096,278 +1560,782 @@ function renderDetail(){
     <div class="section"><div class="sec-title">⚠ Alertas ${isAdmin?`<button class="btn btn-gray" style="padding:4px 10px" onclick="addAlert('${selected}')">+ Adicionar</button>`:""}</div>
       ${alertsHTML||'<div style="font-size:12px;color:#2a3040">Nenhum alerta</div>'}
     </div>
+    <div class="section">
+      <div class="sec-title">◈ QR Code da Célula
+        <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="imprimirQR('${selected}')">🖨 Imprimir</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <div id="qrcode-box" style="background:#fff;padding:12px;border-radius:10px;display:inline-block"></div>
+        <div>
+          <div style="font-size:13px;color:#d8dde6;margin-bottom:6px">Escaneie para abrir <b style="color:#00e87a">${esc(c.nome)}</b> direto no sistema</div>
+          <div style="font-size:11px;color:#4a5568;margin-bottom:12px">Cole no painel da célula, na máquina ou no relatório físico</div>
+          <button class="btn btn-green" style="font-size:10px;padding:5px 14px" onclick="baixarQR('${selected}')">⬇ Baixar PNG</button>
+        </div>
+      </div>
+    </div>
+    ${renderHistoricoRobo(selected)}
+  </div>`;
+  // Gera QR depois que o DOM renderizou
+  setTimeout(() => gerarQR(selected), 80);
+}
+
+function renderHistoricoRobo(key) {
+  // Descobre o número do robô (ex: "600") a partir do nome da célula
+  const nomeCell = (celulas[key].nome||'').toLowerCase();
+  const matchRobo = nomeCell.match(/\d{3}/);
+  const roboNum = matchRobo ? parseInt(matchRobo[0]) : null;
+  if (!roboNum || !ROBOS.includes(roboNum)) return ''; // não é célula de robô com número válido
+
+  // Localiza a célula Metas
+  const metasKey = Object.keys(celulas).find(k => getCellTipo(k)==='metas');
+  if (!metasKey || !celulas[metasKey].metas_dias) return '';
+
+  const mc = celulas[metasKey];
+
+  // Coleta todos os dias que têm dados para este robô
+  const registros = []; // [{data, cod, totalDia, totalNoite, totalGeral, meta}]
+
+  Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
+    const [ano, mes, dia] = chave.split('_');
+    const rd = (diaData[roboNum]) || {};
+    const meta = parseInt(rd.meta) || 0;
+    const cod  = rd.cod || '—';
+    const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const totalGeral = totalDia + totalNoite;
+    if (totalGeral === 0 && !rd.meta) return; // ignora dias completamente vazios
+
+    registros.push({
+      chave, ano:parseInt(ano), mes:parseInt(mes), dia:parseInt(dia),
+      cod, meta, totalDia, totalNoite, totalGeral
+    });
+  });
+
+  if (registros.length === 0) {
+    return `<div class="section">
+      <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}</div>
+      <div style="font-size:12px;color:#2a3040;padding:8px 0">Nenhum registro ainda. Os dados vêm automaticamente da célula Metas.</div>
+    </div>`;
+  }
+
+  // Ordena do mais recente para o mais antigo
+  registros.sort((a,b) => {
+    if (b.ano !== a.ano) return b.ano - a.ano;
+    if (b.mes !== a.mes) return b.mes - a.mes;
+    return b.dia - a.dia;
+  });
+
+  const maxTotal = Math.max(...registros.map(r => r.totalGeral), 1);
+  const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
+  const mediaDiaria = Math.round(totalAcumulado / registros.length);
+  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= r.meta * 9).length; // ~9h produtivas/dia
+  const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
+
+  const linhas = registros.map(r => {
+    const pct = Math.round(r.totalGeral / maxTotal * 100);
+    const dataFmt = `${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}`;
+    const metaTotal = r.meta > 0 ? r.meta * 9 : 0; // estimativa dia completo
+    const atingiu = metaTotal > 0 && r.totalGeral >= metaTotal;
+    const corTotal = atingiu ? '#00e87a' : (metaTotal > 0 ? '#ff4d4d' : '#d8dde6');
+    return `<tr style="border-bottom:1px solid #1e2530">
+      <td style="padding:8px 10px;font-size:12px;color:#4a5568;white-space:nowrap">${dataFmt}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#d8dde6;white-space:nowrap">${esc(r.cod)}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#00e87a;text-align:center">${r.totalDia||'—'}</td>
+      <td style="padding:8px 10px;font-size:12px;color:#a78bfa;text-align:center">${r.totalNoite||'—'}</td>
+      <td style="padding:8px 10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:#1e2530;border-radius:99px;height:5px;min-width:60px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${corTotal};border-radius:99px"></div>
+          </div>
+          <span style="font-size:13px;font-weight:800;color:${corTotal};min-width:36px;text-align:right">${r.totalGeral}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="section">
+    <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}
+      <span style="font-size:9px;color:#2a3040;font-weight:400">${registros.length} dia(s) registrado(s)</span>
+    </div>
+
+    <!-- Cards de resumo -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Total acumulado</div>
+        <div style="font-size:24px;font-weight:800;color:#00e87a">${totalAcumulado.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Média diária</div>
+        <div style="font-size:24px;font-weight:800;color:#3d9eff">${mediaDiaria.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Melhor dia</div>
+        <div style="font-size:24px;font-weight:800;color:#ffb300">${melhorDia.totalGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${String(melhorDia.dia).padStart(2,'0')}/${String(melhorDia.mes+1).padStart(2,'0')}/${melhorDia.ano}</div>
+      </div>
+    </div>
+
+    <!-- Tabela de registros -->
+    <div style="overflow-x:auto;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
+      <table style="border-collapse:collapse;width:100%;min-width:440px;font-family:'Courier New',monospace">
+        <thead>
+          <tr style="background:#0a0d11">
+            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Data</th>
+            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Cód. Peça</th>
+            <th style="padding:9px 10px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">☀ Dia</th>
+            <th style="padding:9px 10px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">🌙 Noite</th>
+            <th style="padding:9px 10px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Total Geral</th>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
   </div>`;
 }
 
-// ── HISTÓRICO ELETRODO ───────────────────────
-function registrarTrocaEletrodo(key) {
+// ── RELATÓRIOS ────────────────────────────────
+function updateRelFiltro(key,campo,valor){
+  celulas[key][campo]=valor; saveToAPI(celulas); renderRelatorio();
+}
+
+function renderRelatorio(){
+  const c = celulas[selected];
+  const anoAtual = new Date().getFullYear();
+  const mesIdx = c.rel_mes!==undefined ? c.rel_mes : new Date().getMonth();
+  const anoSel = c.rel_ano || anoAtual;
+
+  // Localiza células auxiliares
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const mc = metasKey ? celulas[metasKey] : null;
+
+  // ── 1. Coleta todos os dias do mês selecionado ──
+  const diasDoMes = {};  // dia -> {robos: {600: {total,meta,cod}}, totalGeral}
+  if (mc && mc.metas_dias) {
+    Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
+      const [a,m,d] = chave.split('_');
+      if (parseInt(a)!==anoSel || parseInt(m)!==mesIdx) return;
+      const dia = parseInt(d);
+      if (!diasDoMes[dia]) diasDoMes[dia] = {robos:{}, totalGeral:0};
+      ROBOS.forEach(robo => {
+        const rd = (diaData[robo])||{};
+        const meta = parseInt(rd.meta)||0;
+        const cod  = rd.cod||'—';
+        const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const total = totalDia+totalNoite;
+        diasDoMes[dia].robos[robo] = {total, meta, cod, totalDia, totalNoite};
+        diasDoMes[dia].totalGeral += total;
+      });
+    });
+  }
+
+  const diasComDados = Object.keys(diasDoMes).map(Number).sort((a,b)=>a-b);
+  const totalMes = diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0);
+  const mediaDia = diasComDados.length>0 ? Math.round(totalMes/diasComDados.length) : 0;
+  const melhorDia = diasComDados.reduce((best,d)=>diasDoMes[d].totalGeral>diasDoMes[best]?.totalGeral?d:best, diasComDados[0]);
+
+  // ── 2. Eficiência por robô no mês ──
+  const eficienciaRobo = ROBOS.map(robo => {
+    let totalProd=0, diasAtivo=0, diasBateu=0, metaMedia=0, metaCount=0;
+    diasComDados.forEach(d=>{
+      const r = (diasDoMes[d].robos[robo])||{};
+      if(r.total>0){totalProd+=r.total;diasAtivo++;}
+      if(r.meta>0){metaMedia+=r.meta;metaCount++;}
+      const metaEstimada = r.meta>0?r.meta*9:0;
+      if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
+    });
+    const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
+    const efic = diasAtivo>0&&mediaMetaHora>0 ? Math.round(totalProd/(diasAtivo*mediaMetaHora*9)*100) : 0;
+    return {robo, totalProd, diasAtivo, diasBateu, mediaMetaHora, efic};
+  }).filter(r=>r.diasAtivo>0).sort((a,b)=>b.totalProd-a.totalProd);
+
+  // ── 3. Top peças do mês ──
+  const pecas = {};
+  diasComDados.forEach(d=>{
+    ROBOS.forEach(robo=>{
+      const r=(diasDoMes[d].robos[robo])||{};
+      if(!r.cod||r.cod==='—'||r.total<=0)return;
+      if(!pecas[r.cod])pecas[r.cod]=0;
+      pecas[r.cod]+=r.total;
+    });
+  });
+  const topPecas = Object.entries(pecas).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxPeca  = topPecas.length>0?topPecas[0][1]:1;
+
+  // ── HTML ──
+  const mesesOpts = MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
+  const anosOpts  = [anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <!-- Cabeçalho -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📊 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Análise consolidada do período</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+    </div>
+
+    <!-- Seletor mês/ano -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:16px">📅</span>
+      <div class="date-sel"><label>Mês</label><select onchange="updateRelFiltro('${selected}','rel_mes',+this.value)">${mesesOpts}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
+      <div style="margin-left:auto;font-size:11px;color:#4a5568">${diasComDados.length} dia(s) com dados</div>
+    </div>
+
+    ${diasComDados.length===0?`
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center;color:#2a3040;font-size:13px">
+      Nenhum dado para ${MESES[mesIdx]} ${anoSel}.<br>
+      <span style="font-size:11px">Os dados vêm automaticamente da célula Metas.</span>
+    </div>`:`
+
+    <!-- Cards resumo do mês -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:26px;font-weight:900;color:#00e87a">${totalMes.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças produzidas</div>
+      </div>
+      <div style="background:#3d9eff15;border:1px solid #3d9eff30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:26px;font-weight:900;color:#3d9eff">${mediaDia.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças/dia</div>
+      </div>
+      <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:26px;font-weight:900;color:#ffb300">${melhorDia?diasDoMes[melhorDia].totalGeral.toLocaleString("pt-BR"):'—'}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${melhorDia?`dia ${melhorDia}`:''}</div>
+      </div>
+      <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
+        <div style="font-size:26px;font-weight:900;color:#a78bfa">${eficienciaRobo.length}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">de ${ROBOS.length} robôs</div>
+      </div>
+    </div>
+
+    <!-- Produção diária mini gráfico -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção diária do mês</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:60px">
+        ${Array.from({length:31},(_,i)=>i+1).map(d=>{
+          const val = diasDoMes[d]?diasDoMes[d].totalGeral:0;
+          const maxD = Math.max(...diasComDados.map(dd=>diasDoMes[dd].totalGeral),1);
+          const h = val>0?Math.max(Math.round(val/maxD*56),4):2;
+          const hoje = d===new Date().getDate()&&mesIdx===new Date().getMonth()&&anoSel===anoAtual;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+            <div title="Dia ${d}: ${val}" style="width:100%;height:${h}px;background:${val>0?(hoje?'#ffb300':'#00e87a'):'#1e2530'};border-radius:3px 3px 0 0;transition:height 0.3s"></div>
+            ${d%5===0||d===1?`<span style="font-size:7px;color:#2a3040">${d}</span>`:'<span style="font-size:7px;color:transparent">.</span>'}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+
+      <!-- Eficiência por robô -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Eficiência por Robô</div>
+        ${eficienciaRobo.length>0?eficienciaRobo.map((r,i)=>{
+          const cor = r.efic>=90?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:11px;color:#00e87a;font-weight:700;min-width:36px">${r.robo}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:${cor};min-width:36px;text-align:right">${r.efic}%</span>
+            <span style="font-size:10px;color:#4a5568;min-width:50px;text-align:right">${r.totalProd.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+
+      <!-- Top peças -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Mês</div>
+        ${topPecas.length>0?topPecas.map(([cod,total],i)=>{
+          const medalhas=['🥇','🥈','🥉','4º','5º'];
+          const pct=Math.round(total/maxPeca*100);
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;min-width:22px">${medalhas[i]}</span>
+            <span style="font-size:11px;color:#ffb300;font-weight:700;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cod)}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#d8dde6;min-width:50px;text-align:right">${total.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+    </div>
+
+    <!-- Tabela detalhada por dia -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
+        Detalhe por Dia — todos os robôs
+      </div>
+      <div style="overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%;min-width:500px;font-family:'Courier New',monospace">
+          <thead>
+            <tr style="background:#0a0d11">
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Dia</th>
+              <th style="padding:9px 12px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
+              <th style="padding:9px 12px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
+              <th style="padding:9px 12px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Robôs</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${diasComDados.map(d=>{
+              const dia = diasDoMes[d];
+              const totalDiaT  = ROBOS.reduce((s,r)=>s+(dia.robos[r]?.totalDia||0),0);
+              const totalNoiteT = ROBOS.reduce((s,r)=>s+(dia.robos[r]?.totalNoite||0),0);
+              const robosAtivos = ROBOS.filter(r=>(dia.robos[r]?.total||0)>0).length;
+              const maxDia = Math.max(...diasComDados.map(dd=>diasDoMes[dd].totalGeral),1);
+              const pct = Math.round(dia.totalGeral/maxDia*100);
+              const dataFmt = `${String(d).padStart(2,'0')}/${String(mesIdx+1).padStart(2,'0')}/${anoSel}`;
+              return`<tr style="border-bottom:1px solid #1e2530" onmouseover="this.style.background='#ffffff04'" onmouseout="this.style.background=''">
+                <td style="padding:9px 12px;font-size:12px;color:#4a5568">${dataFmt}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#00e87a;text-align:center;font-weight:700">${totalDiaT.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#a78bfa;text-align:center;font-weight:700">${totalNoiteT.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;background:#1e2530;border-radius:99px;height:5px;min-width:80px;overflow:hidden">
+                      <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+                    </div>
+                    <span style="font-size:14px;font-weight:800;color:#ffb300;min-width:50px;text-align:right">${dia.totalGeral.toLocaleString("pt-BR")}</span>
+                  </div>
+                </td>
+                <td style="padding:9px 12px;font-size:12px;color:#4a5568;text-align:center">${robosAtivos} ativo(s)</td>
+              </tr>`;
+            }).join('')}
+            <tr style="background:#ffb30010;border-top:2px solid #ffb30040">
+              <td style="padding:10px 12px;font-size:11px;color:#ffb300;font-weight:800;text-transform:uppercase;letter-spacing:0.08em">TOTAL</td>
+              <td style="padding:10px 12px;font-size:14px;color:#00e87a;text-align:center;font-weight:800">${diasComDados.reduce((s,d)=>s+ROBOS.reduce((ss,r)=>ss+(diasDoMes[d].robos[r]?.totalDia||0),0),0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:14px;color:#a78bfa;text-align:center;font-weight:800">${diasComDados.reduce((s,d)=>s+ROBOS.reduce((ss,r)=>ss+(diasDoMes[d].robos[r]?.totalNoite||0),0),0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:16px;color:#ffb300;font-weight:900">${totalMes.toLocaleString("pt-BR")}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`}
+  </div>`;
+}
+
+function gerarQR(key) {
+  const box = document.getElementById('qrcode-box');
+  if (!box) return;
+  box.innerHTML = '';
+  // URL que abre o sistema já na célula correta
+  const url = `${window.location.href.split('?')[0]}?celula=${key}`;
+  new QRCode(box, {
+    text: url,
+    width: 140,
+    height: 140,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+}
+
+function imprimirQR(key) {
   const c = celulas[key];
-  if (!c.eletrodo || c.eletrodo === '—') { showToast("Informe o eletrodo primeiro", true); return; }
-  if (!c.historico_eletrodo) c.historico_eletrodo = [];
-  const agora = new Date().toLocaleString("pt-BR", {
-    day:"2-digit", month:"2-digit", year:"numeric",
-    hour:"2-digit", minute:"2-digit"
-  });
-  const horaAgora = new Date().toLocaleString("pt-BR", {
-    day:"2-digit", month:"2-digit", year:"numeric",
-    hour:"2-digit", minute:"2-digit"
-  });
-  // salva no histórico o eletrodo ATUAL (antes de qualquer mudança)
-  c.historico_eletrodo.push({
-    data: agora,
-    eletrodo: c.eletrodo,
-    tipo: c.tipo_eletrodo || '—'
-  });
-  // atualiza campo "Última troca" para refletir agora
-  c.ultima_troca = horaAgora;
-  celulas[key] = c;
-  saveToAPI(celulas);
-  renderDetail();
-  showToast("Troca registrada ✓");
+  const box = document.getElementById('qrcode-box');
+  if (!box) return;
+  const canvas = box.querySelector('canvas');
+  const img = box.querySelector('img');
+  const src = canvas ? canvas.toDataURL() : (img ? img.src : '');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>QR Code - ${c.nome}</title>
+  <style>
+    body { font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #fff; }
+    .card { border: 3px solid #000; border-radius: 16px; padding: 28px 32px; text-align: center; max-width: 320px; }
+    .titulo { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; color: #000; }
+    .nome { font-size: 20px; font-weight: 900; color: #000; margin-bottom: 16px; letter-spacing: 0.05em; }
+    img { width: 180px; height: 180px; margin: 0 auto 16px; display: block; }
+    .instrucao { font-size: 11px; color: #555; letter-spacing: 0.08em; margin-top: 8px; }
+    .icone { font-size: 32px; margin-bottom: 8px; }
+  </style></head><body>
+  <div class="card">
+    <div class="icone">⬡</div>
+    <div class="titulo">Células Robóticas</div>
+    <div class="nome">${c.nome}</div>
+    <img src="${src}">
+    <div class="instrucao">Escaneie para acessar esta célula</div>
+  </div>
+  <script>window.onload=()=>window.print();<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
-function removerHistEletrodo(key, idx) {
-  if (!celulas[key].historico_eletrodo) return;
-  celulas[key].historico_eletrodo.splice(idx, 1);
-  saveToAPI(celulas);
-  renderDetail();
+function baixarQR(key) {
+  const c = celulas[key];
+  const box = document.getElementById('qrcode-box');
+  if (!box) return;
+  const canvas = box.querySelector('canvas');
+  if (!canvas) { showToast('QR ainda carregando, tente novamente', true); return; }
+  const link = document.createElement('a');
+  link.download = `QR_${c.nome.replace(/\s+/g,'_')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
-// ── SYNC: Metas Diária → Produção Diária ─────
-// Chamado sempre que o total geral de metas muda.
-// Grava o total na célula "Produção Diária" no dia/mês/ano correspondente.
-function syncMetasToProducao(metasKey) {
+function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
+function handleImgUpload(file){
+  if(!file||!selected)return;
+  const r=new FileReader();
+  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
+  r.readAsDataURL(file);
+}
+function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
+function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
+function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
+
+function tryLogin(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_PW){isAdmin=true;isAdminMetas=false;startApp();}
+  else if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
+  else{
+    document.getElementById("pwInput").classList.add("err");
+    document.getElementById("loginErr").style.display="block";
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+  }
+}
+function tryLoginMetas(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
+  else{
+    document.getElementById("pwInput").classList.add("err");
+    document.getElementById("loginErr").style.display="block";
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+  }
+}
+function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
+function startApp(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+  if(isAdmin){
+    document.getElementById("modeBadge").textContent="⚙ Host";
+    document.getElementById("modeBadge").className="badge badge-admin";
+    document.getElementById("btnAdd").style.display="inline-block";
+    document.getElementById("btnXlsx").style.display="inline-block";
+    document.getElementById("btnBackup").style.display="inline-block";
+    document.getElementById("btnGerenciar").style.display="inline-block";
+  } else if(isAdminMetas){
+    document.getElementById("modeBadge").textContent="📋 Metas";
+    document.getElementById("modeBadge").className="badge badge-metas";
+  } else {
+    document.getElementById("modeBadge").textContent="👁 Viewer";
+    document.getElementById("modeBadge").className="badge badge-viewer";
+  }
+  loadFromAPI().then(() => {
+    const params = new URLSearchParams(window.location.search);
+    const celulaParam = params.get('celula');
+    if (celulaParam && celulas[celulaParam]) {
+      selected = celulaParam;
+      renderSidebar();
+      renderDetail();
+    }
+  });
+  pollTimer=setInterval(loadFromAPI,6000);
+}
+function doLogout(){
+  clearInterval(pollTimer);
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("pwInput").value="";
+  isAdmin=false;isAdminMetas=false;selected=null;
+}
+
+function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
+function closeXlsxModal(){document.getElementById("xlsxModalEl").classList.remove("open");xlsxPendingData=null;}
+function handleXlsxFile(file){
+  if(!file)return;const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=new Uint8Array(e.target.result);const wb=XLSX.read(data,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      const dataRows=rows.slice(1).filter(r=>r[0]!==""&&r[0]!==undefined);
+      if(dataRows.length===0){showToast("Planilha vazia!",true);return;}
+      xlsxPendingData=[];let previewHTML="";let found=0,notFound=0;
+      dataRows.forEach(row=>{
+        let rawKey=String(row[0]).trim().replace(/\D/g,"");const key=rawKey.padStart(2,"0");
+        const ciclos=parseInt(row[1])||0;const meta=parseInt(row[2])||0;const exists=!!celulas[key];
+        if(exists)found++;else notFound++;xlsxPendingData.push({key,ciclos,meta,exists});
+        previewHTML+=`<div class="xlsx-row"><span class="xlsx-cell-num">C${key}</span><span class="xlsx-val">Ciclos: <b>${ciclos}</b></span><span class="xlsx-val">Meta: <b>${meta}</b></span><span class="${exists?'xlsx-found':'xlsx-notfound'}">${exists?'✓ encontrada':'✗ não existe'}</span></div>`;
+      });
+      document.getElementById("xlsxPreviewList").innerHTML=previewHTML;
+      document.getElementById("xlsxSummary").innerHTML=`<span style="color:#00e87a">${found} célula(s) serão atualizadas</span>`+(notFound>0?` · <span style="color:#ff4d4d">${notFound} não encontrada(s)</span>`:"");
+      document.getElementById("xlsxPreview").style.display="block";
+      document.getElementById("btnConfirmXlsx").style.display=found>0?"inline-block":"none";
+    }catch(err){showToast("Erro ao ler o arquivo!",true);}
+  };reader.readAsArrayBuffer(file);
+}
+function confirmXlsxImport(){
+  if(!xlsxPendingData)return;let updated=0;
+  xlsxPendingData.forEach(({key,ciclos,meta,exists})=>{if(exists){celulas[key].ciclos_hoje=ciclos;if(meta>0)celulas[key].meta_dia=meta;updated++;}});
+  saveToAPI(celulas);closeXlsxModal();renderSidebar();renderDetail();showToast(`${updated} célula(s) atualizada(s) ✓`);
+}
+
+// ── EXPORTAR PDF DO DIA ──────────────────────
+function exportarPDFDia() {
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if (!metasKey) { showToast("Célula Metas não encontrada", true); return; }
   const mc = celulas[metasKey];
   const ano = mc.metas_ano  || new Date().getFullYear();
   const mes = mc.metas_mes  !== undefined ? mc.metas_mes : new Date().getMonth();
   const dia = mc.metas_dia  || new Date().getDate();
   const chave = `${ano}_${mes}_${dia}`;
   const data  = (mc.metas_dias && mc.metas_dias[chave]) ? mc.metas_dias[chave] : {};
+  const dataFmt = `${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
 
-  // calcula total geral (dia + noite)
-  const totalGeral = ROBOS.reduce((sum, r) =>
-    sum + [...HORAS_DIA,...HORAS_NOITE].reduce((s, h) =>
-      s + (parseCelVal(((data[r]||{})[campoH(h)])||'').num), 0), 0);
+  // calcula totais
+  const totalDia   = ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalNoite = ROBOS.reduce((s,r)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+  const totalG = totalDia + totalNoite;
 
-  // localiza a célula de Produção Mensal pelo tipo
-  const prodKey = Object.keys(celulas).find(k => getCellTipo(k) === 'producao_mensal');
-  if (!prodKey) return; // célula não existe, não faz nada
+  // monta linhas por robô
+  const linhasRobos = ROBOS.map(robo => {
+    const rd = (data[robo]) || {};
+    const meta = parseInt(rd.meta) || 0;
+    const cod  = rd.cod || '—';
+    const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const total    = subDia + subNoite;
+    const metaEstimada = meta > 0 ? meta * 9 : 0;
+    const efic = metaEstimada > 0 ? Math.round(total / metaEstimada * 100) : null;
+    const corEfic = efic === null ? '#888' : efic >= 100 ? '#00b84a' : efic >= 80 ? '#ff8c00' : '#cc0000';
+    if (total === 0 && !meta) return '';
+    return `<tr>
+      <td style="padding:8px 12px;font-weight:700;color:#000">${robo}</td>
+      <td style="padding:8px 12px;color:#555">${esc(cod)}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:#00802b">${subDia || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:#4a00cc">${subNoite || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:800;font-size:15px">${total || '—'}</td>
+      <td style="padding:8px 12px;text-align:center;color:#555">${meta > 0 ? meta+'/h' : '—'}</td>
+      <td style="padding:8px 12px;text-align:center;font-weight:700;color:${corEfic}">${efic !== null ? efic+'%' : '—'}</td>
+    </tr>`;
+  }).join('');
 
-  // chave da produção diária (usa o mesmo ano/mês)
-  const prodChave = `${ano}_${mes}`;
-  if (!celulas[prodKey].producao_meses) celulas[prodKey].producao_meses = {};
-  if (!celulas[prodKey].producao_meses[prodChave]) celulas[prodKey].producao_meses[prodChave] = {};
-  celulas[prodKey].producao_meses[prodChave][dia] = totalGeral;
-  // não chama saveToAPI aqui — quem chama é updateMetasCell logo depois
-}
+  // monta horas turno dia
+  const horasDiaHTML = HORAS_DIA.map(h => {
+    const isCafe = HORAS_CAFE.includes(h);
+    const soma = ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return `<td style="padding:6px 8px;text-align:center;font-weight:700;background:${isCafe?'#fff3cd':'#fff'};color:${isCafe?'#8a6200':'#000'}">${soma||'—'}</td>`;
+  }).join('');
 
-// ── PRODUÇÃO POR PEÇA ────────────────────────
-// Lê todas as entradas de metas_dias da célula "Metas Diária"
-// e agrupa por código de peça, somando o total geral de cada dia.
-function calcProducaoPorPeca() {
-  // localiza a célula de Metas pelo tipo
-  const metasKey = Object.keys(celulas).find(k => getCellTipo(k) === 'metas');
-  if (!metasKey) return {};
+  const horasNoiteHTML = HORAS_NOITE.map(h => {
+    const soma = ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return `<td style="padding:6px 8px;text-align:center;font-weight:700;color:#000">${soma||'—'}</td>`;
+  }).join('');
 
-  const mc = celulas[metasKey];
-  if (!mc.metas_dias) return {};
-
-  // resultado: { "50698": { total: 123, dias: { "2026_5_2": 45, ... } } }
-  const resultado = {};
-
-  Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
-    // chave = "2026_5_2" → ano_mes_dia
-    const partes = chave.split('_');
-    const ano = partes[0], mes = partes[1], dia = partes[2];
-
-    ROBOS.forEach(robo => {
-      const rd = (diaData[robo]) || {};
-      const cod = (rd.cod || '').trim();
-      if (!cod || cod === '—' || cod === '') return;
-
-      // total geral do dia para este robô neste dia
-      const totalRobo = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h) =>
-        s + (parseCelVal((rd[campoH(h)])||'').num), 0);
-
-      if (totalRobo <= 0) return;
-
-      if (!resultado[cod]) resultado[cod] = { total: 0, dias: {} };
-      if (!resultado[cod].dias[chave]) resultado[cod].dias[chave] = 0;
-      resultado[cod].dias[chave] += totalRobo;
-      resultado[cod].total += totalRobo;
-    });
-  });
-
-  return resultado;
-}
-
-function renderProducaoPorPeca() {
-  const c = celulas[selected];
-  const dados = calcProducaoPorPeca();
-  const codigos = Object.keys(dados).sort();
-
-  // mês/ano selecionado para filtrar (usa mesmo padrão da célula)
-  const anoAtual = new Date().getFullYear();
-  const mesIdx = c.peca_mes !== undefined ? c.peca_mes : new Date().getMonth();
-  const anoSel = c.peca_ano || anoAtual;
-
-  const MESES_PT = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-  const mesesOpts = MESES.map((m,i) => `<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
-  const anosOpts  = [anoAtual-1,anoAtual,anoAtual+1].map(a => `<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
-
-  // filtra só dias do mês/ano selecionado
-  const dadosFiltrados = {};
-  codigos.forEach(cod => {
-    let totalMes = 0;
-    const diasMes = {};
-    Object.entries(dados[cod].dias).forEach(([chave, qtd]) => {
-      const [a, m, d] = chave.split('_');
-      if (parseInt(a) === anoSel && parseInt(m) === mesIdx) {
-        diasMes[parseInt(d)] = (diasMes[parseInt(d)] || 0) + qtd;
-        totalMes += qtd;
-      }
-    });
-    if (totalMes > 0) dadosFiltrados[cod] = { total: totalMes, dias: diasMes };
-  });
-
-  const codigosFiltrados = Object.keys(dadosFiltrados).sort();
-  const totalGeral = codigosFiltrados.reduce((s,cod) => s + dadosFiltrados[cod].total, 0);
-
-  // max para barra proporcional
-  const maxTotal = Math.max(...codigosFiltrados.map(cod => dadosFiltrados[cod].total), 1);
-
-  // monta linhas da tabela
-  const linhasHTML = codigosFiltrados.length > 0
-    ? codigosFiltrados.map(cod => {
-        const { total, dias } = dadosFiltrados[cod];
-        const pct = Math.round(total / maxTotal * 100);
-        // mini sparkline de dias
-        const diasOrdenados = Array.from({length:31},(_,i)=>i+1).map(d => dias[d] || 0);
-        const maxDia = Math.max(...diasOrdenados, 1);
-        const sparkBars = diasOrdenados.map((v,i) => {
-          const h = v > 0 ? Math.max(Math.round(v/maxDia*24),3) : 1;
-          const cor = v > 0 ? '#00e87a' : '#1e2530';
-          return `<div title="Dia ${i+1}: ${v}" style="width:6px;height:${h}px;background:${cor};border-radius:2px;flex-shrink:0"></div>`;
-        }).join('');
-
-        return `<tr>
-          <td style="color:#ffb300;font-weight:800;font-size:14px;background:#ffb30006;padding:10px 12px;white-space:nowrap">${esc(cod)}</td>
-          <td style="padding:10px 12px">
-            <div style="display:flex;align-items:flex-end;gap:2px;height:28px">${sparkBars}</div>
-          </td>
-          <td style="padding:8px 10px">
-            <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;min-width:80px">
-              <div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div>
-            </div>
-          </td>
-          <td style="color:#00e87a;font-weight:900;font-size:20px;padding:10px 14px;text-align:right;white-space:nowrap">${total.toLocaleString("pt-BR")}</td>
-        </tr>`;
-      }).join('')
-    : `<tr><td colspan="4" style="text-align:center;color:#2a3040;padding:32px;font-size:13px">
-        Nenhum dado encontrado para ${MESES_PT[mesIdx]} ${anoSel}.<br>
-        <span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula "Metas Diária".</span>
-      </td></tr>`;
-
-  document.getElementById("mainPanel").innerHTML = `
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)} ${isAdmin?`<button onclick="renomearCelula('${selected}')" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:14px;padding:0 4px;vertical-align:middle" title="Renomear">✏</button>`:''}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas Diária</div>
-      </div>
-      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <title>Relatório do Dia — ${dataFmt}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #fff; color: #000; padding: 24px; font-size: 12px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 3px solid #000; padding-bottom: 14px; }
+    .titulo { font-size: 22px; font-weight: 900; letter-spacing: 0.08em; }
+    .subtitulo { font-size: 11px; color: #555; margin-top: 3px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .data-badge { background: #000; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 16px; font-weight: 800; letter-spacing: 0.1em; }
+    .cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+    .card { border: 2px solid #000; border-radius: 8px; padding: 10px 14px; text-align: center; }
+    .card-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: #555; margin-bottom: 4px; }
+    .card-val { font-size: 26px; font-weight: 900; }
+    .card-val.verde { color: #00802b; }
+    .card-val.azul  { color: #0044cc; }
+    .card-val.preto { color: #000; }
+    .card-val.laranja { color: #cc5500; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th { background: #000; color: #fff; padding: 9px 12px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; }
+    th.left { text-align: left; }
+    td { border-bottom: 1px solid #ddd; }
+    tr:nth-child(even) td { background: #f9f9f9; }
+    .sec-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; margin-top: 18px; padding-bottom: 4px; border-bottom: 1px solid #ccc; color: #333; }
+    .footer { margin-top: 24px; border-top: 1px solid #ccc; padding-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #888; }
+    .assinatura { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .ass-box { border-top: 1px solid #000; padding-top: 6px; text-align: center; font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; }
+    @media print { body { padding: 12px; } }
+  </style>
+</head><body>
+  <div class="header">
+    <div>
+      <div class="titulo">⬡ CÉLULAS ROBÓTICAS</div>
+      <div class="subtitulo">Relatório de Produção Diária</div>
     </div>
+    <div class="data-badge">📅 ${dataFmt}</div>
+  </div>
 
-    <!-- SELETOR MÊS/ANO -->
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <span style="font-size:16px">📅</span>
-      <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
-      <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${codigosFiltrados.length} código(s)</div>
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
-      </div>
+  <!-- Cards resumo -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Total do Dia</div>
+      <div class="card-val preto">${totalG.toLocaleString("pt-BR")}</div>
     </div>
-
-    <!-- TABELA POR PEÇA -->
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;display:flex;align-items:center;gap:10px">
-        <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">Código da Peça</span>
-        <span style="font-size:11px;color:#4a5568;margin-left:auto;letter-spacing:0.06em">Sparkline 31 dias · Barra proporcional · Total do mês</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="border-collapse:collapse;width:100%;min-width:500px">
-          <thead>
-            <tr style="background:#0a0d11">
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Código</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Dias do mês</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530;font-weight:700">Proporção</th>
-              <th style="padding:10px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:right;border-bottom:1px solid #1e2530;font-weight:700;min-width:100px">Total</th>
-            </tr>
-          </thead>
-          <tbody style="font-family:'Courier New',monospace">
-            ${linhasHTML}
-          </tbody>
-        </table>
-      </div>
+    <div class="card">
+      <div class="card-label">☀ Turno Dia</div>
+      <div class="card-val verde">${totalDia.toLocaleString("pt-BR")}</div>
     </div>
+    <div class="card">
+      <div class="card-label">🌙 Turno Noite</div>
+      <div class="card-val azul">${totalNoite.toLocaleString("pt-BR")}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Robôs Ativos</div>
+      <div class="card-val laranja">${ROBOS.filter(r=>{
+        const rd=data[r]||{};
+        return [...HORAS_DIA,...HORAS_NOITE].some(h=>parseCelVal((rd[campoH(h)])||'').num>0);
+      }).length}</div>
+    </div>
+  </div>
 
-    ${codigosFiltrados.length > 0 ? `
-    <!-- RANKING -->
-    <div style="margin-top:16px;background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;font-weight:700">🏆 Ranking do Mês</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        ${[...codigosFiltrados].sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total).slice(0,5).map((cod,i)=>{
-          const medalhas = ['🥇','🥈','🥉','4º','5º'];
-          const pct = Math.round(dadosFiltrados[cod].total / maxTotal * 100);
-          return `<div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:16px;min-width:26px">${medalhas[i]||''}</span>
-            <span style="color:#ffb300;font-weight:700;font-size:13px;min-width:100px">${esc(cod)}</span>
-            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${i===0?'#ffb300':i===1?'#9ca3af':i===2?'#b45309':'#00e87a'};border-radius:99px;transition:width 0.5s"></div>
-            </div>
-            <span style="color:#d8dde6;font-weight:700;font-size:14px;min-width:70px;text-align:right">${dadosFiltrados[cod].total.toLocaleString("pt-BR")}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : ''}
-  </div>`;
-}
+  <!-- Tabela por robô -->
+  <div class="sec-title">Produção por Robô</div>
+  <table>
+    <thead>
+      <tr>
+        <th class="left">Robô</th>
+        <th class="left">Cód. Peça</th>
+        <th>☀ Dia</th>
+        <th>🌙 Noite</th>
+        <th>Total</th>
+        <th>Meta/h</th>
+        <th>Efic.</th>
+      </tr>
+    </thead>
+    <tbody>${linhasRobos || '<tr><td colspan="7" style="padding:12px;text-align:center;color:#888">Nenhum dado registrado</td></tr>'}</tbody>
+  </table>
 
-function updatePecaFiltro(key, campo, valor) {
-  celulas[key][campo] = valor;
-  saveToAPI(celulas);
-  renderProducaoPorPeca();
+  <!-- Totais por hora -->
+  <div class="sec-title">☀ Totais por Hora — Turno Dia</div>
+  <table>
+    <thead><tr>
+      ${HORAS_DIA.map(h=>`<th style="${HORAS_CAFE.includes(h)?'background:#8a6200':''}">${h}</th>`).join('')}
+    </tr></thead>
+    <tbody><tr>${horasDiaHTML}</tr></tbody>
+  </table>
+
+  <div class="sec-title">🌙 Totais por Hora — Turno Noite</div>
+  <table>
+    <thead><tr>${HORAS_NOITE.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody><tr>${horasNoiteHTML}</tr></tbody>
+  </table>
+
+  <!-- Assinaturas -->
+  <div class="assinatura">
+    <div class="ass-box">Supervisor</div>
+    <div class="ass-box">Responsável Técnico</div>
+    <div class="ass-box">Operador</div>
+  </div>
+
+  <div class="footer">
+    <span>Células Robóticas — Monitor Industrial</span>
+    <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+  </div>
+
+  <script>window.onload=()=>window.print();<\/script>
+</body></html>`);
+  win.document.close();
 }
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
-
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
 function deleteCell(k){if(!confirm("Excluir "+celulas[k].nome+"?"))return;delete celulas[k];saveToAPI(celulas);selected=Object.keys(celulas).sort()[0]||null;renderSidebar();renderDetail();}
 function openModal(){document.getElementById("modalEl").classList.add("open");document.getElementById("mNum").focus();}
-function closeModal(){document.getElementById("modalEl").classList.remove("open");document.getElementById("mNum").value="";document.getElementById("mNome").value="";document.getElementById("mTipo").value="robo";}
+function closeModal(){document.getElementById("modalEl").classList.remove("open");document.getElementById("mNum").value="";document.getElementById("mNome").value="";}
 function createCell(){
-  const n=document.getElementById("mNum").value.trim();
-  const nm=document.getElementById("mNome").value.trim();
-  const tp=document.getElementById("mTipo").value||"robo";
+  const n=document.getElementById("mNum").value.trim();const nm=document.getElementById("mNome").value.trim();
   if(!n){showToast("Informe o número",true);return;}
   const k=String(n).padStart(2,"0");if(celulas[k]){showToast("Célula já existe!",true);return;}
-  celulas[k]={nome:nm||"Célula "+k,tipo_celula:tp,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
+  celulas[k]={nome:nm||"Célula Robótica "+k,status:"Aguardando",cliente:"—",peca:"—",codigo_peca:"—",img_peca:"",eletrodo:"—",tipo_eletrodo:"—",tempo_peca:"—",meta_hora:0,operador:"—",turno:"—",tempo_solda:"—",corrente:"—",pre_pressao:"—",pontos_solda:"—",ultima_troca:"—",alertas:[]};
   saveToAPI(celulas);closeModal();selected=k;renderSidebar();renderDetail();
 }
 
-// Abre prompt inline para renomear a célula (só admin)
-function renomearCelula(key) {
-  const atual = celulas[key].nome;
-  const novo = prompt('Novo nome para a célula:', atual);
-  if (novo && novo.trim() && novo.trim() !== atual) {
-    celulas[key].nome = novo.trim();
-    saveToAPI(celulas);
-    renderSidebar();
-    renderDetail();
-    showToast('Nome atualizado ✓');
+function renomearCelula(key){
+  if(!isAdmin)return;
+  const novo=prompt('Novo nome:',celulas[key].nome);
+  if(novo&&novo.trim()&&novo.trim()!==celulas[key].nome){
+    celulas[key].nome=novo.trim();saveToAPI(celulas);renderSidebar();renderDetail();showToast('Nome atualizado ✓');
   }
+}
+
+async function openGerenciar(){
+  const keys = Object.keys(celulas).sort();
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+
+  document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
+    const c = celulas[k];
+    const t = getCellTipo(k);
+    const ic = icones[t]||'⚙';
+    return `<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:16px">${ic}</span>
+        <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${t}</span>
+        <span style="font-size:10px;color:#2a3040;margin-left:auto">ID atual: <b style="color:#00e87a">${k}</b></span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Nome</label>
+          <input id="edit-nome-${k}" value="${esc(c.nome)}"
+            style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#d8dde6;outline:none"
+            onfocus="this.style.borderColor='#00e87a'" onblur="this.style.borderColor='#1e2530'">
+        </div>
+        <div>
+          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Número/ID</label>
+          <input id="edit-num-${k}" value="${k}" maxlength="4"
+            style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#ffb300;outline:none"
+            onfocus="this.style.borderColor='#ffb300'" onblur="this.style.borderColor='#1e2530'">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end">
+        <button class="btn btn-green" style="font-size:10px;padding:5px 12px" onclick="salvarEdicaoCell('${k}')">✓ Salvar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById("gerenciarModalEl").classList.add("open");
+}
+
+function closeGerenciar(){
+  document.getElementById("gerenciarModalEl").classList.remove("open");
+}
+
+function salvarEdicaoCell(keyAntigo){
+  const novoNome = document.getElementById(`edit-nome-${keyAntigo}`).value.trim();
+  const novoNum  = document.getElementById(`edit-num-${keyAntigo}`).value.trim().padStart(2,'0');
+
+  if (!novoNome) { showToast("Nome não pode ser vazio", true); return; }
+  if (!novoNum || isNaN(parseInt(novoNum))) { showToast("Número inválido", true); return; }
+
+  // Atualiza o nome
+  celulas[keyAntigo].nome = novoNome;
+
+  // Se o número mudou, muda a chave
+  if (novoNum !== keyAntigo) {
+    if (celulas[novoNum]) { showToast("Número " + novoNum + " já existe!", true); return; }
+    celulas[novoNum] = celulas[keyAntigo];
+    delete celulas[keyAntigo];
+    // Se era a célula selecionada, atualiza
+    if (selected === keyAntigo) selected = novoNum;
+  }
+
+  saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  openGerenciar(); // recarrega o modal
+  showToast("Célula atualizada ✓");
+}
+
+async function forcarBackup(){
+  const btn = document.getElementById("btnBackup");
+  if(btn) btn.textContent = "☁ ...";
+  await backupToSheets(celulas);
+  if(btn) btn.textContent = "☁ Backup";
+  const binId = _backupBinId || localStorage.getItem("backup_bin_id") || "";
+  showToast("Backup salvo ✓" + (binId ? " — BIN: "+binId.slice(-6) : ""));
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
@@ -1376,9 +2344,10 @@ function showToast(msg,err=false){
   void t.offsetWidth;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
+document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenciar);
 </script>
 </body>
 </html>
