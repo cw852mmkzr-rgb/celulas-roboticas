@@ -400,6 +400,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
+      <button id="btnRestore" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none;background:#ff6a00" onclick="restaurarDados()" title="Restaurar dados padrão">🔄 Restaurar</button>
       <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
@@ -493,6 +494,15 @@ let _backupBinId = "";
 
 async function backupToSheets(data) {
   // backup silencioso — não faz nada, o JSONBin principal já é o backup
+}
+
+async function restaurarDados(){
+  if(!confirm("Restaurar todos os dados? Isso vai sobrescrever o conteúdo atual.")) return;
+  celulas = JSON.parse(JSON.stringify(defaultData));
+  await saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  showToast("Dados restaurados ✓");
 }
 
 function baixarBackupLocal() {
@@ -1816,6 +1826,7 @@ function startApp(){
     document.getElementById("btnXlsx").style.display="inline-block";
     document.getElementById("btnBackup").style.display="inline-block";
     document.getElementById("btnGerenciar").style.display="inline-block";
+    document.getElementById("btnRestore").style.display="inline-block";
   } else if(isAdminMetas){
     document.getElementById("modeBadge").textContent="📋 Metas";
     document.getElementById("modeBadge").className="badge badge-metas";
