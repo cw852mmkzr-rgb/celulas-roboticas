@@ -72,7 +72,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
 .status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
 
-.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 90px; }
+.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 160px; cursor: pointer; }
 .img-upload-box:hover { border-color: #00e87a40; }
 .img-upload-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .img-upload-box .img-placeholder { font-size: 10px; color: #2a3040; text-align: center; padding: 8px; line-height: 1.6; }
@@ -121,6 +121,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.show { opacity: 1; transform: translateY(0); }
 .toast.ok { background: #00e87a; color: #000; }
 .toast.error { background: #ff4d4d; color: #fff; }
+@keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
@@ -218,119 +219,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <body>
 <div class="login-wrap" id="loginScreen">
   <div class="login-box">
-    <div class="login-icon">⬡</div>
-
-    <div class="login-title">CÉLULAS ROBÓTICAS</div>
-    <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do host" onkeydown="if(event.key==='Enter')tryLogin()">
-    <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-    <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
-    <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
-    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
-    <div class="login-hint"></div>
-  </div>
-</div>
-
-<div id="appScreen" style="display:none">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:8px">
-      <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
-      <div class="brand" style="display:flex;align-items:center;gap:10px">
-        <svg width="64" height="38" viewBox="0 0 440 280" style="flex-shrink:0">
-          <defs>
-            <filter id="gn"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="gb"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <rect width="440" height="280" fill="#04070d"/>
-          <!-- robô esquerdo verde wireframe -->
-          <g filter="url(#gn)">
-            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-            <circle cx="70" cy="200" r="20" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="70" cy="200" r="12" fill="none" stroke="#ffd600" stroke-width="1"/>
-            <circle cx="70" cy="200" r="5" fill="#ffd600" opacity="0.9"/>
-            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <line x1="52" y1="178" x2="88" y2="178" stroke="#ffd600" stroke-width="0.8" opacity="0.4"/>
-            <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
-            <circle cx="70" cy="148" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="70" cy="148" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="70" cy="148" r="4" fill="#ffd600"/>
-            <g transform="rotate(-52 70 148)">
-              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#ffd600" stroke-width="2"/>
-              <line x1="54" y1="118" x2="86" y2="118" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
-              <rect x="60" y="88" width="20" height="36" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
-            </g>
-            <circle cx="110" cy="72" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="110" cy="72" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="110" cy="72" r="4" fill="#ffd600"/>
-            <g transform="rotate(20 110 72)">
-              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#ffd600" stroke-width="2"/>
-              <line x1="96" y1="50" x2="124" y2="50" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
-            </g>
-            <circle cx="128" cy="34" r="14" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="128" cy="34" r="8" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="128" cy="34" r="3" fill="#ffd600"/>
-            <g transform="rotate(8 128 34)">
-              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <circle cx="168" cy="22" r="2.5" fill="#ffd600"/>
-              <circle cx="168" cy="36" r="2.5" fill="#ffd600"/>
-            </g>
-            <circle cx="24" cy="245" r="4" fill="#ffd600"/>
-            <circle cx="24" cy="245" r="8" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
-          </g>
-          <!-- robô direito azul wireframe -->
-          <g filter="url(#gb)">
-            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-            <circle cx="370" cy="200" r="20" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="370" cy="200" r="12" fill="none" stroke="#ff6a00" stroke-width="1"/>
-            <circle cx="370" cy="200" r="5" fill="#ff6a00" opacity="0.9"/>
-            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <line x1="352" y1="178" x2="388" y2="178" stroke="#ff6a00" stroke-width="0.8" opacity="0.4"/>
-            <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
-            <circle cx="370" cy="148" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="370" cy="148" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="370" cy="148" r="4" fill="#ff6a00"/>
-            <g transform="rotate(52 370 148)">
-              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#ff6a00" stroke-width="2"/>
-              <line x1="354" y1="118" x2="386" y2="118" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
-              <rect x="360" y="88" width="20" height="36" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
-            </g>
-            <circle cx="330" cy="72" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="330" cy="72" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="330" cy="72" r="4" fill="#ff6a00"/>
-            <g transform="rotate(-20 330 72)">
-              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#ff6a00" stroke-width="2"/>
-              <line x1="312" y1="50" x2="340" y2="50" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
-            </g>
-            <circle cx="312" cy="34" r="14" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="312" cy="34" r="8" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="312" cy="34" r="3" fill="#ff6a00"/>
-            <g transform="rotate(-8 312 34)">
-              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <circle cx="272" cy="22" r="2.5" fill="#ff6a00"/>
-              <circle cx="272" cy="36" r="2.5" fill="#ff6a00"/>
-            </g>
-            <circle cx="416" cy="245" r="4" fill="#ff6a00"/>
-            <circle cx="416" cy="245" r="8" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
-          </g>
-          <!-- faísca -->
-          <g filter="url(#gg)">
-            <circle cx="220" cy="29" r="5" fill="#ff2200"/>
-            <line x1="220" y1="23" x2="220" y2="13" stroke="#ff2200" stroke-width="2.5"/>
-            <line x1="215" y1="25" x2="207" y2="16" stroke="#ff2200" stroke-width="2"/>
-            <line x1="225" y1="25" x2="233" y2="16" stroke="#ff2200" stroke-width="2"/>
-            <line x1="212" y1="29" x2="202" y2="29" stroke="#ff2200" stroke-width="2"/>
-            <line x1="228" y1="29" x2="238" y2="29" stroke="#ff2200" stroke-width="2"/>
-          </g>
-        </svg><svg width="160" height="100" viewBox="0 0 440 280">
+    <div class="login-icon" style="display:flex;justify-content:center;margin-bottom:8px">
+      <svg width="160" height="100" viewBox="0 0 440 280">
         <defs>
           <filter id="lgn"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <filter id="lgb"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -345,14 +235,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
           <circle cx="70" cy="200" r="12" fill="none" stroke="#ffd600" stroke-width="1"/>
           <circle cx="70" cy="200" r="5" fill="#ffd600" opacity="0.9"/>
           <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#ffd600" stroke-width="2"/>
-          <line x1="52" y1="178" x2="88" y2="178" stroke="#ffd600" stroke-width="0.8" opacity="0.4"/>
-          <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
           <circle cx="70" cy="148" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
           <circle cx="70" cy="148" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
           <circle cx="70" cy="148" r="4" fill="#ffd600"/>
           <g transform="rotate(-52 70 148)">
             <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <line x1="54" y1="118" x2="86" y2="118" stroke="#ffd600" stroke-width="0.7" opacity="0.4"/>
           </g>
           <circle cx="110" cy="72" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
           <circle cx="110" cy="72" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
@@ -371,7 +258,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
             <circle cx="168" cy="36" r="2.5" fill="#ffd600"/>
           </g>
           <circle cx="24" cy="245" r="4" fill="#ffd600"/>
-          <circle cx="24" cy="245" r="8" fill="none" stroke="#ffd600" stroke-width="0.8" opacity="0.5"/>
         </g>
         <g filter="url(#lgb)">
           <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#ff6a00" stroke-width="2"/>
@@ -381,14 +267,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
           <circle cx="370" cy="200" r="12" fill="none" stroke="#ff6a00" stroke-width="1"/>
           <circle cx="370" cy="200" r="5" fill="#ff6a00" opacity="0.9"/>
           <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#ff6a00" stroke-width="2"/>
-          <line x1="352" y1="178" x2="388" y2="178" stroke="#ff6a00" stroke-width="0.8" opacity="0.4"/>
-          <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
           <circle cx="370" cy="148" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
           <circle cx="370" cy="148" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
           <circle cx="370" cy="148" r="4" fill="#ff6a00"/>
           <g transform="rotate(52 370 148)">
             <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <line x1="354" y1="118" x2="386" y2="118" stroke="#ff6a00" stroke-width="0.7" opacity="0.4"/>
           </g>
           <circle cx="330" cy="72" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
           <circle cx="330" cy="72" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
@@ -407,7 +290,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
             <circle cx="272" cy="36" r="2.5" fill="#ff6a00"/>
           </g>
           <circle cx="416" cy="245" r="4" fill="#ff6a00"/>
-          <circle cx="416" cy="245" r="8" fill="none" stroke="#ff6a00" stroke-width="0.8" opacity="0.5"/>
         </g>
         <g filter="url(#lgg)">
           <circle cx="220" cy="29" r="5" fill="#ff2200"/>
@@ -421,7 +303,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha do host" onkeydown="if(event.key==='Enter')tryLogin()">
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
     <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
@@ -434,105 +316,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:8px">
       <button class="btn-menu" id="btnMenu" onclick="toggleSidebar()">☰</button>
-      <div class="brand" style="display:flex;align-items:center;gap:10px">
-        <svg width="64" height="38" viewBox="0 0 440 280" style="flex-shrink:0">
-          <defs>
-            <filter id="gn"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="gb"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <rect width="440" height="280" fill="#04070d"/>
-          <!-- robô esquerdo verde wireframe -->
-          <g filter="url(#gn)">
-            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
-            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
-            <circle cx="70" cy="200" r="20" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <circle cx="70" cy="200" r="12" fill="none" stroke="#00e87a" stroke-width="1"/>
-            <circle cx="70" cy="200" r="5" fill="#00e87a" opacity="0.9"/>
-            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <line x1="52" y1="178" x2="88" y2="178" stroke="#00e87a" stroke-width="0.8" opacity="0.4"/>
-            <rect x="60" y="162" width="20" height="28" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
-            <circle cx="70" cy="148" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <circle cx="70" cy="148" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
-            <circle cx="70" cy="148" r="4" fill="#00e87a"/>
-            <g transform="rotate(-52 70 148)">
-              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#00e87a" stroke-width="2"/>
-              <line x1="54" y1="118" x2="86" y2="118" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
-              <rect x="60" y="88" width="20" height="36" rx="2" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
-            </g>
-            <circle cx="110" cy="72" r="18" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <circle cx="110" cy="72" r="10" fill="none" stroke="#00e87a" stroke-width="1.2"/>
-            <circle cx="110" cy="72" r="4" fill="#00e87a"/>
-            <g transform="rotate(20 110 72)">
-              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#00e87a" stroke-width="2"/>
-              <line x1="96" y1="50" x2="124" y2="50" stroke="#00e87a" stroke-width="0.7" opacity="0.4"/>
-            </g>
-            <circle cx="128" cy="34" r="14" fill="none" stroke="#00e87a" stroke-width="2"/>
-            <circle cx="128" cy="34" r="8" fill="none" stroke="#00e87a" stroke-width="1.2"/>
-            <circle cx="128" cy="34" r="3" fill="#00e87a"/>
-            <g transform="rotate(8 128 34)">
-              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
-              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
-              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#00e87a" stroke-width="1.5"/>
-              <circle cx="168" cy="22" r="2.5" fill="#00e87a"/>
-              <circle cx="168" cy="36" r="2.5" fill="#00e87a"/>
-            </g>
-            <circle cx="24" cy="245" r="4" fill="#00e87a"/>
-            <circle cx="24" cy="245" r="8" fill="none" stroke="#00e87a" stroke-width="0.8" opacity="0.5"/>
-          </g>
-          <!-- robô direito azul wireframe -->
-          <g filter="url(#gb)">
-            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
-            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
-            <circle cx="370" cy="200" r="20" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <circle cx="370" cy="200" r="12" fill="none" stroke="#3d9eff" stroke-width="1"/>
-            <circle cx="370" cy="200" r="5" fill="#3d9eff" opacity="0.9"/>
-            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <line x1="352" y1="178" x2="388" y2="178" stroke="#3d9eff" stroke-width="0.8" opacity="0.4"/>
-            <rect x="360" y="162" width="20" height="28" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
-            <circle cx="370" cy="148" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <circle cx="370" cy="148" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
-            <circle cx="370" cy="148" r="4" fill="#3d9eff"/>
-            <g transform="rotate(52 370 148)">
-              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#3d9eff" stroke-width="2"/>
-              <line x1="354" y1="118" x2="386" y2="118" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
-              <rect x="360" y="88" width="20" height="36" rx="2" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
-            </g>
-            <circle cx="330" cy="72" r="18" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <circle cx="330" cy="72" r="10" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
-            <circle cx="330" cy="72" r="4" fill="#3d9eff"/>
-            <g transform="rotate(-20 330 72)">
-              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#3d9eff" stroke-width="2"/>
-              <line x1="312" y1="50" x2="340" y2="50" stroke="#3d9eff" stroke-width="0.7" opacity="0.4"/>
-            </g>
-            <circle cx="312" cy="34" r="14" fill="none" stroke="#3d9eff" stroke-width="2"/>
-            <circle cx="312" cy="34" r="8" fill="none" stroke="#3d9eff" stroke-width="1.2"/>
-            <circle cx="312" cy="34" r="3" fill="#3d9eff"/>
-            <g transform="rotate(-8 312 34)">
-              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
-              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
-              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#3d9eff" stroke-width="1.5"/>
-              <circle cx="272" cy="22" r="2.5" fill="#3d9eff"/>
-              <circle cx="272" cy="36" r="2.5" fill="#3d9eff"/>
-            </g>
-            <circle cx="416" cy="245" r="4" fill="#3d9eff"/>
-            <circle cx="416" cy="245" r="8" fill="none" stroke="#3d9eff" stroke-width="0.8" opacity="0.5"/>
-          </g>
-          <!-- faísca -->
-          <g filter="url(#gg)">
-            <circle cx="220" cy="29" r="5" fill="#ffb300"/>
-            <line x1="220" y1="23" x2="220" y2="13" stroke="#ffb300" stroke-width="2.5"/>
-            <line x1="215" y1="25" x2="207" y2="16" stroke="#ffb300" stroke-width="2"/>
-            <line x1="225" y1="25" x2="233" y2="16" stroke="#ffb300" stroke-width="2"/>
-            <line x1="212" y1="29" x2="202" y2="29" stroke="#ffb300" stroke-width="2"/>
-            <line x1="228" y1="29" x2="238" y2="29" stroke="#ffb300" stroke-width="2"/>
-          </g>
-        </svg>
-        <div>
-          <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:0.1em;line-height:1">CÉLULAS <span style="color:#00e87a">ROBÓTICAS</span></div>
-          <div style="font-size:8px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase">Monitor Industrial</div>
+      <div class="brand">⬡ CÉLULAS <span>ROBÓTICAS</span></div>
         </div>
       </div>
           <!-- robô esquerdo verde -->
@@ -615,8 +399,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
+      <span id="newDataBadge" onclick="recarregarDados()" title="Clique para atualizar" style="display:none;cursor:pointer;background:#ff6a00;color:#fff;font-size:10px;padding:3px 10px;border-radius:99px;font-weight:700;animation:pisca 1s infinite">🔔 Dados novos — clique aqui</span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
+      <button id="btnRestore" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none;background:#ff6a00" onclick="restaurarDados()" title="Restaurar dados padrão">🔄 Restaurar</button>
       <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
       <button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="doLogout()">Sair</button>
@@ -695,8 +481,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
-const API_KEY  = "$2a$10$.tD0D3F.uxd8YaXSSPIEc.egcUu41lFvxbhMzTsOVhLL9eBnsZ2xa";
-const BIN_ID   = "6a1799f1ddf5aa59f76e2199";
+const API_KEY  = "$2a$10$Hun0m.vWkzm.Tgj7jX4ZeeTVIRmLdFSIqFVJhYsYqq6ex4d43vDOW";
+const BIN_ID   = "6a27464ff5f4af5e29ce2ba0";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -710,6 +496,22 @@ let _backupBinId = "";
 
 async function backupToSheets(data) {
   // backup silencioso — não faz nada, o JSONBin principal já é o backup
+}
+
+async function restaurarDados(){
+  if(!confirm("Restaurar todos os dados? Isso vai sobrescrever o conteúdo atual.")) return;
+  celulas = JSON.parse(JSON.stringify(defaultData));
+  await saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  showToast("Dados restaurados ✓");
+}
+
+function recarregarDados(){
+  const badge = document.getElementById("newDataBadge");
+  if(badge) badge.style.display = "none";
+  renderDetail();
+  showToast("Tela atualizada ✓");
 }
 
 function baixarBackupLocal() {
@@ -735,9 +537,23 @@ const HORAS_CAFE  = ["10:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 const defaultData = {
-  "01": { nome:"Célula Robótica 01", status:"Produzindo", cliente:"Tampa Lateral Esquerda", peca:"Tampa Lateral Esquerda", codigo_peca:"TL-4821-E", img_peca:"", eletrodo:"E6013 - 3,25mm", tipo_eletrodo:"Revestido Rutílico", tempo_peca:"4min 32s", meta_hora:15, operador:"Carlos Mendes", turno:"Manhã (06:00–14:00)", tempo_solda:"4min 32s", corrente:"130A", pre_pressao:"2.5 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] },
-  "02": { nome:"Célula Robótica 02", status:"Manutenção", cliente:"Suporte de Chassi", peca:"Suporte de Chassi", codigo_peca:"SC-2290-F", img_peca:"", eletrodo:"E7018 - 4,0mm", tipo_eletrodo:"Revestido Básico", tempo_peca:"—", meta_hora:0, operador:"Ana Paula", turno:"Manhã (06:00–14:00)", tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"—", alertas:["Parada para troca de eletrodo"] },
-  "03": { nome:"Célula Robótica 03", status:"Produzindo", cliente:"Braço Oscilante Dianteiro", peca:"Braço Oscilante Dianteiro", codigo_peca:"BO-7734-D", img_peca:"", eletrodo:"ER70S-6 - 1,2mm (MIG)", tipo_eletrodo:"Arame Sólido MIG/MAG", tempo_peca:"7min 18s", meta_hora:8, operador:"Roberto Lima", turno:"Tarde (14:00–22:00)", tempo_solda:"7min 18s", corrente:"180A", pre_pressao:"3.0 bar", pontos_solda:"—", ultima_troca:"—", alertas:[] }
+  "10": {"nome": "Relatorio mensal","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": []},
+  "600": {"nome": "Robo Fanuc 600","status": "Produzindo","peca": "—","codigo_peca": "— 50698","eletrodo": " Reto","tipo_eletrodo": " COBRE DURO","tempo_peca": "45s","operador": "— Eduardo Botelho ","turno": "— manha 07:00 as 17:00","corrente": "3,40Ka","ultima_troca": "04/06/2026, 10:05","alertas": [],"membro1": "— MAGNO","membro2": "—ERIVELTON","membro3": "—MARCOS","tempo_solda": "125","pre_pressao": "120","meta_hora": 50,"cliente": "— Mueller","pontos_solda": "13 pontos","img_peca": "","historico_eletrodo": [{"data": "04/06/2026, 10:05","eletrodo": " Reto","tipo": " COBRE DURO"}]},
+  "601": {"nome": "Robo Fanuc 601","status": "Aguardando","cliente": "MUELLER","peca": "—","codigo_peca": "63102","img_peca": "","eletrodo": "RETO ","tipo_eletrodo": "COBRE DURO","tempo_peca": "55S","meta_hora": 50,"operador": "EDUARDO BOTELHO","turno": "MANHA 07:00 AS 17:00 ","tempo_solda": "110","corrente": "3,30KA","pre_pressao": "110","pontos_solda": "16 PONTOS","ultima_troca": "08/06/2026, 13:29","alertas": [],"historico_eletrodo": [{"data": "08/06/2026, 13:29","eletrodo": "RETO ","tipo": "COBRE DURO"}],"membro1": "CAROL","membro2": "FABIANA","membro3": ""},
+  "602": {"nome": "Robo Fanuc 602","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "603": {"nome": "Robo Fanuc 603","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "604": {"nome": "Robo Fanuc 604","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "605": {"nome": "Robo kuka 605","status": "Produzindo","peca": "—Esmaltec","codigo_peca": "—3689","eletrodo": "—reto","tipo_eletrodo": "—revestido cobre","tempo_peca": "—15 segundos","operador": "— Eduardo botelho","turno": "—manha","corrente": "—2.80","ultima_troca": "—22/05/26","alertas": ["Novo alerta pequeno vazamento de ar na PINÇA"],"meta_hora": 65,"img_peca": "","tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "606": {"nome": "Robo kuka 606","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "607": {"nome": "Robo Kuka 607","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "608": {"nome": "Robo Kuka 608","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "609": {"nome": "Robo Kuka 609","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "610": {"nome": "Robo Kuka 610","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "611": {"nome": "Robo Kuka 611","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
+  "01": {"nome": "Produção Mensal","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"ano_selecionado": 2026,"mes_selecionado": 5,"producao_meses": {"2026_4": {"1": 0,"2": 0,"3": 0,"4": 0,"5": 0,"6": 0,"7": 0,"8": 0},"2026_5": {"1": 4454,"2": 4823,"3": 4648,"4": 3924,"5": 0,"6": 0,"7": 0,"8": 835}}},
+  "02": {"nome": "Meta diaria","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"metas_dia": 8,"metas_mes": 5,"metas_dias": {"2026_5_1": {"600": {"meta": "45","cod": "50698","h0800": "45","h0900": "48","h1000": "19","h1100": "49","h1200": "36","h1400": "47","h1500": "48","h1600": "41","h1700": "38"},"601": {"meta": "50","cod": "63103","h0800": "50","h0900": "67","h1000": "37"},"603": {"cod": "16211","meta": "65","h0800": "68","h0900": "71","h1000": "38","h1100": "73","h1200": "73","h1300": "50","h1400": "62","h1500": "52","h1600": "70","h1700": "66","h1800": "68","h1900": "65","h2100": "67","h2200": "45"},"604": {"cod": "Pr-69","meta": "40"},"605": {"cod": "3689","meta": "65","h0800": "52","h0900": "50","h1000": "23","h1400": "72","h1500": "68","h1600": "51","h1700": "71"},"606": {"cod": "14082","meta": "70","h0800": "57","h0900": "64","h1000": "36","h1100": "41","h1200": "40","h1400": "52","h1500": "43","h1600": "75","h1700": "67"},"607": {"cod": "13951","meta": "50","h1100": "60","h1200": "43","h1300": "34","h1400": "70","h1500": "50","h1600": "45","h1700": "45","h1800": "39","h1900": "36","h2100": "35","h2200": "25"},"608": {"cod": "14083","meta": "70","h1100": "70","h1200": "30","h1400": "41","h1500": "21","h1600": "32","h1700": "31"},"609": {"cod": "1083","meta": "60","h1400": "57","h1500": "42","h1600": "40","h1700": "51"},"610": {"cod": "16211","meta": "65","h0800": "58","h0900": "50","h1000": "14","h1100": "68","h1200": "50","h1300": "56","h1400": "91","h1500": "70","h1600": "70","h1700": "57","h1800": "44","h1900": "41","h2100": "65","h2200": "38"},"611": {"cod": "3689","meta": "65","h0800": "73","h0900": "75","h1000": "30","h1100": "70","h1200": "68","h1400": "60","h1500": "25","h1600": "71","h1700": "58"}},"2026_5_2": {"600": {"meta": "45","cod": "50698","h0800": "42","h0900": "48","h1000": "20","h1100": "52","h1200": "31","h1400": "50","h1500": "32","h1600": "47","h1700": "35"},"601": {"meta": "50","cod": "63102","h1100": "55","h1200": "40","h1300": "27","h1400": "38","h1500": "34","h1600": "53","h1700": "40"},"603": {"cod": "16211","meta": "65","h0800": "76","h0900": "82","h1000": "30","h1100": "75","h1200": "62","h1300": "60","h1400": "67","h1500": "60","h1600": "81","h1700": "71","h1800": "50","h1900": "37","h2100": "68","h2200": "40"},"604": {"cod": "Pr-69","meta": "40","h1400": "53","h1500": "28","h1600": "22","h1700": "23"},"605": {"cod": "3689","meta": "65","h1000": "15","h1400": "73","h1500": "60","h1600": "82","h1700": "65"},"606": {"cod": "14082","meta": "70","h0800": "80","h0900": "71","h1000": "37","h1100": "47","h1200": "32","h1400": "60"},"607": {"cod": "13951","meta": "50","h0800": "50","h0900": "51","h1000": "29","h1100": "73","h1200": "56","h1400": "43","h1500": "45","h1600": "51","h1700": "38","h1800": "46","h1900": "36","h2100": "28","h2200": "22"},"608": {"cod": "14083","meta": "70","h0800": "60","h0900": "48","h1000": "25","h1100": "70","h1200": "40","h1400": "42","h1500": "33","h1600": "31","h1700": "25"},"609": {"cod": "1083","meta": "60","h1400": "51","h1500": "47","h1600": "70","h1700": "51"},"610": {"cod": "16211","meta": "65","h0800": "77","h0900": "70","h1000": "30","h1100": "78","h1200": "78","h1300": "33","h1400": "60","h1500": "70","h1600": "60","h1700": "58","h1800": "77","h1900": "53","h2100": "75","h2200": "65"},"611": {"cod": "3689","meta": "65","h0800": "68","h0900": "77","h1000": "33","h1100": "67","h1200": "46","h1400": "56","h1500": "60","h1600": "65","h1700": "55"}},"2026_5_3": {"600": {"cod": "50698","meta": "45","h0800": "42","h1200": "151","h1400": "50","h1500": "30","h1600": "50","h1700": "34"},"601": {"cod": "63102","meta": "50","h0800": "51","h1200": "146","h1400": "48","h1500": "31","h1600": "40","h1700": "27"},"603": {"cod": "16211","meta": "65","h0800": "68","h1200": "215","h1300": "50","h1400": "75","h1500": "37","h1600": "66","h1700": "36","h1800": "71","h1900": "68","h2100": "70","h2200": "52"},"604": {"cod": "Pr-69","meta": "40","h1200": "30","h1400": "36","h1500": "31","h1600": "28","h1700": "20"},"605": {"cod": "3689","meta": "65","h0800": "78","h1200": "170","h1400": "50"},"606": {"cod": "14082","meta": "70","h1200": "111","h1400": "52","h1500": "44","h1600": "70","h1700": "62"},"607": {"cod": "13951","meta": "50","h0800": "61","h1200": "137","h1500": "56","h1600": "62","h1700": "56","h1800": "33","h1900": "22","h2100": "57","h2200": "30"},"608": {"cod": "14083","meta": "70","h0800": "55","h1200": "141","h1300": "19","h1400": "50","h1500": "28","h1600": "32","h1700": "21"},"609": {"cod": "1083","meta": "60","h1400": "40","h1500": "46","h1600": "46","h1700": "55"},"610": {"cod": "16211","meta": "65","h0800": "81","h1200": "233","h1300": "40","h1400": "73","h1500": "65","h1600": "50","h1700": "71","h1800": "51","h1900": "48","h2100": "60","h2200": "61"},"611": {"cod": "3689","meta": "65","h0800": "54","h1200": "200","h1400": "65","h1500": "53","h1600": "61","h1700": "45"}},"2026_5_4": {"600": {"meta": "45","cod": "50698","h0800": "45","h0900": "43","h1000": "22","h1100": "50","h1200": "32","h1400": "47","h1500": "41","h1600": "38"},"601": {"cod": "63102","meta": "50","h0800": "44","h0900": "36","h1000": "35","h1100": "53","h1200": "50","h1400": "50","h1500": "50","h1600": "35"},"602": {"cod": "50697","meta": "45","h0800": "0","h0900": "0","h1000": "0","h1100": "0"},"603": {"cod": "16211","meta": "65","h0800": "65","h0900": "67","h1000": "35","h1100": "71","h1200": "67","h1300": "65","h1400": "40","h1500": "67","h1600": "45","h1700": "71","h1800": "75","h1900": "65","h2100": "65"},"604": {"cod": "Pr-69","meta": "40","h1300": "45","h1400": "32","h1500": "38","h1600": "19"},"606": {"cod": "14082","meta": "70","h0800": "72","h0900": "70","h1000": "41","h1100": "43","h1200": "33","h1400": "42","h1500": "70","h1600": "52"},"607": {"cod": "13951","meta": "50","h0800": "45","h0900": "41","h1000": "34","h1100": "47","h1200": "43","h1300": "35","h1400": "54","h1500": "32","h1600": "35","h1700": "55","h1800": "43","h1900": "28","h2100": "30"},"608": {"cod": "14083","meta": "70","h1400": "70","h1500": "50","h1600": "41"},"610": {"cod": "16211","meta": "65","h0800": "58","h0900": "56","h1000": "47","h1100": "65","h1200": "68","h1300": "45","h1400": "80","h1500": "73","h1600": "73","h1700": "47","h1800": "47","h1900": "56","h2100": "50"},"611": {"cod": "3689","meta": "65","h0800": "68","h0900": "72","h1000": "35","h1100": "59","h1200": "65","h1400": "51","h1500": "56","h1600": "44"}},"2026_5_8": {"600": {"cod": "50698","meta": "45","h0800": "31","h0900": "47"},"601": {"cod": "63102","meta": "50","h0800": "50","h0900": "57"},"602": {"cod": "50697","meta": "45","h0800": "0","h0900": "0"},"603": {"cod": "16211","meta": "65","h0800": "67","h0900": "70"},"604": {"cod": "Pr-69","meta": "40","h0800": "0","h0900": "0"},"605": {"cod": "3799","meta": "80","h0800": "0","h0900": "0"},"606": {"cod": "14082","meta": "70","h0800": "71","h0900": "70"},"607": {"cod": "13951","meta": "50","h0800": "52","h0900": "45"},"608": {"cod": "14083","meta": "70","h0800": "0","h0900": "0"},"609": {"cod": "1083","meta": "60","h0800": "0","h0900": "0"},"610": {"cod": "16211","meta": "65","h0800": "74","h0900": "72"},"611": {"cod": "3689","meta": "65","h0800": "56","h0900": "73"}}}},
+  "03": {"nome": "Produçao por peça","status": "Aguardando","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"peca_mes": 5},
+  "00": {"nome": "Armario de Gabaritos","tipo_celula": "armario","status": "Aguardando","img_peca": "","meta_hora": 0,"alertas": [],"espacos": {"1": {"gabarito": "— pr89","status": "Ocupado"},"2": {"gabarito": "PR-073 PR-084 1090 1089 ","status": "Ocupado"},"3": {"gabarito": "PR-070 PR-87 PR-090 ","status": "Ocupado"},"4": {"gabarito": "PR-056 1083 63103","status": "Ocupado"},"5": {"gabarito": "PR-062 PR-46 PR-072 ","status": "Ocupado"},"6": {"gabarito": "","status": "Ocupado"},"7": {"gabarito": "BRASLAR 13952","status": "Ocupado"},"8": {"gabarito": "PR-040 PR-145","status": "Ocupado"},"9": {"gabarito": "13436 4850 PR-016","status": "Ocupado"},"10": {"gabarito": "15744 15742","status": "Ocupado"},"11": {"gabarito": "PROTOTIPO","status": "Ocupado"},"12": {"gabarito": "","status": "Ocupado"},"13": {"gabarito": "50698","status": "Ocupado"},"14": {"gabarito": "3615 PR-016","status": "Ocupado"},"15": {"gabarito": "3798","status": "Ocupado"},"16": {"gabarito": "15744","status": "Ocupado"},"17": {"gabarito": "PR-060","status": "Ocupado"},"18": {"gabarito": "PROTOTIPOS","status": "Ocupado"}}}
 };
 
 const SC = {
@@ -755,6 +571,7 @@ function getCellTipo(k) {
   if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
   if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
   if (n.includes('meta')) return 'metas';
+  if (n.includes('cadastro')&&n.includes('pe')) return 'cadastro_pecas';
   return 'robo';
 }
 
@@ -813,16 +630,23 @@ async function loadFromAPI(){
   try{
     const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0)celulas=d.record;
+    if(d.record&&Object.keys(d.record).length>0){
+      const anterior = JSON.stringify(celulas);
+      const novo = JSON.stringify(d.record);
+      if(anterior && anterior !== '{}' && novo !== anterior){
+        // tem dado novo — mostra indicador
+        const badge = document.getElementById("newDataBadge");
+        if(badge) badge.style.display = "inline-block";
+      }
+      celulas=d.record;
+    }
     else{celulas=defaultData;await saveToAPI(celulas);}
-  }catch(e){celulas=defaultData;}
+  }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
-  else {
-    // só rerenderiza painéis especiais (metas, prod mensal, etc)
-    // células de robô NÃO são rerenderizadas pelo poll para evitar scroll bug
-    const tipo = getCellTipo(selected);
-    if(tipo !== 'robo') renderDetail();
+  else{
+    const tipo=getCellTipo(selected);
+    if(tipo!=='robo')renderDetail();
   }
 }
 
@@ -853,12 +677,12 @@ function renderSidebar(){
   document.getElementById("cellCount").textContent="Células ("+keys.length+")";
 
   // Separa painéis e robôs
-  const paineis = keys.filter(k=>getCellTipo(k)!=='robo');
+  const paineis = keys.filter(k=>getCellTipo(k)!=='robo' && (getCellTipo(k)!=='cadastro_pecas' || isAdmin));
   const robos   = keys.filter(k=>getCellTipo(k)==='robo');
   const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
   const robosRestantes = robos.length-1;
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
 
   function itemHTML(k){
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
@@ -1136,6 +960,7 @@ function renderMetasDiaria(){
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
+        ${isAdmin?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="copiarDiaAnterior('${selected}')">📋 Copiar dia anterior</button>`:""}
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
@@ -1466,6 +1291,7 @@ function renderDetail(){
   if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
+  if(tipo==='cadastro_pecas'){renderCadastroPecas();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -1477,9 +1303,13 @@ function renderDetail(){
   const ritmo=calcRitmo(c.meta_hora,c.tempo_peca);
   const imgSrc=c.img_peca||"";
   const imgBlock=imgSrc
-    ?`<img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
-      ${isAdmin?`<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕ Remover</button></div>`:''}`
-    :`<div class="img-placeholder">${isAdmin?'📷<br>Clique para<br>enviar':'—'}</div>`;
+    ?`<div class="img-upload-box" ${isAdmin?`onclick="document.getElementById('imgInput').click()"`:''}>
+        <img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
+        ${isAdmin?`<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕</button></div>`:''}
+      </div>`
+    :`<div class="img-upload-box" ${isAdmin?`onclick="document.getElementById('imgInput').click()"`:''}>
+        <div class="img-placeholder">${isAdmin?'📷<br>Enviar':'—'}</div>
+      </div>`;
 
   document.getElementById("mainPanel").innerHTML=`
   <div>
@@ -1498,7 +1328,7 @@ function renderDetail(){
     <div class="section"><div class="sec-title">◈ Peça em Produção</div>
       <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
         <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
-        <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
+        <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
         <div class="field"><label>Imagem da peça</label>
           <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
         </div>
@@ -2021,6 +1851,7 @@ function startApp(){
     document.getElementById("btnXlsx").style.display="inline-block";
     document.getElementById("btnBackup").style.display="inline-block";
     document.getElementById("btnGerenciar").style.display="inline-block";
+    document.getElementById("btnRestore").style.display="inline-block";
   } else if(isAdminMetas){
     document.getElementById("modeBadge").textContent="📋 Metas";
     document.getElementById("modeBadge").className="badge badge-metas";
@@ -2037,7 +1868,7 @@ function startApp(){
       renderDetail();
     }
   });
-  pollTimer=setInterval(loadFromAPI,6000);
+  pollTimer=setInterval(loadFromAPI,300000);
 }
 function doLogout(){
   clearInterval(pollTimer);
@@ -2240,6 +2071,307 @@ function exportarPDFDia() {
   win.document.close();
 }
 
+function copiarDiaAnterior(key){
+  const c = celulas[key];
+  const ano = c.metas_ano || new Date().getFullYear();
+  const mes = c.metas_mes !== undefined ? c.metas_mes : new Date().getMonth();
+  const dia = c.metas_dia || new Date().getDate();
+
+  // Encontra o dia anterior com dados
+  let diaAnt = dia - 1;
+  let mesAnt = mes;
+  let anoAnt = ano;
+  if(diaAnt < 1){
+    mesAnt = mes - 1;
+    if(mesAnt < 0){ mesAnt = 11; anoAnt = ano - 1; }
+    diaAnt = new Date(anoAnt, mesAnt + 1, 0).getDate();
+  }
+
+  // Procura o dia anterior mais recente com dados
+  let chaveAnt = null;
+  let dadosAnt = null;
+  for(let d = diaAnt; d >= 1; d--){
+    const ch = `${anoAnt}_${mesAnt}_${d}`;
+    if(c.metas_dias && c.metas_dias[ch] && Object.keys(c.metas_dias[ch]).length > 0){
+      chaveAnt = ch;
+      dadosAnt = c.metas_dias[ch];
+      break;
+    }
+  }
+
+  if(!dadosAnt){
+    showToast("Nenhum dia anterior encontrado!", true);
+    return;
+  }
+
+  const chaveAtual = `${ano}_${mes}_${dia}`;
+  if(!celulas[key].metas_dias) celulas[key].metas_dias = {};
+  if(!celulas[key].metas_dias[chaveAtual]) celulas[key].metas_dias[chaveAtual] = {};
+
+  // Copia só cod e meta — não copia as horas
+  ROBOS.forEach(robo => {
+    const ant = dadosAnt[robo] || {};
+    if(ant.cod || ant.meta){
+      if(!celulas[key].metas_dias[chaveAtual][robo]) celulas[key].metas_dias[chaveAtual][robo] = {};
+      if(ant.cod) celulas[key].metas_dias[chaveAtual][robo].cod  = ant.cod;
+      if(ant.meta) celulas[key].metas_dias[chaveAtual][robo].meta = ant.meta;
+    }
+  });
+
+  saveToAPI(celulas);
+  renderMetasDiaria();
+  showToast("Códigos e metas copiados ✓");
+}
+
+// ── CADASTRO DE PEÇAS ────────────────────────
+function getCadastroPecasKey(){
+  return Object.keys(celulas).find(k=>getCellTipo(k)==='cadastro_pecas');
+}
+
+function getPecas(){
+  const k = getCadastroPecasKey();
+  if(!k) return {};
+  return celulas[k].pecas || {};
+}
+
+function renderCadastroPecas(){
+  const c = celulas[selected];
+  const pecas = c.pecas || {};
+  const lista = Object.entries(pecas).sort((a,b)=>a[0].localeCompare(b[0]));
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🔧 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Cadastre peças para preenchimento automático nos robôs</div>
+      </div>
+      ${isAdmin?`<div style="display:flex;gap:8px">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:11px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="abrirModalNovaPeca()">+ Nova Peça</button>
+        <button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>
+      </div>`:""}
+    </div>
+
+    ${lista.length===0?`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">Nenhuma peça cadastrada ainda.<br><span style="font-size:11px;color:#1e2530">Clique em "+ Nova Peça" para começar.</span></div>`
+    :`<div style="display:flex;flex-direction:column;gap:10px">
+      ${lista.map(([cod,p])=>`
+        <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          ${p.img?`<img src="${p.img}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f;cursor:pointer" onclick="openLightbox('${p.img}')">`
+                 :`<div style="width:56px;height:56px;border-radius:8px;border:1px solid #1e2530;background:#080b0f;display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>`}
+          <div style="flex:1;min-width:150px">
+            <div style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+            <div style="font-size:12px;color:#d8dde6;margin-top:2px">${esc(p.nome||'—')}</div>
+            <div style="font-size:11px;color:#4a5568;margin-top:2px">${esc(p.cliente||'—')}</div>
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            ${p.tempo_peca?`<div style="font-size:11px;color:#4a5568">⏱ <b style="color:#d8dde6">${esc(p.tempo_peca)}</b></div>`:''}
+            ${p.meta_hora?`<div style="font-size:11px;color:#4a5568">🎯 <b style="color:#00e87a">${p.meta_hora}/h</b></div>`:''}
+            ${p.corrente?`<div style="font-size:11px;color:#4a5568">⚡ <b style="color:#d8dde6">${esc(p.corrente)}</b></div>`:''}
+            ${p.pontos_solda?`<div style="font-size:11px;color:#4a5568">● <b style="color:#d8dde6">${esc(p.pontos_solda)}</b></div>`:''}
+          </div>
+          ${isAdmin?`<div style="display:flex;gap:6px;margin-left:auto">
+            <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+            <button class="btn btn-red" style="padding:4px 8px;font-size:10px" onclick="excluirPeca('${esc(cod)}')">🗑</button>
+          </div>`:''}
+        </div>
+      `).join('')}
+    </div>`}
+
+    <!-- Modal nova/editar peça -->
+    <div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:999;align-items:center;justify-content:center">
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
+        <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+        </div>
+        <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
+            <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
+            <button class="btn btn-gray" style="padding:5px 8px;font-size:11px" id="btnRemovePecaImg" onclick="removerImgPecaCad()" style="display:none">✕</button>
+          </div>
+          <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
+          <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let _pecaImgTemp = "";
+let _pecaCodEditando = "";
+
+function abrirModalNovaPeca(){
+  _pecaCodEditando = "";
+  _pecaImgTemp = "";
+  document.getElementById("modalPecaTitulo").textContent = "Nova Peça";
+  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel"].forEach(f=>{
+    const el = document.getElementById("peca_"+f);
+    if(el) el.value = "";
+  });
+  const prev = document.getElementById("peca_img_preview");
+  if(prev){ prev.src=""; prev.style.display="none"; }
+  document.getElementById("modalPeca").style.display = "flex";
+}
+
+function abrirModalEditarPeca(cod){
+  const pecas = getPecas();
+  const p = pecas[cod] || {};
+  _pecaCodEditando = cod;
+  _pecaImgTemp = p.img || "";
+  document.getElementById("modalPecaTitulo").textContent = "Editar Peça";
+  document.getElementById("peca_cod").value = cod;
+  document.getElementById("peca_nome").value = p.nome||"";
+  document.getElementById("peca_cliente").value = p.cliente||"";
+  document.getElementById("peca_tempo").value = p.tempo_peca||"";
+  document.getElementById("peca_meta").value = p.meta_hora||"";
+  document.getElementById("peca_corrente").value = p.corrente||"";
+  document.getElementById("peca_pre_pressao").value = p.pre_pressao||"";
+  document.getElementById("peca_pontos").value = p.pontos_solda||"";
+  document.getElementById("peca_eletrodo").value = p.tipo_eletrodo||"";
+  document.getElementById("peca_tempo_solda").value = p.tempo_solda||"";
+  document.getElementById("peca_turno").value = p.turno||"";
+  document.getElementById("peca_responsavel").value = p.operador||"";
+  const prev = document.getElementById("peca_img_preview");
+  if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
+  document.getElementById("modalPeca").style.display = "flex";
+}
+
+function fecharModalPeca(){
+  document.getElementById("modalPeca").style.display = "none";
+}
+
+function handlePecaImgUpload(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    _pecaImgTemp = e.target.result;
+    const prev = document.getElementById("peca_img_preview");
+    if(prev){ prev.src=_pecaImgTemp; prev.style.display="block"; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerImgPecaCad(){
+  _pecaImgTemp = "";
+  const prev = document.getElementById("peca_img_preview");
+  if(prev){ prev.src=""; prev.style.display="none"; }
+}
+
+function salvarPeca(){
+  const cod = document.getElementById("peca_cod").value.trim();
+  if(!cod){ showToast("Código obrigatório!", true); return; }
+  const k = getCadastroPecasKey();
+  if(!k){ showToast("Célula de cadastro não encontrada!", true); return; }
+  if(!celulas[k].pecas) celulas[k].pecas = {};
+  // Se editando com código diferente, remove o antigo
+  if(_pecaCodEditando && _pecaCodEditando !== cod) delete celulas[k].pecas[_pecaCodEditando];
+  celulas[k].pecas[cod] = {
+    nome: document.getElementById("peca_nome").value.trim(),
+    cliente: document.getElementById("peca_cliente").value.trim(),
+    tempo_peca: document.getElementById("peca_tempo").value.trim(),
+    meta_hora: parseInt(document.getElementById("peca_meta").value)||0,
+    corrente: document.getElementById("peca_corrente").value.trim(),
+    pre_pressao: document.getElementById("peca_pre_pressao").value.trim(),
+    pontos_solda: document.getElementById("peca_pontos").value.trim(),
+    tipo_eletrodo: document.getElementById("peca_eletrodo").value.trim(),
+    tempo_solda: document.getElementById("peca_tempo_solda").value.trim(),
+    turno: document.getElementById("peca_turno").value.trim(),
+    operador: document.getElementById("peca_responsavel").value.trim(),
+    img: _pecaImgTemp
+  };
+  saveToAPI(celulas);
+  fecharModalPeca();
+  renderCadastroPecas();
+  showToast("Peça salva ✓");
+}
+
+function excluirPeca(cod){
+  if(!confirm("Excluir peça "+cod+"?")) return;
+  const k = getCadastroPecasKey();
+  if(k && celulas[k].pecas) delete celulas[k].pecas[cod];
+  saveToAPI(celulas);
+  renderCadastroPecas();
+  showToast("Peça excluída ✓");
+}
+
+function aplicarPecaNoRobo(cod){
+  if(!selected) return;
+  const pecas = getPecas();
+  const p = pecas[cod];
+  if(!p) return;
+  const c = celulas[selected];
+  c.codigo_peca = cod;
+  if(p.nome) c.peca = p.nome;
+  if(p.cliente) c.cliente = p.cliente;
+  if(p.tempo_peca) c.tempo_peca = p.tempo_peca;
+  if(p.meta_hora) c.meta_hora = p.meta_hora;
+  if(p.corrente) c.corrente = p.corrente;
+  if(p.pre_pressao) c.pre_pressao = p.pre_pressao;
+  if(p.pontos_solda) c.pontos_solda = p.pontos_solda;
+  if(p.tipo_eletrodo) c.tipo_eletrodo = p.tipo_eletrodo;
+  if(p.tempo_solda) c.tempo_solda = p.tempo_solda;
+  if(p.turno) c.turno = p.turno;
+  if(p.operador) c.operador = p.operador;
+  if(p.img) c.img_peca = p.img;
+  saveToAPI(celulas);
+  fecharDropdownPeca();
+  renderDetail();
+  showToast("Peça aplicada ✓");
+}
+
+function abrirDropdownPeca(inputEl){
+  const pecas = getPecas();
+  const cods = Object.keys(pecas).sort();
+  if(cods.length === 0) return;
+  // Remove dropdown anterior
+  const old = document.getElementById("pecaDropdown");
+  if(old) old.remove();
+  const termo = (inputEl.value||'').toLowerCase();
+  const filtrados = cods.filter(c=>c.toLowerCase().includes(termo));
+  if(filtrados.length === 0) return;
+  const rect = inputEl.getBoundingClientRect();
+  const dd = document.createElement("div");
+  dd.id = "pecaDropdown";
+  dd.style.cssText = `position:fixed;top:${rect.bottom+2}px;left:${rect.left}px;width:${rect.width}px;background:#0f1318;border:1px solid #1e2530;border-radius:8px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px #00000080`;
+  dd.innerHTML = filtrados.map(cod=>{
+    const p = pecas[cod];
+    return `<div onclick="aplicarPecaNoRobo('${esc(cod)}')" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e2530" onmouseover="this.style.background='#1e2530'" onmouseout="this.style.background=''">
+      ${p.img?`<img src="${p.img}" style="width:32px;height:32px;object-fit:contain;border-radius:4px;background:#080b0f">`:`<div style="width:32px;height:32px;border-radius:4px;background:#080b0f;display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>`}
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#ffb300">${esc(cod)}</div>
+        <div style="font-size:10px;color:#4a5568">${esc(p.nome||'')} ${p.cliente?'· '+esc(p.cliente):''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.body.appendChild(dd);
+}
+
+function fecharDropdownPeca(){
+  const dd = document.getElementById("pecaDropdown");
+  if(dd) dd.remove();
+}
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#pecaDropdown') && !e.target.closest('.campo-codigo-peca')) fecharDropdownPeca();
+});
+
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
@@ -2264,7 +2396,7 @@ function renomearCelula(key){
 
 async function openGerenciar(){
   const keys = Object.keys(celulas).sort();
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
 
   document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
     const c = celulas[k];
