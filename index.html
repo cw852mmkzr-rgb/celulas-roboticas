@@ -72,7 +72,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
 .status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
 
-.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 80px; height: 80px; cursor: pointer; }
+.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 160px; cursor: pointer; }
 .img-upload-box:hover { border-color: #00e87a40; }
 .img-upload-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .img-upload-box .img-placeholder { font-size: 10px; color: #2a3040; text-align: center; padding: 8px; line-height: 1.6; }
@@ -1301,12 +1301,9 @@ function renderDetail(){
   const ritmo=calcRitmo(c.meta_hora,c.tempo_peca);
   const imgSrc=c.img_peca||"";
   const imgBlock=imgSrc
-    ?`<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div style="font-size:9px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;cursor:pointer" onclick="openLightbox('${imgSrc}')">🔍 Clique para visualizar</div>
-        <div class="img-upload-box" ${isAdmin?`onclick="document.getElementById('imgInput').click()"`:''}>
-          <img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
-          ${isAdmin?`<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕</button></div>`:''}
-        </div>
+    ?`<div class="img-upload-box" ${isAdmin?`onclick="document.getElementById('imgInput').click()"`:''}>
+        <img src="${imgSrc}" alt="peça" onclick="event.stopPropagation();openLightbox('${imgSrc}')" style="width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in">
+        ${isAdmin?`<div class="img-overlay"><span>📷 Trocar</span><button onclick="event.stopPropagation();removeImg()" style="background:#ff4d4d;border:none;color:#fff;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">✕</button></div>`:''}
       </div>`
     :`<div class="img-upload-box" ${isAdmin?`onclick="document.getElementById('imgInput').click()"`:''}>
         <div class="img-placeholder">${isAdmin?'📷<br>Enviar':'—'}</div>
