@@ -959,6 +959,7 @@ function renderMetasDiaria(){
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
+        ${isAdmin?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="copiarDiaAnterior('${selected}')">📋 Copiar dia anterior</button>`:""}
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
     </div>
@@ -2062,6 +2063,58 @@ function exportarPDFDia() {
   <script>window.onload=()=>window.print();<\/script>
 </body></html>`);
   win.document.close();
+}
+
+function copiarDiaAnterior(key){
+  const c = celulas[key];
+  const ano = c.metas_ano || new Date().getFullYear();
+  const mes = c.metas_mes !== undefined ? c.metas_mes : new Date().getMonth();
+  const dia = c.metas_dia || new Date().getDate();
+
+  // Encontra o dia anterior com dados
+  let diaAnt = dia - 1;
+  let mesAnt = mes;
+  let anoAnt = ano;
+  if(diaAnt < 1){
+    mesAnt = mes - 1;
+    if(mesAnt < 0){ mesAnt = 11; anoAnt = ano - 1; }
+    diaAnt = new Date(anoAnt, mesAnt + 1, 0).getDate();
+  }
+
+  // Procura o dia anterior mais recente com dados
+  let chaveAnt = null;
+  let dadosAnt = null;
+  for(let d = diaAnt; d >= 1; d--){
+    const ch = `${anoAnt}_${mesAnt}_${d}`;
+    if(c.metas_dias && c.metas_dias[ch] && Object.keys(c.metas_dias[ch]).length > 0){
+      chaveAnt = ch;
+      dadosAnt = c.metas_dias[ch];
+      break;
+    }
+  }
+
+  if(!dadosAnt){
+    showToast("Nenhum dia anterior encontrado!", true);
+    return;
+  }
+
+  const chaveAtual = `${ano}_${mes}_${dia}`;
+  if(!celulas[key].metas_dias) celulas[key].metas_dias = {};
+  if(!celulas[key].metas_dias[chaveAtual]) celulas[key].metas_dias[chaveAtual] = {};
+
+  // Copia só cod e meta — não copia as horas
+  ROBOS.forEach(robo => {
+    const ant = dadosAnt[robo] || {};
+    if(ant.cod || ant.meta){
+      if(!celulas[key].metas_dias[chaveAtual][robo]) celulas[key].metas_dias[chaveAtual][robo] = {};
+      if(ant.cod) celulas[key].metas_dias[chaveAtual][robo].cod  = ant.cod;
+      if(ant.meta) celulas[key].metas_dias[chaveAtual][robo].meta = ant.meta;
+    }
+  });
+
+  saveToAPI(celulas);
+  renderMetasDiaria();
+  showToast("Códigos e metas copiados ✓");
 }
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
