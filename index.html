@@ -2191,6 +2191,10 @@ function renderCadastroPecas(){
           <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
           <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
           <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+        </div>
+        <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
         </div>
         <div style="margin-bottom:12px">
           <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
@@ -2217,7 +2221,7 @@ function abrirModalNovaPeca(){
   _pecaCodEditando = "";
   _pecaImgTemp = "";
   document.getElementById("modalPecaTitulo").textContent = "Nova Peça";
-  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo"].forEach(f=>{
+  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel"].forEach(f=>{
     const el = document.getElementById("peca_"+f);
     if(el) el.value = "";
   });
@@ -2241,6 +2245,9 @@ function abrirModalEditarPeca(cod){
   document.getElementById("peca_pre_pressao").value = p.pre_pressao||"";
   document.getElementById("peca_pontos").value = p.pontos_solda||"";
   document.getElementById("peca_eletrodo").value = p.tipo_eletrodo||"";
+  document.getElementById("peca_tempo_solda").value = p.tempo_solda||"";
+  document.getElementById("peca_turno").value = p.turno||"";
+  document.getElementById("peca_responsavel").value = p.operador||"";
   const prev = document.getElementById("peca_img_preview");
   if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
   document.getElementById("modalPeca").style.display = "flex";
@@ -2284,6 +2291,9 @@ function salvarPeca(){
     pre_pressao: document.getElementById("peca_pre_pressao").value.trim(),
     pontos_solda: document.getElementById("peca_pontos").value.trim(),
     tipo_eletrodo: document.getElementById("peca_eletrodo").value.trim(),
+    tempo_solda: document.getElementById("peca_tempo_solda").value.trim(),
+    turno: document.getElementById("peca_turno").value.trim(),
+    operador: document.getElementById("peca_responsavel").value.trim(),
     img: _pecaImgTemp
   };
   saveToAPI(celulas);
@@ -2316,6 +2326,9 @@ function aplicarPecaNoRobo(cod){
   if(p.pre_pressao) c.pre_pressao = p.pre_pressao;
   if(p.pontos_solda) c.pontos_solda = p.pontos_solda;
   if(p.tipo_eletrodo) c.tipo_eletrodo = p.tipo_eletrodo;
+  if(p.tempo_solda) c.tempo_solda = p.tempo_solda;
+  if(p.turno) c.turno = p.turno;
+  if(p.operador) c.operador = p.operador;
   if(p.img) c.img_peca = p.img;
   saveToAPI(celulas);
   fecharDropdownPeca();
