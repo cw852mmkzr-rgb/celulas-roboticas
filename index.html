@@ -571,6 +571,7 @@ function getCellTipo(k) {
   if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
   if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
   if (n.includes('meta')) return 'metas';
+  if (n.includes('cadastro')&&n.includes('pe')) return 'cadastro_pecas';
   return 'robo';
 }
 
@@ -676,12 +677,12 @@ function renderSidebar(){
   document.getElementById("cellCount").textContent="Células ("+keys.length+")";
 
   // Separa painéis e robôs
-  const paineis = keys.filter(k=>getCellTipo(k)!=='robo');
+  const paineis = keys.filter(k=>getCellTipo(k)!=='robo' && (getCellTipo(k)!=='cadastro_pecas' || isAdmin));
   const robos   = keys.filter(k=>getCellTipo(k)==='robo');
   const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
   const robosRestantes = robos.length-1;
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
 
   function itemHTML(k){
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
@@ -1290,6 +1291,7 @@ function renderDetail(){
   if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
+  if(tipo==='cadastro_pecas'){renderCadastroPecas();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -1326,7 +1328,7 @@ function renderDetail(){
     <div class="section"><div class="sec-title">◈ Peça em Produção</div>
       <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
         <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
-        <div class="field"><label>Código</label><input value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)"></div>
+        <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
         <div class="field"><label>Imagem da peça</label>
           <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
         </div>
@@ -2121,6 +2123,242 @@ function copiarDiaAnterior(key){
   showToast("Códigos e metas copiados ✓");
 }
 
+// ── CADASTRO DE PEÇAS ────────────────────────
+function getCadastroPecasKey(){
+  return Object.keys(celulas).find(k=>getCellTipo(k)==='cadastro_pecas');
+}
+
+function getPecas(){
+  const k = getCadastroPecasKey();
+  if(!k) return {};
+  return celulas[k].pecas || {};
+}
+
+function renderCadastroPecas(){
+  const c = celulas[selected];
+  const pecas = c.pecas || {};
+  const lista = Object.entries(pecas).sort((a,b)=>a[0].localeCompare(b[0]));
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🔧 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Cadastre peças para preenchimento automático nos robôs</div>
+      </div>
+      ${isAdmin?`<div style="display:flex;gap:8px">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:11px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="abrirModalNovaPeca()">+ Nova Peça</button>
+        <button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>
+      </div>`:""}
+    </div>
+
+    ${lista.length===0?`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">Nenhuma peça cadastrada ainda.<br><span style="font-size:11px;color:#1e2530">Clique em "+ Nova Peça" para começar.</span></div>`
+    :`<div style="display:flex;flex-direction:column;gap:10px">
+      ${lista.map(([cod,p])=>`
+        <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          ${p.img?`<img src="${p.img}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f;cursor:pointer" onclick="openLightbox('${p.img}')">`
+                 :`<div style="width:56px;height:56px;border-radius:8px;border:1px solid #1e2530;background:#080b0f;display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>`}
+          <div style="flex:1;min-width:150px">
+            <div style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+            <div style="font-size:12px;color:#d8dde6;margin-top:2px">${esc(p.nome||'—')}</div>
+            <div style="font-size:11px;color:#4a5568;margin-top:2px">${esc(p.cliente||'—')}</div>
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            ${p.tempo_peca?`<div style="font-size:11px;color:#4a5568">⏱ <b style="color:#d8dde6">${esc(p.tempo_peca)}</b></div>`:''}
+            ${p.meta_hora?`<div style="font-size:11px;color:#4a5568">🎯 <b style="color:#00e87a">${p.meta_hora}/h</b></div>`:''}
+            ${p.corrente?`<div style="font-size:11px;color:#4a5568">⚡ <b style="color:#d8dde6">${esc(p.corrente)}</b></div>`:''}
+            ${p.pontos_solda?`<div style="font-size:11px;color:#4a5568">● <b style="color:#d8dde6">${esc(p.pontos_solda)}</b></div>`:''}
+          </div>
+          ${isAdmin?`<div style="display:flex;gap:6px;margin-left:auto">
+            <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+            <button class="btn btn-red" style="padding:4px 8px;font-size:10px" onclick="excluirPeca('${esc(cod)}')">🗑</button>
+          </div>`:''}
+        </div>
+      `).join('')}
+    </div>`}
+
+    <!-- Modal nova/editar peça -->
+    <div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:999;align-items:center;justify-content:center">
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
+        <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+          <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
+            <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
+            <button class="btn btn-gray" style="padding:5px 8px;font-size:11px" id="btnRemovePecaImg" onclick="removerImgPecaCad()" style="display:none">✕</button>
+          </div>
+          <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
+          <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+let _pecaImgTemp = "";
+let _pecaCodEditando = "";
+
+function abrirModalNovaPeca(){
+  _pecaCodEditando = "";
+  _pecaImgTemp = "";
+  document.getElementById("modalPecaTitulo").textContent = "Nova Peça";
+  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo"].forEach(f=>{
+    const el = document.getElementById("peca_"+f);
+    if(el) el.value = "";
+  });
+  const prev = document.getElementById("peca_img_preview");
+  if(prev){ prev.src=""; prev.style.display="none"; }
+  document.getElementById("modalPeca").style.display = "flex";
+}
+
+function abrirModalEditarPeca(cod){
+  const pecas = getPecas();
+  const p = pecas[cod] || {};
+  _pecaCodEditando = cod;
+  _pecaImgTemp = p.img || "";
+  document.getElementById("modalPecaTitulo").textContent = "Editar Peça";
+  document.getElementById("peca_cod").value = cod;
+  document.getElementById("peca_nome").value = p.nome||"";
+  document.getElementById("peca_cliente").value = p.cliente||"";
+  document.getElementById("peca_tempo").value = p.tempo_peca||"";
+  document.getElementById("peca_meta").value = p.meta_hora||"";
+  document.getElementById("peca_corrente").value = p.corrente||"";
+  document.getElementById("peca_pre_pressao").value = p.pre_pressao||"";
+  document.getElementById("peca_pontos").value = p.pontos_solda||"";
+  document.getElementById("peca_eletrodo").value = p.tipo_eletrodo||"";
+  const prev = document.getElementById("peca_img_preview");
+  if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
+  document.getElementById("modalPeca").style.display = "flex";
+}
+
+function fecharModalPeca(){
+  document.getElementById("modalPeca").style.display = "none";
+}
+
+function handlePecaImgUpload(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    _pecaImgTemp = e.target.result;
+    const prev = document.getElementById("peca_img_preview");
+    if(prev){ prev.src=_pecaImgTemp; prev.style.display="block"; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerImgPecaCad(){
+  _pecaImgTemp = "";
+  const prev = document.getElementById("peca_img_preview");
+  if(prev){ prev.src=""; prev.style.display="none"; }
+}
+
+function salvarPeca(){
+  const cod = document.getElementById("peca_cod").value.trim();
+  if(!cod){ showToast("Código obrigatório!", true); return; }
+  const k = getCadastroPecasKey();
+  if(!k){ showToast("Célula de cadastro não encontrada!", true); return; }
+  if(!celulas[k].pecas) celulas[k].pecas = {};
+  // Se editando com código diferente, remove o antigo
+  if(_pecaCodEditando && _pecaCodEditando !== cod) delete celulas[k].pecas[_pecaCodEditando];
+  celulas[k].pecas[cod] = {
+    nome: document.getElementById("peca_nome").value.trim(),
+    cliente: document.getElementById("peca_cliente").value.trim(),
+    tempo_peca: document.getElementById("peca_tempo").value.trim(),
+    meta_hora: parseInt(document.getElementById("peca_meta").value)||0,
+    corrente: document.getElementById("peca_corrente").value.trim(),
+    pre_pressao: document.getElementById("peca_pre_pressao").value.trim(),
+    pontos_solda: document.getElementById("peca_pontos").value.trim(),
+    tipo_eletrodo: document.getElementById("peca_eletrodo").value.trim(),
+    img: _pecaImgTemp
+  };
+  saveToAPI(celulas);
+  fecharModalPeca();
+  renderCadastroPecas();
+  showToast("Peça salva ✓");
+}
+
+function excluirPeca(cod){
+  if(!confirm("Excluir peça "+cod+"?")) return;
+  const k = getCadastroPecasKey();
+  if(k && celulas[k].pecas) delete celulas[k].pecas[cod];
+  saveToAPI(celulas);
+  renderCadastroPecas();
+  showToast("Peça excluída ✓");
+}
+
+function aplicarPecaNoRobo(cod){
+  if(!selected) return;
+  const pecas = getPecas();
+  const p = pecas[cod];
+  if(!p) return;
+  const c = celulas[selected];
+  c.codigo_peca = cod;
+  if(p.nome) c.peca = p.nome;
+  if(p.cliente) c.cliente = p.cliente;
+  if(p.tempo_peca) c.tempo_peca = p.tempo_peca;
+  if(p.meta_hora) c.meta_hora = p.meta_hora;
+  if(p.corrente) c.corrente = p.corrente;
+  if(p.pre_pressao) c.pre_pressao = p.pre_pressao;
+  if(p.pontos_solda) c.pontos_solda = p.pontos_solda;
+  if(p.tipo_eletrodo) c.tipo_eletrodo = p.tipo_eletrodo;
+  if(p.img) c.img_peca = p.img;
+  saveToAPI(celulas);
+  fecharDropdownPeca();
+  renderDetail();
+  showToast("Peça aplicada ✓");
+}
+
+function abrirDropdownPeca(inputEl){
+  const pecas = getPecas();
+  const cods = Object.keys(pecas).sort();
+  if(cods.length === 0) return;
+  // Remove dropdown anterior
+  const old = document.getElementById("pecaDropdown");
+  if(old) old.remove();
+  const termo = (inputEl.value||'').toLowerCase();
+  const filtrados = cods.filter(c=>c.toLowerCase().includes(termo));
+  if(filtrados.length === 0) return;
+  const rect = inputEl.getBoundingClientRect();
+  const dd = document.createElement("div");
+  dd.id = "pecaDropdown";
+  dd.style.cssText = `position:fixed;top:${rect.bottom+2}px;left:${rect.left}px;width:${rect.width}px;background:#0f1318;border:1px solid #1e2530;border-radius:8px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px #00000080`;
+  dd.innerHTML = filtrados.map(cod=>{
+    const p = pecas[cod];
+    return `<div onclick="aplicarPecaNoRobo('${esc(cod)}')" style="padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1e2530" onmouseover="this.style.background='#1e2530'" onmouseout="this.style.background=''">
+      ${p.img?`<img src="${p.img}" style="width:32px;height:32px;object-fit:contain;border-radius:4px;background:#080b0f">`:`<div style="width:32px;height:32px;border-radius:4px;background:#080b0f;display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>`}
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#ffb300">${esc(cod)}</div>
+        <div style="font-size:10px;color:#4a5568">${esc(p.nome||'')} ${p.cliente?'· '+esc(p.cliente):''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.body.appendChild(dd);
+}
+
+function fecharDropdownPeca(){
+  const dd = document.getElementById("pecaDropdown");
+  if(dd) dd.remove();
+}
+
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#pecaDropdown') && !e.target.closest('.campo-codigo-peca')) fecharDropdownPeca();
+});
+
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
@@ -2145,7 +2383,7 @@ function renomearCelula(key){
 
 async function openGerenciar(){
   const keys = Object.keys(celulas).sort();
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
 
   document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
     const c = celulas[k];
