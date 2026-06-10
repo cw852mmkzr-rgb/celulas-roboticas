@@ -1934,7 +1934,7 @@ function startDashboard(){
   _dashLoad();
   _dashLoadTimer = setInterval(_dashLoad, 300000);
   _dashClockTimer = setInterval(_dashTickClock, 1000);
-  _dashSlideTimer = setInterval(_dashNextSlide, 10000);
+  _dashSlideTimer = setInterval(_dashNextSlide, 6000);
   _dashTickClock();
 }
 
@@ -1949,14 +1949,12 @@ let _dashIdx=0, _dashGeral=false, _dashRobos=[];
 
 function _dashGetHoraCheia(){
   const h = new Date().getHours();
-  // Mostra hora ANTERIOR — produção já encerrada
-  const horaAnterior = h > 0 ? h - 1 : 0;
-  const s = `${String(horaAnterior).padStart(2,'0')}:00`;
+  const s = `${String(h).padStart(2,'0')}:00`;
   const all = [...HORAS_DIA,...HORAS_NOITE];
-  // Pega a última hora válida antes da atual
+  // Retorna a hora cheia atual se existir, senão a mais próxima anterior
+  if(all.includes(s)) return s;
   for(let i = all.length-1; i >= 0; i--){
-    const hNum = parseInt(all[i].split(':')[0]);
-    if(hNum <= horaAnterior) return all[i];
+    if(parseInt(all[i]) < h) return all[i];
   }
   return all[0];
 }
@@ -1986,7 +1984,7 @@ function _dashNextSlide(){
   if(_dashGeral){
     _dashGeral=false; _dashIdx=0;
     clearInterval(_dashSlideTimer);
-    _dashSlideTimer=setInterval(_dashNextSlide,10000);
+    _dashSlideTimer=setInterval(_dashNextSlide,6000);
   } else {
     _dashIdx++;
     if(_dashIdx>=_dashRobos.length){
@@ -2028,7 +2026,7 @@ function _dashRenderRobo(k){
   const hora=_dashGetHoraCheia();
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
   const bateu=meta>0&&prod>=meta;
-  const cor=prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+  const cor=prod===0&&meta===0?'#4a5568':meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
   const totalDia=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
   const metaDia=meta*9;
   const pct=metaDia>0?Math.min(Math.round(totalDia/metaDia*100),100):0;
@@ -2057,8 +2055,10 @@ function _dashRenderRobo(k){
     <!-- Mensagem -->
     ${prod>0&&meta>0?`
     <div style="font-size:22px;font-weight:900;letter-spacing:0.12em;padding:10px 36px;border-radius:99px;border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">
-      ${bateu?'✅  META ATINGIDA':'❌  META NÃO ATINGIDA'}
-    </div>`:''}
+      ${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}
+    </div>
+    <div style="font-size:14px;color:#4a5568;margin-top:-8px">Produzido: <b style="color:${cor}">${prod}</b> | Meta: <b style="color:#d8dde6">${meta}</b> | Faltou: <b style="color:${cor}">${bateu?0:meta-prod}</b></div>
+    `:''}
 
     <!-- Totais dia -->
     ${totalDia>0||metaDia>0?`
