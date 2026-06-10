@@ -2377,7 +2377,6 @@ document.addEventListener('click', function(e){
 });
 
 function handleMetasInput(key,robo,campo,valor){
-  // Se tem pontos cadastrados, divide automaticamente
   const c = celulas[key];
   const chave = getMetasChave(key);
   if(!c.metas_dias) c.metas_dias={};
@@ -2385,17 +2384,14 @@ function handleMetasInput(key,robo,campo,valor){
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
   const rd = c.metas_dias[chave][robo];
   const pontos = parseInt(rd.pontos)||0;
-  // Se o valor digitado parece ser total de ciclos (grande) e tem pontos definidos
   const numVal = parseInt(valor)||0;
   if(pontos>1 && numVal>0){
     const dividido = Math.round(numVal/pontos);
-    // só divide se o resultado for razoável (entre 1 e 999)
     if(dividido>=1 && dividido<=999 && dividido!==numVal){
       rd[campo] = String(dividido);
-      // atualiza o input na tela
-      const inp = document.getElementById(`inp-${robo}-${campo}`);
-      if(inp) inp.value = dividido;
       saveToAPI(celulas);
+      // rerenderiza para aplicar cores corretas
+      renderMetasDiaria();
       return;
     }
   }
