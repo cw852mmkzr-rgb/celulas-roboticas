@@ -2608,7 +2608,7 @@ function abrirModalNovaPeca(){
   _pecaCodEditando = "";
   _pecaImgTemp = "";
   document.getElementById("modalPecaTitulo").textContent = "Nova Peça";
-  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel"].forEach(f=>{
+  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel","pares_gabarito"].forEach(f=>{
     const el = document.getElementById("peca_"+f);
     if(el) el.value = "";
   });
@@ -2635,6 +2635,7 @@ function abrirModalEditarPeca(cod){
   document.getElementById("peca_tempo_solda").value = p.tempo_solda||"";
   document.getElementById("peca_turno").value = p.turno||"";
   document.getElementById("peca_responsavel").value = p.operador||"";
+  document.getElementById("peca_pares_gabarito").value = p.pares_gabarito||"";
   const prev = document.getElementById("peca_img_preview");
   if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
   document.getElementById("modalPeca").style.display = "flex";
@@ -2681,6 +2682,7 @@ function salvarPeca(){
     tempo_solda: document.getElementById("peca_tempo_solda").value.trim(),
     turno: document.getElementById("peca_turno").value.trim(),
     operador: document.getElementById("peca_responsavel").value.trim(),
+    pares_gabarito: document.getElementById("peca_pares_gabarito").value.trim(),
     img: _pecaImgTemp
   };
   saveToAPI(celulas);
@@ -2803,7 +2805,12 @@ function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
-  const lista = Object.entries(pecas).sort((a,b)=>a[0].localeCompare(b[0]));
+  const lista = Object.entries(pecas).sort((a,b)=>{
+    const ca=(a[1].cliente||'').toLowerCase();
+    const cb=(b[1].cliente||'').toLowerCase();
+    if(ca<cb)return -1; if(ca>cb)return 1;
+    return a[0].localeCompare(b[0]);
+  });
 
   const busca = (c._busca||'').toLowerCase();
   const filtradas = busca ? lista.filter(([cod,p])=>
@@ -2843,12 +2850,18 @@ function renderCatalogoPecas(){
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Código</th>
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Cliente</th>
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Tempo/ciclo</th>
+              <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Pares de Gabarito</th>
               ${isAdmin?`<th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Ações</th>`:''}
             </tr>
           </thead>
           <tbody>
-            ${filtradas.map(([cod,p],i)=>`
-            <tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
+            ${filtradas.map(([cod,p],i)=>{
+              const prevCliente = i>0?(filtradas[i-1][1].cliente||''):'';
+              const curCliente = p.cliente||'';
+              const novoGrupo = curCliente !== prevCliente;
+              return `
+              ${novoGrupo?`<tr style="background:#080b0f"><td colspan="${isAdmin?5:4}" style="padding:8px 14px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-bottom:1px solid #ffb30030">${esc(curCliente||'Sem cliente')}</td></tr>`:''}
+              <tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
               <td style="padding:10px 14px">
                 <span style="font-size:15px;font-weight:900;color:#ffb300">${esc(cod)}</span>
               </td>
@@ -2856,13 +2869,17 @@ function renderCatalogoPecas(){
               <td style="padding:10px 14px;text-align:center">
                 <span style="font-size:13px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span>
               </td>
+              <td style="padding:10px 14px;text-align:center">
+                <span style="font-size:13px;font-weight:700;color:#a78bfa">${esc(p.pares_gabarito||'—')}</span>
+              </td>
               ${isAdmin?`<td style="padding:10px 14px;text-align:center">
                 <div style="display:flex;gap:6px;justify-content:center">
                   <button class="btn btn-gray" style="padding:3px 10px;font-size:10px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
                   <button class="btn btn-red" style="padding:3px 8px;font-size:10px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
                 </div>
               </td>`:''}
-            </tr>`).join('')}
+            </tr>`;
+            }).join('')}
           </tbody>
         </table>
       </div>
@@ -2995,6 +3012,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
       <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
       <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pares_gabarito" placeholder="Pares de gabarito" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
     </div>
     <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
     <div style="margin-bottom:12px">
