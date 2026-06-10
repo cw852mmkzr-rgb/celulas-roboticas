@@ -1951,10 +1951,11 @@ function _dashGetHoraCheia(){
   const h = new Date().getHours();
   const s = `${String(h).padStart(2,'0')}:00`;
   const all = [...HORAS_DIA,...HORAS_NOITE];
-  // Retorna a hora cheia atual se existir, senão a mais próxima anterior
   if(all.includes(s)) return s;
+  // Se hora atual não está no array, pega a mais próxima anterior
   for(let i = all.length-1; i >= 0; i--){
-    if(parseInt(all[i]) < h) return all[i];
+    const hNum = parseInt(all[i].split(':')[0]);
+    if(hNum < h) return all[i];
   }
   return all[0];
 }
@@ -1985,16 +1986,37 @@ function _dashNextSlide(){
     _dashGeral=false; _dashIdx=0;
     clearInterval(_dashSlideTimer);
     _dashSlideTimer=setInterval(_dashNextSlide,6000);
-  } else {
+    _dashRender();
+    _dashRenderFooter();
+    return;
+  }
+  // Avança para próximo robô que tenha valor na hora atual
+  const dados=_dashGetDados();
+  const hora=_dashGetHoraCheia();
+  let tentativas=0;
+  do {
     _dashIdx++;
+    tentativas++;
     if(_dashIdx>=_dashRobos.length){
       _dashGeral=true; _dashIdx=0;
       clearInterval(_dashSlideTimer);
       _dashSlideTimer=setInterval(_dashNextSlide,40000);
+      _dashRender();
+      _dashRenderFooter();
+      return;
     }
-  }
+  } while(tentativas < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dados, hora));
   _dashRender();
   _dashRenderFooter();
+}
+
+function _dashRoboSemValor(k, dados, hora){
+  if(!k||!celulas[k]) return true;
+  const rn=k.replace(/\D/g,'');
+  const rd=dados[rn]||{};
+  const prod=parseCelVal((rd[campoH(hora)])||'').num;
+  const meta=parseInt(rd.meta)||0;
+  return prod===0 && meta===0;
 }
 
 function _dashGetDados(){
@@ -2027,67 +2049,38 @@ function _dashRenderRobo(k){
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
   const bateu=meta>0&&prod>=meta;
   const cor=prod===0&&meta===0?'#4a5568':meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
-  const totalDia=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
-  const metaDia=meta*9;
-  const pct=metaDia>0?Math.min(Math.round(totalDia/metaDia*100),100):0;
-  const corPct=pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d';
   const idx=_dashRobos.indexOf(k);
 
   main.innerHTML=`
-  <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;position:relative;overflow:hidden">
-    <!-- brilho de fundo -->
+  <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:20px;position:relative;overflow:hidden">
     ${prod>0?`<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${cor}0a 0%,transparent 65%);pointer-events:none"></div>`:''}
 
-    <!-- Robô nome -->
     <div style="text-align:center">
-      <div style="font-size:13px;color:#4a5568;letter-spacing:0.25em;text-transform:uppercase">Robô ${rn}</div>
-      <div style="font-size:26px;font-weight:900;color:#fff">${esc(c.nome||'')}</div>
-      <div style="font-size:14px;color:#ffb300;font-weight:700;margin-top:2px">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
+      <div style="font-size:14px;color:#4a5568;letter-spacing:0.25em;text-transform:uppercase">Robô ${rn}</div>
+      <div style="font-size:30px;font-weight:900;color:#fff">${esc(c.nome||'')}</div>
+      <div style="font-size:16px;color:#ffb300;font-weight:700;margin-top:2px">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
     </div>
 
-    <!-- Produção hora cheia -->
-    <div style="background:#080b0f;border:3px solid ${cor}50;border-radius:20px;padding:24px 52px;text-align:center">
-      <div style="font-size:11px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px">Produção ${hora}</div>
-      <div style="font-size:100px;font-weight:900;line-height:1;color:${cor};font-variant-numeric:tabular-nums">${prod>0?prod:'—'}</div>
-      ${meta>0?`<div style="font-size:13px;color:#4a5568;margin-top:6px">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
+    <div style="background:#080b0f;border:3px solid ${cor}50;border-radius:24px;padding:28px 64px;text-align:center">
+      <div style="font-size:12px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:8px">Produção ${hora}</div>
+      <div style="font-size:130px;font-weight:900;line-height:1;color:${cor};font-variant-numeric:tabular-nums">${prod>0?prod:'—'}</div>
+      ${meta>0?`<div style="font-size:16px;color:#4a5568;margin-top:8px">Meta: <b style="color:${cor};font-size:20px">${meta}</b> peças/hora</div>`:''}
     </div>
 
-    <!-- Mensagem -->
     ${prod>0&&meta>0?`
-    <div style="font-size:22px;font-weight:900;letter-spacing:0.12em;padding:10px 36px;border-radius:99px;border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">
+    <div style="font-size:26px;font-weight:900;letter-spacing:0.12em;padding:12px 40px;border-radius:99px;border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">
       ${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}
     </div>
-    <div style="font-size:14px;color:#4a5568;margin-top:-8px">Produzido: <b style="color:${cor}">${prod}</b> | Meta: <b style="color:#d8dde6">${meta}</b> | Faltou: <b style="color:${cor}">${bateu?0:meta-prod}</b></div>
-    `:''}
+    <div style="font-size:15px;color:#4a5568">Produzido: <b style="color:${cor}">${prod}</b> &nbsp;|&nbsp; Meta: <b style="color:#d8dde6">${meta}</b>${!bateu?` &nbsp;|&nbsp; Faltou: <b style="color:#ff4d4d">${meta-prod}</b>`:''}
+    </div>`:''}
 
-    <!-- Totais dia -->
-    ${totalDia>0||metaDia>0?`
-    <div style="display:flex;gap:28px;align-items:center">
-      <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Total hoje</div>
-        <div style="font-size:34px;font-weight:900;color:#d8dde6">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
-      </div>
-      ${metaDia>0?`
-      <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Meta dia</div>
-        <div style="font-size:34px;font-weight:900;color:#4a5568">${metaDia.toLocaleString("pt-BR")}</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Eficiência</div>
-        <div style="font-size:34px;font-weight:900;color:${corPct}">${pct}%</div>
-      </div>
-      `:''}
-    </div>
-    ${metaDia>0?`<div style="width:360px;background:#1e2530;border-radius:99px;height:8px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width .5s"></div></div>`:''}
-    `:''}
-
-    <!-- Dots -->
     <div style="display:flex;gap:5px;margin-top:4px">
       ${_dashRobos.map((_,i)=>`<div style="width:${i===idx?'18px':'5px'};height:5px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all .3s"></div>`).join('')}
       <div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>
     </div>
   </div>`;
 }
+
 
 function _dashRenderGeral(){
   const main=document.getElementById("dashMain");
