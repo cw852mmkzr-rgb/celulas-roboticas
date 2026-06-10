@@ -1869,7 +1869,8 @@ function imprimirQR(key) {
     <div class="instrucao">Escaneie para acessar esta célula</div>
   </div>
   <script>window.onload=()=>window.print();<\/script>
-  </body></html>`);
+  </div>
+</body></html>`);
   win.document.close();
 }
 
@@ -2597,41 +2598,6 @@ function renderCadastroPecas(){
         </div>
       `).join('')}
     </div>`}
-
-    <!-- Modal nova/editar peça -->
-    <div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:999;align-items:center;justify-content:center">
-      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
-        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
-        <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-        </div>
-        <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
-            <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
-            <button class="btn btn-gray" style="padding:5px 8px;font-size:11px" id="btnRemovePecaImg" onclick="removerImgPecaCad()" style="display:none">✕</button>
-          </div>
-          <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
-          <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
-        </div>
-      </div>
-    </div>
   </div>`;
 }
 
@@ -3012,6 +2978,40 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeX
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
 document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenciar);
+
 </script>
+<div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
+    <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+    </div>
+    <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
+        <button class="btn btn-gray" id="btnRemovePecaImg" style="padding:5px 8px;font-size:11px;display:none" onclick="removerImgPecaCad()">✕</button>
+      </div>
+      <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
+      <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
+
