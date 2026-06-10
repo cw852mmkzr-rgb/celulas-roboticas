@@ -2719,7 +2719,8 @@ function salvarPeca(){
   };
   saveToAPI(celulas);
   fecharModalPeca();
-  renderCadastroPecas();
+  if(getCellTipo(selected)==='catalogo_pecas') renderCatalogoPecas();
+  else renderCadastroPecas();
   showToast("Peça salva ✓");
 }
 
@@ -2728,7 +2729,8 @@ function excluirPeca(cod){
   const k = getCadastroPecasKey();
   if(k && celulas[k].pecas) delete celulas[k].pecas[cod];
   saveToAPI(celulas);
-  renderCadastroPecas();
+  if(getCellTipo(selected)==='catalogo_pecas') renderCatalogoPecas();
+  else renderCadastroPecas();
   showToast("Peça excluída ✓");
 }
 
@@ -2837,12 +2839,10 @@ function renderCatalogoPecas(){
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
   const lista = Object.entries(pecas).sort((a,b)=>a[0].localeCompare(b[0]));
 
-  // Busca
   const busca = (c._busca||'').toLowerCase();
   const filtradas = busca ? lista.filter(([cod,p])=>
     cod.toLowerCase().includes(busca)||
-    (p.cliente||'').toLowerCase().includes(busca)||
-    (p.nome||'').toLowerCase().includes(busca)
+    (p.cliente||'').toLowerCase().includes(busca)
   ) : lista;
 
   document.getElementById("mainPanel").innerHTML=`
@@ -2852,12 +2852,14 @@ function renderCatalogoPecas(){
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
         <div style="font-size:11px;color:#4a5568;margin-top:2px">${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}</div>
       </div>
-      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+      <div style="display:flex;gap:8px;align-items:center">
+        ${isAdmin?`<button class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+      </div>
     </div>
 
-    <!-- Busca -->
-    <div style="margin-bottom:14px;position:relative">
-      <input value="${esc(busca)}" placeholder="🔍 Buscar por código, cliente ou nome..."
+    <div style="margin-bottom:14px">
+      <input value="${esc(busca)}" placeholder="🔍 Buscar por código ou cliente..."
         style="width:100%;background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:9px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"
         oninput="celulas['${selected}']._busca=this.value;renderCatalogoPecas()"
         onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
@@ -2866,18 +2868,16 @@ function renderCatalogoPecas(){
     ${filtradas.length===0?`
       <div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
         ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
-        ${!busca&&!cadastroKey?'<br><span style="font-size:11px">Crie primeiro uma célula de Cadastro de Peças.</span>':''}
       </div>
     `:`
-      <!-- Tabela -->
       <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
         <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:#080b0f">
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Código</th>
-              <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Nome / Peça</th>
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Cliente</th>
               <th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Tempo/ciclo</th>
+              ${isAdmin?`<th style="padding:10px 14px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Ações</th>`:''}
             </tr>
           </thead>
           <tbody>
@@ -2886,11 +2886,16 @@ function renderCatalogoPecas(){
               <td style="padding:10px 14px">
                 <span style="font-size:15px;font-weight:900;color:#ffb300">${esc(cod)}</span>
               </td>
-              <td style="padding:10px 14px;font-size:13px;color:#d8dde6">${esc(p.nome||'—')}</td>
               <td style="padding:10px 14px;font-size:13px;color:#4a5568">${esc(p.cliente||'—')}</td>
               <td style="padding:10px 14px;text-align:center">
                 <span style="font-size:13px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span>
               </td>
+              ${isAdmin?`<td style="padding:10px 14px;text-align:center">
+                <div style="display:flex;gap:6px;justify-content:center">
+                  <button class="btn btn-gray" style="padding:3px 10px;font-size:10px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+                  <button class="btn btn-red" style="padding:3px 8px;font-size:10px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
+                </div>
+              </td>`:''}
             </tr>`).join('')}
           </tbody>
         </table>
