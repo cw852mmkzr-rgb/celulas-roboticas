@@ -72,8 +72,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
 .status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
 
-.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 160px; cursor: pointer; }
-.img-upload-box:hover { border-color: #00e87a40; }
+.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 100%; }
 .img-upload-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .img-upload-box .img-placeholder { font-size: 10px; color: #2a3040; text-align: center; padding: 8px; line-height: 1.6; }
 .img-upload-box .img-overlay { position: absolute; inset: 0; background: #000000cc; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; gap: 4px; }
@@ -1330,15 +1329,16 @@ function renderDetail(){
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Peça em Produção</div>
-      <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
-        <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
-        <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
-        <div class="field"><label>Imagem da peça</label>
-          <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:10px">
+          <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
+          <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
+          <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
         </div>
-      </div>
-      <div style="margin-top:12px;max-width:50%">
-        <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
+        <div style="flex-shrink:0">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Imagem da Peça</div>
+          <div style="width:140px;height:140px;border-radius:10px;overflow:hidden;border:2px dashed #1e2530;background:#080b0f;cursor:${isAdmin?'pointer':'default'}" onclick="${isAdmin?'triggerImgUpload()':''}">${imgBlock}</div>
+        </div>
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Eletrodo ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}</div>
