@@ -353,22 +353,24 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
       <div class="dash-date" id="dashDate"></div>
     </div>
-    <div style="display:flex;gap:24px;align-items:center">
+    <div style="display:flex;gap:28px;align-items:center">
       <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Hora atual</div>
-        <div class="dash-clock" id="dashClock">00:00:00</div>
+        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
+        <div class="dash-clock" id="dashClock">--:--:--</div>
       </div>
       <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">Hora cheia</div>
-        <div class="dash-clock" id="dashHoraCheia" style="color:#ffb300">00:00</div>
+        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
+        <div class="dash-clock" style="color:#ffb300" id="dashHoraCheia">--:--</div>
       </div>
     </div>
     <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
   </div>
-  <div id="dashMain" style="flex:1;overflow:hidden;position:relative"></div>
+  <div id="dashMain" style="flex:1;overflow:hidden"></div>
   <div class="dash-footer">
-    <div class="dash-footer-title">⏱ Produção total por hora — hoje</div>
+    <div class="dash-footer-title">⏱ Produção total por hora — hoje (todos os robôs)</div>
     <div class="dash-horas" id="dashHoras"></div>
+  </div>
+</div>
   </div>
 </div>
 
@@ -1928,269 +1930,263 @@ function startDashboard(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("dashboardScreen").style.display="flex";
   isAdmin=false; isAdminMetas=false;
-  dashSlide = 0; // 0..N-1 = robôs individuais, N = tela geral
-  loadDashboard();
-  dashDataTimer  = setInterval(loadDashboard, 300000);
-  clockTimer     = setInterval(updateDashClock, 1000);
-  slideTimer     = setInterval(avancaDashSlide, 10000);
-  updateDashClock();
+  _dashIdx=0; _dashGeral=false;
+  _dashLoad();
+  _dashLoadTimer = setInterval(_dashLoad, 300000);
+  _dashClockTimer = setInterval(_dashTickClock, 1000);
+  _dashSlideTimer = setInterval(_dashNextSlide, 10000);
+  _dashTickClock();
 }
 
 function sairDashboard(){
-  clearInterval(dashDataTimer);
-  clearInterval(clockTimer);
-  clearInterval(slideTimer);
+  [_dashLoadTimer,_dashClockTimer,_dashSlideTimer].forEach(t=>clearInterval(t));
   document.getElementById("dashboardScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
 }
 
-let dashDataTimer=null, clockTimer=null, slideTimer=null;
-let dashSlide = 0;
-let dashRobosAtivos = [];
-let dashTelaGeral = false;
+let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null;
+let _dashIdx=0, _dashGeral=false, _dashRobos=[];
 
-function getHoraCheia(){
+function _dashGetHoraCheia(){
   const h = new Date().getHours();
-  return `${String(h).padStart(2,'0')}:00`;
+  // Mostra hora ANTERIOR — produção já encerrada
+  const horaAnterior = h > 0 ? h - 1 : 0;
+  const s = `${String(horaAnterior).padStart(2,'0')}:00`;
+  const all = [...HORAS_DIA,...HORAS_NOITE];
+  // Pega a última hora válida antes da atual
+  for(let i = all.length-1; i >= 0; i--){
+    const hNum = parseInt(all[i].split(':')[0]);
+    if(hNum <= horaAnterior) return all[i];
+  }
+  return all[0];
 }
 
-function updateDashClock(){
-  const now = new Date();
-  const el = document.getElementById("dashClock");
-  const hc = document.getElementById("dashHoraCheia");
-  if(el) el.textContent = now.toLocaleTimeString("pt-BR");
-  if(hc) hc.textContent = getHoraCheia();
-  const de = document.getElementById("dashDate");
-  if(de) de.textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+function _dashTickClock(){
+  const now=new Date();
+  const ce=document.getElementById("dashClock");
+  const he=document.getElementById("dashHoraCheia");
+  const de=document.getElementById("dashDate");
+  if(ce) ce.textContent=now.toLocaleTimeString("pt-BR");
+  if(he) he.textContent=_dashGetHoraCheia();
+  if(de) de.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 
-async function loadDashboard(){
+async function _dashLoad(){
   try{
     const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
     const d=await r.json();
     if(d.record&&Object.keys(d.record).length>0) celulas=d.record;
   }catch(e){}
-  dashRobosAtivos = Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
-  renderDashSlide();
-  renderDashHorasFooter();
+  _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
+  _dashRender();
+  _dashRenderFooter();
 }
 
-function avancaDashSlide(){
-  if(dashTelaGeral){
-    // estava na tela geral — volta ao primeiro robô
-    dashTelaGeral = false;
-    dashSlide = 0;
-    clearInterval(slideTimer);
-    slideTimer = setInterval(avancaDashSlide, 10000);
+function _dashNextSlide(){
+  if(_dashGeral){
+    _dashGeral=false; _dashIdx=0;
+    clearInterval(_dashSlideTimer);
+    _dashSlideTimer=setInterval(_dashNextSlide,10000);
   } else {
-    dashSlide++;
-    if(dashSlide >= dashRobosAtivos.length){
-      // entrou na tela geral
-      dashTelaGeral = true;
-      dashSlide = 0;
-      clearInterval(slideTimer);
-      slideTimer = setInterval(avancaDashSlide, 40000); // 40s na tela geral
+    _dashIdx++;
+    if(_dashIdx>=_dashRobos.length){
+      _dashGeral=true; _dashIdx=0;
+      clearInterval(_dashSlideTimer);
+      _dashSlideTimer=setInterval(_dashNextSlide,40000);
     }
   }
-  renderDashSlide();
+  _dashRender();
+  _dashRenderFooter();
 }
 
-function getDadosHoje(){
-  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
-  if(!metasKey) return {};
-  const mc = celulas[metasKey];
-  const ano = mc.metas_ano||new Date().getFullYear();
-  const mes = mc.metas_mes!==undefined?mc.metas_mes:new Date().getMonth();
-  const dia = mc.metas_dia||new Date().getDate();
-  const chave = `${ano}_${mes}_${dia}`;
-  return (mc.metas_dias&&mc.metas_dias[chave])?mc.metas_dias[chave]:{};
+function _dashGetDados(){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!mk) return {};
+  const mc=celulas[mk];
+  const now=new Date();
+  // tenta data real primeiro
+  const ch=`${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+  if(mc.metas_dias&&mc.metas_dias[ch]) return mc.metas_dias[ch];
+  // fallback data selecionada
+  const ch2=`${mc.metas_ano||now.getFullYear()}_${mc.metas_mes!==undefined?mc.metas_mes:now.getMonth()}_${mc.metas_dia||now.getDate()}`;
+  return (mc.metas_dias&&mc.metas_dias[ch2])?mc.metas_dias[ch2]:{};
 }
 
-function renderDashSlide(){
-  if(dashTelaGeral) renderDashTelaGeral();
-  else renderDashRoboIndividual(dashRobosAtivos[dashSlide]);
-  renderDashHorasFooter();
+function _dashRender(){
+  if(_dashGeral) _dashRenderGeral();
+  else _dashRenderRobo(_dashRobos[_dashIdx]);
 }
 
-function renderDashRoboIndividual(k){
-  const main = document.getElementById("dashMain");
+function _dashRenderRobo(k){
+  const main=document.getElementById("dashMain");
   if(!main||!k||!celulas[k]) return;
-  const c = celulas[k];
-  const dadosHoje = getDadosHoje();
-  const roboNum = k.replace(/\D/g,'');
-  const rd = dadosHoje[roboNum]||{};
-  const meta = parseInt(rd.meta)||0;
-  const horaCheia = getHoraCheia();
-  const campo = campoH(horaCheia);
-  const prod = parseCelVal((rd[campo])||'').num;
-  const bateu = meta>0 && prod>=meta;
-  const temDados = prod>0 || meta>0;
-  const cor = !temDados?'#4a5568':bateu?'#00e87a':'#ff4d4d';
-  const totalHoje = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
-  const metaDia = meta*9;
-  const pct = metaDia>0?Math.min(Math.round(totalHoje/metaDia*100),100):0;
-  const corPct = pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d';
-  const cod = rd.cod||c.codigo_peca||'—';
-  const idx = dashRobosAtivos.indexOf(k);
+  const c=celulas[k];
+  const dados=_dashGetDados();
+  const rn=k.replace(/\D/g,'');
+  const rd=dados[rn]||{};
+  const meta=parseInt(rd.meta)||0;
+  const hora=_dashGetHoraCheia();
+  const prod=parseCelVal((rd[campoH(hora)])||'').num;
+  const bateu=meta>0&&prod>=meta;
+  const cor=prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+  const totalDia=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
+  const metaDia=meta*9;
+  const pct=metaDia>0?Math.min(Math.round(totalDia/metaDia*100),100):0;
+  const corPct=pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d';
+  const idx=_dashRobos.indexOf(k);
 
-  main.innerHTML = `
-  <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative">
+  main.innerHTML=`
+  <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;position:relative;overflow:hidden">
+    <!-- brilho de fundo -->
+    ${prod>0?`<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${cor}0a 0%,transparent 65%);pointer-events:none"></div>`:''}
 
-    <!-- Luz piscante fundo -->
-    ${temDados?`<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, ${cor}08 0%, transparent 70%);${bateu&&temDados?'animation:pisca 2s infinite':''}pointer-events:none"></div>`:''}
-
-    <!-- Robô info topo -->
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:14px;color:#4a5568;letter-spacing:0.25em;text-transform:uppercase">Robô ${roboNum}</div>
-      <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${esc(c.nome||'')}</div>
-      <div style="font-size:16px;color:#ffb300;font-weight:700">⚙ ${esc(cod)}</div>
+    <!-- Robô nome -->
+    <div style="text-align:center">
+      <div style="font-size:13px;color:#4a5568;letter-spacing:0.25em;text-transform:uppercase">Robô ${rn}</div>
+      <div style="font-size:26px;font-weight:900;color:#fff">${esc(c.nome||'')}</div>
+      <div style="font-size:14px;color:#ffb300;font-weight:700;margin-top:2px">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
     </div>
 
-    <!-- Bloco principal hora cheia -->
-    <div style="background:#0a0d12;border:3px solid ${cor}60;border-radius:24px;padding:28px 48px;text-align:center;margin-bottom:20px;min-width:320px;position:relative">
-      <div style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px">Produção ${horaCheia}</div>
-      <div style="font-size:96px;font-weight:900;color:${cor};line-height:1;font-variant-numeric:tabular-nums">${prod>0?prod:'—'}</div>
-      ${meta>0?`<div style="font-size:14px;color:#4a5568;margin-top:8px">Meta: <span style="color:${cor};font-weight:800">${meta}</span> peças/hora</div>`:''}
+    <!-- Produção hora cheia -->
+    <div style="background:#080b0f;border:3px solid ${cor}50;border-radius:20px;padding:24px 52px;text-align:center">
+      <div style="font-size:11px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px">Produção ${hora}</div>
+      <div style="font-size:100px;font-weight:900;line-height:1;color:${cor};font-variant-numeric:tabular-nums">${prod>0?prod:'—'}</div>
+      ${meta>0?`<div style="font-size:13px;color:#4a5568;margin-top:6px">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
     </div>
 
-    <!-- Mensagem atingiu / não atingiu -->
-    ${temDados&&prod>0?`
-    <div style="font-size:24px;font-weight:900;letter-spacing:0.1em;padding:10px 32px;border-radius:99px;border:2px solid ${cor}60;background:${cor}15;color:${cor};margin-bottom:20px;${bateu?'animation:pisca 1.5s infinite':''}">
-      ${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}
+    <!-- Mensagem -->
+    ${prod>0&&meta>0?`
+    <div style="font-size:22px;font-weight:900;letter-spacing:0.12em;padding:10px 36px;border-radius:99px;border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">
+      ${bateu?'✅  META ATINGIDA':'❌  META NÃO ATINGIDA'}
     </div>`:''}
 
-    <!-- Totais do dia -->
-    <div style="display:flex;gap:32px;align-items:center;margin-bottom:16px">
+    <!-- Totais dia -->
+    ${totalDia>0||metaDia>0?`
+    <div style="display:flex;gap:28px;align-items:center">
       <div style="text-align:center">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Total hoje</div>
-        <div style="font-size:36px;font-weight:900;color:#d8dde6">${totalHoje>0?totalHoje.toLocaleString("pt-BR"):'—'}</div>
+        <div style="font-size:34px;font-weight:900;color:#d8dde6">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
       </div>
       ${metaDia>0?`
       <div style="text-align:center">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Meta dia</div>
-        <div style="font-size:36px;font-weight:900;color:#4a5568">${metaDia.toLocaleString("pt-BR")}</div>
+        <div style="font-size:34px;font-weight:900;color:#4a5568">${metaDia.toLocaleString("pt-BR")}</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Eficiência</div>
-        <div style="font-size:36px;font-weight:900;color:${corPct}">${pct}%</div>
-      </div>`:''}
-    </div>
-
-    <!-- Barra progresso -->
-    ${metaDia>0?`
-    <div style="width:100%;max-width:400px;margin-bottom:16px">
-      <div style="background:#1e2530;border-radius:99px;height:10px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width 0.5s"></div>
+        <div style="font-size:34px;font-weight:900;color:${corPct}">${pct}%</div>
       </div>
-    </div>`:''}
+      `:''}
+    </div>
+    ${metaDia>0?`<div style="width:360px;background:#1e2530;border-radius:99px;height:8px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width .5s"></div></div>`:''}
+    `:''}
 
-    <!-- Indicadores slide -->
-    <div style="display:flex;gap:6px;margin-top:4px">
-      ${dashRobosAtivos.map((_,i)=>`<div style="width:${i===idx?'20px':'6px'};height:6px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all 0.3s"></div>`).join('')}
-      <div style="width:6px;height:6px;border-radius:99px;background:#1e2530"></div>
+    <!-- Dots -->
+    <div style="display:flex;gap:5px;margin-top:4px">
+      ${_dashRobos.map((_,i)=>`<div style="width:${i===idx?'18px':'5px'};height:5px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all .3s"></div>`).join('')}
+      <div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>
     </div>
   </div>`;
 }
 
-function renderDashTelaGeral(){
-  const main = document.getElementById("dashMain");
+function _dashRenderGeral(){
+  const main=document.getElementById("dashMain");
   if(!main) return;
-  const dadosHoje = getDadosHoje();
-  const horaCheia = getHoraCheia();
-  const campo = campoH(horaCheia);
-  const todasHoras = [...HORAS_DIA,...HORAS_NOITE];
-  let totalGeral = 0;
+  const dados=_dashGetDados();
+  const horaAtual=_dashGetHoraCheia();
+  const todasHoras=[...HORAS_DIA,...HORAS_NOITE];
+  let totalGeral=0;
 
-  const linhas = dashRobosAtivos.map(k=>{
-    const roboNum = k.replace(/\D/g,'');
-    const c = celulas[k];
-    const rd = dadosHoje[roboNum]||{};
-    const meta = parseInt(rd.meta)||0;
-    const prodHora = parseCelVal((rd[campo])||'').num;
-    const bateu = meta>0&&prodHora>=meta;
-    const cor = meta===0?'#4a5568':prodHora===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
-    const horas = todasHoras.map(h=>{
-      const v = parseCelVal((rd[campoH(h)])||'').num;
-      const isCafe = HORAS_CAFE.includes(h);
-      const mh = parseInt(rd.meta)||0;
-      const ok = !isCafe&&mh>0&&v>=mh;
-      const fail = !isCafe&&mh>0&&v>0&&v<mh;
-      const c2 = isCafe?'#8a6200':ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
-      return`<td style="padding:6px 8px;text-align:center;font-size:13px;font-weight:700;color:${c2};border-bottom:1px solid #0a0d12;white-space:nowrap">${v>0?v:'—'}</td>`;
+  const linhas=_dashRobos.map(k=>{
+    const rn=k.replace(/\D/g,'');
+    const rd=dados[rn]||{};
+    const meta=parseInt(rd.meta)||0;
+    const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
+    const bateu=meta>0&&prodAtual>=meta;
+    const corAtual=meta===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    const totalRobo=todasHoras.reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
+    totalGeral+=totalRobo;
+    const hCells=todasHoras.map(h=>{
+      const v=parseCelVal((rd[campoH(h)])||'').num;
+      const isCafe=HORAS_CAFE.includes(h);
+      const isAtual=h===horaAtual;
+      const ok=!isCafe&&meta>0&&v>=meta;
+      const fail=!isCafe&&meta>0&&v>0&&v<meta;
+      const cor=isCafe?'#8a6200':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
+      const fontSize=isAtual?'20px':'15px';
+      return`<td style="padding:5px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
     }).join('');
-    const totalRobo = todasHoras.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
-    totalGeral += totalRobo;
-    return`<tr>
-      <td style="padding:8px 10px;font-size:13px;font-weight:900;color:#d8dde6;border-bottom:1px solid #0a0d12;white-space:nowrap">${roboNum}</td>
-      <td style="padding:8px 10px;font-size:13px;font-weight:700;color:#ffb300;border-bottom:1px solid #0a0d12;white-space:nowrap">${esc(rd.cod||'—')}</td>
-      <td style="padding:8px 10px;font-size:13px;color:${cor};font-weight:900;border-bottom:1px solid #0a0d12;border-left:1px solid #1e2530;text-align:center">${prodHora>0?prodHora:'—'}<span style="font-size:10px;color:#4a5568">/${meta||'—'}</span></td>
-      ${horas}
-      <td style="padding:8px 14px;font-size:16px;font-weight:900;color:#00e87a;border-bottom:1px solid #0a0d12;border-left:2px solid #00e87a30;text-align:center">${totalRobo>0?totalRobo.toLocaleString("pt-BR"):'—'}</td>
+    return`<tr style="border-bottom:1px solid #0a0d12">
+      <td style="padding:7px 10px;font-size:13px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#ffb300;font-weight:700;white-space:nowrap">${esc(rd.cod||'—')}</td>
+      <td style="padding:7px 10px;font-size:13px;color:#4a5568;text-align:center">${meta||'—'}</td>
+      ${hCells}
+      <td style="padding:7px 14px;font-size:22px;font-weight:900;color:#00e87a;text-align:center;border-left:2px solid #00e87a30">${totalRobo>0?totalRobo.toLocaleString("pt-BR"):'—'}</td>
     </tr>`;
   }).join('');
 
-  const horasHeader = todasHoras.map(h=>{
-    const isCafe = HORAS_CAFE.includes(h);
-    const isAtual = h===horaCheia;
-    return`<th style="padding:8px;font-size:10px;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};text-transform:uppercase;letter-spacing:0.08em;font-weight:700;white-space:nowrap;${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
+  const hHeaders=todasHoras.map(h=>{
+    const isAtual=h===horaAtual;
+    const isCafe=HORAS_CAFE.includes(h);
+    return`<th style="padding:8px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
+  }).join('');
+
+  const hTotais=todasHoras.map(h=>{
+    const t=_dashRobos.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num;},0);
+    return`<td style="padding:8px 6px;text-align:center;font-size:13px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530">${t>0?t:'—'}</td>`;
   }).join('');
 
   main.innerHTML=`
-  <div style="height:100%;overflow:auto;padding:16px">
-    <div style="font-size:13px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:12px;text-align:center">
-      📊 Visão geral — Produção do dia · Hora atual: <span style="color:#ffb300">${horaCheia}</span>
+  <div style="height:100%;overflow:auto;padding:14px 18px">
+    <div style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;text-align:center">
+      📊 Visão Geral — Produção do dia · Hora atual: <span style="color:#ffb300;font-weight:900">${horaAtual}</span>
     </div>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;background:#0a0d12;border-radius:12px;overflow:hidden">
-        <thead style="background:#080b0f">
-          <tr>
-            <th style="padding:10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Robô</th>
-            <th style="padding:10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Peça</th>
-            <th style="padding:10px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530;border-left:1px solid #1e2530">${horaCheia}</th>
-            ${horasHeader}
-            <th style="padding:10px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30">Total</th>
-          </tr>
-        </thead>
-        <tbody>${linhas}</tbody>
-        <tfoot>
-          <tr style="background:#080b0f">
-            <td colspan="3" style="padding:10px 14px;font-size:13px;font-weight:900;color:#fff;border-top:2px solid #1e2530">TOTAL GERAL</td>
-            ${todasHoras.map(h=>{
-              const t=dashRobosAtivos.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+(parseCelVal(((dadosHoje[rn]||{})[campoH(h)])||'').num);},0);
-              return`<td style="padding:10px 8px;text-align:center;font-size:13px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530">${t>0?t:'—'}</td>`;
-            }).join('')}
-            <td style="padding:10px 14px;text-align:center;font-size:18px;font-weight:900;color:#00e87a;border-top:2px solid #1e2530;border-left:2px solid #00e87a30">${totalGeral.toLocaleString("pt-BR")}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-    <!-- Indicador tela geral -->
-    <div style="display:flex;justify-content:center;gap:6px;margin-top:12px">
-      ${dashRobosAtivos.map(()=>`<div style="width:6px;height:6px;border-radius:99px;background:#1e2530"></div>`).join('')}
-      <div style="width:20px;height:6px;border-radius:99px;background:#ffb300"></div>
+    <table style="width:100%;border-collapse:collapse;background:#0a0d12;border-radius:12px;overflow:hidden">
+      <thead style="background:#080b0f">
+        <tr>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Robô</th>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Peça</th>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530">Meta/h</th>
+          ${hHeaders}
+          <th style="padding:9px 14px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30">Total</th>
+        </tr>
+      </thead>
+      <tbody>${linhas}</tbody>
+      <tfoot>
+        <tr style="background:#080b0f">
+          <td colspan="3" style="padding:9px 10px;font-size:12px;font-weight:900;color:#fff;border-top:2px solid #1e2530;letter-spacing:0.1em">TOTAL GERAL</td>
+          ${hTotais}
+          <td style="padding:9px 14px;text-align:center;font-size:18px;font-weight:900;color:#00e87a;border-top:2px solid #1e2530;border-left:2px solid #00e87a30">${totalGeral.toLocaleString("pt-BR")}</td>
+        </tr>
+      </tfoot>
+    </table>
+    <div style="display:flex;justify-content:center;gap:5px;margin-top:12px">
+      ${_dashRobos.map(()=>`<div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>`).join('')}
+      <div style="width:18px;height:5px;border-radius:99px;background:#ffb300"></div>
     </div>
   </div>`;
 }
 
-function renderDashHorasFooter(){
-  const footer = document.getElementById("dashHoras");
+function _dashRenderFooter(){
+  const footer=document.getElementById("dashHoras");
   if(!footer) return;
-  const dadosHoje = getDadosHoje();
-  const horaCheia = getHoraCheia();
-  footer.innerHTML = [...HORAS_DIA,...HORAS_NOITE].map(h=>{
-    const campo = campoH(h);
-    const isCafe = HORAS_CAFE.includes(h);
-    const isAtual = h===horaCheia;
-    const total = ROBOS.reduce((s,robo)=>s+(parseCelVal(((dadosHoje[robo]||{})[campo])||'').num),0);
-    const metaT = ROBOS.reduce((s,robo)=>s+(parseInt((dadosHoje[robo]||{}).meta)||0),0);
-    const bateu = total>0&&metaT>0&&total>=metaT;
-    const cor = isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
-    return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'12':'#0a0d12'}">
+  const dados=_dashGetDados();
+  const horaAtual=_dashGetHoraCheia();
+  footer.innerHTML=[...HORAS_DIA,...HORAS_NOITE].map(h=>{
+    const campo=campoH(h);
+    const isCafe=HORAS_CAFE.includes(h);
+    const isAtual=h===horaAtual;
+    const total=ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campo])||'').num,0);
+    const metaT=ROBOS.reduce((s,rn)=>s+(parseInt((dados[rn]||{}).meta)||0),0);
+    const bateu=total>0&&metaT>0&&total>=metaT;
+    const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
       <div class="dash-hora-label" style="color:${isAtual?cor:'#4a5568'}">${h}${isAtual?' ◀':''}</div>
       <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
     </div>`;
   }).join('');
 }
+
 
 function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
 function startApp(){
