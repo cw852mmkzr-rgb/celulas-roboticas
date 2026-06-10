@@ -122,6 +122,41 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.error { background: #ff4d4d; color: #fff; }
 @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+/* ── DASHBOARD TV ── */
+#dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
+.dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 20px; border-bottom:1px solid #1e2530; background:#080b0f; flex-shrink:0; }
+.dash-title { font-size:16px; font-weight:900; color:#fff; letter-spacing:0.1em; }
+.dash-clock { font-size:22px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-date { font-size:11px; color:#4a5568; text-align:right; }
+.dash-body { flex:1; overflow-y:auto; padding:12px 16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; align-content:start; }
+.dash-card { background:#0a0d12; border:1px solid #1e2530; border-radius:12px; padding:12px 14px; position:relative; overflow:hidden; transition:border-color 0.3s; }
+.dash-card.produzindo { border-color:#00e87a40; }
+.dash-card.parado { border-color:#ff4d4d40; }
+.dash-card.aguardando { border-color:#1e2530; }
+.dash-card-robo { font-size:11px; color:#4a5568; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:4px; }
+.dash-card-nome { font-size:12px; color:#d8dde6; font-weight:700; margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dash-card-peca { font-size:11px; color:#ffb300; font-weight:700; margin-bottom:6px; }
+.dash-card-total { font-size:36px; font-weight:900; color:#00e87a; line-height:1; }
+.dash-card-meta { font-size:11px; color:#4a5568; margin-top:2px; }
+.dash-card-bar { margin-top:8px; background:#1e2530; border-radius:99px; height:6px; overflow:hidden; }
+.dash-card-bar-fill { height:100%; border-radius:99px; transition:width 0.5s; }
+.dash-card-status { position:absolute; top:10px; right:10px; font-size:9px; font-weight:800; letter-spacing:0.1em; padding:2px 6px; border-radius:99px; text-transform:uppercase; }
+.dash-card-status.produzindo { background:#00e87a20; color:#00e87a; }
+.dash-card-status.parado { background:#ff4d4d20; color:#ff4d4d; animation:pisca 1.5s infinite; }
+.dash-card-status.aguardando { background:#1e253080; color:#4a5568; }
+.dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:8px 16px; }
+.dash-footer-title { font-size:9px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:6px; }
+.dash-horas { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; }
+.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:8px; padding:6px 10px; text-align:center; min-width:52px; }
+.dash-hora-label { font-size:9px; color:#4a5568; margin-bottom:3px; }
+.dash-hora-val { font-size:16px; font-weight:900; color:#d8dde6; }
+.dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
+.dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
+.dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
+.dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
+.dash-exit { background:none; border:1px solid #1e2530; color:#4a5568; border-radius:6px; padding:4px 10px; font-size:10px; cursor:pointer; font-family:'Courier New',monospace; }
+.dash-exit:hover { color:#ff4d4d; border-color:#ff4d4d40; }
+
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
 
@@ -306,8 +341,25 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
     <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
-    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
+    <button class="login-btn-sec" style="margin-bottom:6px" onclick="startViewer()">Ver sem editar →</button>
+    <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
+  </div>
+</div>
+
+<div id="dashboardScreen">
+  <div class="dash-header">
+    <div class="dash-title">⬡ CÉLULAS ROBÓTICAS <span style="color:#4a5568;font-size:12px;font-weight:400">— Monitor Industrial</span></div>
+    <div style="text-align:center">
+      <div class="dash-clock" id="dashClock">00:00:00</div>
+      <div class="dash-date" id="dashDate"></div>
+    </div>
+    <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
+  </div>
+  <div class="dash-body" id="dashBody"></div>
+  <div class="dash-footer">
+    <div class="dash-footer-title">⏱ Produção por hora — hoje</div>
+    <div class="dash-horas" id="dashHoras"></div>
   </div>
 </div>
 
@@ -1863,6 +1915,104 @@ function tryLoginMetas(){
     setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
   }
 }
+function startDashboard(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("dashboardScreen").style.display="flex";
+  isAdmin=false; isAdminMetas=false;
+  loadDashboard();
+  dashTimer = setInterval(loadDashboard, 300000); // 5 min
+  clockTimer = setInterval(updateDashClock, 1000);
+  updateDashClock();
+}
+
+function sairDashboard(){
+  clearInterval(dashTimer);
+  clearInterval(clockTimer);
+  document.getElementById("dashboardScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+}
+
+let dashTimer=null, clockTimer=null;
+
+function updateDashClock(){
+  const now = new Date();
+  document.getElementById("dashClock").textContent = now.toLocaleTimeString("pt-BR");
+  document.getElementById("dashDate").textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+}
+
+async function loadDashboard(){
+  try{
+    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const d=await r.json();
+    if(d.record&&Object.keys(d.record).length>0) celulas=d.record;
+  }catch(e){}
+  renderDashboard();
+}
+
+function renderDashboard(){
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const anoAtual = new Date().getFullYear();
+  const mesAtual = new Date().getMonth();
+  const diaAtual = new Date().getDate();
+  const chaveHoje = metasKey ? `${celulas[metasKey].metas_ano||anoAtual}_${celulas[metasKey].metas_mes!==undefined?celulas[metasKey].metas_mes:mesAtual}_${celulas[metasKey].metas_dia||diaAtual}` : null;
+  const dadosHoje = (metasKey && chaveHoje && celulas[metasKey].metas_dias && celulas[metasKey].metas_dias[chaveHoje]) ? celulas[metasKey].metas_dias[chaveHoje] : {};
+
+  // Cards dos robôs
+  const robos = Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
+  const body = document.getElementById("dashBody");
+  if(!body) return;
+
+  body.innerHTML = robos.map(k=>{
+    const c = celulas[k];
+    const status = (c.status||'').toLowerCase();
+    const rd = dadosHoje[k.replace(/\D/g,'')] || {};
+    const meta = parseInt(rd.meta)||0;
+    const totalHoje = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const metaDia = meta * 9; // 9 horas turno dia
+    const pct = metaDia>0 ? Math.min(Math.round(totalHoje/metaDia*100),100) : 0;
+    const barColor = pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d';
+    const cod = rd.cod || c.codigo_peca || '—';
+    const statusClass = status.includes('produz')?'produzindo':status.includes('aguard')?'aguardando':'parado';
+    const statusLabel = status.includes('produz')?'Produzindo':status.includes('aguard')?'Aguardando':'Parado';
+
+    return`<div class="dash-card ${statusClass}">
+      <div class="dash-card-status ${statusClass}">${statusLabel}</div>
+      <div class="dash-card-robo">Robô ${k}</div>
+      <div class="dash-card-nome">${esc(c.nome||'')}</div>
+      <div class="dash-card-peca">${esc(cod)}</div>
+      <div class="dash-card-total">${totalHoje>0?totalHoje.toLocaleString("pt-BR"):'—'}</div>
+      <div class="dash-card-meta">${meta>0?`Meta: ${metaDia} peças/dia`:'Sem meta definida'}</div>
+      ${metaDia>0?`
+      <div class="dash-card-bar">
+        <div class="dash-card-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <div style="font-size:10px;color:${barColor};font-weight:700;margin-top:3px">${pct}%</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Rodapé — produção por hora somando todos os robôs
+  const horasFooter = document.getElementById("dashHoras");
+  if(!horasFooter) return;
+  const todasHoras = [...HORAS_DIA,...HORAS_NOITE];
+  horasFooter.innerHTML = todasHoras.map(h=>{
+    const campo = campoH(h);
+    const isCafe = HORAS_CAFE.includes(h);
+    const totalHora = ROBOS.reduce((s,robo)=>{
+      const rd2 = dadosHoje[robo] || {};
+      return s + (parseCelVal((rd2[campo])||'').num);
+    },0);
+    const metaHora = ROBOS.reduce((s,robo)=>{
+      const rd2 = dadosHoje[robo] || {};
+      return s + (parseInt(rd2.meta)||0);
+    },0);
+    const classe = isCafe?'cafe':totalHora>0&&metaHora>0?totalHora>=metaHora?'meta-ok':'meta-fail':'';
+    return`<div class="dash-hora-card ${classe}">
+      <div class="dash-hora-label">${h}</div>
+      <div class="dash-hora-val">${totalHora>0?totalHora:'—'}</div>
+    </div>`;
+  }).join('');
+}
+
 function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
 function startApp(){
   document.getElementById("loginScreen").style.display="none";
