@@ -140,6 +140,21 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
 .dash-exit { background:none; border:1px solid #1e2530; color:#4a5568; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; }
 .dash-exit:hover { color:#ff4d4d; border-color:#ff4d4d40; }
+.dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:32px; padding:16px; position:relative; overflow:hidden; flex-wrap:wrap; }
+.dash-robo-svg { flex-shrink:0; }
+.dash-robo-svg svg { width:clamp(80px,14vw,180px); height:auto; }
+.dash-info { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; max-width:700px; }
+.dash-rn { font-size:clamp(13px,2vw,20px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
+.dash-nome { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; }
+.dash-cod { font-size:clamp(14px,2.2vw,22px); color:#ffb300; font-weight:700; }
+.dash-box { background:#080b0f; border:3px solid #1e2530; border-radius:24px; padding:clamp(16px,3vw,36px) clamp(20px,5vw,80px); text-align:center; width:100%; box-sizing:border-box; }
+.dash-prod-h { font-size:clamp(12px,1.8vw,18px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:6px; }
+.dash-prod-n { font-size:clamp(80px,18vw,200px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
+.dash-meta-txt { font-size:clamp(14px,2.2vw,22px); color:#4a5568; margin-top:8px; }
+.dash-badge { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; text-align:center; }
+.dash-faltou { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
+.dash-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
+@media(max-width:600px){ .dash-robo-wrap{ flex-direction:column; gap:8px; padding:8px; } .dash-robo-svg svg{ width:clamp(60px,20vw,100px); } }
 
 /* Animação robô */
 @keyframes armUp   { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-30deg)} }
@@ -2042,51 +2057,45 @@ function _dashRenderRobo(k){
   const cor=prod===0&&meta===0?'#4a5568':meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
   const idx=_dashRobos.indexOf(k);
 
+  const olhos = prod>0&&meta>0&&bateu ? `
+    <path d="M53 25 L57 29 L61 25 M53 31 L57 27 L61 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M79 25 L83 29 L87 25 M79 31 L83 27 L87 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M52 44 Q70 56 88 44" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="48" cy="42" r="5" fill="${cor}" opacity="0.2"/>
+    <circle cx="92" cy="42" r="5" fill="${cor}" opacity="0.2"/>
+  ` : prod>0&&meta>0&&!bateu ? `
+    <line x1="53" y1="24" x2="61" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="61" y1="24" x2="53" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="79" y1="24" x2="87" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="87" y1="24" x2="79" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M52 50 Q70 40 88 50" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="57" cy="38" rx="2" ry="4" fill="${cor}" opacity="0.6"/>
+  ` : `
+    <circle cx="57" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite"/>
+    <circle cx="83" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite 0.1s"/>
+    <line x1="56" y1="46" x2="84" y2="46" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+  `;
+
+  const estrelas = bateu&&prod>0 ? `
+    <text x="15" y="25" font-size="14" style="animation:weld 0.5s infinite">⭐</text>
+    <text x="112" y="20" font-size="12" style="animation:weld 0.7s infinite 0.2s">✨</text>
+    <text x="10" y="110" font-size="10" style="animation:weld 0.6s infinite 0.4s">⭐</text>
+  ` : '';
+
+  const animHead = bateu&&prod>0 ? 'headBob 0.6s ease-in-out infinite' : 'headBob 2s ease-in-out infinite';
+  const animArm  = bateu&&prod>0 ? '0.6s' : '1.5s';
+
   main.innerHTML=`
-  <style>
-    .dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:32px; padding:16px; position:relative; overflow:hidden; flex-wrap:wrap; }
-    .dash-robo-svg  { flex-shrink:0; }
-    .dash-robo-svg svg { width:clamp(80px,14vw,180px); height:auto; }
-    .dash-info      { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; max-width:700px; }
-    .dash-rn        { font-size:clamp(13px,2vw,20px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
-    .dash-nome      { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; }
-    .dash-cod       { font-size:clamp(14px,2.2vw,22px); color:#ffb300; font-weight:700; }
-    .dash-box       { background:#080b0f; border:3px solid ${cor}50; border-radius:24px; padding:clamp(16px,3vw,36px) clamp(20px,5vw,80px); text-align:center; width:100%; box-sizing:border-box; }
-    .dash-prod-h    { font-size:clamp(12px,1.8vw,18px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:6px; }
-    .dash-prod-n    { font-size:clamp(80px,18vw,200px); font-weight:900; line-height:0.9; color:${cor}; font-variant-numeric:tabular-nums; }
-    .dash-meta-txt  { font-size:clamp(14px,2.2vw,22px); color:#4a5568; margin-top:8px; }
-    .dash-badge     { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; border:2px solid ${cor}50; background:${cor}12; color:${cor}; text-align:center; ${bateu?'animation:pisca 1.8s infinite':''} }
-    .dash-faltou    { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
-    .dash-dots      { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
-    @media(max-width:600px){ .dash-robo-wrap{ flex-direction:column; gap:8px; padding:8px; } .dash-robo-svg svg{ width:clamp(60px,20vw,100px); } }
-  </style>
-  <div class="dash-robo-wrap">
+  <div class="dash-robo-wrap" style="--cor:${cor}">
     ${prod>0?`<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${cor}08 0%,transparent 65%);pointer-events:none"></div>`:''}
 
     <div class="dash-robo-svg">
       <svg viewBox="0 0 140 200" style="overflow:visible">
-        <g style="transform-origin:70px 40px;animation:${bateu&&prod>0?'headBob 0.6s ease-in-out infinite':'headBob 2s ease-in-out infinite'}">
+        <g style="transform-origin:70px 40px;animation:${animHead}">
           <rect x="40" y="10" width="60" height="50" rx="10" fill="none" stroke="${cor}" stroke-width="2"/>
           <circle cx="57" cy="28" r="7" fill="${cor}" opacity="0.2"/>
           <circle cx="83" cy="28" r="7" fill="${cor}" opacity="0.2"/>
-          ${prod>0&&meta>0&&bateu?`
-            <path d="M53 25 L57 29 L61 25 M53 31 L57 27 L61 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-            <path d="M79 25 L83 29 L87 25 M79 31 L83 27 L87 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-            <path d="M52 44 Q70 56 88 44" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="48" cy="42" r="5" fill="${cor}" opacity="0.2"/>
-            <circle cx="92" cy="42" r="5" fill="${cor}" opacity="0.2"/>
-          `:prod>0&&meta>0&&!bateu?`
-            <line x1="53" y1="24" x2="61" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="61" y1="24" x2="53" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="79" y1="24" x2="87" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="87" y1="24" x2="79" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M52 50 Q70 40 88 50" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <ellipse cx="57" cy="38" rx="2" ry="4" fill="${cor}" opacity="0.6"/>
-          `:`
-            <circle cx="57" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite"/>
-            <circle cx="83" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite 0.1s"/>
-            <line x1="56" y1="46" x2="84" y2="46" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-          `}
+          ${olhos}
         </g>
         <rect x="63" y="60" width="14" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
         <g style="animation:${bateu&&prod>0?'headBob 0.6s ease-in-out infinite':'none'};transform-origin:70px 107px">
@@ -2096,13 +2105,13 @@ function _dashRenderRobo(k){
           <circle cx="78" cy="97" r="4" fill="${cor}" opacity="${bateu&&prod>0?'0.7':'0.3'}"/>
           <text x="70" y="121" text-anchor="middle" font-size="8" fill="${cor}" opacity="0.6" font-family="Courier New">${bateu&&prod>0?'OK!':prod>0&&meta>0?'...':'---'}</text>
         </g>
-        <g style="transform-origin:30px 85px;animation:${bateu&&prod>0?'armUp 0.6s ease-in-out infinite':'armUp 1.5s ease-in-out infinite'}">
+        <g style="transform-origin:30px 85px;animation:armUp ${animArm} ease-in-out infinite">
           <rect x="8" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
           <rect x="4" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
           <rect x="4" y="117" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
           <rect x="14" y="115" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
         </g>
-        <g style="transform-origin:110px 85px;animation:${bateu&&prod>0?'armDown 0.6s ease-in-out infinite':'armDown 1.5s ease-in-out infinite'}">
+        <g style="transform-origin:110px 85px;animation:armDown ${animArm} ease-in-out infinite">
           <rect x="108" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
           <rect x="118" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
           <g style="animation:weld 0.8s ease-in-out infinite">
@@ -2117,10 +2126,7 @@ function _dashRenderRobo(k){
         <rect x="34" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
         <rect x="78" y="150" width="24" height="40" rx="8" fill="none" stroke="${cor}" stroke-width="2"/>
         <rect x="78" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        ${bateu&&prod>0?`
-        <text x="15" y="25" font-size="14" style="animation:weld 0.5s infinite">⭐</text>
-        <text x="112" y="20" font-size="12" style="animation:weld 0.7s infinite 0.2s">✨</text>
-        <text x="10" y="110" font-size="10" style="animation:weld 0.6s infinite 0.4s">⭐</text>`:''}
+        ${estrelas}
       </svg>
     </div>
 
@@ -2130,125 +2136,15 @@ function _dashRenderRobo(k){
         <div class="dash-nome">${esc(c.nome||'')}</div>
         <div class="dash-cod">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
       </div>
-      <div class="dash-box">
+      <div class="dash-box" style="border-color:${cor}50">
         <div class="dash-prod-h">Produção ${hora}</div>
-        <div class="dash-prod-n">${prod>0?prod:'—'}</div>
+        <div class="dash-prod-n" style="color:${cor}">${prod>0?prod:'—'}</div>
         ${meta>0?`<div class="dash-meta-txt">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
       </div>
       ${prod>0&&meta>0?`
-      <div class="dash-badge">${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}</div>
+      <div class="dash-badge" style="border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}</div>
       <div class="dash-faltou">Produzido: <b style="color:${cor}">${prod}</b> &nbsp;|&nbsp; Meta: <b style="color:#d8dde6">${meta}</b>${!bateu?` &nbsp;|&nbsp; Faltou: <b style="color:#ff4d4d">${meta-prod}</b>`:''}</div>`:''}
       <div class="dash-dots">
-        ${_dashRobos.map((_,i)=>`<div style="width:${i===idx?'20px':'6px'};height:6px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all .3s"></div>`).join('')}
-        <div style="width:6px;height:6px;border-radius:99px;background:#1e2530"></div>
-      </div>
-    </div>
-  </div>`;
-    <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px">
-      <svg width="180" height="260" viewBox="0 0 140 200" style="overflow:visible">
-        <!-- cabeça com bobbing quando feliz -->
-        <g style="transform-origin:70px 40px;animation:${bateu&&prod>0?'headBob 0.6s ease-in-out infinite':'headBob 2s ease-in-out infinite'}">
-          <rect x="40" y="10" width="60" height="50" rx="10" fill="none" stroke="${cor}" stroke-width="2"/>
-          <!-- olhos -->
-          <circle cx="57" cy="28" r="7" fill="${cor}" opacity="0.2"/>
-          <circle cx="83" cy="28" r="7" fill="${cor}" opacity="0.2"/>
-          ${prod>0&&meta>0&&bateu?`
-            <!-- olhos felizes (estrelinhas) -->
-            <path d="M53 25 L57 29 L61 25 M53 31 L57 27 L61 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-            <path d="M79 25 L83 29 L87 25 M79 31 L83 27 L87 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-            <!-- boca feliz -->
-            <path d="M52 44 Q70 56 88 44" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-            <!-- bochechas -->
-            <circle cx="48" cy="42" r="5" fill="${cor}" opacity="0.2"/>
-            <circle cx="92" cy="42" r="5" fill="${cor}" opacity="0.2"/>
-          `:`
-            ${prod>0&&meta>0&&!bateu?`
-              <!-- olhos tristes (X) -->
-              <line x1="53" y1="24" x2="61" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="61" y1="24" x2="53" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="79" y1="24" x2="87" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="87" y1="24" x2="79" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- boca triste -->
-              <path d="M52 50 Q70 40 88 50" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
-              <!-- lágrima -->
-              <ellipse cx="57" cy="38" rx="2" ry="4" fill="${cor}" opacity="0.6"/>
-            `:`
-              <!-- olhos neutros -->
-              <circle cx="57" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite"/>
-              <circle cx="83" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite 0.1s"/>
-              <!-- boca neutra -->
-              <line x1="56" y1="46" x2="84" y2="46" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
-            `}
-          `}
-        </g>
-        <!-- pescoço -->
-        <rect x="63" y="60" width="14" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        <!-- corpo com animação pulo quando feliz -->
-        <g style="animation:${bateu&&prod>0?'headBob 0.6s ease-in-out infinite':'none'};transform-origin:70px 107px">
-          <rect x="30" y="72" width="80" height="70" rx="10" fill="none" stroke="${cor}" stroke-width="2"/>
-          <!-- painel central -->
-          <rect x="50" y="82" width="40" height="30" rx="6" fill="${cor}" opacity="0.1" stroke="${cor}" stroke-width="1"/>
-          <circle cx="62" cy="97" r="4" fill="${cor}" opacity="${bateu&&prod>0?'1':'0.5'}"/>
-          <circle cx="78" cy="97" r="4" fill="${cor}" opacity="${bateu&&prod>0?'0.7':'0.3'}"/>
-          <!-- letras no painel -->
-          <text x="70" y="121" text-anchor="middle" font-size="8" fill="${cor}" opacity="0.6" font-family="Courier New">${bateu&&prod>0?'OK!':prod>0&&meta>0?'...':'---'}</text>
-        </g>
-        <!-- braço esquerdo -->
-        <g style="transform-origin:30px 85px;animation:${bateu&&prod>0?'armUp 0.6s ease-in-out infinite':'armUp 1.5s ease-in-out infinite'}">
-          <rect x="8" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
-          <rect x="4" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
-          <rect x="4" y="117" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
-          <rect x="14" y="115" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        </g>
-        <!-- braço direito -->
-        <g style="transform-origin:110px 85px;animation:${bateu&&prod>0?'armDown 0.6s ease-in-out infinite':'armDown 1.5s ease-in-out infinite'}">
-          <rect x="108" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
-          <rect x="118" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
-          <g style="animation:weld 0.8s ease-in-out infinite;transform-origin:127px 117px">
-            <circle cx="127" cy="117" r="3" fill="#ffb300"/>
-            <line x1="127" y1="110" x2="127" y2="106" stroke="#ffb300" stroke-width="2"/>
-            <line x1="133" y1="112" x2="136" y2="109" stroke="#ffb300" stroke-width="2"/>
-            <line x1="121" y1="112" x2="118" y2="109" stroke="#ffb300" stroke-width="2"/>
-          </g>
-        </g>
-        <!-- cintura -->
-        <rect x="38" y="140" width="64" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        <!-- pernas -->
-        <rect x="38" y="150" width="24" height="40" rx="8" fill="none" stroke="${cor}" stroke-width="2"/>
-        <rect x="34" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        <rect x="78" y="150" width="24" height="40" rx="8" fill="none" stroke="${cor}" stroke-width="2"/>
-        <rect x="78" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
-        ${bateu&&prod>0?`
-        <!-- estrelinhas ao redor quando feliz -->
-        <text x="20" y="30" font-size="14" style="animation:weld 0.5s infinite">⭐</text>
-        <text x="110" y="25" font-size="12" style="animation:weld 0.7s infinite 0.2s">✨</text>
-        <text x="15" y="110" font-size="10" style="animation:weld 0.6s infinite 0.4s">⭐</text>
-        `:''}
-      </svg>
-    </div>
-
-    <!-- Informações do robô -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:18px;flex:1;max-width:700px">
-      <div style="text-align:center">
-        <div style="font-size:18px;color:#4a5568;letter-spacing:0.25em;text-transform:uppercase">Robô ${rn}</div>
-        <div style="font-size:40px;font-weight:900;color:#fff;margin:4px 0">${esc(c.nome||'')}</div>
-        <div style="font-size:20px;color:#ffb300;font-weight:700">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
-      </div>
-
-      <div style="background:#080b0f;border:3px solid ${cor}50;border-radius:28px;padding:36px 80px;text-align:center;width:100%">
-        <div style="font-size:18px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:10px">Produção ${hora}</div>
-        <div style="font-size:200px;font-weight:900;line-height:0.9;color:${cor};font-variant-numeric:tabular-nums">${prod>0?prod:'—'}</div>
-        ${meta>0?`<div style="font-size:22px;color:#4a5568;margin-top:12px">Meta: <b style="color:${cor};font-size:28px">${meta}</b> peças/hora</div>`:''}
-      </div>
-
-      ${prod>0&&meta>0?`
-      <div style="font-size:32px;font-weight:900;letter-spacing:0.12em;padding:16px 48px;border-radius:99px;border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">
-        ${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}
-      </div>
-      <div style="font-size:20px;color:#4a5568">Produzido: <b style="color:${cor}">${prod}</b> &nbsp;|&nbsp; Meta: <b style="color:#d8dde6">${meta}</b>${!bateu?` &nbsp;|&nbsp; Faltou: <b style="color:#ff4d4d">${meta-prod}</b>`:''}
-      </div>`:''}
-
-      <div style="display:flex;gap:6px;margin-top:4px">
         ${_dashRobos.map((_,i)=>`<div style="width:${i===idx?'20px':'6px'};height:6px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all .3s"></div>`).join('')}
         <div style="width:6px;height:6px;border-radius:99px;background:#1e2530"></div>
       </div>
