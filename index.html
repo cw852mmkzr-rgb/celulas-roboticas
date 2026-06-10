@@ -347,7 +347,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
     <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
-    <button class="login-btn-sec" style="margin-bottom:6px;color:#fff;border-color:#ffffff40" onclick="startViewer()">Entrar como Visualizador →</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
     <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
   </div>
@@ -2252,7 +2252,13 @@ function _dashRenderFooter(){
 }
 
 
-function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
+function startViewer(){
+  isAdmin=false;isAdminMetas=false;
+  startApp();
+  // Seleciona automaticamente a célula de Produção Mensal
+  const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
+  if(prodKey){selected=prodKey;renderDetail();}
+}
 function startApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
