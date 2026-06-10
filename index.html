@@ -891,23 +891,26 @@ function buildTurnoTable(c,turno,chave){
   }).join('');
   const linhas=ROBOS.map(robo=>{
     const rd=(data[robo])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
+    const pontos=parseInt(rd.pontos)||0;
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
       let cc='';
-      if(isCafe) cc='cafe'; // 10:00 SEMPRE amarelo, independente de meta
+      if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
-      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)"></td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="color:#ff6a00;width:44px" onchange="updateMetasCell('${selected}',${robo},'pontos',this.value)"></td>`:'';
     return`<tr>
       <td class="robo-label">${robo}</td>
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
       <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
+      ${pontosCell}
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
       ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
@@ -925,6 +928,7 @@ function buildTurnoTable(c,turno,chave){
   return`<div class="metas-table-wrap"><table class="metas-table">
     <thead><tr>
       <th class="col-robo">Robô</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
+      ${isAdmin?`<th class="col-meta" style="color:#ff6a00;font-size:10px">Pts</th>`:''}
       ${horasHeader}
       <th class="col-sub" style="color:${subColor}">${subLabel}</th>
       ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
@@ -2371,6 +2375,32 @@ function fecharDropdownPeca(){
 document.addEventListener('click', function(e){
   if(!e.target.closest('#pecaDropdown') && !e.target.closest('.campo-codigo-peca')) fecharDropdownPeca();
 });
+
+function handleMetasInput(key,robo,campo,valor){
+  // Se tem pontos cadastrados, divide automaticamente
+  const c = celulas[key];
+  const chave = getMetasChave(key);
+  if(!c.metas_dias) c.metas_dias={};
+  if(!c.metas_dias[chave]) c.metas_dias[chave]={};
+  if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
+  const rd = c.metas_dias[chave][robo];
+  const pontos = parseInt(rd.pontos)||0;
+  // Se o valor digitado parece ser total de ciclos (grande) e tem pontos definidos
+  const numVal = parseInt(valor)||0;
+  if(pontos>1 && numVal>0){
+    const dividido = Math.round(numVal/pontos);
+    // só divide se o resultado for razoável (entre 1 e 999)
+    if(dividido>=1 && dividido<=999 && dividido!==numVal){
+      rd[campo] = String(dividido);
+      // atualiza o input na tela
+      const inp = document.getElementById(`inp-${robo}-${campo}`);
+      if(inp) inp.value = dividido;
+      saveToAPI(celulas);
+      return;
+    }
+  }
+  updateMetasCell(key,robo,campo,valor);
+}
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
