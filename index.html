@@ -2119,6 +2119,7 @@ function copiarDiaAnterior(key){
       if(!celulas[key].metas_dias[chaveAtual][robo]) celulas[key].metas_dias[chaveAtual][robo] = {};
       if(ant.cod) celulas[key].metas_dias[chaveAtual][robo].cod  = ant.cod;
       if(ant.meta) celulas[key].metas_dias[chaveAtual][robo].meta = ant.meta;
+      if(ant.pontos) celulas[key].metas_dias[chaveAtual][robo].pontos = ant.pontos;
     }
   });
 
@@ -2385,17 +2386,33 @@ function handleMetasInput(key,robo,campo,valor){
   const rd = c.metas_dias[chave][robo];
   const pontos = parseInt(rd.pontos)||0;
   const numVal = parseInt(valor)||0;
+  let valorFinal = valor;
   if(pontos>1 && numVal>0){
     const dividido = Math.round(numVal/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==numVal){
-      rd[campo] = String(dividido);
-      saveToAPI(celulas);
-      // rerenderiza para aplicar cores corretas
-      renderMetasDiaria();
-      return;
+      valorFinal = String(dividido);
+      rd[campo] = valorFinal;
+      // atualiza o input na tela com o valor dividido
+      const inp = document.getElementById(`inp-${robo}-${campo}`);
+      if(inp) inp.value = valorFinal;
     }
   }
-  updateMetasCell(key,robo,campo,valor);
+  // aplica cor correta sem rerenderizar
+  const meta = parseInt(rd.meta)||0;
+  const {num, tipo} = parseCelVal(valorFinal);
+  const inp = document.getElementById(`inp-${robo}-${campo}`);
+  if(inp){
+    inp.className = 'hora-inp';
+    const isCafe = HORAS_CAFE.includes(campo.replace('h','').replace(/(\d{2})(\d{2})/,'$1:$2'));
+    if(isCafe) inp.classList.add('cafe');
+    else if(tipo==='ajuste') inp.classList.add('cell-adj');
+    else if(num>0){
+      if(meta>0&&num>=meta) inp.classList.add('cell-ok');
+      else if(meta>0&&num<meta) inp.classList.add('cell-fail');
+      else inp.classList.add('cell-ok');
+    }
+  }
+  updateMetasCell(key,robo,campo,valorFinal);
 }
 
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
