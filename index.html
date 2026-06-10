@@ -348,17 +348,35 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </div>
 
 <div id="dashboardScreen">
+  <!-- Header -->
   <div class="dash-header">
-    <div class="dash-title">⬡ CÉLULAS ROBÓTICAS <span style="color:#4a5568;font-size:12px;font-weight:400">— Monitor Industrial</span></div>
-    <div style="text-align:center">
-      <div class="dash-clock" id="dashClock">00:00:00</div>
+    <div>
+      <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
       <div class="dash-date" id="dashDate"></div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Hora atual</div>
+      <div class="dash-clock" id="dashClock">00:00:00</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Hora cheia</div>
+      <div class="dash-clock" id="dashHoraCheia" style="color:#ffb300">00:00</div>
     </div>
     <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
   </div>
-  <div class="dash-body" id="dashBody"></div>
+
+  <!-- Mini cards todos os robôs -->
+  <div style="padding:8px 16px;border-bottom:1px solid #1e2530;background:#080b0f">
+    <div style="font-size:9px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px">Produção hora atual — todos os robôs</div>
+    <div id="dashMiniCards" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+  </div>
+
+  <!-- Foco no robô atual -->
+  <div id="dashFoco" style="flex:1;overflow:hidden"></div>
+
+  <!-- Rodapé horas -->
   <div class="dash-footer">
-    <div class="dash-footer-title">⏱ Produção por hora — hoje</div>
+    <div class="dash-footer-title">⏱ Produção total por hora — hoje (todos os robôs)</div>
     <div class="dash-horas" id="dashHoras"></div>
   </div>
 </div>
@@ -1919,24 +1937,37 @@ function startDashboard(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("dashboardScreen").style.display="flex";
   isAdmin=false; isAdminMetas=false;
+  dashRoboIndex = 0;
   loadDashboard();
-  dashTimer = setInterval(loadDashboard, 300000); // 5 min
-  clockTimer = setInterval(updateDashClock, 1000);
+  dashTimer    = setInterval(loadDashboard, 300000);
+  clockTimer   = setInterval(updateDashClock, 1000);
+  slideTimer   = setInterval(nextDashRobo, 25000);
   updateDashClock();
 }
 
 function sairDashboard(){
   clearInterval(dashTimer);
   clearInterval(clockTimer);
+  clearInterval(slideTimer);
   document.getElementById("dashboardScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
 }
 
-let dashTimer=null, clockTimer=null;
+let dashTimer=null, clockTimer=null, slideTimer=null;
+let dashRoboIndex = 0;
+let dashRobosAtivos = [];
+
+function getHoraCheia(){
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2,'0')}:00`;
+}
 
 function updateDashClock(){
   const now = new Date();
-  document.getElementById("dashClock").textContent = now.toLocaleTimeString("pt-BR");
+  const relogio = document.getElementById("dashClock");
+  const horaCheia = document.getElementById("dashHoraCheia");
+  if(relogio) relogio.textContent = now.toLocaleTimeString("pt-BR");
+  if(horaCheia) horaCheia.textContent = getHoraCheia();
   document.getElementById("dashDate").textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 
@@ -1949,66 +1980,141 @@ async function loadDashboard(){
   renderDashboard();
 }
 
-function renderDashboard(){
+function nextDashRobo(){
+  if(dashRobosAtivos.length===0) return;
+  dashRoboIndex = (dashRoboIndex+1) % dashRobosAtivos.length;
+  renderDashRoboFoco();
+}
+
+function getDadosHoje(){
   const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
-  const anoAtual = new Date().getFullYear();
-  const mesAtual = new Date().getMonth();
-  const diaAtual = new Date().getDate();
-  const chaveHoje = metasKey ? `${celulas[metasKey].metas_ano||anoAtual}_${celulas[metasKey].metas_mes!==undefined?celulas[metasKey].metas_mes:mesAtual}_${celulas[metasKey].metas_dia||diaAtual}` : null;
-  const dadosHoje = (metasKey && chaveHoje && celulas[metasKey].metas_dias && celulas[metasKey].metas_dias[chaveHoje]) ? celulas[metasKey].metas_dias[chaveHoje] : {};
+  if(!metasKey) return {};
+  const mc = celulas[metasKey];
+  const ano = mc.metas_ano||new Date().getFullYear();
+  const mes = mc.metas_mes!==undefined?mc.metas_mes:new Date().getMonth();
+  const dia = mc.metas_dia||new Date().getDate();
+  const chave = `${ano}_${mes}_${dia}`;
+  return (mc.metas_dias&&mc.metas_dias[chave])?mc.metas_dias[chave]:{};
+}
 
-  // Cards dos robôs
-  const robos = Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
-  const body = document.getElementById("dashBody");
-  if(!body) return;
+function renderDashboard(){
+  const dadosHoje = getDadosHoje();
+  dashRobosAtivos = Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
+  renderDashRoboFoco();
+  renderDashHoras(dadosHoje);
+  renderDashMiniCards(dadosHoje);
+}
 
-  body.innerHTML = robos.map(k=>{
-    const c = celulas[k];
-    const status = (c.status||'').toLowerCase();
-    const rd = dadosHoje[k.replace(/\D/g,'')] || {};
-    const meta = parseInt(rd.meta)||0;
-    const totalHoje = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
-    const metaDia = meta * 9; // 9 horas turno dia
-    const pct = metaDia>0 ? Math.min(Math.round(totalHoje/metaDia*100),100) : 0;
-    const barColor = pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d';
-    const cod = rd.cod || c.codigo_peca || '—';
-    const statusClass = status.includes('produz')?'produzindo':status.includes('aguard')?'aguardando':'parado';
-    const statusLabel = status.includes('produz')?'Produzindo':status.includes('aguard')?'Aguardando':'Parado';
+function renderDashRoboFoco(){
+  const dadosHoje = getDadosHoje();
+  const container = document.getElementById("dashFoco");
+  if(!container||dashRobosAtivos.length===0) return;
+  const k = dashRobosAtivos[dashRoboIndex];
+  const c = celulas[k];
+  const roboNum = k.replace(/\D/g,'');
+  const rd = dadosHoje[roboNum]||{};
+  const meta = parseInt(rd.meta)||0;
+  const horaCheia = getHoraCheia();
+  const campoHoraAtual = campoH(horaCheia);
+  const prodHoraAtual = parseCelVal((rd[campoHoraAtual])||'').num;
+  const totalHoje = [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+  const metaDia = meta*9;
+  const pct = metaDia>0?Math.min(Math.round(totalHoje/metaDia*100),100):0;
+  const bateuHora = meta>0&&prodHoraAtual>=meta;
+  const bateuDia  = metaDia>0&&totalHoje>=metaDia;
+  const status = (c.status||'').toLowerCase();
+  const corPrincipal = bateuHora?'#00e87a':'#ff4d4d';
+  const cod = rd.cod||c.codigo_peca||'—';
 
-    return`<div class="dash-card ${statusClass}">
-      <div class="dash-card-status ${statusClass}">${statusLabel}</div>
-      <div class="dash-card-robo">Robô ${k}</div>
-      <div class="dash-card-nome">${esc(c.nome||'')}</div>
-      <div class="dash-card-peca">${esc(cod)}</div>
-      <div class="dash-card-total">${totalHoje>0?totalHoje.toLocaleString("pt-BR"):'—'}</div>
-      <div class="dash-card-meta">${meta>0?`Meta: ${metaDia} peças/dia`:'Sem meta definida'}</div>
-      ${metaDia>0?`
-      <div class="dash-card-bar">
-        <div class="dash-card-bar-fill" style="width:${pct}%;background:${barColor}"></div>
+  container.innerHTML=`
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:20px;text-align:center">
+    <!-- Nome e status -->
+    <div style="font-size:13px;color:#4a5568;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px">Robô ${roboNum}</div>
+    <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:4px">${esc(c.nome||'')}</div>
+    <div style="font-size:13px;color:#ffb300;font-weight:700;margin-bottom:16px">⚙ ${esc(cod)}</div>
+
+    <!-- Hora atual com produção -->
+    <div style="background:#0a0d12;border:2px solid ${corPrincipal}40;border-radius:16px;padding:16px 32px;margin-bottom:16px;min-width:220px">
+      <div style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:4px">Produção ${horaCheia}</div>
+      <div style="font-size:64px;font-weight:900;color:${corPrincipal};line-height:1">${prodHoraAtual>0?prodHoraAtual:'—'}</div>
+      ${meta>0?`<div style="font-size:13px;color:#4a5568;margin-top:4px">Meta: <b style="color:${corPrincipal}">${meta}</b> peças/hora</div>`:''}
+    </div>
+
+    <!-- Mensagem -->
+    ${meta>0&&prodHoraAtual>0?`
+    <div style="font-size:18px;font-weight:900;letter-spacing:0.08em;color:${corPrincipal};margin-bottom:16px;padding:8px 20px;border-radius:99px;background:${corPrincipal}15;border:1px solid ${corPrincipal}40">
+      ${bateuHora?'✅ ATINGIU A META':'❌ NÃO ATINGIU A META'}
+    </div>`:''}
+
+    <!-- Total do dia -->
+    <div style="display:flex;gap:20px;align-items:center">
+      <div style="text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Total hoje</div>
+        <div style="font-size:28px;font-weight:900;color:#d8dde6">${totalHoje>0?totalHoje.toLocaleString("pt-BR"):'—'}</div>
       </div>
-      <div style="font-size:10px;color:${barColor};font-weight:700;margin-top:3px">${pct}%</div>`:''}
-    </div>`;
-  }).join('');
+      ${metaDia>0?`
+      <div style="text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Meta dia</div>
+        <div style="font-size:28px;font-weight:900;color:#4a5568">${metaDia.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Eficiência</div>
+        <div style="font-size:28px;font-weight:900;color:${pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d'}">${pct}%</div>
+      </div>`:''}
+    </div>
 
-  // Rodapé — produção por hora somando todos os robôs
-  const horasFooter = document.getElementById("dashHoras");
-  if(!horasFooter) return;
+    <!-- Barra progresso -->
+    ${metaDia>0?`
+    <div style="width:100%;max-width:300px;margin-top:12px">
+      <div style="background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${pct>=100?'#00e87a':pct>=80?'#ffb300':'#ff4d4d'};border-radius:99px;transition:width 0.5s"></div>
+      </div>
+    </div>`:''}
+
+    <!-- Indicador de slide -->
+    <div style="display:flex;gap:6px;margin-top:16px">
+      ${dashRobosAtivos.map((_,i)=>`<div style="width:${i===dashRoboIndex?'20px':'6px'};height:6px;border-radius:99px;background:${i===dashRoboIndex?'#00e87a':'#1e2530'};transition:all 0.3s"></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderDashHoras(dadosHoje){
+  const footer = document.getElementById("dashHoras");
+  if(!footer) return;
   const todasHoras = [...HORAS_DIA,...HORAS_NOITE];
-  horasFooter.innerHTML = todasHoras.map(h=>{
+  const horaCheia = getHoraCheia();
+  footer.innerHTML = todasHoras.map(h=>{
     const campo = campoH(h);
     const isCafe = HORAS_CAFE.includes(h);
-    const totalHora = ROBOS.reduce((s,robo)=>{
-      const rd2 = dadosHoje[robo] || {};
-      return s + (parseCelVal((rd2[campo])||'').num);
-    },0);
-    const metaHora = ROBOS.reduce((s,robo)=>{
-      const rd2 = dadosHoje[robo] || {};
-      return s + (parseInt(rd2.meta)||0);
-    },0);
-    const classe = isCafe?'cafe':totalHora>0&&metaHora>0?totalHora>=metaHora?'meta-ok':'meta-fail':'';
-    return`<div class="dash-hora-card ${classe}">
-      <div class="dash-hora-label">${h}</div>
-      <div class="dash-hora-val">${totalHora>0?totalHora:'—'}</div>
+    const isAtual = h===horaCheia;
+    const total = ROBOS.reduce((s,robo)=>s+(parseCelVal((dadosHoje[robo]?dadosHoje[robo][campo]:'')||'').num),0);
+    const metaTotal = ROBOS.reduce((s,robo)=>s+(parseInt((dadosHoje[robo]||{}).meta)||0),0);
+    const bateu = total>0&&metaTotal>0&&total>=metaTotal;
+    const cor = isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
+      <div class="dash-hora-label" style="color:${isAtual?cor:'#4a5568'}">${h}${isAtual?' ◀':''}</div>
+      <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDashMiniCards(dadosHoje){
+  const mini = document.getElementById("dashMiniCards");
+  if(!mini) return;
+  const horaCheia = getHoraCheia();
+  const campo = campoH(horaCheia);
+  mini.innerHTML = dashRobosAtivos.map((k,i)=>{
+    const roboNum = k.replace(/\D/g,'');
+    const rd = dadosHoje[roboNum]||{};
+    const meta = parseInt(rd.meta)||0;
+    const prod = parseCelVal((rd[campo])||'').num;
+    const bateu = meta>0&&prod>=meta;
+    const cor = meta===0?'#4a5568':prod===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    const ativo = i===dashRoboIndex;
+    return`<div onclick="dashRoboIndex=${i};renderDashRoboFoco()" style="cursor:pointer;background:${ativo?cor+'15':'#0a0d12'};border:1px solid ${ativo?cor+'60':'#1e2530'};border-radius:8px;padding:6px 10px;text-align:center;min-width:54px;transition:all 0.3s">
+      <div style="font-size:9px;color:#4a5568;font-weight:700">${roboNum}</div>
+      <div style="font-size:16px;font-weight:900;color:${cor}">${prod>0?prod:'—'}</div>
+      ${meta>0?`<div style="font-size:8px;color:${cor};opacity:0.7">/${meta}</div>`:''}
     </div>`;
   }).join('');
 }
