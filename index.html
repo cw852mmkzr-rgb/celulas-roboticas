@@ -544,6 +544,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
 </div>
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
+<input type="file" id="imgCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImgUpload(this.files[0])">
 <div class="toast" id="toastEl"></div>
 
 <script>
@@ -1409,6 +1410,10 @@ function renderDetail(){
         <div style="flex-shrink:0">
           <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Imagem da Peça</div>
           <div style="width:140px;height:140px;border-radius:10px;overflow:hidden;border:2px dashed #1e2530;background:#080b0f;cursor:${isAdmin?'pointer':'default'}" onclick="${isAdmin?'triggerImgUpload()':''}">${imgBlock}</div>
+          ${isAdmin?`<div style="display:flex;gap:6px;margin-top:8px">
+            <button onclick="triggerImgUpload()" style="flex:1;background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:5px 0;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">🖼 Galeria</button>
+            <button onclick="triggerCamera()" style="flex:1;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 0;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">📷 Câmera</button>
+          </div>`:''}
         </div>
       </div>
     </div>
@@ -1887,6 +1892,7 @@ function baixarQR(key) {
 }
 
 function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
+function triggerCamera(){if(!isAdmin)return;document.getElementById("imgCameraInput").click();}
 function handleImgUpload(file){
   if(!file||!selected)return;
   const canvas = document.createElement('canvas');
@@ -3199,4 +3205,3 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 </body>
 </html>
-
