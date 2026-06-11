@@ -550,6 +550,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <script>
 const API_KEY  = "$2a$10$Hun0m.vWkzm.Tgj7jX4ZeeTVIRmLdFSIqFVJhYsYqq6ex4d43vDOW";
 const BIN_ID   = "6a27464ff5f4af5e29ce2ba0";
+const BIN_IMG_ID = "6a2a94b9f5f4af5e29de4070";
+const BASE_URL_IMG = `https://api.jsonbin.io/v3/b/${BIN_IMG_ID}`;
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
 const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
@@ -711,6 +713,18 @@ async function loadFromAPI(){
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
+
+  // Carrega imagens do BIN separado e aplica
+  try{
+    const ri=await fetch(BASE_URL_IMG+"/latest",{headers:HEADERS_R});
+    const di=await ri.json();
+    if(di.record&&di.record.imagens){
+      Object.entries(di.record.imagens).forEach(([key,img])=>{
+        if(celulas[key]) celulas[key].img_peca = img;
+      });
+    }
+  }catch(e){}
+
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
   else{
@@ -1899,9 +1913,8 @@ function handleImgUpload(file){
   const ctx = canvas.getContext('2d');
   const img = new Image();
   const url = URL.createObjectURL(file);
-  img.onload = function(){
-    // Reduz para no máximo 400x400 mantendo proporção
-    const maxSize = 400;
+  img.onload = async function(){
+    const maxSize = 300;
     let w = img.width, h = img.height;
     if(w>maxSize||h>maxSize){
       if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
@@ -1909,12 +1922,32 @@ function handleImgUpload(file){
     }
     canvas.width=w; canvas.height=h;
     ctx.drawImage(img,0,0,w,h);
-    // Comprime para JPEG qualidade 70%
-    const compressed = canvas.toDataURL('image/jpeg', 0.7);
+    let compressed = canvas.toDataURL('image/jpeg', 0.5);
+    if(compressed.length > 60000){
+      compressed = canvas.toDataURL('image/jpeg', 0.3);
+    }
     URL.revokeObjectURL(url);
-    celulas[selected].img_peca = compressed;
-    saveToAPI(celulas);
-    renderDetail();
+
+    try{
+      // Carrega imagens existentes
+      const r = await fetch(BASE_URL_IMG+"/latest",{headers:HEADERS_R});
+      const d = await r.json();
+      const imgs = (d.record && d.record.imagens) ? d.record.imagens : {};
+      // Salva imagem com chave = selected
+      imgs[selected] = compressed;
+      await fetch(BASE_URL_IMG,{method:'PUT',headers:HEADERS_W,body:JSON.stringify({imagens:imgs})});
+      // Salva referência no BIN principal
+      celulas[selected].img_peca = compressed;
+      saveToAPI(celulas);
+      renderDetail();
+      showToast("Imagem salva ✓");
+    }catch(e){
+      // Fallback: salva direto no BIN principal
+      celulas[selected].img_peca = compressed;
+      saveToAPI(celulas);
+      renderDetail();
+      showToast("Imagem salva ✓");
+    }
   };
   img.src = url;
 }
