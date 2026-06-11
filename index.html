@@ -735,16 +735,17 @@ async function loadFromAPI(){
 
 async function saveToAPI(data){
   try{
-    await fetch(BASE_URL,{method:"PUT",headers:HEADERS_W,body:JSON.stringify(data)});
+    // Remove imagens do payload para não estourar o JSONBin
+    const dataSemImg = JSON.parse(JSON.stringify(data));
+    Object.keys(dataSemImg).forEach(k=>{
+      if(dataSemImg[k] && dataSemImg[k].img_peca) dataSemImg[k].img_peca = "";
+    });
+    await fetch(BASE_URL,{method:"PUT",headers:HEADERS_W,body:JSON.stringify(dataSemImg)});
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
-    // Backup no Google Sheets a cada 5 salvamentos
     backupContador++;
-    if(backupContador>=5){
-      backupContador=0;
-      backupToSheets(data);
-    }
+    if(backupContador>=5){backupContador=0;backupToSheets(dataSemImg);}
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
@@ -3238,3 +3239,4 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 </body>
 </html>
+
