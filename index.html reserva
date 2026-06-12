@@ -50,7 +50,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .field label { font-size: 13px; color: #4a5568; text-transform: uppercase; letter-spacing: 0.1em; }
 .field input, .field select { background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 8px 10px; font-family: 'Courier New', monospace; font-size: 20px; color: #d8dde6; width: 100%; transition: all 0.15s; }
 .field input:focus, .field select:focus { outline: none; border-color: #00e87a; background: #00e87a08; color: #fff; }
-.field input[readonly] { cursor: default; color: #6b7280; }
+.field input[readonly] { cursor: default; color: #d8dde6; }
 .field input.green { color: #00e87a; font-weight: 700; }
 .field select { background: #0f1318; cursor: pointer; }
 
@@ -72,8 +72,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .detail-sub { font-size: 11px; color: #4a5568; margin-top: 4px; }
 .status-badge { display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; }
 
-.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #1e2530; border-radius: 8px; transition: all 0.2s; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 160px; cursor: pointer; }
-.img-upload-box:hover { border-color: #00e87a40; }
+.img-upload-box { display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080b0f; width: 100%; height: 100%; }
 .img-upload-box img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .img-upload-box .img-placeholder { font-size: 10px; color: #2a3040; text-align: center; padding: 8px; line-height: 1.6; }
 .img-upload-box .img-overlay { position: absolute; inset: 0; background: #000000cc; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; gap: 4px; }
@@ -123,6 +122,47 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.error { background: #ff4d4d; color: #fff; }
 @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+/* ── DASHBOARD TV ── */
+#dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
+.dash-header { display:flex; justify-content:space-between; align-items:center; padding:14px 28px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; }
+.dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; }
+.dash-clock { font-size:36px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
+.dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
+.dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
+.dash-horas { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
+.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:8px 14px; text-align:center; min-width:62px; }
+.dash-hora-label { font-size:11px; color:#4a5568; margin-bottom:4px; font-weight:700; }
+.dash-hora-val { font-size:22px; font-weight:900; color:#d8dde6; }
+.dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
+.dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
+.dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
+.dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
+.dash-exit { background:none; border:1px solid #1e2530; color:#4a5568; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; }
+.dash-exit:hover { color:#ff4d4d; border-color:#ff4d4d40; }
+.dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:32px; padding:16px; position:relative; overflow:hidden; flex-wrap:wrap; }
+.dash-robo-svg { flex-shrink:0; }
+.dash-robo-svg svg { width:clamp(80px,14vw,180px); height:auto; }
+.dash-info { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; max-width:700px; }
+.dash-rn { font-size:clamp(13px,2vw,20px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
+.dash-nome { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; }
+.dash-cod { font-size:clamp(14px,2.2vw,22px); color:#ffb300; font-weight:700; }
+.dash-box { background:#080b0f; border:3px solid #1e2530; border-radius:24px; padding:clamp(16px,3vw,36px) clamp(20px,5vw,80px); text-align:center; width:100%; box-sizing:border-box; }
+.dash-prod-h { font-size:clamp(12px,1.8vw,18px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:6px; }
+.dash-prod-n { font-size:clamp(80px,18vw,200px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
+.dash-meta-txt { font-size:clamp(14px,2.2vw,22px); color:#4a5568; margin-top:8px; }
+.dash-badge { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; text-align:center; }
+.dash-faltou { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
+.dash-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
+@media(max-width:600px){ .dash-robo-wrap{ flex-direction:column; gap:8px; padding:8px; } .dash-robo-svg svg{ width:clamp(60px,20vw,100px); } }
+
+/* Animação robô */
+@keyframes armUp   { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-30deg)} }
+@keyframes armDown { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(25deg)} }
+@keyframes blink   { 0%,90%,100%{opacity:1} 95%{opacity:0} }
+@keyframes weld    { 0%,100%{opacity:0} 50%{opacity:1} }
+@keyframes headBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #2a3040; gap: 10px; }
 .empty-icon { font-size: 40px; }
 
@@ -138,7 +178,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-day-card.today .prod-day-num { color: #00e87a; }
 .prod-day-input { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 18px; font-weight: 700; color: #d8dde6; text-align: center; width: 100%; padding: 2px 0; transition: color 0.15s; }
 .prod-day-input:focus { color: #00e87a; }
-.prod-day-input[readonly] { cursor: default; color: #4a5568; }
+.prod-day-input[readonly] { cursor: default; color: #d8dde6; }
 .prod-day-input.has-value { color: #00e87a; }
 .prod-day-bar-wrap { width: 100%; height: 4px; background: #1e2530; border-radius: 99px; overflow: hidden; }
 .prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; transition: width 0.4s; }
@@ -166,15 +206,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
 .metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
 .metas-table input.hora-inp:focus { color: #fff; }
-.metas-table input.hora-inp[readonly] { cursor: default; color: #4a5568; }
+.metas-table input.hora-inp[readonly] { cursor: default; color: #d8dde6; }
 .metas-table input.hora-inp.cafe { color: #ffb300; }
-.metas-table input.hora-inp.cafe[readonly] { color: #5a4a00; }
+.metas-table input.hora-inp.cafe[readonly] { color: #8a6200; }
 .metas-table input.hora-inp.cafe:focus { color: #ffe066; }
 .metas-table input.meta-inp, .metas-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; width: 100%; padding: 4px 0; text-align: center; }
 .metas-table input.meta-inp { color: #3d9eff; font-weight: 700; }
-.metas-table input.meta-inp[readonly] { color: #4a5568; cursor: default; }
+.metas-table input.meta-inp[readonly] { color: #00e87a; cursor: default; }
 .metas-table input.cod-inp { color: #d8dde6; }
-.metas-table input.cod-inp[readonly] { color: #4a5568; cursor: default; }
+.metas-table input.cod-inp[readonly] { color: #ffb300; cursor: default; }
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
 .cell-fail { background: #ff4d4d20 !important; color: #ff4d4d !important; }
 .cell-adj  { background: #3d9eff20 !important; color: #3d9eff !important; }
@@ -303,12 +343,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div class="login-title">CÉLULAS ROBÓTICAS</div>
     <div class="login-sub">MONITOR INDUSTRIAL</div>
-    <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')tryLogin()">
+    <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')autoLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-    <button class="login-btn-main" onclick="tryLogin()">Entrar como Host</button>
-    <button class="login-btn-main" style="background:#a78bfa;margin-bottom:8px" onclick="tryLoginMetas()">Entrar como Metas</button>
-    <button class="login-btn-sec" onclick="startViewer()">Ver sem editar →</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
+    <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
+  </div>
+</div>
+
+<div id="dashboardScreen">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
+      <div class="dash-date" id="dashDate"></div>
+    </div>
+    <div style="display:flex;gap:28px;align-items:center">
+      <div style="text-align:center">
+        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
+        <div class="dash-clock" id="dashClock">--:--:--</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
+        <div class="dash-clock" style="color:#ffb300" id="dashHoraCheia">--:--</div>
+      </div>
+    </div>
+    <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
+  </div>
+  <div id="dashMain" style="flex:1;overflow:hidden"></div>
+  <div class="dash-footer">
+    <div class="dash-footer-title">⏱ Produção total por hora — hoje (todos os robôs)</div>
+    <div class="dash-horas" id="dashHoras"></div>
+  </div>
+</div>
   </div>
 </div>
 
@@ -478,16 +544,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   <img id="lightboxImg" src="" alt="peça" onclick="event.stopPropagation()">
 </div>
 <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleImgUpload(this.files[0])">
+<input type="file" id="imgCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImgUpload(this.files[0])">
 <div class="toast" id="toastEl"></div>
 
 <script>
-const API_KEY  = "$2a$10$Hun0m.vWkzm.Tgj7jX4ZeeTVIRmLdFSIqFVJhYsYqq6ex4d43vDOW";
-const BIN_ID   = "6a27464ff5f4af5e29ce2ba0";
+const SUPABASE_URL = "https://dtsrisqueekmomm moqxf.supabase.co".replace(" ","");
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0c3Jpc3F1ZWVrbW9tbW1vcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjEwMzIsImV4cCI6MjA5Njc5NzAzMn0.Zdo1zJraLw0BanX-o9A2SreMr9tiVHvgrIyTeNqQC6g";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
-const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const HEADERS_R = { "X-Master-Key": API_KEY };
-const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
+const HEADERS_SB = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" };
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
@@ -537,23 +602,1809 @@ const HORAS_CAFE  = ["10:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
 const defaultData = {
-  "10": {"nome": "Relatorio mensal","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": []},
-  "600": {"nome": "Robo Fanuc 600","status": "Produzindo","peca": "—","codigo_peca": "— 50698","eletrodo": " Reto","tipo_eletrodo": " COBRE DURO","tempo_peca": "45s","operador": "— Eduardo Botelho ","turno": "— manha 07:00 as 17:00","corrente": "3,40Ka","ultima_troca": "04/06/2026, 10:05","alertas": [],"membro1": "— MAGNO","membro2": "—ERIVELTON","membro3": "—MARCOS","tempo_solda": "125","pre_pressao": "120","meta_hora": 50,"cliente": "— Mueller","pontos_solda": "13 pontos","img_peca": "","historico_eletrodo": [{"data": "04/06/2026, 10:05","eletrodo": " Reto","tipo": " COBRE DURO"}]},
-  "601": {"nome": "Robo Fanuc 601","status": "Aguardando","cliente": "MUELLER","peca": "—","codigo_peca": "63102","img_peca": "","eletrodo": "RETO ","tipo_eletrodo": "COBRE DURO","tempo_peca": "55S","meta_hora": 50,"operador": "EDUARDO BOTELHO","turno": "MANHA 07:00 AS 17:00 ","tempo_solda": "110","corrente": "3,30KA","pre_pressao": "110","pontos_solda": "16 PONTOS","ultima_troca": "08/06/2026, 13:29","alertas": [],"historico_eletrodo": [{"data": "08/06/2026, 13:29","eletrodo": "RETO ","tipo": "COBRE DURO"}],"membro1": "CAROL","membro2": "FABIANA","membro3": ""},
-  "602": {"nome": "Robo Fanuc 602","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "603": {"nome": "Robo Fanuc 603","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "604": {"nome": "Robo Fanuc 604","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "605": {"nome": "Robo kuka 605","status": "Produzindo","peca": "—Esmaltec","codigo_peca": "—3689","eletrodo": "—reto","tipo_eletrodo": "—revestido cobre","tempo_peca": "—15 segundos","operador": "— Eduardo botelho","turno": "—manha","corrente": "—2.80","ultima_troca": "—22/05/26","alertas": ["Novo alerta pequeno vazamento de ar na PINÇA"],"meta_hora": 65,"img_peca": "","tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "606": {"nome": "Robo kuka 606","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "607": {"nome": "Robo Kuka 607","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "608": {"nome": "Robo Kuka 608","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "609": {"nome": "Robo Kuka 609","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "610": {"nome": "Robo Kuka 610","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "611": {"nome": "Robo Kuka 611","status": "Aguardando","peca": "—","codigo_peca": "—","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","operador": "—","turno": "—","corrente": "—","ultima_troca": "—","alertas": [],"img_peca": "","meta_hora": 0,"tempo_solda": "—","pre_pressao": "—","pontos_solda": "—"},
-  "01": {"nome": "Produção Mensal","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"ano_selecionado": 2026,"mes_selecionado": 5,"producao_meses": {"2026_4": {"1": 0,"2": 0,"3": 0,"4": 0,"5": 0,"6": 0,"7": 0,"8": 0},"2026_5": {"1": 4454,"2": 4823,"3": 4648,"4": 3924,"5": 0,"6": 0,"7": 0,"8": 835}}},
-  "02": {"nome": "Meta diaria","status": "Aguardando","cliente": "—","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"metas_dia": 8,"metas_mes": 5,"metas_dias": {"2026_5_1": {"600": {"meta": "45","cod": "50698","h0800": "45","h0900": "48","h1000": "19","h1100": "49","h1200": "36","h1400": "47","h1500": "48","h1600": "41","h1700": "38"},"601": {"meta": "50","cod": "63103","h0800": "50","h0900": "67","h1000": "37"},"603": {"cod": "16211","meta": "65","h0800": "68","h0900": "71","h1000": "38","h1100": "73","h1200": "73","h1300": "50","h1400": "62","h1500": "52","h1600": "70","h1700": "66","h1800": "68","h1900": "65","h2100": "67","h2200": "45"},"604": {"cod": "Pr-69","meta": "40"},"605": {"cod": "3689","meta": "65","h0800": "52","h0900": "50","h1000": "23","h1400": "72","h1500": "68","h1600": "51","h1700": "71"},"606": {"cod": "14082","meta": "70","h0800": "57","h0900": "64","h1000": "36","h1100": "41","h1200": "40","h1400": "52","h1500": "43","h1600": "75","h1700": "67"},"607": {"cod": "13951","meta": "50","h1100": "60","h1200": "43","h1300": "34","h1400": "70","h1500": "50","h1600": "45","h1700": "45","h1800": "39","h1900": "36","h2100": "35","h2200": "25"},"608": {"cod": "14083","meta": "70","h1100": "70","h1200": "30","h1400": "41","h1500": "21","h1600": "32","h1700": "31"},"609": {"cod": "1083","meta": "60","h1400": "57","h1500": "42","h1600": "40","h1700": "51"},"610": {"cod": "16211","meta": "65","h0800": "58","h0900": "50","h1000": "14","h1100": "68","h1200": "50","h1300": "56","h1400": "91","h1500": "70","h1600": "70","h1700": "57","h1800": "44","h1900": "41","h2100": "65","h2200": "38"},"611": {"cod": "3689","meta": "65","h0800": "73","h0900": "75","h1000": "30","h1100": "70","h1200": "68","h1400": "60","h1500": "25","h1600": "71","h1700": "58"}},"2026_5_2": {"600": {"meta": "45","cod": "50698","h0800": "42","h0900": "48","h1000": "20","h1100": "52","h1200": "31","h1400": "50","h1500": "32","h1600": "47","h1700": "35"},"601": {"meta": "50","cod": "63102","h1100": "55","h1200": "40","h1300": "27","h1400": "38","h1500": "34","h1600": "53","h1700": "40"},"603": {"cod": "16211","meta": "65","h0800": "76","h0900": "82","h1000": "30","h1100": "75","h1200": "62","h1300": "60","h1400": "67","h1500": "60","h1600": "81","h1700": "71","h1800": "50","h1900": "37","h2100": "68","h2200": "40"},"604": {"cod": "Pr-69","meta": "40","h1400": "53","h1500": "28","h1600": "22","h1700": "23"},"605": {"cod": "3689","meta": "65","h1000": "15","h1400": "73","h1500": "60","h1600": "82","h1700": "65"},"606": {"cod": "14082","meta": "70","h0800": "80","h0900": "71","h1000": "37","h1100": "47","h1200": "32","h1400": "60"},"607": {"cod": "13951","meta": "50","h0800": "50","h0900": "51","h1000": "29","h1100": "73","h1200": "56","h1400": "43","h1500": "45","h1600": "51","h1700": "38","h1800": "46","h1900": "36","h2100": "28","h2200": "22"},"608": {"cod": "14083","meta": "70","h0800": "60","h0900": "48","h1000": "25","h1100": "70","h1200": "40","h1400": "42","h1500": "33","h1600": "31","h1700": "25"},"609": {"cod": "1083","meta": "60","h1400": "51","h1500": "47","h1600": "70","h1700": "51"},"610": {"cod": "16211","meta": "65","h0800": "77","h0900": "70","h1000": "30","h1100": "78","h1200": "78","h1300": "33","h1400": "60","h1500": "70","h1600": "60","h1700": "58","h1800": "77","h1900": "53","h2100": "75","h2200": "65"},"611": {"cod": "3689","meta": "65","h0800": "68","h0900": "77","h1000": "33","h1100": "67","h1200": "46","h1400": "56","h1500": "60","h1600": "65","h1700": "55"}},"2026_5_3": {"600": {"cod": "50698","meta": "45","h0800": "42","h1200": "151","h1400": "50","h1500": "30","h1600": "50","h1700": "34"},"601": {"cod": "63102","meta": "50","h0800": "51","h1200": "146","h1400": "48","h1500": "31","h1600": "40","h1700": "27"},"603": {"cod": "16211","meta": "65","h0800": "68","h1200": "215","h1300": "50","h1400": "75","h1500": "37","h1600": "66","h1700": "36","h1800": "71","h1900": "68","h2100": "70","h2200": "52"},"604": {"cod": "Pr-69","meta": "40","h1200": "30","h1400": "36","h1500": "31","h1600": "28","h1700": "20"},"605": {"cod": "3689","meta": "65","h0800": "78","h1200": "170","h1400": "50"},"606": {"cod": "14082","meta": "70","h1200": "111","h1400": "52","h1500": "44","h1600": "70","h1700": "62"},"607": {"cod": "13951","meta": "50","h0800": "61","h1200": "137","h1500": "56","h1600": "62","h1700": "56","h1800": "33","h1900": "22","h2100": "57","h2200": "30"},"608": {"cod": "14083","meta": "70","h0800": "55","h1200": "141","h1300": "19","h1400": "50","h1500": "28","h1600": "32","h1700": "21"},"609": {"cod": "1083","meta": "60","h1400": "40","h1500": "46","h1600": "46","h1700": "55"},"610": {"cod": "16211","meta": "65","h0800": "81","h1200": "233","h1300": "40","h1400": "73","h1500": "65","h1600": "50","h1700": "71","h1800": "51","h1900": "48","h2100": "60","h2200": "61"},"611": {"cod": "3689","meta": "65","h0800": "54","h1200": "200","h1400": "65","h1500": "53","h1600": "61","h1700": "45"}},"2026_5_4": {"600": {"meta": "45","cod": "50698","h0800": "45","h0900": "43","h1000": "22","h1100": "50","h1200": "32","h1400": "47","h1500": "41","h1600": "38"},"601": {"cod": "63102","meta": "50","h0800": "44","h0900": "36","h1000": "35","h1100": "53","h1200": "50","h1400": "50","h1500": "50","h1600": "35"},"602": {"cod": "50697","meta": "45","h0800": "0","h0900": "0","h1000": "0","h1100": "0"},"603": {"cod": "16211","meta": "65","h0800": "65","h0900": "67","h1000": "35","h1100": "71","h1200": "67","h1300": "65","h1400": "40","h1500": "67","h1600": "45","h1700": "71","h1800": "75","h1900": "65","h2100": "65"},"604": {"cod": "Pr-69","meta": "40","h1300": "45","h1400": "32","h1500": "38","h1600": "19"},"606": {"cod": "14082","meta": "70","h0800": "72","h0900": "70","h1000": "41","h1100": "43","h1200": "33","h1400": "42","h1500": "70","h1600": "52"},"607": {"cod": "13951","meta": "50","h0800": "45","h0900": "41","h1000": "34","h1100": "47","h1200": "43","h1300": "35","h1400": "54","h1500": "32","h1600": "35","h1700": "55","h1800": "43","h1900": "28","h2100": "30"},"608": {"cod": "14083","meta": "70","h1400": "70","h1500": "50","h1600": "41"},"610": {"cod": "16211","meta": "65","h0800": "58","h0900": "56","h1000": "47","h1100": "65","h1200": "68","h1300": "45","h1400": "80","h1500": "73","h1600": "73","h1700": "47","h1800": "47","h1900": "56","h2100": "50"},"611": {"cod": "3689","meta": "65","h0800": "68","h0900": "72","h1000": "35","h1100": "59","h1200": "65","h1400": "51","h1500": "56","h1600": "44"}},"2026_5_8": {"600": {"cod": "50698","meta": "45","h0800": "31","h0900": "47"},"601": {"cod": "63102","meta": "50","h0800": "50","h0900": "57"},"602": {"cod": "50697","meta": "45","h0800": "0","h0900": "0"},"603": {"cod": "16211","meta": "65","h0800": "67","h0900": "70"},"604": {"cod": "Pr-69","meta": "40","h0800": "0","h0900": "0"},"605": {"cod": "3799","meta": "80","h0800": "0","h0900": "0"},"606": {"cod": "14082","meta": "70","h0800": "71","h0900": "70"},"607": {"cod": "13951","meta": "50","h0800": "52","h0900": "45"},"608": {"cod": "14083","meta": "70","h0800": "0","h0900": "0"},"609": {"cod": "1083","meta": "60","h0800": "0","h0900": "0"},"610": {"cod": "16211","meta": "65","h0800": "74","h0900": "72"},"611": {"cod": "3689","meta": "65","h0800": "56","h0900": "73"}}}},
-  "03": {"nome": "Produçao por peça","status": "Aguardando","peca": "—","codigo_peca": "—","img_peca": "","eletrodo": "—","tipo_eletrodo": "—","tempo_peca": "—","meta_hora": 0,"operador": "—","turno": "—","tempo_solda": "—","corrente": "—","pre_pressao": "—","pontos_solda": "—","ultima_troca": "—","alertas": [],"peca_mes": 5},
-  "00": {"nome": "Armario de Gabaritos","tipo_celula": "armario","status": "Aguardando","img_peca": "","meta_hora": 0,"alertas": [],"espacos": {"1": {"gabarito": "— pr89","status": "Ocupado"},"2": {"gabarito": "PR-073 PR-084 1090 1089 ","status": "Ocupado"},"3": {"gabarito": "PR-070 PR-87 PR-090 ","status": "Ocupado"},"4": {"gabarito": "PR-056 1083 63103","status": "Ocupado"},"5": {"gabarito": "PR-062 PR-46 PR-072 ","status": "Ocupado"},"6": {"gabarito": "","status": "Ocupado"},"7": {"gabarito": "BRASLAR 13952","status": "Ocupado"},"8": {"gabarito": "PR-040 PR-145","status": "Ocupado"},"9": {"gabarito": "13436 4850 PR-016","status": "Ocupado"},"10": {"gabarito": "15744 15742","status": "Ocupado"},"11": {"gabarito": "PROTOTIPO","status": "Ocupado"},"12": {"gabarito": "","status": "Ocupado"},"13": {"gabarito": "50698","status": "Ocupado"},"14": {"gabarito": "3615 PR-016","status": "Ocupado"},"15": {"gabarito": "3798","status": "Ocupado"},"16": {"gabarito": "15744","status": "Ocupado"},"17": {"gabarito": "PR-060","status": "Ocupado"},"18": {"gabarito": "PROTOTIPOS","status": "Ocupado"}}}
+  "12": {
+    "nome": "Catalago de Peças",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": []
+  },
+  "15": {
+    "nome": "Manutenção",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": [],
+    "manutencoes": {
+      "604": [
+        {
+          "descricao": "Superaquecimento no painel",
+          "responsavel": "Eduardo botelho",
+          "data": "10/06/2026, 21:26",
+          "concluido": false
+        }
+      ],
+      "605": [
+        {
+          "descricao": "Vazamento no cilindro de ar da pinça",
+          "responsavel": "Leonardo Favaro",
+          "data": "11/06/2026, 06:48",
+          "concluido": false
+        }
+      ]
+    }
+  },
+  "600": {
+    "nome": "Robo Fanuc 600",
+    "status": "Produzindo",
+    "peca": "50698",
+    "codigo_peca": "50698",
+    "eletrodo": " Reto",
+    "tipo_eletrodo": "RETO",
+    "tempo_peca": "45S",
+    "operador": "— Eduardo Botelho ",
+    "turno": "— manha 07:00 as 17:00",
+    "corrente": "3,45KA",
+    "ultima_troca": "04/06/2026, 10:05",
+    "alertas": [],
+    "membro1": "— MAGNO",
+    "membro2": "—ERIVELTON",
+    "membro3": "—MARCOS",
+    "tempo_solda": "125",
+    "pre_pressao": "120",
+    "meta_hora": 45,
+    "cliente": "MUELLER",
+    "pontos_solda": "13 PONTOS",
+    "img_peca": "",
+    "historico_eletrodo": [
+      {
+        "data": "04/06/2026, 10:05",
+        "eletrodo": " Reto",
+        "tipo": " COBRE DURO"
+      }
+    ]
+  },
+  "601": {
+    "nome": "Robo Fanuc 601",
+    "status": "Produzindo",
+    "cliente": "MUELLER",
+    "peca": "—",
+    "codigo_peca": "63102",
+    "img_peca": "",
+    "eletrodo": "RETO ",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "55S",
+    "meta_hora": 50,
+    "operador": "EDUARDO BOTELHO",
+    "turno": "MANHA 07:00 AS 17:00 ",
+    "tempo_solda": "110",
+    "corrente": "3,30KA",
+    "pre_pressao": "110",
+    "pontos_solda": "16 PONTOS",
+    "ultima_troca": "08/06/2026, 13:29",
+    "alertas": [],
+    "historico_eletrodo": [
+      {
+        "data": "08/06/2026, 13:29",
+        "eletrodo": "RETO ",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "CAROL",
+    "membro2": "FABIANA",
+    "membro3": ""
+  },
+  "602": {
+    "nome": "Robo Fanuc 602",
+    "status": "Parado",
+    "peca": "50697",
+    "codigo_peca": "50697",
+    "eletrodo": "Reto",
+    "tipo_eletrodo": "cobre duro",
+    "tempo_peca": "48s",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "3,45KA",
+    "ultima_troca": "09/06/2026, 13:49",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 46,
+    "tempo_solda": "135",
+    "pre_pressao": "25s",
+    "pontos_solda": "16 PONTOS",
+    "cliente": "MUELLER",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 13:49",
+        "eletrodo": "reto",
+        "tipo": "—"
+      }
+    ]
+  },
+  "603": {
+    "nome": "Robo Fanuc 603",
+    "status": "Produzindo",
+    "peca": "16211",
+    "codigo_peca": "16211",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "28S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "2,80KA",
+    "ultima_troca": "09/06/2026, 14:44",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 65,
+    "tempo_solda": "110",
+    "pre_pressao": "80",
+    "pontos_solda": "14 PONTOS",
+    "cliente": "ITATIAIA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:44",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "MARIA ANGELA",
+    "membro2": "PATRICIA",
+    "membro3": "MARIA"
+  },
+  "604": {
+    "nome": "Robo Fanuc 604",
+    "status": "Produzindo",
+    "peca": "PR-69",
+    "codigo_peca": "PR-69",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "38S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "3,65KA",
+    "ultima_troca": "09/06/2026, 14:45",
+    "alertas": [
+      " alerta Robo com problema de aquecimento interno falha: dcal"
+    ],
+    "img_peca": "",
+    "meta_hora": 40,
+    "tempo_solda": "135",
+    "pre_pressao": "90",
+    "pontos_solda": "16 PONTOS",
+    "cliente": "FERREIRA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:45",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ]
+  },
+  "605": {
+    "nome": "Robo kuka 605",
+    "status": "Produzindo",
+    "peca": "3799",
+    "codigo_peca": "3799",
+    "eletrodo": "reto",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "21S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "3,90",
+    "ultima_troca": "09/06/2026, 14:46",
+    "alertas": [
+      "Novo alerta pequeno vazamento de ar na PINÇA"
+    ],
+    "meta_hora": 80,
+    "img_peca": "",
+    "tempo_solda": "145",
+    "pre_pressao": "90",
+    "pontos_solda": "10 PONTOS",
+    "cliente": "ESMALTEC",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:46",
+        "eletrodo": "reto",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "JHENIFER",
+    "membro2": "RUTHE",
+    "membro3": "MARINA",
+    "membro4": ""
+  },
+  "606": {
+    "nome": "Robo kuka 606",
+    "status": "Produzindo",
+    "peca": "14082",
+    "codigo_peca": "14082",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "29S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "2,80KA",
+    "ultima_troca": "09/06/2026, 14:49",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 70,
+    "tempo_solda": "105",
+    "pre_pressao": "85",
+    "pontos_solda": "16 PONTOS",
+    "cliente": "ITATIAIA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:49",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "TALITA",
+    "membro2": "LUMA",
+    "membro4": "",
+    "membro3": "KELLY"
+  },
+  "607": {
+    "nome": "Robo Kuka 607",
+    "status": "Produzindo",
+    "peca": "13951",
+    "codigo_peca": "13951",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "35S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "3,20KA",
+    "ultima_troca": "09/06/2026, 14:51",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 50,
+    "tempo_solda": "110",
+    "pre_pressao": "80",
+    "pontos_solda": "12 PONTOS",
+    "cliente": "ITATIAIA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:51",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "BEATRIZ",
+    "membro2": "STEFFANY",
+    "membro3": "ROSICLEIDE"
+  },
+  "608": {
+    "nome": "Robo Kuka 608",
+    "status": "Produzindo",
+    "peca": "16210",
+    "codigo_peca": "16210",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "28S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "2,92KA",
+    "ultima_troca": "09/06/2026, 14:54",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 65,
+    "tempo_solda": "110",
+    "pre_pressao": "60",
+    "pontos_solda": "12 PONTOS",
+    "cliente": "ITATIAIA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:54",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "ADRIANA",
+    "membro2": "ERICA",
+    "membro3": "DAIANE"
+  },
+  "609": {
+    "nome": "Robo Kuka 609",
+    "status": "Produzindo",
+    "peca": "1083",
+    "codigo_peca": "1083",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "35S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "3,20KA",
+    "ultima_troca": "09/06/2026, 15:10",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 60,
+    "tempo_solda": "110",
+    "pre_pressao": "120",
+    "pontos_solda": "18 PONTOS",
+    "cliente": "MUELLER",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 15:10",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": ""
+  },
+  "610": {
+    "nome": "Robo Kuka 610",
+    "status": "Produzindo",
+    "peca": "16211",
+    "codigo_peca": "16211",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "28S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "2,80KA",
+    "ultima_troca": "09/06/2026, 15:11",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 65,
+    "tempo_solda": "110",
+    "pre_pressao": "80",
+    "pontos_solda": "14 PONTOS",
+    "cliente": "ITATIAIA",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 15:11",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ]
+  },
+  "611": {
+    "nome": "Robo Kuka 611",
+    "status": "Produzindo",
+    "peca": "3689",
+    "codigo_peca": "3689",
+    "eletrodo": "RETO",
+    "tipo_eletrodo": "COBRE DURO",
+    "tempo_peca": "21S",
+    "operador": "EDUARDO BOTELHO",
+    "turno": "07:00 AS 22:00",
+    "corrente": "2,65KA",
+    "ultima_troca": "09/06/2026, 15:12",
+    "alertas": [],
+    "img_peca": "",
+    "meta_hora": 65,
+    "tempo_solda": "115",
+    "pre_pressao": "90",
+    "pontos_solda": "14 PONTOS",
+    "cliente": "ESMALTEC",
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 15:12",
+        "eletrodo": "RETO",
+        "tipo": "COBRE DURO"
+      }
+    ],
+    "membro1": "BEATRIZ",
+    "membro2": "EMILLY",
+    "membro3": "CAUANY",
+    "membro4": ""
+  },
+  "02": {
+    "nome": "Meta diaria",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": [],
+    "metas_dia": 11,
+    "metas_mes": 5,
+    "metas_dias": {
+      "2026_5_1": {
+        "600": {
+          "meta": "45",
+          "cod": "50698",
+          "h0800": "45",
+          "h0900": "48",
+          "h1000": "19",
+          "h1100": "49",
+          "h1200": "36",
+          "h1400": "47",
+          "h1500": "48",
+          "h1600": "41",
+          "h1700": "38"
+        },
+        "601": {
+          "meta": "50",
+          "cod": "63103",
+          "h0800": "50",
+          "h0900": "67",
+          "h1000": "37"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "68",
+          "h0900": "71",
+          "h1000": "38",
+          "h1100": "73",
+          "h1200": "73",
+          "h1300": "50",
+          "h1400": "62",
+          "h1500": "52",
+          "h1600": "70",
+          "h1700": "66",
+          "h1800": "68",
+          "h1900": "65",
+          "h2100": "67",
+          "h2200": "45"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40"
+        },
+        "605": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "52",
+          "h0900": "50",
+          "h1000": "23",
+          "h1400": "72",
+          "h1500": "68",
+          "h1600": "51",
+          "h1700": "71"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "57",
+          "h0900": "64",
+          "h1000": "36",
+          "h1100": "41",
+          "h1200": "40",
+          "h1400": "52",
+          "h1500": "43",
+          "h1600": "75",
+          "h1700": "67"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h1100": "60",
+          "h1200": "43",
+          "h1300": "34",
+          "h1400": "70",
+          "h1500": "50",
+          "h1600": "45",
+          "h1700": "45",
+          "h1800": "39",
+          "h1900": "36",
+          "h2100": "35",
+          "h2200": "25"
+        },
+        "608": {
+          "cod": "14083",
+          "meta": "70",
+          "h1100": "70",
+          "h1200": "30",
+          "h1400": "41",
+          "h1500": "21",
+          "h1600": "32",
+          "h1700": "31"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1400": "57",
+          "h1500": "42",
+          "h1600": "40",
+          "h1700": "51"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "58",
+          "h0900": "50",
+          "h1000": "14",
+          "h1100": "68",
+          "h1200": "50",
+          "h1300": "56",
+          "h1400": "91",
+          "h1500": "70",
+          "h1600": "70",
+          "h1700": "57",
+          "h1800": "44",
+          "h1900": "41",
+          "h2100": "65",
+          "h2200": "38"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "73",
+          "h0900": "75",
+          "h1000": "30",
+          "h1100": "70",
+          "h1200": "68",
+          "h1400": "60",
+          "h1500": "25",
+          "h1600": "71",
+          "h1700": "58"
+        }
+      },
+      "2026_5_2": {
+        "600": {
+          "meta": "45",
+          "cod": "50698",
+          "h0800": "42",
+          "h0900": "48",
+          "h1000": "20",
+          "h1100": "52",
+          "h1200": "31",
+          "h1400": "50",
+          "h1500": "32",
+          "h1600": "47",
+          "h1700": "35"
+        },
+        "601": {
+          "meta": "50",
+          "cod": "63102",
+          "h1100": "55",
+          "h1200": "40",
+          "h1300": "27",
+          "h1400": "38",
+          "h1500": "34",
+          "h1600": "53",
+          "h1700": "40"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "76",
+          "h0900": "82",
+          "h1000": "30",
+          "h1100": "75",
+          "h1200": "62",
+          "h1300": "60",
+          "h1400": "67",
+          "h1500": "60",
+          "h1600": "81",
+          "h1700": "71",
+          "h1800": "50",
+          "h1900": "37",
+          "h2100": "68",
+          "h2200": "40"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h1400": "53",
+          "h1500": "28",
+          "h1600": "22",
+          "h1700": "23"
+        },
+        "605": {
+          "cod": "3689",
+          "meta": "65",
+          "h1000": "15",
+          "h1400": "73",
+          "h1500": "60",
+          "h1600": "82",
+          "h1700": "65"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "80",
+          "h0900": "71",
+          "h1000": "37",
+          "h1100": "47",
+          "h1200": "32",
+          "h1400": "60"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "50",
+          "h0900": "51",
+          "h1000": "29",
+          "h1100": "73",
+          "h1200": "56",
+          "h1400": "43",
+          "h1500": "45",
+          "h1600": "51",
+          "h1700": "38",
+          "h1800": "46",
+          "h1900": "36",
+          "h2100": "28",
+          "h2200": "22"
+        },
+        "608": {
+          "cod": "14083",
+          "meta": "70",
+          "h0800": "60",
+          "h0900": "48",
+          "h1000": "25",
+          "h1100": "70",
+          "h1200": "40",
+          "h1400": "42",
+          "h1500": "33",
+          "h1600": "31",
+          "h1700": "25"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1400": "51",
+          "h1500": "47",
+          "h1600": "70",
+          "h1700": "51"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "77",
+          "h0900": "70",
+          "h1000": "30",
+          "h1100": "78",
+          "h1200": "78",
+          "h1300": "33",
+          "h1400": "60",
+          "h1500": "70",
+          "h1600": "60",
+          "h1700": "58",
+          "h1800": "77",
+          "h1900": "53",
+          "h2100": "75",
+          "h2200": "65"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "68",
+          "h0900": "77",
+          "h1000": "33",
+          "h1100": "67",
+          "h1200": "46",
+          "h1400": "56",
+          "h1500": "60",
+          "h1600": "65",
+          "h1700": "55"
+        }
+      },
+      "2026_5_3": {
+        "600": {
+          "cod": "50698",
+          "meta": "45",
+          "h0800": "42",
+          "h1200": "151",
+          "h1400": "50",
+          "h1500": "30",
+          "h1600": "50",
+          "h1700": "34"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "51",
+          "h1200": "146",
+          "h1400": "48",
+          "h1500": "31",
+          "h1600": "40",
+          "h1700": "27"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "68",
+          "h1200": "215",
+          "h1300": "50",
+          "h1400": "75",
+          "h1500": "37",
+          "h1600": "66",
+          "h1700": "36",
+          "h1800": "71",
+          "h1900": "68",
+          "h2100": "70",
+          "h2200": "52"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h1200": "30",
+          "h1400": "36",
+          "h1500": "31",
+          "h1600": "28",
+          "h1700": "20"
+        },
+        "605": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "78",
+          "h1200": "170",
+          "h1400": "50"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h1200": "111",
+          "h1400": "52",
+          "h1500": "44",
+          "h1600": "70",
+          "h1700": "62"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "61",
+          "h1200": "137",
+          "h1500": "56",
+          "h1600": "62",
+          "h1700": "56",
+          "h1800": "33",
+          "h1900": "22",
+          "h2100": "57",
+          "h2200": "30"
+        },
+        "608": {
+          "cod": "14083",
+          "meta": "70",
+          "h0800": "55",
+          "h1200": "141",
+          "h1300": "19",
+          "h1400": "50",
+          "h1500": "28",
+          "h1600": "32",
+          "h1700": "21"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1400": "40",
+          "h1500": "46",
+          "h1600": "46",
+          "h1700": "55"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "81",
+          "h1200": "233",
+          "h1300": "40",
+          "h1400": "73",
+          "h1500": "65",
+          "h1600": "50",
+          "h1700": "71",
+          "h1800": "51",
+          "h1900": "48",
+          "h2100": "60",
+          "h2200": "61"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "54",
+          "h1200": "200",
+          "h1400": "65",
+          "h1500": "53",
+          "h1600": "61",
+          "h1700": "45"
+        }
+      },
+      "2026_5_4": {
+        "600": {
+          "meta": "45",
+          "cod": "50698",
+          "h0800": "45",
+          "h0900": "43",
+          "h1000": "22",
+          "h1100": "50",
+          "h1200": "32",
+          "h1400": "47",
+          "h1500": "41",
+          "h1600": "38"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "44",
+          "h0900": "36",
+          "h1000": "35",
+          "h1100": "53",
+          "h1200": "50",
+          "h1400": "50",
+          "h1500": "50",
+          "h1600": "35"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h0800": "0",
+          "h0900": "0",
+          "h1000": "0",
+          "h1100": "0"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "65",
+          "h0900": "67",
+          "h1000": "35",
+          "h1100": "71",
+          "h1200": "67",
+          "h1300": "65",
+          "h1400": "40",
+          "h1500": "67",
+          "h1600": "45",
+          "h1700": "71",
+          "h1800": "75",
+          "h1900": "65",
+          "h2100": "65"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h1300": "45",
+          "h1400": "32",
+          "h1500": "38",
+          "h1600": "19"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "72",
+          "h0900": "70",
+          "h1000": "41",
+          "h1100": "43",
+          "h1200": "33",
+          "h1400": "42",
+          "h1500": "70",
+          "h1600": "52"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "45",
+          "h0900": "41",
+          "h1000": "34",
+          "h1100": "47",
+          "h1200": "43",
+          "h1300": "35",
+          "h1400": "54",
+          "h1500": "32",
+          "h1600": "35",
+          "h1700": "55",
+          "h1800": "43",
+          "h1900": "28",
+          "h2100": "30"
+        },
+        "608": {
+          "cod": "14083",
+          "meta": "70",
+          "h1400": "70",
+          "h1500": "50",
+          "h1600": "41"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "58",
+          "h0900": "56",
+          "h1000": "47",
+          "h1100": "65",
+          "h1200": "68",
+          "h1300": "45",
+          "h1400": "80",
+          "h1500": "73",
+          "h1600": "73",
+          "h1700": "47",
+          "h1800": "47",
+          "h1900": "56",
+          "h2100": "50"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "68",
+          "h0900": "72",
+          "h1000": "35",
+          "h1100": "59",
+          "h1200": "65",
+          "h1400": "51",
+          "h1500": "56",
+          "h1600": "44"
+        }
+      },
+      "2026_5_8": {
+        "600": {
+          "cod": "50698",
+          "meta": "45",
+          "h0800": "31",
+          "h0900": "47",
+          "h1000": "23",
+          "h1100": "47",
+          "h1200": "36",
+          "h1400": "50",
+          "h1500": "34",
+          "h1600": "45",
+          "h1700": "35"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "50",
+          "h0900": "57",
+          "h1000": "32",
+          "h1100": "50",
+          "h1200": "37",
+          "h1400": "50",
+          "h1500": "40",
+          "h1600": "33",
+          "h1700": "46",
+          "h1800": "35",
+          "h1900": "41",
+          "h2100": "50",
+          "h2200": "31"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h0800": "0",
+          "h0900": "0",
+          "h1000": ""
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "67",
+          "h0900": "70",
+          "h1000": "41",
+          "h1100": "68",
+          "h1200": "50",
+          "h1300": "58",
+          "h1400": "70",
+          "h1500": "68",
+          "h1600": "28",
+          "h1700": "68",
+          "h1800": "68",
+          "h1900": "67",
+          "h2100": "77",
+          "h2200": "55"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h0800": "0",
+          "h0900": "0",
+          "h1400": "28",
+          "h1500": "28",
+          "h1600": "28",
+          "h1700": "21"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h0800": "0",
+          "h0900": "0",
+          "h1400": "102",
+          "h1500": "75",
+          "h1600": "63",
+          "h1700": "91",
+          "h1800": "66",
+          "h1900": "71",
+          "h2100": "83",
+          "h2200": "77"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "71",
+          "h0900": "70",
+          "h1100": "47",
+          "h1000": "41",
+          "h1200": "38",
+          "h1300": "32",
+          "h1400": "71",
+          "h1500": "55",
+          "h1600": "38",
+          "h1700": "37"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "52",
+          "h0900": "45",
+          "h1400": "55",
+          "h1500": "40",
+          "h1600": "53",
+          "h1700": "38"
+        },
+        "608": {
+          "cod": "14083",
+          "meta": "70",
+          "h0800": "0",
+          "h0900": "0"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h0800": "0",
+          "h0900": "0",
+          "h1000": "45",
+          "h1100": "68",
+          "h1200": "52",
+          "h1400": "72",
+          "h1500": "53",
+          "h1600": "40",
+          "h1700": "49"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "74",
+          "h0900": "72",
+          "h1000": "42",
+          "h1100": "82",
+          "h1200": "77",
+          "h1300": "45",
+          "h1400": "68",
+          "h1500": "71",
+          "h1600": "67",
+          "h1700": "69"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "56",
+          "h0900": "73",
+          "h1000": "30",
+          "h1100": "68",
+          "h1200": "36",
+          "h1400": "65",
+          "h1500": "57",
+          "h1600": "62",
+          "h1700": "53"
+        }
+      },
+      "2026_5_9": {
+        "600": {
+          "cod": "50698",
+          "meta": "45",
+          "h0800": "38",
+          "h0900": "45",
+          "h1100": "46",
+          "h1200": "40",
+          "h1400": "47",
+          "h1500": "39",
+          "h1000": "20",
+          "h1600": "48",
+          "h1700": "35"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "50",
+          "h0900": "33",
+          "h1100": "53",
+          "h1200": "50",
+          "h1400": "51",
+          "h1500": "30",
+          "h1000": "19",
+          "h1600": "50",
+          "h1700": "50",
+          "h1800": "23",
+          "h1900": "26",
+          "h2100": "33",
+          "h2200": "33"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "67",
+          "h0900": "67",
+          "h1100": "68",
+          "h1200": "65",
+          "h1400": "71",
+          "h1500": "58",
+          "h1000": "22",
+          "h1600": "68",
+          "h1700": "35",
+          "h1900": "33"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h1400": "43",
+          "h1500": "25",
+          "h1600": "23",
+          "h1700": "23",
+          "h2100": "31"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h1100": "80",
+          "h1200": "70",
+          "h1300": "80",
+          "h1400": "92",
+          "h1500": "71",
+          "h1600": "77",
+          "h1700": "77",
+          "h1800": "37",
+          "h1900": "48",
+          "h2100": "106",
+          "h2200": "85"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "77",
+          "h0900": "71",
+          "h1400": "50",
+          "h1500": "60",
+          "h1000": "32",
+          "h1600": "70",
+          "h1700": "60",
+          "h1800": "24"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "65",
+          "h0900": "63",
+          "h1100": "42",
+          "h1200": "47",
+          "h1300": "41",
+          "h1400": "56",
+          "h1500": "52",
+          "h1000": "29",
+          "h1600": "60",
+          "h1700": "45"
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "h0800": "92",
+          "h0900": "80",
+          "h1100": "70",
+          "h1200": "55",
+          "h1400": "53",
+          "h1500": "43",
+          "h1000": "41",
+          "h1600": "40",
+          "h1700": "54"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1700": "20"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h1300": "55",
+          "h1400": "65",
+          "h1500": "51",
+          "h1600": "37",
+          "h1700": "38",
+          "h1800": "65",
+          "h1900": "51",
+          "h2100": "65",
+          "h2200": "55"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "65",
+          "h0900": "49",
+          "h1100": "70",
+          "h1200": "50",
+          "h1400": "67",
+          "h1500": "46",
+          "h1000": "33",
+          "h1600": "65",
+          "h1700": "32"
+        }
+      },
+      "2026_5_10": {
+        "600": {
+          "cod": "50698",
+          "meta": "45",
+          "pontos": "",
+          "h0800": "34",
+          "h0900": "45",
+          "h1000": "22",
+          "h1100": "47",
+          "h1200": "36",
+          "h1300": "",
+          "h1400": "43",
+          "h1500": "31",
+          "h1600": ""
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "pontos": "",
+          "h0800": "52",
+          "h0900": "54",
+          "h1000": "28",
+          "h1100": "52",
+          "h1200": "27",
+          "h1300": "",
+          "h1400": "52",
+          "h1500": "30"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "pontos": "",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "20",
+          "h1500": "30"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "pontos": "",
+          "h0800": "71",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1300": "",
+          "h1400": "40",
+          "h1500": ""
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "pontos": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1400": "26",
+          "h1500": "14"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "pontos": "",
+          "h0800": "55",
+          "h0900": "48",
+          "h1000": "42",
+          "h1100": "80",
+          "h1400": "102",
+          "h1500": "48",
+          "h1200": "65",
+          "h1300": "88"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "pontos": "",
+          "h0800": "74",
+          "h0900": "70",
+          "h1000": "35",
+          "h1100": "43",
+          "h1400": "65",
+          "h1500": "54",
+          "h1200": "40"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "pontos": "",
+          "h0800": "45",
+          "h0900": "40",
+          "h1000": "31",
+          "h1100": "50",
+          "h1400": "56",
+          "h1500": "50",
+          "h1200": "30"
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "pontos": "",
+          "h0800": "75",
+          "h0900": "81",
+          "h1000": "49",
+          "h1100": "65",
+          "h1400": "54",
+          "h1500": "46",
+          "h1200": "51",
+          "h1300": "27"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "pontos": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1400": "70",
+          "h1500": "57"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "pontos": "",
+          "h0900": "55",
+          "h1000": "39",
+          "h1100": "76",
+          "h1400": "20",
+          "h1500": "50",
+          "h1200": "65",
+          "h1300": "20"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "pontos": "",
+          "h0800": "67",
+          "h0900": "70",
+          "h1000": "25",
+          "h1100": "65",
+          "h1400": "57",
+          "h1500": "42",
+          "h1200": "55"
+        }
+      },
+      "2026_5_11": {
+        "600": {
+          "cod": "50698",
+          "meta": "45",
+          "pontos": "13",
+          "h0800": ""
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "pontos": "16"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "pontos": "16"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "pontos": "14"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "pontos": "16"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "pontos": "10"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "pontos": "16"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "pontos": "12"
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "pontos": "12"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "pontos": "18"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "pontos": "14"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "pontos": "14"
+        }
+      }
+    }
+  },
+  "03": {
+    "nome": "Produçao por peça",
+    "status": "Aguardando",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": [],
+    "peca_mes": 5
+  },
+  "06": {
+    "nome": "cadastro de peças",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": [],
+    "pecas": {
+      "1083": {
+        "nome": "1083",
+        "cliente": "MUELLER",
+        "tempo_peca": "35S",
+        "meta_hora": 60,
+        "corrente": "3,20KA",
+        "pre_pressao": "120",
+        "pontos_solda": "18 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "110",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "3689": {
+        "nome": "3689",
+        "cliente": "ESMALTEC",
+        "tempo_peca": "21S",
+        "meta_hora": 65,
+        "corrente": "2,65KA",
+        "pre_pressao": "90",
+        "pontos_solda": "14 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "115",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "pares_gabarito": "2",
+        "img": ""
+      },
+      "3799": {
+        "nome": "3799",
+        "cliente": "ESMALTEC",
+        "tempo_peca": "21S",
+        "meta_hora": 80,
+        "corrente": "3,90",
+        "pre_pressao": "90",
+        "pontos_solda": "10 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "145",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "13951": {
+        "nome": "13951",
+        "cliente": "ITATIAIA",
+        "tempo_peca": "35S",
+        "meta_hora": 50,
+        "corrente": "3,20KA",
+        "pre_pressao": "80",
+        "pontos_solda": "12 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "110",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "14082": {
+        "nome": "14082",
+        "cliente": "ITATIAIA",
+        "tempo_peca": "25S",
+        "meta_hora": 70,
+        "corrente": "2,80KA",
+        "pre_pressao": "85",
+        "pontos_solda": "16 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "105",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "16210": {
+        "nome": "16210",
+        "cliente": "ITATIAIA",
+        "tempo_peca": "25S",
+        "meta_hora": 70,
+        "corrente": "2,92KA",
+        "pre_pressao": "60",
+        "pontos_solda": "12 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "110",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "16211": {
+        "nome": "16211",
+        "cliente": "ITATIAIA",
+        "tempo_peca": "28S",
+        "meta_hora": 65,
+        "corrente": "2,80KA",
+        "pre_pressao": "80",
+        "pontos_solda": "14 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "110",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "50697": {
+        "nome": "50697",
+        "cliente": "MUELLER",
+        "tempo_peca": "48s",
+        "meta_hora": 45,
+        "corrente": "3,45KA",
+        "pre_pressao": "25s",
+        "pontos_solda": "16 PONTOS",
+        "tipo_eletrodo": "RETO",
+        "tempo_solda": "135",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "50698": {
+        "nome": "50698",
+        "cliente": "MUELLER",
+        "tempo_peca": "45S",
+        "meta_hora": 45,
+        "corrente": "3,45KA",
+        "pre_pressao": "120",
+        "pontos_solda": "13 PONTOS",
+        "tipo_eletrodo": "RETO",
+        "img": ""
+      },
+      "63102": {
+        "nome": "63102",
+        "cliente": "MUELLER",
+        "tempo_peca": "49S",
+        "meta_hora": 50,
+        "corrente": "3,45KA",
+        "pre_pressao": "120",
+        "pontos_solda": "16 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "125",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "img": ""
+      },
+      "PR-69": {
+        "nome": "PR-69",
+        "cliente": "Praça",
+        "tempo_peca": "38S",
+        "meta_hora": 40,
+        "corrente": "3,65KA",
+        "pre_pressao": "90",
+        "pontos_solda": "16 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "tempo_solda": "135",
+        "turno": "07:00 AS 22:00",
+        "operador": "EDUARDO BOTELHO",
+        "pares_gabarito": "",
+        "img": ""
+      }
+    }
+  },
+  "09": {
+    "nome": "Armario de Gabaritos",
+    "tipo_celula": "armario",
+    "status": "Aguardando",
+    "img_peca": "",
+    "meta_hora": 0,
+    "alertas": [],
+    "espacos": {
+      "1": {
+        "gabarito": "— pr89",
+        "status": "Ocupado"
+      },
+      "2": {
+        "gabarito": "PR-073 PR-084 1090 1089 ",
+        "status": "Ocupado"
+      },
+      "3": {
+        "gabarito": "PR-070 PR-87 PR-090 ",
+        "status": "Ocupado"
+      },
+      "4": {
+        "gabarito": "PR-056 1083 63103",
+        "status": "Ocupado"
+      },
+      "5": {
+        "gabarito": "PR-062 PR-46 PR-072 ",
+        "status": "Ocupado"
+      },
+      "6": {
+        "gabarito": "",
+        "status": "Ocupado"
+      },
+      "7": {
+        "gabarito": "BRASLAR 13952",
+        "status": "Ocupado"
+      },
+      "8": {
+        "gabarito": "PR-040 PR-145",
+        "status": "Ocupado"
+      },
+      "9": {
+        "gabarito": "13436 4850 PR-016",
+        "status": "Ocupado"
+      },
+      "10": {
+        "gabarito": "15744 15742",
+        "status": "Ocupado"
+      },
+      "11": {
+        "gabarito": "PROTOTIPO",
+        "status": "Ocupado"
+      },
+      "12": {
+        "gabarito": "",
+        "status": "Ocupado"
+      },
+      "13": {
+        "gabarito": "50698",
+        "status": "Ocupado"
+      },
+      "14": {
+        "gabarito": "3615 PR-016",
+        "status": "Ocupado"
+      },
+      "15": {
+        "gabarito": "3798",
+        "status": "Ocupado"
+      },
+      "16": {
+        "gabarito": "15744",
+        "status": "Ocupado"
+      },
+      "17": {
+        "gabarito": "PR-060",
+        "status": "Ocupado"
+      },
+      "18": {
+        "gabarito": "PROTOTIPOS",
+        "status": "Ocupado"
+      }
+    }
+  },
+  "01": {
+    "nome": "Relatorio mensal",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": []
+  },
+  "00": {
+    "nome": "Produção Mensal",
+    "status": "Aguardando",
+    "cliente": "—",
+    "peca": "—",
+    "codigo_peca": "—",
+    "img_peca": "",
+    "eletrodo": "—",
+    "tipo_eletrodo": "—",
+    "tempo_peca": "—",
+    "meta_hora": 0,
+    "operador": "—",
+    "turno": "—",
+    "tempo_solda": "—",
+    "corrente": "—",
+    "pre_pressao": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "alertas": [],
+    "ano_selecionado": 2026,
+    "mes_selecionado": 5,
+    "producao_meses": {
+      "2026_4": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0
+      },
+      "2026_5": {
+        "1": 4454,
+        "2": 4823,
+        "3": 4648,
+        "4": 3924,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 4817,
+        "9": 4832,
+        "10": 3246,
+        "11": 0,
+        "12": 0
+      }
+    }
+  }
 };
 
 const SC = {
@@ -572,6 +2423,8 @@ function getCellTipo(k) {
   if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
   if (n.includes('meta')) return 'metas';
   if (n.includes('cadastro')&&n.includes('pe')) return 'cadastro_pecas';
+  if (n.includes('catal')&&n.includes('pe')) return 'catalogo_pecas';
+  if (n.includes('manu')) return 'manutencao';
   return 'robo';
 }
 
@@ -628,20 +2481,24 @@ async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   try{
-    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{headers:HEADERS_SB});
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0){
-      const anterior = JSON.stringify(celulas);
-      const novo = JSON.stringify(d.record);
-      if(anterior && anterior !== '{}' && novo !== anterior){
-        // tem dado novo — mostra indicador
-        const badge = document.getElementById("newDataBadge");
-        if(badge) badge.style.display = "inline-block";
+    if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
+      const anterior=JSON.stringify(celulas);
+      const novo=JSON.stringify(d[0].conteudo);
+      if(anterior&&anterior!=='{}'&&novo!==anterior){
+        const badge=document.getElementById("newDataBadge");
+        if(badge) badge.style.display="inline-block";
       }
-      celulas=d.record;
+      celulas=d[0].conteudo;
+      // Aplica imagens
+      if(d[0].imagens){
+        Object.entries(d[0].imagens).forEach(([k,img])=>{if(celulas[k])celulas[k].img_peca=img;});
+      }
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
+
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
   else{
@@ -652,16 +2509,18 @@ async function loadFromAPI(){
 
 async function saveToAPI(data){
   try{
-    await fetch(BASE_URL,{method:"PUT",headers:HEADERS_W,body:JSON.stringify(data)});
+    const semImg = JSON.parse(JSON.stringify(data));
+    const imgs = {};
+    Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
+    // Salva dados
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
+    // Salva imagens separado se houver
+    if(Object.keys(imgs).length>0){
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
+    }
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
-    // Backup no Google Sheets a cada 5 salvamentos
-    backupContador++;
-    if(backupContador>=5){
-      backupContador=0;
-      backupToSheets(data);
-    }
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
@@ -682,7 +2541,7 @@ function renderSidebar(){
   const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
   const robosRestantes = robos.length-1;
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
 
   function itemHTML(k){
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
@@ -891,23 +2750,26 @@ function buildTurnoTable(c,turno,chave){
   }).join('');
   const linhas=ROBOS.map(robo=>{
     const rd=(data[robo])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
+    const pontos=parseInt(rd.pontos)||0;
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
       let cc='';
-      if(isCafe) cc='cafe'; // 10:00 SEMPRE amarelo, independente de meta
+      if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
-      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)"></td>`;
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)"></td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="color:#ff6a00;width:44px" onchange="updateMetasCell('${selected}',${robo},'pontos',this.value)"></td>`:'';
     return`<tr>
       <td class="robo-label">${robo}</td>
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
       <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
+      ${pontosCell}
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
       ${isNoite?`<td id="total-g-${robo}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
@@ -925,6 +2787,7 @@ function buildTurnoTable(c,turno,chave){
   return`<div class="metas-table-wrap"><table class="metas-table">
     <thead><tr>
       <th class="col-robo">Robô</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
+      ${isAdmin?`<th class="col-meta" style="color:#ff6a00;font-size:10px">Pts</th>`:''}
       ${horasHeader}
       <th class="col-sub" style="color:${subColor}">${subLabel}</th>
       ${isNoite?`<th class="col-total-geral" style="font-size:11px;padding:10px 12px;min-width:110px">⚑ Total Geral do Dia</th>`:''}
@@ -1292,6 +3155,8 @@ function renderDetail(){
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
   if(tipo==='cadastro_pecas'){renderCadastroPecas();return;}
+  if(tipo==='catalogo_pecas'){renderCatalogoPecas();return;}
+  if(tipo==='manutencao'){renderManutencao();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
@@ -1326,15 +3191,20 @@ function renderDetail(){
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Peça em Produção</div>
-      <div class="peca-grid" style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;align-items:end">
-        <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
-        <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
-        <div class="field"><label>Imagem da peça</label>
-          <div class="img-upload-box" onclick="${isAdmin?'triggerImgUpload()':''}" style="${isAdmin?'cursor:pointer;':'cursor:default;'}height:90px">${imgBlock}</div>
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:10px">
+          <div class="field"><label>Cliente</label><input class="green" value="${esc(c.cliente||c.peca||'—')}" ${ro} onchange="update('${selected}','cliente',this.value);renderSidebar()"></div>
+          <div class="field"><label>Código</label><input class="campo-codigo-peca" value="${esc(c.codigo_peca)}" ${ro} onchange="update('${selected}','codigo_peca',this.value)" oninput="abrirDropdownPeca(this)" onfocus="abrirDropdownPeca(this)" autocomplete="off"></div>
+          <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
         </div>
-      </div>
-      <div style="margin-top:12px;max-width:50%">
-        <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
+        <div style="flex-shrink:0">
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Imagem da Peça</div>
+          <div style="width:140px;height:140px;border-radius:10px;overflow:hidden;border:2px dashed #1e2530;background:#080b0f;cursor:${isAdmin?'pointer':'default'}" onclick="${isAdmin?'triggerImgUpload()':''}">${imgBlock}</div>
+          ${isAdmin?`<div style="display:flex;gap:6px;margin-top:8px">
+            <button onclick="triggerImgUpload()" style="flex:1;background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:5px 0;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">🖼 Galeria</button>
+            <button onclick="triggerCamera()" style="flex:1;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 0;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">📷 Câmera</button>
+          </div>`:''}
+        </div>
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Eletrodo ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarTrocaEletrodo('${selected}')">+ Registrar Troca Agora</button>`:""}</div>
@@ -1794,7 +3664,8 @@ function imprimirQR(key) {
     <div class="instrucao">Escaneie para acessar esta célula</div>
   </div>
   <script>window.onload=()=>window.print();<\/script>
-  </body></html>`);
+  </div>
+</body></html>`);
   win.document.close();
 }
 
@@ -1811,15 +3682,65 @@ function baixarQR(key) {
 }
 
 function triggerImgUpload(){if(!isAdmin)return;document.getElementById("imgFileInput").click();}
+function triggerCamera(){if(!isAdmin)return;document.getElementById("imgCameraInput").click();}
 function handleImgUpload(file){
   if(!file||!selected)return;
-  const r=new FileReader();
-  r.onload=function(e){celulas[selected].img_peca=e.target.result;saveToAPI(celulas);renderDetail();};
-  r.readAsDataURL(file);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = async function(){
+    const maxSize = 300;
+    let w = img.width, h = img.height;
+    if(w>maxSize||h>maxSize){
+      if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
+      else { w=Math.round(w*maxSize/h); h=maxSize; }
+    }
+    canvas.width=w; canvas.height=h;
+    ctx.drawImage(img,0,0,w,h);
+    let compressed = canvas.toDataURL('image/jpeg', 0.5);
+    if(compressed.length > 60000){
+      compressed = canvas.toDataURL('image/jpeg', 0.3);
+    }
+    URL.revokeObjectURL(url);
+
+    try{
+      // Carrega imagens existentes
+      const r = await fetch(BASE_URL_IMG+"/latest",{headers:HEADERS_R});
+      const d = await r.json();
+      const imgs = (d.record && d.record.imagens) ? d.record.imagens : {};
+      // Salva imagem com chave = selected
+      imgs[selected] = compressed;
+      await fetch(BASE_URL_IMG,{method:'PUT',headers:HEADERS_W,body:JSON.stringify({imagens:imgs})});
+      // Salva referência no BIN principal
+      celulas[selected].img_peca = compressed;
+      saveToAPI(celulas);
+      renderDetail();
+      showToast("Imagem salva ✓");
+    }catch(e){
+      // Fallback: salva direto no BIN principal
+      celulas[selected].img_peca = compressed;
+      saveToAPI(celulas);
+      renderDetail();
+      showToast("Imagem salva ✓");
+    }
+  };
+  img.src = url;
 }
 function removeImg(){if(!selected)return;celulas[selected].img_peca="";saveToAPI(celulas);renderDetail();}
 function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
 function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
+
+function autoLogin(){
+  const pw=document.getElementById("pwInput").value;
+  if(pw===ADMIN_PW){isAdmin=true;isAdminMetas=false;startApp();}
+  else if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
+  else{
+    document.getElementById("loginErr").style.display="block";
+    document.getElementById("pwInput").classList.add("err");
+    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+  }
+}
 
 function tryLogin(){
   const pw=document.getElementById("pwInput").value;
@@ -1840,7 +3761,333 @@ function tryLoginMetas(){
     setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
   }
 }
-function startViewer(){isAdmin=false;isAdminMetas=false;startApp();}
+function startDashboard(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("dashboardScreen").style.display="flex";
+  isAdmin=false; isAdminMetas=false;
+  _dashIdx=0; _dashGeral=false;
+  _dashLoad();
+  _dashLoadTimer = setInterval(_dashLoad, 300000);
+  _dashClockTimer = setInterval(_dashTickClock, 1000);
+  _dashSlideTimer = setInterval(_dashNextSlide, 6000);
+  _dashTickClock();
+}
+
+function sairDashboard(){
+  [_dashLoadTimer,_dashClockTimer,_dashSlideTimer].forEach(t=>clearInterval(t));
+  document.getElementById("dashboardScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+}
+
+let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null;
+let _dashIdx=0, _dashGeral=false, _dashRobos=[];
+
+function _dashGetHoraCheia(){
+  const h = new Date().getHours();
+  const s = `${String(h).padStart(2,'0')}:00`;
+  const all = [...HORAS_DIA,...HORAS_NOITE];
+  if(all.includes(s)) return s;
+  // Se hora atual não está no array, pega a mais próxima anterior
+  for(let i = all.length-1; i >= 0; i--){
+    const hNum = parseInt(all[i].split(':')[0]);
+    if(hNum < h) return all[i];
+  }
+  return all[0];
+}
+
+function _dashTickClock(){
+  const now=new Date();
+  const ce=document.getElementById("dashClock");
+  const he=document.getElementById("dashHoraCheia");
+  const de=document.getElementById("dashDate");
+  if(ce) ce.textContent=now.toLocaleTimeString("pt-BR");
+  if(he) he.textContent=_dashGetHoraCheia();
+  if(de) de.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+}
+
+async function _dashLoad(){
+  try{
+    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const d=await r.json();
+    if(d.record&&Object.keys(d.record).length>0) celulas=d.record;
+  }catch(e){}
+  _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
+  _dashRender();
+  _dashRenderFooter();
+}
+
+function _dashNextSlide(){
+  if(_dashGeral){
+    _dashGeral=false; _dashIdx=0;
+    clearInterval(_dashSlideTimer);
+    _dashSlideTimer=setInterval(_dashNextSlide,6000);
+    _dashRender();
+    _dashRenderFooter();
+    return;
+  }
+  // Avança para próximo robô que tenha valor na hora atual
+  const dados=_dashGetDados();
+  const hora=_dashGetHoraCheia();
+  let tentativas=0;
+  do {
+    _dashIdx++;
+    tentativas++;
+    if(_dashIdx>=_dashRobos.length){
+      _dashGeral=true; _dashIdx=0;
+      clearInterval(_dashSlideTimer);
+      _dashSlideTimer=setInterval(_dashNextSlide,40000);
+      _dashRender();
+      _dashRenderFooter();
+      return;
+    }
+  } while(tentativas < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dados, hora));
+  _dashRender();
+  _dashRenderFooter();
+}
+
+function _dashRoboSemValor(k, dados, hora){
+  if(!k||!celulas[k]) return true;
+  const rn=k.replace(/\D/g,'');
+  const rd=dados[rn]||{};
+  const prod=parseCelVal((rd[campoH(hora)])||'').num;
+  const meta=parseInt(rd.meta)||0;
+  return prod===0 && meta===0;
+}
+
+function _dashGetDados(){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!mk) return {};
+  const mc=celulas[mk];
+  const now=new Date();
+  // tenta data real primeiro
+  const ch=`${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+  if(mc.metas_dias&&mc.metas_dias[ch]) return mc.metas_dias[ch];
+  // fallback data selecionada
+  const ch2=`${mc.metas_ano||now.getFullYear()}_${mc.metas_mes!==undefined?mc.metas_mes:now.getMonth()}_${mc.metas_dia||now.getDate()}`;
+  return (mc.metas_dias&&mc.metas_dias[ch2])?mc.metas_dias[ch2]:{};
+}
+
+function _dashRender(){
+  if(_dashGeral) _dashRenderGeral();
+  else _dashRenderRobo(_dashRobos[_dashIdx]);
+}
+
+function _dashRenderRobo(k){
+  const main=document.getElementById("dashMain");
+  if(!main||!k||!celulas[k]) return;
+  const c=celulas[k];
+  const dados=_dashGetDados();
+  const rn=k.replace(/\D/g,'');
+  const rd=dados[rn]||{};
+  const meta=parseInt(rd.meta)||0;
+  const hora=_dashGetHoraCheia();
+  const prod=parseCelVal((rd[campoH(hora)])||'').num;
+  const bateu=meta>0&&prod>=meta;
+  const cor=prod===0&&meta===0?'#4a5568':meta===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+  const idx=_dashRobos.indexOf(k);
+
+  const olhos = prod>0&&meta>0&&bateu ? `
+    <path d="M53 25 L57 29 L61 25 M53 31 L57 27 L61 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M79 25 L83 29 L87 25 M79 31 L83 27 L87 31" fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M52 44 Q70 56 88 44" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="48" cy="42" r="5" fill="${cor}" opacity="0.2"/>
+    <circle cx="92" cy="42" r="5" fill="${cor}" opacity="0.2"/>
+  ` : prod>0&&meta>0&&!bateu ? `
+    <line x1="53" y1="24" x2="61" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="61" y1="24" x2="53" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="79" y1="24" x2="87" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="87" y1="24" x2="79" y2="32" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M52 50 Q70 40 88 50" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round"/>
+    <ellipse cx="57" cy="38" rx="2" ry="4" fill="${cor}" opacity="0.6"/>
+  ` : `
+    <circle cx="57" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite"/>
+    <circle cx="83" cy="28" r="4" fill="${cor}" style="animation:blink 3s infinite 0.1s"/>
+    <line x1="56" y1="46" x2="84" y2="46" stroke="${cor}" stroke-width="2" stroke-linecap="round"/>
+  `;
+
+  const estrelas = bateu&&prod>0 ? `
+    <text x="15" y="25" font-size="14" style="animation:weld 0.5s infinite">⭐</text>
+    <text x="112" y="20" font-size="12" style="animation:weld 0.7s infinite 0.2s">✨</text>
+    <text x="10" y="110" font-size="10" style="animation:weld 0.6s infinite 0.4s">⭐</text>
+  ` : '';
+
+  const animHead = bateu&&prod>0 ? 'headBob 0.6s ease-in-out infinite' : 'headBob 2s ease-in-out infinite';
+  const animArm  = bateu&&prod>0 ? '0.6s' : '1.5s';
+
+  main.innerHTML=`
+  <div class="dash-robo-wrap" style="--cor:${cor}">
+    ${prod>0?`<div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${cor}08 0%,transparent 65%);pointer-events:none"></div>`:''}
+
+    <div class="dash-robo-svg">
+      <svg viewBox="0 0 140 200" style="overflow:visible">
+        <g style="transform-origin:70px 40px;animation:${animHead}">
+          <rect x="40" y="10" width="60" height="50" rx="10" fill="none" stroke="${cor}" stroke-width="2"/>
+          <circle cx="57" cy="28" r="7" fill="${cor}" opacity="0.2"/>
+          <circle cx="83" cy="28" r="7" fill="${cor}" opacity="0.2"/>
+          ${olhos}
+        </g>
+        <rect x="63" y="60" width="14" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
+        <g style="animation:${bateu&&prod>0?'headBob 0.6s ease-in-out infinite':'none'};transform-origin:70px 107px">
+          <rect x="30" y="72" width="80" height="70" rx="10" fill="none" stroke="${cor}" stroke-width="2"/>
+          <rect x="50" y="82" width="40" height="30" rx="6" fill="${cor}" opacity="0.1" stroke="${cor}" stroke-width="1"/>
+          <circle cx="62" cy="97" r="4" fill="${cor}" opacity="${bateu&&prod>0?'1':'0.5'}"/>
+          <circle cx="78" cy="97" r="4" fill="${cor}" opacity="${bateu&&prod>0?'0.7':'0.3'}"/>
+          <text x="70" y="121" text-anchor="middle" font-size="8" fill="${cor}" opacity="0.6" font-family="Courier New">${bateu&&prod>0?'OK!':prod>0&&meta>0?'...':'---'}</text>
+        </g>
+        <g style="transform-origin:30px 85px;animation:armUp ${animArm} ease-in-out infinite">
+          <rect x="8" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
+          <rect x="4" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
+          <rect x="4" y="117" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
+          <rect x="14" y="115" width="8" height="12" rx="3" fill="none" stroke="${cor}" stroke-width="1.5"/>
+        </g>
+        <g style="transform-origin:110px 85px;animation:armDown ${animArm} ease-in-out infinite">
+          <rect x="108" y="75" width="24" height="12" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
+          <rect x="118" y="87" width="18" height="30" rx="6" fill="none" stroke="${cor}" stroke-width="2"/>
+          <g style="animation:weld 0.8s ease-in-out infinite">
+            <circle cx="127" cy="117" r="3" fill="#ffb300"/>
+            <line x1="127" y1="110" x2="127" y2="106" stroke="#ffb300" stroke-width="2"/>
+            <line x1="133" y1="112" x2="136" y2="109" stroke="#ffb300" stroke-width="2"/>
+            <line x1="121" y1="112" x2="118" y2="109" stroke="#ffb300" stroke-width="2"/>
+          </g>
+        </g>
+        <rect x="38" y="140" width="64" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
+        <rect x="38" y="150" width="24" height="40" rx="8" fill="none" stroke="${cor}" stroke-width="2"/>
+        <rect x="34" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
+        <rect x="78" y="150" width="24" height="40" rx="8" fill="none" stroke="${cor}" stroke-width="2"/>
+        <rect x="78" y="188" width="28" height="10" rx="4" fill="none" stroke="${cor}" stroke-width="1.5"/>
+        ${estrelas}
+      </svg>
+    </div>
+
+    <div class="dash-info">
+      <div style="text-align:center">
+        <div class="dash-rn">Robô ${rn}</div>
+        <div class="dash-nome">${esc(c.nome||'')}</div>
+        <div class="dash-cod">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
+      </div>
+      <div class="dash-box" style="border-color:${cor}50">
+        <div class="dash-prod-h">Produção ${hora}</div>
+        <div class="dash-prod-n" style="color:${cor}">${prod>0?prod:'—'}</div>
+        ${meta>0?`<div class="dash-meta-txt">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
+      </div>
+      ${prod>0&&meta>0?`
+      <div class="dash-badge" style="border:2px solid ${cor}50;background:${cor}12;color:${cor};${bateu?'animation:pisca 1.8s infinite':''}">${bateu?'✅  ATINGIU A META':'❌  NÃO ATINGIU A META'}</div>
+      <div class="dash-faltou">Produzido: <b style="color:${cor}">${prod}</b> &nbsp;|&nbsp; Meta: <b style="color:#d8dde6">${meta}</b>${!bateu?` &nbsp;|&nbsp; Faltou: <b style="color:#ff4d4d">${meta-prod}</b>`:''}</div>`:''}
+      <div class="dash-dots">
+        ${_dashRobos.map((_,i)=>`<div style="width:${i===idx?'20px':'6px'};height:6px;border-radius:99px;background:${i===idx?'#00e87a':'#1e2530'};transition:all .3s"></div>`).join('')}
+        <div style="width:6px;height:6px;border-radius:99px;background:#1e2530"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+
+function _dashRenderGeral(){
+  const main=document.getElementById("dashMain");
+  if(!main) return;
+  const dados=_dashGetDados();
+  const horaAtual=_dashGetHoraCheia();
+  const todasHoras=[...HORAS_DIA,...HORAS_NOITE];
+  let totalGeral=0;
+
+  const linhas=_dashRobos.map(k=>{
+    const rn=k.replace(/\D/g,'');
+    const rd=dados[rn]||{};
+    const meta=parseInt(rd.meta)||0;
+    const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
+    const bateu=meta>0&&prodAtual>=meta;
+    const corAtual=meta===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    const totalRobo=todasHoras.reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
+    totalGeral+=totalRobo;
+    const hCells=todasHoras.map(h=>{
+      const v=parseCelVal((rd[campoH(h)])||'').num;
+      const isCafe=HORAS_CAFE.includes(h);
+      const isAtual=h===horaAtual;
+      const ok=!isCafe&&meta>0&&v>=meta;
+      const fail=!isCafe&&meta>0&&v>0&&v<meta;
+      const cor=isCafe?'#8a6200':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
+      const fontSize=isAtual?'20px':'15px';
+      return`<td style="padding:5px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
+    }).join('');
+    return`<tr style="border-bottom:1px solid #0a0d12">
+      <td style="padding:7px 10px;font-size:13px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#ffb300;font-weight:700;white-space:nowrap">${esc(rd.cod||'—')}</td>
+      <td style="padding:7px 10px;font-size:13px;color:#4a5568;text-align:center">${meta||'—'}</td>
+      ${hCells}
+      <td style="padding:7px 14px;font-size:22px;font-weight:900;color:#00e87a;text-align:center;border-left:2px solid #00e87a30">${totalRobo>0?totalRobo.toLocaleString("pt-BR"):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const hHeaders=todasHoras.map(h=>{
+    const isAtual=h===horaAtual;
+    const isCafe=HORAS_CAFE.includes(h);
+    return`<th style="padding:8px 6px;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
+  }).join('');
+
+  const hTotais=todasHoras.map(h=>{
+    const t=_dashRobos.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num;},0);
+    return`<td style="padding:8px 6px;text-align:center;font-size:13px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530">${t>0?t:'—'}</td>`;
+  }).join('');
+
+  main.innerHTML=`
+  <div style="height:100%;overflow:auto;padding:14px 18px">
+    <div style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;text-align:center">
+      📊 Visão Geral — Produção do dia · Hora atual: <span style="color:#ffb300;font-weight:900">${horaAtual}</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;background:#0a0d12;border-radius:12px;overflow:hidden">
+      <thead style="background:#080b0f">
+        <tr>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Robô</th>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Peça</th>
+          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530">Meta/h</th>
+          ${hHeaders}
+          <th style="padding:9px 14px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30">Total</th>
+        </tr>
+      </thead>
+      <tbody>${linhas}</tbody>
+      <tfoot>
+        <tr style="background:#080b0f">
+          <td colspan="3" style="padding:9px 10px;font-size:12px;font-weight:900;color:#fff;border-top:2px solid #1e2530;letter-spacing:0.1em">TOTAL GERAL</td>
+          ${hTotais}
+          <td style="padding:9px 14px;text-align:center;font-size:18px;font-weight:900;color:#00e87a;border-top:2px solid #1e2530;border-left:2px solid #00e87a30">${totalGeral.toLocaleString("pt-BR")}</td>
+        </tr>
+      </tfoot>
+    </table>
+    <div style="display:flex;justify-content:center;gap:5px;margin-top:12px">
+      ${_dashRobos.map(()=>`<div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>`).join('')}
+      <div style="width:18px;height:5px;border-radius:99px;background:#ffb300"></div>
+    </div>
+  </div>`;
+}
+
+function _dashRenderFooter(){
+  const footer=document.getElementById("dashHoras");
+  if(!footer) return;
+  const dados=_dashGetDados();
+  const horaAtual=_dashGetHoraCheia();
+  footer.innerHTML=[...HORAS_DIA,...HORAS_NOITE].map(h=>{
+    const campo=campoH(h);
+    const isCafe=HORAS_CAFE.includes(h);
+    const isAtual=h===horaAtual;
+    const total=ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campo])||'').num,0);
+    const metaT=ROBOS.reduce((s,rn)=>s+(parseInt((dados[rn]||{}).meta)||0),0);
+    const bateu=total>0&&metaT>0&&total>=metaT;
+    const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
+      <div class="dash-hora-label" style="color:${isAtual?cor:'#4a5568'}">${h}${isAtual?' ◀':''}</div>
+      <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+
+function startViewer(){
+  isAdmin=false;isAdminMetas=false;
+  startApp();
+  // Seleciona automaticamente a célula de Produção Mensal
+  const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
+  if(prodKey){selected=prodKey;renderDetail();}
+}
 function startApp(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
@@ -1868,7 +4115,7 @@ function startApp(){
       renderDetail();
     }
   });
-  pollTimer=setInterval(loadFromAPI,300000);
+  pollTimer=setInterval(loadFromAPI,60000);
 }
 function doLogout(){
   clearInterval(pollTimer);
@@ -2115,6 +4362,7 @@ function copiarDiaAnterior(key){
       if(!celulas[key].metas_dias[chaveAtual][robo]) celulas[key].metas_dias[chaveAtual][robo] = {};
       if(ant.cod) celulas[key].metas_dias[chaveAtual][robo].cod  = ant.cod;
       if(ant.meta) celulas[key].metas_dias[chaveAtual][robo].meta = ant.meta;
+      if(ant.pontos) celulas[key].metas_dias[chaveAtual][robo].pontos = ant.pontos;
     }
   });
 
@@ -2176,41 +4424,6 @@ function renderCadastroPecas(){
         </div>
       `).join('')}
     </div>`}
-
-    <!-- Modal nova/editar peça -->
-    <div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:999;align-items:center;justify-content:center">
-      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
-        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
-        <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-          <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
-        </div>
-        <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
-        </div>
-        <div style="margin-bottom:12px">
-          <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
-            <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
-            <button class="btn btn-gray" style="padding:5px 8px;font-size:11px" id="btnRemovePecaImg" onclick="removerImgPecaCad()" style="display:none">✕</button>
-          </div>
-          <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
-          <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
-        </div>
-      </div>
-    </div>
   </div>`;
 }
 
@@ -2221,7 +4434,7 @@ function abrirModalNovaPeca(){
   _pecaCodEditando = "";
   _pecaImgTemp = "";
   document.getElementById("modalPecaTitulo").textContent = "Nova Peça";
-  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel"].forEach(f=>{
+  ["cod","nome","cliente","tempo","meta","corrente","pre_pressao","pontos","eletrodo","tempo_solda","turno","responsavel","pares_gabarito"].forEach(f=>{
     const el = document.getElementById("peca_"+f);
     if(el) el.value = "";
   });
@@ -2248,6 +4461,7 @@ function abrirModalEditarPeca(cod){
   document.getElementById("peca_tempo_solda").value = p.tempo_solda||"";
   document.getElementById("peca_turno").value = p.turno||"";
   document.getElementById("peca_responsavel").value = p.operador||"";
+  document.getElementById("peca_pares_gabarito").value = p.pares_gabarito||"";
   const prev = document.getElementById("peca_img_preview");
   if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
   document.getElementById("modalPeca").style.display = "flex";
@@ -2294,11 +4508,13 @@ function salvarPeca(){
     tempo_solda: document.getElementById("peca_tempo_solda").value.trim(),
     turno: document.getElementById("peca_turno").value.trim(),
     operador: document.getElementById("peca_responsavel").value.trim(),
+    pares_gabarito: document.getElementById("peca_pares_gabarito").value.trim(),
     img: _pecaImgTemp
   };
   saveToAPI(celulas);
   fecharModalPeca();
-  renderCadastroPecas();
+  if(getCellTipo(selected)==='catalogo_pecas') renderCatalogoPecas();
+  else renderCadastroPecas();
   showToast("Peça salva ✓");
 }
 
@@ -2307,7 +4523,8 @@ function excluirPeca(cod){
   const k = getCadastroPecasKey();
   if(k && celulas[k].pecas) delete celulas[k].pecas[cod];
   saveToAPI(celulas);
-  renderCadastroPecas();
+  if(getCellTipo(selected)==='catalogo_pecas') renderCatalogoPecas();
+  else renderCadastroPecas();
   showToast("Peça excluída ✓");
 }
 
@@ -2372,6 +4589,312 @@ document.addEventListener('click', function(e){
   if(!e.target.closest('#pecaDropdown') && !e.target.closest('.campo-codigo-peca')) fecharDropdownPeca();
 });
 
+function handleMetasInput(key,robo,campo,valor){
+  const c = celulas[key];
+  const chave = getMetasChave(key);
+  if(!c.metas_dias) c.metas_dias={};
+  if(!c.metas_dias[chave]) c.metas_dias[chave]={};
+  if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
+  const rd = c.metas_dias[chave][robo];
+  const pontos = parseInt(rd.pontos)||0;
+  const numVal = parseInt(valor)||0;
+  let valorFinal = valor;
+
+  // Só divide se não tiver # (ajuste técnico)
+  if(pontos>1 && numVal>0 && !String(valor).includes('#')){
+    const dividido = Math.round(numVal/pontos);
+    if(dividido>=1 && dividido<=999 && dividido!==numVal){
+      valorFinal = String(dividido);
+      const inp = document.getElementById(`inp-${robo}-${campo}`);
+      if(inp) inp.value = valorFinal;
+    }
+  }
+
+  // aplica cor correta sem rerenderizar
+  const meta = parseInt(rd.meta)||0;
+  const {num, tipo} = parseCelVal(valorFinal);
+  const inp = document.getElementById(`inp-${robo}-${campo}`);
+  if(inp){
+    inp.className = 'hora-inp';
+    const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
+    const isCafe = HORAS_CAFE.includes(horaOrigem);
+    if(isCafe) inp.classList.add('cafe');
+    else if(tipo==='ajuste') inp.classList.add('cell-adj');
+    else if(num>0){
+      if(meta>0&&num>=meta) inp.classList.add('cell-ok');
+      else if(meta>0&&num<meta) inp.classList.add('cell-fail');
+      else inp.classList.add('cell-ok');
+    }
+  }
+  updateMetasCell(key,robo,campo,valorFinal);
+}
+
+function renderCatalogoPecas(){
+  const c = celulas[selected];
+  const cadastroKey = getCadastroPecasKey();
+  const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
+  const lista = Object.entries(pecas).sort((a,b)=>{
+    const ca=(a[1].cliente||'').toLowerCase();
+    const cb=(b[1].cliente||'').toLowerCase();
+    if(ca<cb)return -1; if(ca>cb)return 1;
+    return a[0].localeCompare(b[0]);
+  });
+
+  const busca = (c._busca||'').toLowerCase();
+  const filtradas = busca ? lista.filter(([cod,p])=>
+    cod.toLowerCase().includes(busca)||
+    (p.cliente||'').toLowerCase().includes(busca)
+  ) : lista;
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:2px">${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${isAdmin?`<button class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
+        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <input value="${esc(busca)}" placeholder="🔍 Buscar por código ou cliente..."
+        style="width:100%;background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:9px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"
+        oninput="celulas['${selected}']._busca=this.value;renderCatalogoPecas()"
+        onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
+    </div>
+
+    ${filtradas.length===0?`
+      <div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
+        ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
+      </div>
+    `:`
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:#080b0f">
+              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Código</th>
+              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Cliente</th>
+              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Tempo/ciclo</th>
+              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Pares de Gabarito</th>
+              ${isAdmin?`<th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Ações</th>`:''}
+            </tr>
+          </thead>
+          <tbody>
+            ${filtradas.map(([cod,p],i)=>{
+              const prevCliente = i>0?(filtradas[i-1][1].cliente||''):'';
+              const curCliente = p.cliente||'';
+              const novoGrupo = curCliente !== prevCliente;
+              return `
+              ${novoGrupo?`<tr style="background:#080b0f"><td colspan="${isAdmin?5:4}" style="padding:10px 16px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-bottom:1px solid #ffb30030">${esc(curCliente||'Sem cliente')}</td></tr>`:''}
+              <tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
+              <td style="padding:12px 16px">
+                <span style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</span>
+              </td>
+              <td style="padding:12px 16px;font-size:16px;font-weight:600;color:#d8dde6">${esc(p.cliente||'—')}</td>
+              <td style="padding:12px 16px;text-align:center">
+                <span style="font-size:16px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span>
+              </td>
+              <td style="padding:12px 16px;text-align:center">
+                <span style="font-size:16px;font-weight:700;color:#a78bfa">${esc(p.pares_gabarito||'—')}</span>
+              </td>
+              ${isAdmin?`<td style="padding:12px 16px;text-align:center">
+                <div style="display:flex;gap:6px;justify-content:center">
+                  <button class="btn btn-gray" style="padding:5px 12px;font-size:12px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+                  <button class="btn btn-red" style="padding:5px 10px;font-size:12px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
+                </div>
+              </td>`:''}
+            </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `}
+  </div>`;
+}
+
+function renderManutencao(){
+  const c = celulas[selected];
+  const itens = c.manutencoes || {};
+  // Agrupa por robô
+  const robosComManu = ROBOS.filter(r=>itens[r]&&itens[r].length>0);
+  const totalPendentes = robosComManu.reduce((s,r)=>s+(itens[r]||[]).filter(m=>!m.concluido).length,0);
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🔩 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:2px">${totalPendentes>0?`<span style="color:#ffb300;font-weight:700">${totalPendentes} pendente(s)</span>`:'Nenhuma manutenção pendente'}</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${ROBOS.map(robo=>{
+        const lista = (itens[robo]||[]);
+        const pendentes = lista.filter(m=>!m.concluido);
+        const concluidas = lista.filter(m=>m.concluido);
+        const temPendente = pendentes.length>0;
+        const cor = temPendente?'#ffb300':'#1e2530';
+        const bg  = temPendente?'#ffb30010':'#0a0d12';
+        return`<div style="background:${bg};border:1px solid ${cor}40;border-radius:12px;overflow:hidden">
+          <div onclick="toggleManuRobo(${robo})" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none">
+            <div style="display:flex;align-items:center;gap:14px">
+              <span style="font-size:28px">⚙</span>
+              <div>
+                <div style="font-size:20px;font-weight:900;color:#fff">Robô ${robo} <span style="font-size:14px;font-weight:600;color:${robo<=604?'#ffb300':'#00e87a'}">${robo<=604?'Fanuc':'Kuka'}</span></div>
+                <div style="font-size:13px;font-weight:700;color:${temPendente?'#ffb300':'#4a5568'};margin-top:2px">${temPendente?`⚠ ${pendentes.length} manutenção pendente`:concluidas.length>0?`✓ ${concluidas.length} concluída(s)`:'Sem registros'}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Adicionar</button>`:''}
+              <span style="color:#4a5568;font-size:14px" id="arrow-manu-${robo}">▼</span>
+            </div>
+          </div>
+          <div id="manu-list-${robo}" style="display:none;flex-direction:column;border-top:1px solid ${cor}30;padding:14px 18px;gap:10px">
+            ${pendentes.length===0&&concluidas.length===0?`<div style="font-size:14px;color:#2a3040;padding:4px 0">Nenhuma manutenção registrada.</div>`:''}
+
+            ${pendentes.length>0?`
+            <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:4px">⚠ Pendentes (${pendentes.length})</div>
+            ${pendentes.map((m,i)=>{
+              const idxReal = lista.indexOf(m);
+              return`<div style="background:#080b0f;border:1px solid #ffb30040;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+                <div style="flex:1">
+                  <div style="font-size:16px;font-weight:800;color:#d8dde6">${esc(m.descricao)}</div>
+                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 ${esc(m.data||'—')}${m.responsavel?` · ⏳ <span style="color:#ffb300;font-weight:700">${esc(m.responsavel)}</span>`:''}</div>
+                </div>
+                ${isAdmin?`<div style="display:flex;gap:6px;flex-shrink:0">
+                  <button onclick="editarManu('${selected}',${robo},${idxReal})" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✏</button>
+                  <button onclick="concluirManu('${selected}',${robo},${idxReal})" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✓ Concluir</button>
+                  <button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">🗑</button>
+                </div>`:''}
+              </div>`;
+            }).join('')}`:''}
+
+            ${concluidas.length>0?`
+            <div style="font-size:11px;color:#00e87a;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-top:${pendentes.length>0?'12px':'4px'};margin-bottom:4px">✓ Histórico (${concluidas.length})</div>
+            ${concluidas.map((m,i)=>{
+              const idxReal = lista.indexOf(m);
+              return`<div style="background:#080b0f;border:1px solid #00e87a20;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;opacity:0.8">
+                <div style="flex:1">
+                  <div style="font-size:15px;font-weight:700;color:#4a5568;text-decoration:line-through">${esc(m.descricao)}</div>
+                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 Aberta: ${esc(m.data||'—')}</div>
+                  <div style="font-size:12px;color:#00e87a;margin-top:3px">✓ Concluído em ${esc(m.data_conclusao||'—')}${m.realizado_por?` · 👷 <b style="color:#fff">${esc(m.realizado_por)}</b>`:''}</div>
+                </div>
+                ${isAdmin?`<button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d10;border:1px solid #ff4d4d30;color:#ff4d4d;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;flex-shrink:0">🗑</button>`:''}
+              </div>`;
+            }).join('')}`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Modal nova manutenção -->
+    <div id="modalManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px">
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">🔩 Nova Manutenção — Robô <span id="manuRoboLabel"></span></div>
+        <textarea id="manu_descricao" placeholder="Descrição da manutenção *" rows="3"
+          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+        <input id="manu_responsavel" placeholder="Responsável (opcional)"
+          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalManu()">Cancelar</button>
+          <button class="btn btn-gray" style="padding:6px 16px;background:#ffb30020;border:1px solid #ffb30040;color:#ffb300" onclick="salvarManu()">+ Adicionar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // Abre automaticamente robôs com pendência
+  robosComManu.forEach(r=>{
+    const el = document.getElementById(`manu-list-${r}`);
+    if(el) el.style.display='flex';
+  });
+}
+
+let _manuRoboAtual = null;
+let _manuIdxAtual = null;
+
+function editarManu(key,robo,idx){
+  const m = celulas[key].manutencoes[robo][idx];
+  _manuRoboAtual = robo;
+  _manuIdxAtual = idx;
+  document.getElementById("editManuDescricao").value = m.descricao||'';
+  document.getElementById("editManuResponsavel").value = m.responsavel||'';
+  document.getElementById("editManuData").value = m.data||'';
+  document.getElementById("modalEditManu").style.display = 'flex';
+}
+
+function salvarEdicaoManu(){
+  const desc = document.getElementById("editManuDescricao").value.trim();
+  if(!desc){ showToast("Descrição obrigatória!", true); return; }
+  const resp = document.getElementById("editManuResponsavel").value.trim();
+  const data = document.getElementById("editManuData").value.trim();
+  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].descricao = desc;
+  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].responsavel = resp;
+  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].data = data;
+  saveToAPI(celulas);
+  document.getElementById("modalEditManu").style.display = 'none';
+  renderManutencao();
+  showToast("Manutenção atualizada ✓");
+}
+
+function toggleManuRobo(robo){
+  const el = document.getElementById(`manu-list-${robo}`);
+  if(!el) return;
+  const open = el.style.display !== 'none' && el.style.display !== '';
+  el.style.display = open ? 'none' : 'flex';
+}
+
+function abrirModalManu(robo){
+  _manuRoboAtual = robo;
+  document.getElementById("manuRoboLabel").textContent = robo;
+  document.getElementById("manu_descricao").value = '';
+  document.getElementById("manu_responsavel").value = '';
+  document.getElementById("modalManu").style.display = 'flex';
+}
+
+function fecharModalManu(){
+  document.getElementById("modalManu").style.display = 'none';
+}
+
+function salvarManu(){
+  const desc = document.getElementById("manu_descricao").value.trim();
+  if(!desc){ showToast("Informe a descrição!", true); return; }
+  const resp = document.getElementById("manu_responsavel").value.trim();
+  const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  if(!celulas[selected].manutencoes) celulas[selected].manutencoes = {};
+  if(!celulas[selected].manutencoes[_manuRoboAtual]) celulas[selected].manutencoes[_manuRoboAtual] = [];
+  celulas[selected].manutencoes[_manuRoboAtual].push({descricao:desc, responsavel:resp, data:now, concluido:false});
+  saveToAPI(celulas);
+  fecharModalManu();
+  renderManutencao();
+  showToast("Manutenção adicionada ✓");
+}
+
+function concluirManu(key,robo,idx){
+  const realizador = prompt("Quem realizou a manutenção?","");
+  if(realizador === null) return; // cancelou
+  const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  celulas[key].manutencoes[robo][idx].concluido = true;
+  celulas[key].manutencoes[robo][idx].data_conclusao = now;
+  celulas[key].manutencoes[robo][idx].realizado_por = realizador.trim()||'—';
+  saveToAPI(celulas);
+  renderManutencao();
+  showToast("Manutenção concluída ✓");
+}
+
+function excluirManu(key,robo,idx){
+  if(!confirm("Excluir esta manutenção?")) return;
+  celulas[key].manutencoes[robo].splice(idx,1);
+  saveToAPI(celulas);
+  renderManutencao();
+  showToast("Excluído ✓");
+}
+
 function updAlert(k,i,v){celulas[k].alertas[i]=v;saveToAPI(celulas);}
 function delAlert(k,i){celulas[k].alertas.splice(i,1);saveToAPI(celulas);renderDetail();}
 function addAlert(k){celulas[k].alertas.push("Novo alerta");saveToAPI(celulas);renderDetail();}
@@ -2396,7 +4919,7 @@ function renomearCelula(key){
 
 async function openGerenciar(){
   const keys = Object.keys(celulas).sort();
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
 
   document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
     const c = celulas[k];
@@ -2480,6 +5003,56 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeX
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
 document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenciar);
+
 </script>
+<div id="modalPeca" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px" id="modalPecaTitulo">Nova Peça</div>
+    <input id="peca_cod" placeholder="Código *" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <input id="peca_nome" placeholder="Nome da peça" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <input id="peca_cliente" placeholder="Cliente" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <input id="peca_tempo" placeholder="Tempo/peça (ex: 45s)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_meta" type="number" placeholder="Meta/hora" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_corrente" placeholder="Corrente (ex: 3,40Ka)" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pre_pressao" placeholder="Pré-pressão" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pontos" placeholder="Pontos de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_eletrodo" placeholder="Tipo de eletrodo" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_tempo_solda" placeholder="Tempo de solda" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_turno" placeholder="Turno" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+      <input id="peca_pares_gabarito" placeholder="Pares de gabarito" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box">
+    </div>
+    <input id="peca_responsavel" placeholder="Responsável técnico" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box">
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.1em">Imagem da Peça</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img id="peca_img_preview" src="" style="display:none;width:60px;height:60px;object-fit:contain;border-radius:8px;border:1px solid #1e2530;background:#080b0f">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="document.getElementById('pecaImgInput').click()">📷 Enviar imagem</button>
+        <button class="btn btn-gray" id="btnRemovePecaImg" style="padding:5px 8px;font-size:11px;display:none" onclick="removerImgPecaCad()">✕</button>
+      </div>
+      <input type="file" id="pecaImgInput" accept="image/*" style="display:none" onchange="handlePecaImgUpload(this.files[0])">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
+      <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalEditManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px">
+    <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">✏ Editar Manutenção</div>
+    <textarea id="editManuDescricao" placeholder="Descrição *" rows="3"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+    <input id="editManuResponsavel" placeholder="Responsável"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;outline:none">
+    <input id="editManuData" placeholder="Data de abertura (ex: 11/06/2026, 14:30)"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-gray" style="padding:6px 16px" onclick="document.getElementById('modalEditManu').style.display='none'">Cancelar</button>
+      <button class="btn btn-gray" style="padding:6px 16px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="salvarEdicaoManu()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
