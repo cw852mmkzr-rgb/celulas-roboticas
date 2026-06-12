@@ -3946,13 +3946,26 @@ function _dashGetDados(){
   const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   if(!mk) return {};
   const mc=celulas[mk];
+  if(!mc.metas_dias) return {};
   const now=new Date();
-  // tenta data real primeiro
-  const ch=`${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
-  if(mc.metas_dias&&mc.metas_dias[ch]) return mc.metas_dias[ch];
-  // fallback data selecionada
-  const ch2=`${mc.metas_ano||now.getFullYear()}_${mc.metas_mes!==undefined?mc.metas_mes:now.getMonth()}_${mc.metas_dia||now.getDate()}`;
-  return (mc.metas_dias&&mc.metas_dias[ch2])?mc.metas_dias[ch2]:{};
+  const ano=now.getFullYear(), mes=now.getMonth(), dia=now.getDate();
+
+  // Tenta mês 0-indexed (padrão do sistema)
+  const ch1=`${ano}_${mes}_${dia}`;
+  if(mc.metas_dias[ch1]) return mc.metas_dias[ch1];
+
+  // Tenta mês 1-indexed
+  const ch2=`${ano}_${mes+1}_${dia}`;
+  if(mc.metas_dias[ch2]) return mc.metas_dias[ch2];
+
+  // Fallback: data selecionada na célula
+  const ch3=`${mc.metas_ano||ano}_${mc.metas_mes!==undefined?mc.metas_mes:mes}_${mc.metas_dia||dia}`;
+  if(mc.metas_dias[ch3]) return mc.metas_dias[ch3];
+
+  // Último recurso: dia mais recente disponível
+  const chaves=Object.keys(mc.metas_dias).sort();
+  if(chaves.length) return mc.metas_dias[chaves[chaves.length-1]];
+  return {};
 }
 
 function _dashRender(){
