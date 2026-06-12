@@ -549,7 +549,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
-const SUPABASE_URL = "https://dtsrisqueekmomm moqxf.supabase.co".replace(" ","");
+const SUPABASE_URL = "https://dtsrisqueekmomm moqxf.supabase.co".replace(/ /g,"");
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0c3Jpc3F1ZWVrbW9tbW1vcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjEwMzIsImV4cCI6MjA5Njc5NzAzMn0.Zdo1zJraLw0BanX-o9A2SreMr9tiVHvgrIyTeNqQC6g";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
@@ -2482,7 +2482,13 @@ async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   try{
-    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{headers:HEADERS_SB});
+    // Timeout de 8 segundos
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 8000);
+    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{
+      headers:HEADERS_SB, signal:controller.signal
+    });
+    clearTimeout(timeout);
     const d=await r.json();
     if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
       const anterior=JSON.stringify(celulas);
@@ -2492,13 +2498,15 @@ async function loadFromAPI(){
         if(badge) badge.style.display="inline-block";
       }
       celulas=d[0].conteudo;
-      // Aplica imagens
       if(d[0].imagens){
         Object.entries(d[0].imagens).forEach(([k,img])=>{if(celulas[k])celulas[k].img_peca=img;});
       }
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
-  }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
+  }catch(e){
+    if(!Object.keys(celulas).length) celulas=defaultData;
+    if(e.name==='AbortError') showToast("Conexão lenta — usando dados locais",true);
+  }
 
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
