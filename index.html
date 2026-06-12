@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Células Robóticas</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -26,7 +27,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cell-item.active { background: #00e87a08; border-left-color: #00e87a; }
 .cell-num { font-size: 18px; font-weight: 800; color: #fff; min-width: 26px; }
 .cell-info { flex: 1; min-width: 0; }
-.cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Montserrat', sans-serif; font-weight: 600; }
 .cell-peca { font-size: 10px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-green { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
@@ -88,7 +89,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
 .login-icon { font-size: 38px; margin-bottom: 8px; }
-.login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; }
+.login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; }
 .login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
 .login-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 11px 14px; font-family: 'Courier New', monospace; font-size: 14px; color: #d8dde6; text-align: center; letter-spacing: 0.15em; margin-bottom: 10px; outline: none; transition: all 0.2s; }
 .login-input:focus { border-color: #00e87a; color: #fff; }
@@ -126,7 +127,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
 .dash-header { display:flex; justify-content:space-between; align-items:center; padding:14px 28px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; }
-.dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; }
+.dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
 .dash-clock { font-size:36px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
 .dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
@@ -146,7 +147,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-robo-svg svg { width:clamp(80px,14vw,180px); height:auto; }
 .dash-info { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; max-width:700px; }
 .dash-rn { font-size:clamp(13px,2vw,20px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
-.dash-nome { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; }
+.dash-nome { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
 .dash-cod { font-size:clamp(14px,2.2vw,22px); color:#ffb300; font-weight:700; }
 .dash-box { background:#080b0f; border:3px solid #1e2530; border-radius:24px; padding:clamp(16px,3vw,36px) clamp(20px,5vw,80px); text-align:center; width:100%; box-sizing:border-box; }
 .dash-prod-h { font-size:clamp(12px,1.8vw,18px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:6px; }
