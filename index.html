@@ -548,13 +548,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
-const API_KEY  = "$2a$10$Hun0m.vWkzm.Tgj7jX4ZeeTVIRmLdFSIqFVJhYsYqq6ex4d43vDOW";
-const BIN_ID   = "6a27464ff5f4af5e29ce2ba0";
+const SUPABASE_URL = "https://dtsrisqueekmomm moqxf.supabase.co".replace(" ","");
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0c3Jpc3F1ZWVrbW9tbW1vcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjEwMzIsImV4cCI6MjA5Njc5NzAzMn0.Zdo1zJraLw0BanX-o9A2SreMr9tiVHvgrIyTeNqQC6g";
 const ADMIN_PW      = "tremps3102";
 const ADMIN_METAS_PW = "katia26";
-const BASE_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-const HEADERS_R = { "X-Master-Key": API_KEY };
-const HEADERS_W = { "X-Master-Key": API_KEY, "Content-Type": "application/json" };
+const HEADERS_SB = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" };
 
 // ── BACKUP GOOGLE SHEETS ──────────────────────
 const SHEETS_URL = "https://script.google.com/macros/s/AKfycbye_P32LTKrl-IR-TGSZKBTsuazDT_CzwuXBqe9Dp1o31B_nR9YoohLExiR8NLof703/exec";
@@ -2483,17 +2481,20 @@ async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   try{
-    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{headers:HEADERS_SB});
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0){
-      const anterior = JSON.stringify(celulas);
-      const novo = JSON.stringify(d.record);
-      if(anterior && anterior !== '{}' && novo !== anterior){
-        // tem dado novo — mostra indicador
-        const badge = document.getElementById("newDataBadge");
-        if(badge) badge.style.display = "inline-block";
+    if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
+      const anterior=JSON.stringify(celulas);
+      const novo=JSON.stringify(d[0].conteudo);
+      if(anterior&&anterior!=='{}'&&novo!==anterior){
+        const badge=document.getElementById("newDataBadge");
+        if(badge) badge.style.display="inline-block";
       }
-      celulas=d.record;
+      celulas=d[0].conteudo;
+      // Aplica imagens
+      if(d[0].imagens){
+        Object.entries(d[0].imagens).forEach(([k,img])=>{if(celulas[k])celulas[k].img_peca=img;});
+      }
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){if(!Object.keys(celulas).length)celulas=defaultData;}
@@ -2508,12 +2509,18 @@ async function loadFromAPI(){
 
 async function saveToAPI(data){
   try{
-    await fetch(BASE_URL,{method:"PUT",headers:HEADERS_W,body:JSON.stringify(data)});
+    const semImg = JSON.parse(JSON.stringify(data));
+    const imgs = {};
+    Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
+    // Salva dados
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
+    // Salva imagens separado se houver
+    if(Object.keys(imgs).length>0){
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
+    }
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
-    backupContador++;
-    if(backupContador>=5){backupContador=0;backupToSheets(data);}
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
