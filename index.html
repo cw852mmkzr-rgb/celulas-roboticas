@@ -3742,39 +3742,63 @@ function renderRelatorio(){
       </div>
     </div>
 
-    <!-- Heatmap -->
+    <!-- Metas Atingidas por Robô -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
-        ${(()=>{
-          const diasNoMes=new Date(anoSel,mesIdx+1,0).getDate();
-          const primeiroDia=new Date(anoSel,mesIdx,1).getDay();
-          const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
-          const semanas=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-          let html=semanas.map(s=>`<div style="font-size:9px;color:#4a5568;text-align:center;font-weight:700;padding:2px 0">${s}</div>`).join('');
-          for(let i=0;i<primeiroDia;i++) html+=`<div></div>`;
-          for(let dia=1;dia<=diasNoMes;dia++){
-            const val=diasDoMes[dia]?.totalGeral||0;
-            const pct=val/maxVal;
-            const bg=val===0?'#0a0d12':pct<0.3?'#00e87a20':pct<0.6?'#00e87a50':pct<0.85?'#00e87a90':'#00e87a';
-            const bdr=val>0?'#00e87a30':'#1e2530';
-            html+=`<div title="${dia}/${mesIdx+1} — ${val.toLocaleString('pt-BR')} peças" style="background:${bg};border:1px solid ${bdr};border-radius:4px;padding:4px 2px;text-align:center">
-              <div style="font-size:9px;color:#4a5568">${dia}</div>
-              <div style="font-size:10px;font-weight:700;color:${val>0?'#00e87a':'#1e2530'}">${val>0?val:''}</div>
-            </div>`;
-          }
-          return html;
-        })()}
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:10px;color:#4a5568">
-        <span>Sem dados</span>
-        <div style="width:12px;height:12px;background:#0a0d12;border:1px solid #1e2530;border-radius:2px"></div>
-        <div style="width:12px;height:12px;background:#00e87a20;border-radius:2px"></div>
-        <div style="width:12px;height:12px;background:#00e87a50;border-radius:2px"></div>
-        <div style="width:12px;height:12px;background:#00e87a90;border-radius:2px"></div>
-        <div style="width:12px;height:12px;background:#00e87a;border-radius:2px"></div>
-        <span>Alta produção</span>
-      </div>
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🎯 Metas Atingidas por Robô no Mês</div>
+      ${(()=>{
+        const metasKey2 = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+        if(!metasKey2) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const mc2 = celulas[metasKey2];
+        if(!mc2.metas_dias) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const diasMes2 = Object.entries(mc2.metas_dias).filter(([chave])=>{
+          const p=chave.split('_');
+          return parseInt(p[0])===anoSel && parseInt(p[1])===mesIdx;
+        });
+        const rows2 = ROBOS.map(robo=>{
+          let atingiu=0, naoAtingiu=0, cod='—';
+          diasMes2.forEach(([,dia])=>{
+            const rd=dia[robo]||{};
+            const meta=parseInt(rd.meta)||0;
+            if(rd.cod&&rd.cod!=='—') cod=rd.cod;
+            if(meta<=0) return;
+            [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
+              const v=parseCelVal((rd[campoH(h)])||'').num;
+              if(v<=0) return;
+              if(v>=meta) atingiu++; else naoAtingiu++;
+            });
+          });
+          if(atingiu===0&&naoAtingiu===0) return null;
+          const total=atingiu+naoAtingiu;
+          const pct=Math.round(atingiu/total*100);
+          return {robo,cod,atingiu,naoAtingiu,total,pct};
+        }).filter(Boolean).sort((a,b)=>b.pct-a.pct);
+        if(!rows2.length) return '<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>';
+        return rows2.map(r=>{
+          const cor=r.pct>=80?'#00e87a':r.pct>=50?'#ffb300':'#ff4d4d';
+          return`<div style="margin-bottom:12px;background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:16px;font-weight:900;color:#fff">Robô ${r.robo}</span>
+                <span style="font-size:13px;color:#ffb300;font-weight:700">${esc(r.cod)}</span>
+              </div>
+              <span style="font-size:20px;font-weight:900;color:${cor}">${r.pct}% de aproveitamento</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <div style="flex:1;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:22px;font-weight:900;color:#00e87a">${r.atingiu}x</div>
+                <div style="font-size:10px;color:#4a5568;margin-top:2px">✅ Atingiu a meta</div>
+              </div>
+              <div style="flex:1;background:#ff4d4d15;border:1px solid #ff4d4d30;border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:22px;font-weight:900;color:#ff4d4d">${r.naoAtingiu}x</div>
+                <div style="font-size:10px;color:#4a5568;margin-top:2px">❌ Não atingiu</div>
+              </div>
+            </div>
+            <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${r.pct}%;background:${cor};border-radius:99px"></div>
+            </div>
+          </div>`;
+        }).join('');
+      })()}
     </div>
 
     <!-- Melhor e Pior Desempenho -->
