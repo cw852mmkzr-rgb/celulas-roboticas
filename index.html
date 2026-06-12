@@ -3895,9 +3895,14 @@ function _dashTickClock(){
 
 async function _dashLoad(){
   try{
-    const r=await fetch(BASE_URL+"/latest",{headers:HEADERS_R});
+    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{headers:HEADERS_SB});
     const d=await r.json();
-    if(d.record&&Object.keys(d.record).length>0) celulas=d.record;
+    if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
+      celulas=d[0].conteudo;
+      if(d[0].imagens){
+        Object.entries(d[0].imagens).forEach(([k,img])=>{if(celulas[k])celulas[k].img_peca=img;});
+      }
+    }
   }catch(e){}
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
   _dashRender();
