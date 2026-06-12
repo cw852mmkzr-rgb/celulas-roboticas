@@ -3717,6 +3717,109 @@ function renderRelatorio(){
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Evolução Diária -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
+      <div style="position:relative;height:120px;display:flex;align-items:flex-end;gap:4px">
+        ${(()=>{
+          const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
+          return diasComDados.map(d=>{
+            const val=diasDoMes[d].totalGeral;
+            const h=Math.round(val/maxVal*100);
+            return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0">
+              <div style="font-size:9px;color:#4a5568;font-weight:700">${val>0?val:''}</div>
+              <div style="width:100%;background:#00e87a;border-radius:4px 4px 0 0;height:${h}%;min-height:${val>0?'4px':'0'};opacity:0.85"></div>
+              <div style="font-size:9px;color:#4a5568">${String(d).padStart(2,'0')}</div>
+            </div>`;
+          }).join('');
+        })()}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:#4a5568">
+        <span>Média: <b style="color:#d8dde6">${diasComDados.length>0?Math.round(diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0)/diasComDados.length).toLocaleString("pt-BR"):0}</b>/dia</span>
+        <span>Melhor: <b style="color:#00e87a">${(()=>{if(!diasComDados.length)return'—';const m=diasComDados.reduce((a,d)=>diasDoMes[d].totalGeral>diasDoMes[a].totalGeral?d:a,diasComDados[0]);return'dia '+String(m).padStart(2,'0')+' — '+diasDoMes[m].totalGeral.toLocaleString("pt-BR");})()}</b></span>
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+        ${(()=>{
+          const diasNoMes=new Date(anoSel,mesIdx+1,0).getDate();
+          const primeiroDia=new Date(anoSel,mesIdx,1).getDay();
+          const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
+          const semanas=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+          let html=semanas.map(s=>`<div style="font-size:9px;color:#4a5568;text-align:center;font-weight:700;padding:2px 0">${s}</div>`).join('');
+          for(let i=0;i<primeiroDia;i++) html+=`<div></div>`;
+          for(let dia=1;dia<=diasNoMes;dia++){
+            const val=diasDoMes[dia]?.totalGeral||0;
+            const pct=val/maxVal;
+            const bg=val===0?'#0a0d12':pct<0.3?'#00e87a20':pct<0.6?'#00e87a50':pct<0.85?'#00e87a90':'#00e87a';
+            const bdr=val>0?'#00e87a30':'#1e2530';
+            html+=`<div title="${dia}/${mesIdx+1} — ${val.toLocaleString('pt-BR')} peças" style="background:${bg};border:1px solid ${bdr};border-radius:4px;padding:4px 2px;text-align:center">
+              <div style="font-size:9px;color:#4a5568">${dia}</div>
+              <div style="font-size:10px;font-weight:700;color:${val>0?'#00e87a':'#1e2530'}">${val>0?val:''}</div>
+            </div>`;
+          }
+          return html;
+        })()}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:10px;color:#4a5568">
+        <span>Sem dados</span>
+        <div style="width:12px;height:12px;background:#0a0d12;border:1px solid #1e2530;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#00e87a20;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#00e87a50;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#00e87a90;border-radius:2px"></div>
+        <div style="width:12px;height:12px;background:#00e87a;border-radius:2px"></div>
+        <span>Alta produção</span>
+      </div>
+    </div>
+
+    <!-- Melhor e Pior Desempenho -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🏅 Desempenho por Meta no Mês</div>
+      ${(()=>{
+        const robosComMeta = eficienciaRobo.filter(r=>r.mediaMetaHora>0&&r.diasAtivo>0);
+        if(!robosComMeta.length) return `<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>`;
+        const melhor = robosComMeta.reduce((a,b)=>b.efic>a.efic?b:a);
+        const pior   = robosComMeta.reduce((a,b)=>b.efic<a.efic?b:a);
+        return`
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <!-- Melhor -->
+          <div style="background:#00e87a10;border:1px solid #00e87a30;border-radius:10px;padding:14px 16px;text-align:center">
+            <div style="font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">🥇 Melhor Desempenho</div>
+            <div style="font-size:32px;font-weight:900;color:#00e87a">Robô ${melhor.robo}</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${melhor.efic}%</div>
+            <div style="font-size:11px;color:#4a5568">${melhor.totalProd.toLocaleString("pt-BR")} peças · ${melhor.diasAtivo} dia(s)</div>
+            <div style="font-size:11px;color:#4a5568">Meta média: ${melhor.mediaMetaHora}/h</div>
+          </div>
+          <!-- Pior -->
+          <div style="background:#ff4d4d10;border:1px solid #ff4d4d30;border-radius:10px;padding:14px 16px;text-align:center">
+            <div style="font-size:10px;color:#ff4d4d;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">📉 Menor Desempenho</div>
+            <div style="font-size:32px;font-weight:900;color:#ff4d4d">Robô ${pior.robo}</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${pior.efic}%</div>
+            <div style="font-size:11px;color:#4a5568">${pior.totalProd.toLocaleString("pt-BR")} peças · ${pior.diasAtivo} dia(s)</div>
+            <div style="font-size:11px;color:#4a5568">Meta média: ${pior.mediaMetaHora}/h</div>
+          </div>
+        </div>
+        <!-- Ranking completo -->
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:10px">Ranking completo</div>
+        ${robosComMeta.sort((a,b)=>b.efic-a.efic).map((r,i)=>{
+          const cor=r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
+          const medalha=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
+          return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:14px;min-width:28px">${medalha}</span>
+            <span style="font-size:13px;font-weight:800;color:#fff;min-width:50px">Robô ${r.robo}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
+            </div>
+            <span style="font-size:14px;font-weight:900;color:${cor};min-width:52px;text-align:right">${r.efic}%</span>
+            <span style="font-size:11px;color:#4a5568;min-width:80px;text-align:right">${r.totalProd.toLocaleString("pt-BR")} pcs</span>
+          </div>`;
+        }).join('')}`;
+      })()}
     </div>`}
   </div>`;
 }
