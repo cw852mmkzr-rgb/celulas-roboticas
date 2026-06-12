@@ -187,7 +187,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* METAS */
 .metas-table-wrap { overflow-x: auto; }
-.metas-table { border-collapse: collapse; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
+.metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
 .metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 75px; position:sticky; left:65px; z-index:2; }
@@ -2524,7 +2524,9 @@ async function loadFromAPI(){
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
   else{
     const tipo=getCellTipo(selected);
-    if(tipo!=='robo')renderDetail();
+    // Não rerenderiza armário se tiver algum card aberto
+    const temGabAberto = document.querySelector('.arm-gabarito.open');
+    if(tipo!=='robo' && !(tipo==='armario' && temGabAberto)) renderDetail();
   }
 }
 
