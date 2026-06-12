@@ -3543,6 +3543,7 @@ function renderRelatorio(){
       if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
     });
     const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
+    // Base de 9h fixas por dia
     const efic = diasAtivo>0&&mediaMetaHora>0 ? Math.round(totalProd/(diasAtivo*mediaMetaHora*9)*100) : 0;
     return {robo, totalProd, diasAtivo, diasBateu, mediaMetaHora, efic};
   }).filter(r=>r.diasAtivo>0).sort((a,b)=>b.totalProd-a.totalProd);
@@ -3636,13 +3637,13 @@ function renderRelatorio(){
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Eficiência por Robô</div>
         ${eficienciaRobo.length>0?eficienciaRobo.map((r,i)=>{
-          const cor = r.efic>=90?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
+          const cor = r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
           return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
             <span style="font-size:11px;color:#00e87a;font-weight:700;min-width:36px">${r.robo}</span>
             <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
               <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
             </div>
-            <span style="font-size:11px;font-weight:700;color:${cor};min-width:36px;text-align:right">${r.efic}%</span>
+            <span style="font-size:11px;font-weight:700;color:${cor};min-width:42px;text-align:right">${r.efic}%</span>
             <span style="font-size:10px;color:#4a5568;min-width:50px;text-align:right">${r.totalProd.toLocaleString("pt-BR")}</span>
           </div>`;
         }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
