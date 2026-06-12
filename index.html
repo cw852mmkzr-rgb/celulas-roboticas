@@ -3920,15 +3920,15 @@ async function _dashLoad(){
     }
   }catch(e){}
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
-  // Começa no primeiro robô com produção na hora atual
+  // Começa no primeiro robô com produção na hora atual, ou no primeiro se nenhum tiver
   const dadosInicio = _dashGetDados();
   const horaInicio = _dashGetHoraCheia();
   _dashIdx = 0;
   let tentInicio = 0;
-  while(_dashIdx < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dadosInicio, horaInicio) && tentInicio < _dashRobos.length){
+  while(tentInicio < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dadosInicio, horaInicio)){
     _dashIdx++; tentInicio++;
+    if(_dashIdx >= _dashRobos.length){ _dashIdx = 0; break; }
   }
-  if(_dashIdx >= _dashRobos.length) _dashIdx = 0;
   _dashRender();
   _dashRenderFooter();
 }
@@ -3936,15 +3936,30 @@ async function _dashLoad(){
 function _dashNextSlide(){
   if(_dashGeral){
     _dashGeral=false; _dashIdx=0;
+    // Acha primeiro robô com produção
+    const d=_dashGetDados(); const h=_dashGetHoraCheia();
+    let t=0;
+    while(t<_dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx],d,h)){
+      _dashIdx++; t++;
+      if(_dashIdx>=_dashRobos.length){_dashIdx=0;break;}
+    }
     clearInterval(_dashSlideTimer);
     _dashSlideTimer=setInterval(_dashNextSlide,6000);
-    _dashRender();
-    _dashRenderFooter();
+    _dashRender(); _dashRenderFooter();
     return;
   }
-  // Avança para próximo robô que tenha valor na hora atual
   const dados=_dashGetDados();
   const hora=_dashGetHoraCheia();
+  // Conta quantos robôs têm produção
+  const robosComProd = _dashRobos.filter(k=>!_dashRoboSemValor(k,dados,hora));
+  // Se só tem 1 ou nenhum com produção, vai direto pra tela geral
+  if(robosComProd.length <= 1){
+    _dashGeral=true; _dashIdx=0;
+    clearInterval(_dashSlideTimer);
+    _dashSlideTimer=setInterval(_dashNextSlide,40000);
+    _dashRender(); _dashRenderFooter();
+    return;
+  }
   let tentativas=0;
   do {
     _dashIdx++;
@@ -3953,13 +3968,11 @@ function _dashNextSlide(){
       _dashGeral=true; _dashIdx=0;
       clearInterval(_dashSlideTimer);
       _dashSlideTimer=setInterval(_dashNextSlide,40000);
-      _dashRender();
-      _dashRenderFooter();
+      _dashRender(); _dashRenderFooter();
       return;
     }
   } while(tentativas < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dados, hora));
-  _dashRender();
-  _dashRenderFooter();
+  _dashRender(); _dashRenderFooter();
 }
 
 function _dashRoboSemValor(k, dados, hora){
