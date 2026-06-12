@@ -2485,7 +2485,7 @@ async function loadFromAPI(){
   // Carrega cache local primeiro para resposta instantânea
   try{
     const cache = localStorage.getItem('celulas_cache');
-    if(cache && !Object.keys(celulas).length){
+    if(cache){
       celulas = JSON.parse(cache);
       renderSidebar();
       if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
@@ -3152,14 +3152,58 @@ function updateEspaco(key,num,field,value){
 }
 
 // ── HISTÓRICO ELETRODO ───────────────────────
+function calcDesgaste(key){
+  // Soma todas as peças produzidas desde a última troca de eletrodo
+  const c = celulas[key];
+  if(!c) return 0;
+  const ultimaTroca = c.ultima_troca||'';
+  if(!ultimaTroca||ultimaTroca==='—') return 0;
+
+  // Converte data da última troca para objeto Date
+  // Formato: "04/06/2026, 10:05"
+  const partes = ultimaTroca.match(/(\d{2})\/(\d{2})\/(\d{4}),\s*(\d{2}):(\d{2})/);
+  if(!partes) return 0;
+  const dataTroca = new Date(partes[3], partes[2]-1, partes[1], partes[4], partes[5]);
+
+  // Busca dados das metas e soma peças após a data de troca
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!metasKey) return 0;
+  const metas = celulas[metasKey];
+  if(!metas.metas_dias) return 0;
+
+  const roboNum = key.replace(/\D/g,'');
+  let total = 0;
+
+  Object.entries(metas.metas_dias).forEach(([chave, dia])=>{
+    // chave = "2026_5_4"
+    const p = chave.split('_');
+    if(p.length<3) return;
+    const rd = dia[roboNum]||{};
+    // Verifica cada hora
+    [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
+      const campo = campoH(h);
+      const val = parseCelVal((rd[campo])||'').num;
+      if(val<=0) return;
+      // Cria data da hora
+      const hNum = parseInt(h.split(':')[0]);
+      const dataHora = new Date(parseInt(p[0]), parseInt(p[1]), parseInt(p[2]), hNum, 0);
+      if(dataHora >= dataTroca) total += val;
+    });
+  });
+
+  return total;
+}
+
 function registrarTrocaEletrodo(key){
   const c=celulas[key];
   if(!c.eletrodo||c.eletrodo==='—'){showToast("Informe o eletrodo primeiro",true);return;}
   if(!c.historico_eletrodo)c.historico_eletrodo=[];
   const agora=new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  c.historico_eletrodo.push({data:agora,eletrodo:c.eletrodo,tipo:c.tipo_eletrodo||'—'});
+  const pecasFeitas = calcDesgaste(key);
+  c.historico_eletrodo.push({data:agora, eletrodo:c.eletrodo, tipo:c.tipo_eletrodo||'—', pecas_feitas:pecasFeitas});
   c.ultima_troca=agora;
-  celulas[key]=c;saveToAPI(celulas);renderDetail();showToast("Troca registrada ✓");
+  celulas[key]=c; saveToAPI(celulas); renderDetail();
+  showToast(`Troca registrada ✓ — eletrodo fez ${pecasFeitas.toLocaleString("pt-BR")} peças`);
 }
 function removerHistEletrodo(key,idx){
   if(!celulas[key].historico_eletrodo)return;
@@ -3233,6 +3277,22 @@ function renderDetail(){
         <div class="field"><label>Eletrodo Atual</label><input value="${esc(c.eletrodo)}" ${ro} onchange="update('${selected}','eletrodo',this.value)"></div>
         <div class="field"><label>Tipo</label><input value="${esc(c.tipo_eletrodo)}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
         <div class="field"><label>Última troca registrada</label><input readonly value="${esc(c.ultima_troca||'—')}" style="color:#ffb300;cursor:default"></div>
+        <div class="field"><label>🔩 Desgaste do eletrodo atual</label>
+          <div style="background:#080b0f;border:1px solid #1e2530;border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <span style="font-size:20px;font-weight:900;color:${calcDesgaste(selected)>=(c.limite_eletrodo||500)?'#ff4d4d':calcDesgaste(selected)>=(c.limite_eletrodo_aviso||300)?'#ffb300':'#00e87a'}">${calcDesgaste(selected).toLocaleString("pt-BR")}</span>
+            <span style="font-size:11px;color:#4a5568">peças desde<br>última troca</span>
+          </div>
+          ${isAdmin?`<div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4a5568;margin-bottom:3px">🟡 Aviso acima de</div>
+              <input type="number" value="${c.limite_eletrodo_aviso||300}" style="width:100%;background:#080b0f;border:1px solid #ffb30040;color:#ffb300;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700" onchange="update('${selected}','limite_eletrodo_aviso',parseInt(this.value)||300)">
+            </div>
+            <div style="flex:1">
+              <div style="font-size:10px;color:#4a5568;margin-bottom:3px">🔴 Crítico acima de</div>
+              <input type="number" value="${c.limite_eletrodo||500}" style="width:100%;background:#080b0f;border:1px solid #ff4d4d40;color:#ff4d4d;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700" onchange="update('${selected}','limite_eletrodo',parseInt(this.value)||500)">
+            </div>
+          </div>`:''}
+        </div>
       </div>
       <div style="margin-top:14px">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</div>
@@ -3242,6 +3302,7 @@ function renderDetail(){
               <div class="hist-item">
                 <span class="hist-item-data">📅 ${esc(h.data)}</span>
                 <span class="hist-item-val">⚡ ${esc(h.eletrodo)} <span style="color:#4a5568;font-size:11px">(${esc(h.tipo||'—')})</span></span>
+                ${h.pecas_feitas>0?`<span style="font-size:11px;color:#ffb300;margin-left:6px">🔩 ${h.pecas_feitas.toLocaleString("pt-BR")} peças</span>`:''}
                 ${isAdmin?`<button class="btn-x" onclick="removerHistEletrodo('${selected}',${c.historico_eletrodo.length-1-i})">✕</button>`:""}
               </div>`).join('')
             :'<div class="hist-empty">Nenhuma troca registrada ainda.</div>'
