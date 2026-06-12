@@ -206,7 +206,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.sub-dia-val { font-weight: 800; font-size: 16px; background: #00e87a08; border-left: 1px solid #00e87a20; padding: 6px 8px; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
-.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 16px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
+.metas-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 20px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
 .metas-table input.hora-inp:focus { color: #fff; }
 .metas-table input.hora-inp[readonly] { cursor: default; color: #d8dde6; }
 .metas-table input.hora-inp.cafe { color: #ffb300; }
@@ -4822,6 +4822,50 @@ function handleMetasInput(key,robo,campo,valor){
   updateMetasCell(key,robo,campo,valorFinal);
 }
 
+function _filtrarCatalogo(){
+  if(!selected||getCellTipo(selected)!=='catalogo_pecas') return;
+  const c = celulas[selected];
+  const cadastroKey = getCadastroPecasKey();
+  const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
+  const busca = (c._busca||'').toLowerCase();
+  const lista = Object.entries(pecas).sort((a,b)=>{
+    const ca=(a[1].cliente||'').toLowerCase();
+    const cb=(b[1].cliente||'').toLowerCase();
+    if(ca<cb)return -1; if(ca>cb)return 1;
+    return a[0].localeCompare(b[0]);
+  });
+  const filtradas = busca ? lista.filter(([cod,p])=>
+    cod.toLowerCase().includes(busca)||(p.cliente||'').toLowerCase().includes(busca)
+  ) : lista;
+  const tbody = document.getElementById("catalogoTbody");
+  const counter = document.getElementById("catalogoCounter");
+  if(counter) counter.textContent = `${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}`;
+  if(!tbody) return;
+  if(filtradas.length===0){
+    tbody.innerHTML=`<tr><td colspan="${isAdmin?5:4}" style="text-align:center;color:#2a3040;padding:20px;font-size:13px">${busca?`Nenhuma peça encontrada`:'Nenhuma peça cadastrada ainda.'}</td></tr>`;
+    return;
+  }
+  let html='', prevCliente='';
+  filtradas.forEach(([cod,p],i)=>{
+    const curCliente=p.cliente||'';
+    if(curCliente!==prevCliente){
+      html+=`<tr style="background:#080b0f"><td colspan="${isAdmin?5:4}" style="padding:10px 16px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-bottom:1px solid #ffb30030">${esc(curCliente||'Sem cliente')}</td></tr>`;
+      prevCliente=curCliente;
+    }
+    html+=`<tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
+      <td style="padding:12px 16px"><span style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</span></td>
+      <td style="padding:12px 16px;font-size:16px;font-weight:600;color:#d8dde6">${esc(p.cliente||'—')}</td>
+      <td style="padding:12px 16px;text-align:center"><span style="font-size:16px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span></td>
+      <td style="padding:12px 16px;text-align:center"><span style="font-size:16px;font-weight:700;color:#a78bfa">${esc(p.pares_gabarito||'—')}</span></td>
+      ${isAdmin?`<td style="padding:12px 16px;text-align:center"><div style="display:flex;gap:6px;justify-content:center">
+        <button class="btn btn-gray" style="padding:5px 12px;font-size:12px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+        <button class="btn btn-red" style="padding:5px 10px;font-size:12px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
+      </div></td>`:''}
+    </tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
 function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
@@ -4844,7 +4888,7 @@ function renderCatalogoPecas(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:2px">${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:2px" id="catalogoCounter">${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         ${isAdmin?`<button class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
@@ -4855,7 +4899,8 @@ function renderCatalogoPecas(){
     <div style="margin-bottom:14px">
       <input value="${esc(busca)}" placeholder="🔍 Buscar por código ou cliente..."
         style="width:100%;background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:9px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"
-        oninput="celulas['${selected}']._busca=this.value;renderCatalogoPecas()"
+        oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()"
+        id="buscaCatalogo"
         onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
     </div>
 
@@ -4875,37 +4920,14 @@ function renderCatalogoPecas(){
               ${isAdmin?`<th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Ações</th>`:''}
             </tr>
           </thead>
-          <tbody>
-            ${filtradas.map(([cod,p],i)=>{
-              const prevCliente = i>0?(filtradas[i-1][1].cliente||''):'';
-              const curCliente = p.cliente||'';
-              const novoGrupo = curCliente !== prevCliente;
-              return `
-              ${novoGrupo?`<tr style="background:#080b0f"><td colspan="${isAdmin?5:4}" style="padding:10px 16px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-bottom:1px solid #ffb30030">${esc(curCliente||'Sem cliente')}</td></tr>`:''}
-              <tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
-              <td style="padding:12px 16px">
-                <span style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</span>
-              </td>
-              <td style="padding:12px 16px;font-size:16px;font-weight:600;color:#d8dde6">${esc(p.cliente||'—')}</td>
-              <td style="padding:12px 16px;text-align:center">
-                <span style="font-size:16px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span>
-              </td>
-              <td style="padding:12px 16px;text-align:center">
-                <span style="font-size:16px;font-weight:700;color:#a78bfa">${esc(p.pares_gabarito||'—')}</span>
-              </td>
-              ${isAdmin?`<td style="padding:12px 16px;text-align:center">
-                <div style="display:flex;gap:6px;justify-content:center">
-                  <button class="btn btn-gray" style="padding:5px 12px;font-size:12px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
-                  <button class="btn btn-red" style="padding:5px 10px;font-size:12px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
-                </div>
-              </td>`:''}
-            </tr>`;
-            }).join('')}
+          <tbody id="catalogoTbody">
           </tbody>
         </table>
       </div>
     `}
   </div>`;
+  // Preenche o tbody via _filtrarCatalogo para manter foco no input
+  setTimeout(()=>_filtrarCatalogo(), 0);
 }
 
 function renderManutencao(){
