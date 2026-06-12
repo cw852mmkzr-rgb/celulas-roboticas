@@ -3920,6 +3920,15 @@ async function _dashLoad(){
     }
   }catch(e){}
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
+  // Começa no primeiro robô com produção na hora atual
+  const dadosInicio = _dashGetDados();
+  const horaInicio = _dashGetHoraCheia();
+  _dashIdx = 0;
+  let tentInicio = 0;
+  while(_dashIdx < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dadosInicio, horaInicio) && tentInicio < _dashRobos.length){
+    _dashIdx++; tentInicio++;
+  }
+  if(_dashIdx >= _dashRobos.length) _dashIdx = 0;
   _dashRender();
   _dashRenderFooter();
 }
@@ -3958,8 +3967,8 @@ function _dashRoboSemValor(k, dados, hora){
   const rn=k.replace(/\D/g,'');
   const rd=dados[rn]||{};
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
-  const meta=parseInt(rd.meta)||0;
-  return prod===0 && meta===0;
+  // Pula se não tiver produção na hora atual
+  return prod===0;
 }
 
 function _dashGetDados(){
