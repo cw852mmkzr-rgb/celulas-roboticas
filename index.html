@@ -133,9 +133,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
 .dash-horas { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
-.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:8px 14px; text-align:center; min-width:62px; }
-.dash-hora-label { font-size:11px; color:#4a5568; margin-bottom:4px; font-weight:700; }
-.dash-hora-val { font-size:22px; font-weight:900; color:#d8dde6; }
+.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:8px 14px; text-align:center; min-width:80px; }
+.dash-hora-label { font-size:16px; color:#4a5568; margin-bottom:4px; font-weight:700; }
+.dash-hora-val { font-size:32px; font-weight:900; color:#d8dde6; }
 .dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
 .dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
 .dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
@@ -4154,8 +4154,8 @@ function _dashRenderGeral(){
       return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
-      <td style="padding:7px 10px;font-size:18px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
-      <td style="padding:7px 10px;font-size:16px;color:#ffb300;font-weight:700;white-space:nowrap">${esc(rd.cod||'—')}</td>
+      <td style="padding:7px 10px;font-size:22px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
+      <td style="padding:7px 10px;font-size:22px;color:#ffb300;font-weight:700;white-space:nowrap">${esc(rd.cod||'—')}</td>
       <td style="padding:7px 10px;font-size:16px;color:#4a5568;text-align:center">${meta||'—'}</td>
       ${hCells}
       <td style="padding:7px 14px;font-size:24px;font-weight:900;color:#00e87a;text-align:center;border-left:2px solid #00e87a30">${totalRobo>0?totalRobo.toLocaleString("pt-BR"):'—'}</td>
@@ -4165,7 +4165,7 @@ function _dashRenderGeral(){
   const hHeaders=todasHoras.map(h=>{
     const isAtual=h===horaAtual;
     const isCafe=HORAS_CAFE.includes(h);
-    return`<th style="padding:8px 6px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
+    return`<th style="padding:8px 6px;font-size:22px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
   }).join('');
 
   const hTotais=todasHoras.map(h=>{
