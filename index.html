@@ -4115,7 +4115,7 @@ function startApp(){
       renderDetail();
     }
   });
-  pollTimer=setInterval(loadFromAPI,300000);
+  pollTimer=setInterval(loadFromAPI,60000);
 }
 function doLogout(){
   clearInterval(pollTimer);
