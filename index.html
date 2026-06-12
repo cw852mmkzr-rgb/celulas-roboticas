@@ -128,7 +128,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
 .dash-header { display:flex; justify-content:space-between; align-items:center; padding:14px 28px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; }
 .dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
-.dash-clock { font-size:36px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-clock { font-size:52px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
 .dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
@@ -361,11 +361,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div style="display:flex;gap:28px;align-items:center">
       <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
+        <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
         <div class="dash-clock" id="dashClock">--:--:--</div>
       </div>
       <div style="text-align:center">
-        <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
+        <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
         <div class="dash-clock" style="color:#ffb300" id="dashHoraCheia">--:--</div>
       </div>
     </div>
@@ -4150,7 +4150,7 @@ function _dashRenderGeral(){
       const ok=!isCafe&&meta>0&&v>=meta;
       const fail=!isCafe&&meta>0&&v>0&&v<meta;
       const cor=isCafe?'#8a6200':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
-    const fontSize=isAtual?'24px':'18px';
+    const fontSize=isAtual?'32px':'24px';
       return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
