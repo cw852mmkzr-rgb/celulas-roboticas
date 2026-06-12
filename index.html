@@ -121,6 +121,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.ok { background: #00e87a; color: #000; }
 .toast.error { background: #ff4d4d; color: #fff; }
 @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
@@ -3733,9 +3734,15 @@ function closeLightbox(){document.getElementById("lightboxEl").classList.remove(
 
 function autoLogin(){
   const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_PW){isAdmin=true;isAdminMetas=false;startApp();}
-  else if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
-  else{
+  if(pw===ADMIN_PW){
+    window._pendingAdmin=true; window._pendingAdminMetas=false;
+    isAdmin=true; isAdminMetas=false;
+    startApp();
+  } else if(pw===ADMIN_METAS_PW){
+    window._pendingAdmin=false; window._pendingAdminMetas=true;
+    isAdmin=false; isAdminMetas=true;
+    startApp();
+  } else {
     document.getElementById("loginErr").style.display="block";
     document.getElementById("pwInput").classList.add("err");
     setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
@@ -4082,15 +4089,29 @@ function _dashRenderFooter(){
 
 
 function startViewer(){
-  isAdmin=false;isAdminMetas=false;
+  isAdmin=false; isAdminMetas=false;
   startApp();
-  // Seleciona automaticamente a célula de Produção Mensal
-  const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
-  if(prodKey){selected=prodKey;renderDetail();}
 }
+
 function startApp(){
+  // Reset COMPLETO antes de tudo
+  clearInterval(pollTimer);
+  pollTimer=null;
+  isAdmin = window._pendingAdmin || false;
+  isAdminMetas = window._pendingAdminMetas || false;
+  window._pendingAdmin = false;
+  window._pendingAdminMetas = false;
+  selected=null; celulas={};
+
+  // Reset todos os botões
+  ["btnAdd","btnXlsx","btnBackup","btnGerenciar","btnRestore"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display="none";
+  });
+
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
+
   if(isAdmin){
     document.getElementById("modeBadge").textContent="⚙ Host";
     document.getElementById("modeBadge").className="badge badge-admin";
@@ -4106,7 +4127,32 @@ function startApp(){
     document.getElementById("modeBadge").textContent="👁 Viewer";
     document.getElementById("modeBadge").className="badge badge-viewer";
   }
+
+  // Mostra loading enquanto carrega
+  document.getElementById("mainPanel").innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:16px">
+      <div style="width:40px;height:40px;border:3px solid #1e2530;border-top-color:#00e87a;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+      <div style="font-size:13px;color:#4a5568">Carregando dados...</div>
+    </div>`;
+
+  selected = null;
+  celulas = {};
+
   loadFromAPI().then(() => {
+    // Seleciona primeira célula automaticamente
+    if(!selected){
+      if(!isAdmin && !isAdminMetas){
+        // Viewer vai para produção mensal
+        const prodKey=Object.keys(celulas).find(k=>getCellTipo(k)==='producao_mensal');
+        if(prodKey){selected=prodKey;}
+        else{const keys=Object.keys(celulas).sort();if(keys.length)selected=keys[0];}
+      } else {
+        // Host/Metas vai para primeira célula
+        const keys=Object.keys(celulas).sort();
+        if(keys.length) selected=keys[0];
+      }
+      if(selected){renderSidebar();renderDetail();}
+    }
     const params = new URLSearchParams(window.location.search);
     const celulaParam = params.get('celula');
     if (celulaParam && celulas[celulaParam]) {
@@ -4115,14 +4161,24 @@ function startApp(){
       renderDetail();
     }
   });
+
   pollTimer=setInterval(loadFromAPI,60000);
 }
+
 function doLogout(){
   clearInterval(pollTimer);
+  pollTimer=null;
+  // Reset completo
+  isAdmin=false; isAdminMetas=false; selected=null; celulas={};
+  ["btnAdd","btnXlsx","btnBackup","btnGerenciar","btnRestore"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display="none";
+  });
   document.getElementById("appScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   document.getElementById("pwInput").value="";
-  isAdmin=false;isAdminMetas=false;selected=null;
+  document.getElementById("mainPanel").innerHTML="";
+  document.getElementById("sidebar").innerHTML="";
 }
 
 function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
