@@ -2481,8 +2481,18 @@ function calcRitmo(mh,tp){
 async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
+
+  // Carrega cache local primeiro para resposta instantânea
   try{
-    // Timeout de 8 segundos
+    const cache = localStorage.getItem('celulas_cache');
+    if(cache && !Object.keys(celulas).length){
+      celulas = JSON.parse(cache);
+      renderSidebar();
+      if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
+    }
+  }catch(e){}
+
+  try{
     const controller = new AbortController();
     const timeout = setTimeout(()=>controller.abort(), 8000);
     const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo,imagens",{
@@ -2501,6 +2511,8 @@ async function loadFromAPI(){
       if(d[0].imagens){
         Object.entries(d[0].imagens).forEach(([k,img])=>{if(celulas[k])celulas[k].img_peca=img;});
       }
+      // Salva no cache local
+      try{ localStorage.setItem('celulas_cache', JSON.stringify(celulas)); }catch(e){}
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){
