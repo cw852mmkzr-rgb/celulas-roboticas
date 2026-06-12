@@ -2817,7 +2817,7 @@ function buildTurnoTable(c,turno,chave){
     </tr></thead>
     <tbody>${linhas}
     <tr style="border-top:2px solid #1e2530">
-      <td colspan="3" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
+      <td colspan="${isAdmin?4:3}" style="color:${isNoite?'#a78bfa':'#ffb300'};font-weight:800;font-size:10px;text-align:right;padding-right:8px;background:${isNoite?'#a78bfa08':'#ffb30008'}">TOTAL/HORA →</td>
       ${rodapeHoras}
       <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
       ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
