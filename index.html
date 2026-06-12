@@ -3919,17 +3919,20 @@ async function _dashLoad(){
       }
     }
   }catch(e){}
+  // Atualiza lista de robôs sem resetar o índice atual
+  const robosAntes = _dashRobos.length;
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
-  // Começa no primeiro robô com produção na hora atual, ou no primeiro se nenhum tiver
-  const dadosInicio = _dashGetDados();
-  const horaInicio = _dashGetHoraCheia();
-  _dashIdx = 0;
-  let tentInicio = 0;
-  while(tentInicio < _dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx], dadosInicio, horaInicio)){
-    _dashIdx++; tentInicio++;
-    if(_dashIdx >= _dashRobos.length){ _dashIdx = 0; break; }
+  // Só reseta índice se a lista mudou
+  if(robosAntes === 0) {
+    const d2=_dashGetDados(); const h2=_dashGetHoraCheia();
+    _dashIdx=0;
+    let t=0;
+    while(t<_dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx],d2,h2)){
+      _dashIdx++; t++;
+      if(_dashIdx>=_dashRobos.length){_dashIdx=0;break;}
+    }
   }
-  _dashRender();
+  // Apenas atualiza o rodapé — não rerenderiza o slide atual
   _dashRenderFooter();
 }
 
