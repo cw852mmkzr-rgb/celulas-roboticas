@@ -5687,6 +5687,175 @@ function updateGabProg(cod, val){
   saveGabDados();
 }
 
+function abrirGabDesempenho(){
+  document.getElementById("gabDesempenhoScreen").style.display="flex";
+  renderGabDesempenho();
+}
+
+function renderGabDesempenho(){
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const chave = getGabChave();
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const dados = gabDados[chave]||{codigos:[]};
+  const codigos = dados.codigos||[];
+  const dias = getDiasUteis(ano, mes);
+  const diasNomes = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  document.getElementById("gabDesSubtitle").textContent = `${meses[mes]} ${ano}`;
+
+  if(!codigos.length){
+    document.getElementById("gabDesPanel").innerHTML=`<div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">Nenhum dado cadastrado.</div>`;
+    return;
+  }
+
+  // Calcula totais por dia e por código
+  const totalPorDia = {};
+  dias.forEach(d=>{ totalPorDia[d]=codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0); });
+  const totalGeral = Object.values(totalPorDia).reduce((s,v)=>s+v,0);
+  const diasComDados = dias.filter(d=>totalPorDia[d]>0);
+  const mediaGeral = diasComDados.length>0?Math.round(totalGeral/diasComDados.length):0;
+  const melhorDia = diasComDados.length>0?diasComDados.reduce((a,b)=>totalPorDia[b]>totalPorDia[a]?b:a,diasComDados[0]):null;
+  const piorDia = diasComDados.length>0?diasComDados.reduce((a,b)=>totalPorDia[b]<totalPorDia[a]?b:a,diasComDados[0]):null;
+  const maxDia = melhorDia?totalPorDia[melhorDia]:1;
+
+  // Totais por código
+  const totaisCod = {};
+  codigos.forEach(cod=>{ totaisCod[cod]=dias.reduce((s,d)=>s+(parseInt((dados[cod]||{})[d])||0),0); });
+
+  document.getElementById("gabDesPanel").innerHTML=`
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:28px;font-weight:900;color:#00e87a">${totalGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">peças produzidas</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #ffb30030;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:28px;font-weight:900;color:#ffb300">${mediaGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">${diasComDados.length} dia(s) registrado(s)</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:28px;font-weight:900;color:#00e87a">${melhorDia?String(melhorDia).padStart(2,'0')+'/'+String(mes+1).padStart(2,'0'):'—'}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">${melhorDia?totalPorDia[melhorDia].toLocaleString("pt-BR")+' peças':'—'}</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #3d9eff30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Códigos Ativos</div>
+        <div style="font-size:28px;font-weight:900;color:#3d9eff">${codigos.length}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">no período</div>
+      </div>
+    </div>
+
+    <!-- Gráfico evolução diária -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
+      ${diasComDados.length>0?`
+      <div style="overflow-x:auto">
+        <svg viewBox="0 0 900 110" style="width:100%;min-width:400px;height:130px" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gabGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00e87a" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00e87a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          ${(()=>{
+            const W=880, H=90, pad=10;
+            const n=diasComDados.length;
+            const minV=Math.min(...diasComDados.map(d=>totalPorDia[d]));
+            const maxV=Math.max(...diasComDados.map(d=>totalPorDia[d]),1);
+            const pts=diasComDados.map((d,i)=>({
+              x:pad+(i/(Math.max(n-1,1)))*(W-pad*2),
+              y:H-pad-((totalPorDia[d]-minV)/(maxV-minV||1))*(H-pad*2),
+              d,v:totalPorDia[d]
+            }));
+            const poly=pts.map(p=>`${p.x},${p.y}`).join(' ');
+            const area=`M${pts[0].x},${H} `+pts.map(p=>`L${p.x},${p.y}`).join(' ')+` L${pts[pts.length-1].x},${H} Z`;
+            const circles=pts.map(p=>`
+              <circle cx="${p.x}" cy="${p.y}" r="4" fill="#00e87a" stroke="#04070d" stroke-width="2"/>
+              <text x="${p.x}" y="${p.y-7}" text-anchor="middle" font-size="7" fill="#4a5568">${p.v.toLocaleString('pt-BR')}</text>
+              <text x="${p.x}" y="${H+8}" text-anchor="middle" font-size="7" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>
+            `).join('');
+            return`<path d="${area}" fill="url(#gabGrad)"/>
+              <polyline points="${poly}" fill="none" stroke="#00e87a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+              ${circles}`;
+          })()}
+        </svg>
+      </div>`:'<div style="color:#2a3040;font-size:12px">Sem dados registrados.</div>'}
+    </div>
+
+    <!-- Produção por código -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🔧 Produção por Código</div>
+      ${[...codigos].sort((a,b)=>totaisCod[b]-totaisCod[a]).map((cod,i)=>{
+        const v=totaisCod[cod];
+        const prog=parseInt(dados[cod]?._prog||0);
+        const pct=prog>0?Math.round(v/prog*100):null;
+        const cor=pct===null?'#00e87a':pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+        const diasCod=dias.filter(d=>parseInt((dados[cod]||{})[d]||0)>0);
+        const mediaCod=diasCod.length>0?Math.round(v/diasCod.length):0;
+        return`<div style="margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:11px;color:#4a5568">${i+1}°</span>
+              <span style="font-size:15px;font-weight:900;color:#00e87a">${esc(cod)}</span>
+              <span style="font-size:11px;color:#4a5568">· Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b> · ${diasCod.length} dia(s)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${pct!==null?`<span style="font-size:13px;font-weight:900;color:${cor}">${pct}%</span>`:''}
+              <span style="font-size:16px;font-weight:900;color:#fff">${v.toLocaleString('pt-BR')}</span>
+              ${prog>0?`<span style="font-size:11px;color:#4a5568">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
+            </div>
+          </div>
+          <div style="background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
+            <div style="height:100%;width:${Math.min(pct!==null?pct:Math.round(v/Math.max(...Object.values(totaisCod),1)*100),100)}%;background:${cor};border-radius:99px;transition:width .3s"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Detalhe por dia -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">📅 Detalhe por Dia</div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace">
+          <thead>
+            <tr style="background:#080b0f">
+              <th style="padding:8px 12px;font-size:11px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530">Dia</th>
+              ${codigos.map(cod=>`<th style="padding:8px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530">${esc(cod)}</th>`).join('')}
+              <th style="padding:8px 12px;font-size:11px;color:#ffb300;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #ffb30030">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${diasComDados.map((d,i)=>{
+              const dow=new Date(ano,mes,d).getDay();
+              const tot=totalPorDia[d];
+              const cor=tot>=mediaGeral?'#00e87a':tot>=mediaGeral*0.8?'#ffb300':'#ff4d4d';
+              return`<tr style="background:${i%2===0?'#0a0d12':'#080b0f'};border-bottom:1px solid #0a0d12">
+                <td style="padding:8px 12px;font-size:13px;font-weight:700;color:#d8dde6">${diasNomes[dow]} ${String(d).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</td>
+                ${codigos.map(cod=>{
+                  const v=parseInt((dados[cod]||{})[d])||0;
+                  return`<td style="padding:8px 10px;font-size:14px;font-weight:700;text-align:center;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v.toLocaleString('pt-BR'):'—'}</td>`;
+                }).join('')}
+                <td style="padding:8px 12px;font-size:15px;font-weight:900;text-align:center;color:${cor};border-left:2px solid #ffb30030">${tot.toLocaleString('pt-BR')}</td>
+              </tr>`;
+            }).join('')}
+            <tr style="background:#080b0f;border-top:2px solid #1e2530">
+              <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase">TOTAL</td>
+              ${codigos.map(cod=>`<td style="padding:8px 10px;font-size:14px;font-weight:900;text-align:center;color:#00e87a">${totaisCod[cod]>0?totaisCod[cod].toLocaleString('pt-BR'):'—'}</td>`).join('')}
+              <td style="padding:8px 12px;font-size:16px;font-weight:900;text-align:center;color:#ffb300;border-left:2px solid #ffb30030">${totalGeral.toLocaleString('pt-BR')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>`;
+}
+
 function filtrarGab(busca){
   const chave = getGabChave();
   if(gabDados[chave]) gabDados[chave]._busca = busca;
@@ -5818,6 +5987,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       </div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho Mensal</button>
       <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
         <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
         <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
@@ -5850,6 +6020,18 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       <button onclick="confirmarGabLogin()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Entrar</button>
     </div>
   </div>
+</div>
+
+<!-- Tela Desempenho Gabaritagem -->
+<div id="gabDesempenhoScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9500;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
+    <div>
+      <div style="font-size:18px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">📊 Desempenho Mensal — Gabaritagem</div>
+      <div style="font-size:12px;color:#4a5568;margin-top:2px" id="gabDesSubtitle">—</div>
+    </div>
+    <button onclick="document.getElementById('gabDesempenhoScreen').style.display='none'" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px" id="gabDesPanel"></div>
 </div>
 
 </body>
