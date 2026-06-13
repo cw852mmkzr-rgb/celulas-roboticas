@@ -5549,6 +5549,7 @@ function renderGabaritagem(){
         <!-- Total geral -->
         <tr style="background:#080b0f;border-top:2px solid #1e2530">
           <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
+          <td style="padding:8px 10px;border-right:2px solid #1e2530;position:sticky;left:140px;background:#080b0f"></td>
           ${dias.map(d=>{
             const tot = codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
             return`<td id="gabtotaldia-${d}" style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:13px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
