@@ -3633,20 +3633,38 @@ function renderRelatorio(){
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
 
-      <!-- Eficiência por robô -->
+      <!-- Heatmap de Produção -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Eficiência por Robô</div>
-        ${eficienciaRobo.length>0?eficienciaRobo.map((r,i)=>{
-          const cor = r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
-          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="font-size:11px;color:#00e87a;font-weight:700;min-width:36px">${r.robo}</span>
-            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
-              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
-            </div>
-            <span style="font-size:11px;font-weight:700;color:${cor};min-width:42px;text-align:right">${r.efic}%</span>
-            <span style="font-size:10px;color:#4a5568;min-width:50px;text-align:right">${r.totalProd.toLocaleString("pt-BR")}</span>
-          </div>`;
-        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+          ${(()=>{
+            const diasNoMes=new Date(anoSel,mesIdx+1,0).getDate();
+            const primeiroDia=new Date(anoSel,mesIdx,1).getDay();
+            const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
+            const semanas=['D','S','T','Q','Q','S','S'];
+            let html=semanas.map(s=>`<div style="font-size:9px;color:#4a5568;text-align:center;font-weight:700;padding:2px 0">${s}</div>`).join('');
+            for(let i=0;i<primeiroDia;i++) html+=`<div></div>`;
+            for(let dia=1;dia<=diasNoMes;dia++){
+              const val=diasDoMes[dia]?.totalGeral||0;
+              const pct=val/maxVal;
+              const bg=val===0?'#0a0d12':pct<0.3?'#00e87a25':pct<0.6?'#00e87a55':pct<0.85?'#00e87a99':'#00e87a';
+              const bdr=val>0?'#00e87a40':'#1e2530';
+              html+=`<div title="${dia}/${mesIdx+1} — ${val.toLocaleString('pt-BR')} peças" style="background:${bg};border:1px solid ${bdr};border-radius:3px;padding:3px 1px;text-align:center">
+                <div style="font-size:8px;color:#4a5568">${dia}</div>
+                <div style="font-size:8px;font-weight:700;color:${val>0?'#00e87a':'transparent'}">${val>0?val:'-'}</div>
+              </div>`;
+            }
+            return html;
+          })()}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:9px;color:#4a5568">
+          <span>Baixo</span>
+          <div style="width:10px;height:10px;background:#00e87a25;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a55;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a99;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a;border-radius:2px"></div>
+          <span>Alto</span>
+        </div>
       </div>
 
       <!-- Top peças -->
