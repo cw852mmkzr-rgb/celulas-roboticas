@@ -3740,24 +3740,47 @@ function renderRelatorio(){
     <!-- Evolução Diária -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
       <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
-      <div style="position:relative;height:120px;display:flex;align-items:flex-end;gap:4px">
-        ${(()=>{
-          const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
-          return diasComDados.map(d=>{
-            const val=diasDoMes[d].totalGeral;
-            const h=Math.round(val/maxVal*100);
-            return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0">
-              <div style="font-size:9px;color:#4a5568;font-weight:700">${val>0?val:''}</div>
-              <div style="width:100%;background:#00e87a;border-radius:4px 4px 0 0;height:${h}%;min-height:${val>0?'4px':'0'};opacity:0.85"></div>
-              <div style="font-size:9px;color:#4a5568">${String(d).padStart(2,'0')}</div>
-            </div>`;
-          }).join('');
-        })()}
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:#4a5568">
-        <span>Média: <b style="color:#d8dde6">${diasComDados.length>0?Math.round(diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0)/diasComDados.length).toLocaleString("pt-BR"):0}</b>/dia</span>
-        <span>Melhor: <b style="color:#00e87a">${(()=>{if(!diasComDados.length)return'—';const m=diasComDados.reduce((a,d)=>diasDoMes[d].totalGeral>diasDoMes[a].totalGeral?d:a,diasComDados[0]);return'dia '+String(m).padStart(2,'0')+' — '+diasDoMes[m].totalGeral.toLocaleString("pt-BR");})()}</b></span>
-      </div>
+      ${(()=>{
+        if(!diasComDados.length) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
+        const minVal=Math.min(...diasComDados.map(d=>diasDoMes[d].totalGeral));
+        const W=800, H=100, pad=10;
+        const n=diasComDados.length;
+        const pts=diasComDados.map((d,i)=>{
+          const x=pad+(i/(Math.max(n-1,1)))*(W-pad*2);
+          const y=H-pad-((diasDoMes[d].totalGeral-minVal)/(maxVal-minVal||1))*(H-pad*2);
+          return{x,y,d,v:diasDoMes[d].totalGeral};
+        });
+        const polyline=pts.map(p=>`${p.x},${p.y}`).join(' ');
+        const areaPath=`M${pts[0].x},${H} `+pts.map(p=>`L${p.x},${p.y}`).join(' ')+` L${pts[pts.length-1].x},${H} Z`;
+        const circles=pts.map(p=>`
+          <circle cx="${p.x}" cy="${p.y}" r="4" fill="#00e87a" stroke="#04070d" stroke-width="2">
+            <title>Dia ${String(p.d).padStart(2,'0')} — ${p.v.toLocaleString('pt-BR')} peças</title>
+          </circle>
+          <text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="8" fill="#4a5568">${p.v.toLocaleString('pt-BR')}</text>
+          <text x="${p.x}" y="${H-2}" text-anchor="middle" font-size="8" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>
+        `).join('');
+        return`<div style="overflow-x:auto">
+          <svg viewBox="0 0 ${W} ${H+10}" style="width:100%;min-width:400px;height:120px" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ecgGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00e87a" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00e87a" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Área preenchida -->
+            <path d="${areaPath}" fill="url(#ecgGrad)"/>
+            <!-- Linha ECG -->
+            <polyline points="${polyline}" fill="none" stroke="#00e87a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- Pontos e labels -->
+            ${circles}
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#4a5568">
+          <span>Média: <b style="color:#d8dde6">${Math.round(diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0)/diasComDados.length).toLocaleString("pt-BR")}</b>/dia</span>
+          <span>Melhor: <b style="color:#00e87a">${(()=>{const m=diasComDados.reduce((a,d)=>diasDoMes[d].totalGeral>diasDoMes[a].totalGeral?d:a,diasComDados[0]);return'dia '+String(m).padStart(2,'0')+' — '+diasDoMes[m].totalGeral.toLocaleString("pt-BR");})()}</b></span>
+        </div>`;
+      })()}
     </div>
 
     <!-- Metas Atingidas por Robô -->
@@ -3821,7 +3844,7 @@ function renderRelatorio(){
 
     <!-- Melhor e Pior Desempenho -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🏅 Desempenho por Meta no Mês</div>
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">⚙ Eficiência por Robô no Mês</div>
       ${(()=>{
         const robosComMeta = eficienciaRobo.filter(r=>r.mediaMetaHora>0&&r.diasAtivo>0);
         if(!robosComMeta.length) return `<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>`;
