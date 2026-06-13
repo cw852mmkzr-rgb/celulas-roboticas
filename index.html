@@ -5506,6 +5506,7 @@ function renderGabaritagem(){
   let thead = `<tr style="background:#080b0f">
     <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f;min-width:120px">CÓDIGO</th>
     <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:90px;background:#080b0f">PROG.<br>MÊS</th>
+    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:80px;background:#080b0f">MÉDIA<br>DIA</th>
     <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:80px;background:#080b0f">FALTA</th>
     <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:70px;background:#080b0f">%</th>
     ${dias.map(d=>{
@@ -5538,6 +5539,11 @@ function renderGabaritagem(){
           :`<span style="font-size:14px;font-weight:700;color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
         }
       </td>
+      ${(()=>{
+        const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
+        const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
+        return`<td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:#3d9eff">${media>0?media.toLocaleString('pt-BR'):'—'}</td>`;
+      })()}
       <td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
         ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
       </td>
@@ -5568,6 +5574,7 @@ function renderGabaritagem(){
     <td style="padding:10px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
     <td style="border-right:1px solid #1e2530"></td>
     <td style="border-right:1px solid #1e2530"></td>
+    <td style="border-right:1px solid #1e2530"></td>
     <td style="border-right:2px solid #1e2530"></td>
     ${dias.map(d=>{
       const tot=codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
@@ -5577,7 +5584,10 @@ function renderGabaritagem(){
     ${isGabAdmin?`<td></td>`:''}
   </tr>`;
 
-  document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${dias.length>0?Math.round(totalGeral/dias.length).toLocaleString('pt-BR'):0}</span> peças/dia`;
+  // Dias que têm pelo menos um valor registrado
+  const diasComRegistro = dias.filter(d=>codigos.some(cod=>parseInt((dados[cod]||{})[d]||0)>0));
+  const mediaReal = diasComRegistro.length>0?Math.round(totalGeral/diasComRegistro.length):0;
+  document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${mediaReal.toLocaleString('pt-BR')}</span> peças/dia <span style="color:#4a5568;font-size:11px">(${diasComRegistro.length} dia(s) registrado(s))</span>`;
 
   document.getElementById("gabPanel").innerHTML=`
   <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
