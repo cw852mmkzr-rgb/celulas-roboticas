@@ -348,6 +348,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')autoLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#a78bfa;border-color:#a78bfa40" onclick="abrirGabaritagem()">📐 Controle de Gabaritagem</button>
     <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
   </div>
@@ -5382,6 +5383,216 @@ function showToast(msg,err=false){
   void t.offsetWidth;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
+// ===== GABARITAGEM =====
+const GAB_PW = "gabaritagem22";
+let isGabAdmin = false;
+let gabDados = {}; // {ano_mes: {cod: {dia: valor}}}
+
+function abrirGabaritagem(){
+  document.getElementById("gabScreen").style.display="flex";
+  const now = new Date();
+  document.getElementById("gabMes").value = now.getMonth();
+  document.getElementById("gabAno").value = now.getFullYear();
+  loadGabDados().then(()=>renderGabaritagem());
+}
+
+function fecharGabaritagem(){
+  document.getElementById("gabScreen").style.display="none";
+  isGabAdmin = false;
+  renderGabBtns();
+}
+
+function renderGabBtns(){
+  const el = document.getElementById("gabBtns");
+  if(!el) return;
+  el.innerHTML = isGabAdmin
+    ? `<button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
+       <span style="font-size:11px;color:#a78bfa;padding:0 8px">✓ Editando</span>`
+    : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
+}
+
+function confirmarGabLogin(){
+  const pw = document.getElementById("gabPwInput").value;
+  if(pw === GAB_PW){
+    isGabAdmin = true;
+    document.getElementById("modalGabLogin").style.display="none";
+    renderGabBtns();
+    renderGabaritagem();
+    showToast("Modo edição ativado ✓");
+  } else {
+    document.getElementById("gabLoginErr").style.display="block";
+  }
+}
+
+async function loadGabDados(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo",{headers:HEADERS_SB});
+    const d = await r.json();
+    if(d&&d[0]&&d[0].conteudo&&d[0].conteudo._gabaritagem){
+      gabDados = d[0].conteudo._gabaritagem;
+    }
+  }catch(e){}
+}
+
+async function saveGabDados(){
+  try{
+    // Carrega dados atuais e adiciona _gabaritagem
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo",{headers:HEADERS_SB});
+    const d = await r.json();
+    const conteudo = (d&&d[0]&&d[0].conteudo)||{};
+    conteudo._gabaritagem = gabDados;
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo,atualizado_em:new Date().toISOString()})});
+    showToast("Salvo ✓");
+  }catch(e){showToast("Erro ao salvar",true);}
+}
+
+function getGabChave(){
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  return `${ano}_${mes}`;
+}
+
+function getDiasUteis(ano, mes){
+  const dias = [];
+  const total = new Date(ano, mes+1, 0).getDate();
+  for(let d=1;d<=total;d++){
+    const dow = new Date(ano, mes, d).getDay();
+    if(dow!==0 && dow!==6) dias.push(d);
+  }
+  return dias;
+}
+
+function renderGabaritagem(){
+  renderGabBtns();
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const chave = getGabChave();
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  document.getElementById("gabSubtitle").textContent = `${meses[mes]} ${ano}`;
+
+  if(!gabDados[chave]) gabDados[chave] = {codigos:[]};
+  const dados = gabDados[chave];
+  const codigos = dados.codigos || [];
+  const dias = getDiasUteis(ano, mes);
+  const diasNomes = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  const hoje = new Date();
+  const diaHoje = hoje.getMonth()===mes&&hoje.getFullYear()===ano?hoje.getDate():null;
+
+  if(codigos.length===0){
+    document.getElementById("gabPanel").innerHTML=`
+      <div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">
+        Nenhum código cadastrado.<br>
+        ${isGabAdmin?`<button onclick="abrirModalNovaCodGab()" style="margin-top:16px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace">+ Adicionar Código</button>`:''}
+      </div>`;
+    return;
+  }
+
+  // Calcula totais por código
+  const totais = {};
+  codigos.forEach(cod=>{
+    totais[cod] = dias.reduce((s,d)=>s+(parseInt((dados[cod]||{})[d])||0),0);
+  });
+
+  const totalGeral = codigos.reduce((s,cod)=>s+totais[cod],0);
+
+  document.getElementById("gabPanel").innerHTML=`
+  <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
+    <table style="border-collapse:collapse;width:100%;min-width:${200+dias.length*60}px;font-family:'Courier New',monospace">
+      <thead>
+        <tr style="background:#080b0f;position:sticky;top:0;z-index:2">
+          <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:140px;position:sticky;left:0;background:#080b0f">CÓDIGO</th>
+          ${dias.map(d=>{
+            const dow = new Date(ano,mes,d).getDay();
+            const isHoje = d===diaHoje;
+            return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:56px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
+              <div>${diasNomes[dow]}</div>
+              <div style="font-size:13px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
+            </th>`;
+          }).join('')}
+          <th style="padding:10px 14px;font-size:12px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:80px;background:#080b0f">TOTAL</th>
+          ${isGabAdmin?`<th style="padding:10px 8px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:40px"></th>`:''}
+        </tr>
+      </thead>
+      <tbody>
+        ${codigos.map((cod,ri)=>{
+          const vals = dados[cod]||{};
+          return`<tr style="background:${ri%2===0?'#0a0d12':'#080b0f'};border-bottom:1px solid #0a0d12">
+            <td style="padding:8px 14px;font-size:15px;font-weight:900;color:#ffb300;border-right:2px solid #1e2530;position:sticky;left:0;background:${ri%2===0?'#0a0d12':'#080b0f'}">${esc(cod)}</td>
+            ${dias.map(d=>{
+              const v = parseInt(vals[d])||0;
+              const isHoje = d===diaHoje;
+              return`<td style="padding:2px;text-align:center;border-right:1px solid #0d1117;background:${isHoje?'#ffb30008':''}">
+                ${isGabAdmin
+                  ?`<input type="number" min="0" value="${v||''}" placeholder="—"
+                     style="width:50px;background:transparent;border:none;outline:none;color:${v>0?'#d8dde6':'#2a3040'};font-family:'Courier New',monospace;font-size:15px;font-weight:700;text-align:center;padding:6px 0"
+                     onchange="updateGab('${esc(cod)}',${d},this.value)"
+                     onfocus="this.style.background='#ffffff10';this.style.borderRadius='4px'"
+                     onblur="this.style.background='transparent'">`
+                  :`<span style="font-size:15px;font-weight:700;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v:'—'}</span>`
+                }
+              </td>`;
+            }).join('')}
+            <td style="padding:8px 14px;font-size:16px;font-weight:900;color:#00e87a;text-align:center;border-left:2px solid #00e87a30">${totais[cod]>0?totais[cod].toLocaleString("pt-BR"):'—'}</td>
+            ${isGabAdmin?`<td style="padding:4px;text-align:center"><button onclick="excluirCodGab('${esc(cod)}')" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:4px">🗑</button></td>`:''}
+          </tr>`;
+        }).join('')}
+        <!-- Total geral -->
+        <tr style="background:#080b0f;border-top:2px solid #1e2530">
+          <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
+          ${dias.map(d=>{
+            const tot = codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
+            return`<td style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:13px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
+          }).join('')}
+          <td style="padding:8px 14px;font-size:18px;font-weight:900;color:#ffb300;text-align:center;border-left:2px solid #00e87a30">${totalGeral>0?totalGeral.toLocaleString("pt-BR"):'—'}</td>
+          ${isGabAdmin?`<td></td>`:''}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- Média diária -->
+  <div style="margin-top:12px;font-size:11px;color:#4a5568;text-align:right">
+    Média diária: <b style="color:#d8dde6">${dias.length>0?Math.round(totalGeral/dias.length).toLocaleString("pt-BR"):0}</b> peças &nbsp;|&nbsp;
+    Total dias úteis: <b style="color:#d8dde6">${dias.length}</b>
+  </div>`;
+}
+
+function updateGab(cod, dia, val){
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  if(!gabDados[chave][cod]) gabDados[chave][cod]={};
+  const n = parseInt(val)||0;
+  if(n>0) gabDados[chave][cod][dia]=n;
+  else delete gabDados[chave][cod][dia];
+  // Atualiza total sem rerenderizar
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const dias = getDiasUteis(ano, mes);
+  const total = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
+  saveGabDados();
+}
+
+function abrirModalNovaCodGab(){
+  const cod = prompt("Código da peça/gabarito:");
+  if(!cod||!cod.trim()) return;
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  if(!gabDados[chave].codigos) gabDados[chave].codigos=[];
+  if(gabDados[chave].codigos.includes(cod.trim())){showToast("Código já existe",true);return;}
+  gabDados[chave].codigos.push(cod.trim().toUpperCase());
+  saveGabDados();
+  renderGabaritagem();
+}
+
+function excluirCodGab(cod){
+  if(!confirm(`Excluir código "${cod}" e todos os dados?`)) return;
+  const chave = getGabChave();
+  gabDados[chave].codigos = gabDados[chave].codigos.filter(c=>c!==cod);
+  delete gabDados[chave][cod];
+  saveGabDados();
+  renderGabaritagem();
+}
+// ===== FIM GABARITAGEM =====
+
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
@@ -5437,5 +5648,48 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     </div>
   </div>
 </div>
+<!-- Tela Gabaritagem -->
+<div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
+    <div>
+      <div style="font-size:18px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">📐 Controle de Gabaritagem</div>
+      <div style="font-size:11px;color:#4a5568;margin-top:2px" id="gabSubtitle">—</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+        <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+      <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
+        <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+      </select>
+      ${''/* botões dinâmicos via JS */}
+      <div id="gabBtns"></div>
+      <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow:auto;padding:16px">
+    <div id="gabPanel"></div>
+  </div>
+</div>
+
+<!-- Modal login gabaritagem -->
+<div id="modalGabLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9100;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">📐 Gabaritagem</div>
+    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Digite a senha para editar</div>
+    <input type="password" id="gabPwInput" placeholder="Senha"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
+      onkeydown="if(event.key==='Enter')confirmarGabLogin()">
+    <div id="gabLoginErr" style="display:none;color:#ff4d4d;font-size:11px;margin-bottom:8px">Senha incorreta</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      <button onclick="document.getElementById('modalGabLogin').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="confirmarGabLogin()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Entrar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
