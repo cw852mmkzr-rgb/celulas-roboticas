@@ -5566,15 +5566,17 @@ function renderGabaritagem(){
         }).join('')}
         <!-- Total geral -->
         <tr style="background:#080b0f;border-top:2px solid #1e2530">
-          <td style="padding:8px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
-          <td style="padding:8px 10px;border-right:2px solid #1e2530;position:sticky;left:140px;background:#080b0f"></td>
+          <td style="padding:10px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
+          <td style="border-right:2px solid #1e2530;position:sticky;left:140px;background:#080b0f"></td>
+          <td style="border-right:1px solid #1e2530;background:#080b0f"></td>
+          <td style="border-right:1px solid #1e2530;background:#080b0f"></td>
           ${dias.map(d=>{
             const tot = codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
-            return`<td id="gabtotaldia-${d}" style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:13px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
+            return`<td id="gabtotaldia-${d}" style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:14px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
           }).join('')}
           <td id="gabtotalgeral" style="padding:8px 14px;font-size:18px;font-weight:900;color:#ffb300;text-align:center;border-left:2px solid #00e87a30">${totalGeral>0?totalGeral.toLocaleString("pt-BR"):'—'}</td>
-          <td style="border-right:1px solid #1e2530"></td>
-          <td style="border-right:1px solid #1e2530"></td>
+          <td></td>
+          <td></td>
           ${isGabAdmin?`<td></td>`:''}
         </tr>
       </tbody>
@@ -5721,8 +5723,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
         <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
       </select>
-      ${''/* botões dinâmicos via JS */}
-      <div id="gabBtns"></div>
+      <div id="gabBtns" style="display:flex;gap:8px;align-items:center"></div>
       <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair</button>
     </div>
   </div>
