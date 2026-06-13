@@ -5787,72 +5787,41 @@ function renderGabDesempenho(){
       </div>`:'<div style="color:#2a3040;font-size:12px">Sem dados registrados.</div>'}
     </div>
 
-    <!-- Produção por código -->
+    <!-- Ranking de Melhor Produção -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🔧 Produção por Código</div>
-      ${[...codigos].sort((a,b)=>totaisCod[b]-totaisCod[a]).map((cod,i)=>{
-        const v=totaisCod[cod];
-        const prog=parseInt(dados[cod]?._prog||0);
-        const pct=prog>0?Math.round(v/prog*100):null;
-        const cor=pct===null?'#00e87a':pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
-        const diasCod=dias.filter(d=>parseInt((dados[cod]||{})[d]||0)>0);
-        const mediaCod=diasCod.length>0?Math.round(v/diasCod.length):0;
-        return`<div style="margin-bottom:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:11px;color:#4a5568">${i+1}°</span>
-              <span style="font-size:15px;font-weight:900;color:#00e87a">${esc(cod)}</span>
-              <span style="font-size:11px;color:#4a5568">· Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b> · ${diasCod.length} dia(s)</span>
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🏆 Ranking de Produção por Código</div>
+      ${(()=>{
+        const ranking = [...codigos].sort((a,b)=>totaisCod[b]-totaisCod[a]);
+        const maxVal = Math.max(...ranking.map(c=>totaisCod[c]),1);
+        const medalhas = ['🥇','🥈','🥉'];
+        return ranking.map((cod,i)=>{
+          const v = totaisCod[cod];
+          const prog = parseInt(dados[cod]?._prog||0);
+          const pct = prog>0?Math.round(v/prog*100):null;
+          const cor = pct===null?'#00e87a':pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+          const barPct = Math.round(v/maxVal*100);
+          const diasCod = dias.filter(d=>parseInt((dados[cod]||{})[d]||0)>0);
+          const mediaCod = diasCod.length>0?Math.round(v/diasCod.length):0;
+          return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <span style="font-size:20px;min-width:28px;text-align:center">${medalhas[i]||((i+1)+'°')}</span>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:16px;font-weight:900;color:#00e87a">${esc(cod)}</span>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:11px;color:#4a5568">Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b></span>
+                  ${pct!==null?`<span style="font-size:13px;font-weight:900;color:${cor}">${pct}%</span>`:''}
+                  <span style="font-size:18px;font-weight:900;color:#fff">${v.toLocaleString('pt-BR')}</span>
+                  ${prog>0?`<span style="font-size:11px;color:#4a5568">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
+                </div>
+              </div>
+              <div style="background:#1e2530;border-radius:99px;height:10px;overflow:hidden">
+                <div style="height:100%;width:${barPct}%;background:${cor};border-radius:99px;transition:width .3s"></div>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              ${pct!==null?`<span style="font-size:13px;font-weight:900;color:${cor}">${pct}%</span>`:''}
-              <span style="font-size:16px;font-weight:900;color:#fff">${v.toLocaleString('pt-BR')}</span>
-              ${prog>0?`<span style="font-size:11px;color:#4a5568">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
-            </div>
-          </div>
-          <div style="background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
-            <div style="height:100%;width:${Math.min(pct!==null?pct:Math.round(v/Math.max(...Object.values(totaisCod),1)*100),100)}%;background:${cor};border-radius:99px;transition:width .3s"></div>
-          </div>
-        </div>`;
-      }).join('')}
+          </div>`;
+        }).join('');
+      })()}
     </div>
-
-    <!-- Detalhe por dia -->
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">📅 Detalhe por Dia</div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace">
-          <thead>
-            <tr style="background:#080b0f">
-              <th style="padding:8px 12px;font-size:11px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530">Dia</th>
-              ${codigos.map(cod=>`<th style="padding:8px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530">${esc(cod)}</th>`).join('')}
-              <th style="padding:8px 12px;font-size:11px;color:#ffb300;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #ffb30030">TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${diasComDados.map((d,i)=>{
-              const dow=new Date(ano,mes,d).getDay();
-              const tot=totalPorDia[d];
-              const cor=tot>=mediaGeral?'#00e87a':tot>=mediaGeral*0.8?'#ffb300':'#ff4d4d';
-              return`<tr style="background:${i%2===0?'#0a0d12':'#080b0f'};border-bottom:1px solid #0a0d12">
-                <td style="padding:8px 12px;font-size:13px;font-weight:700;color:#d8dde6">${diasNomes[dow]} ${String(d).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</td>
-                ${codigos.map(cod=>{
-                  const v=parseInt((dados[cod]||{})[d])||0;
-                  return`<td style="padding:8px 10px;font-size:14px;font-weight:700;text-align:center;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v.toLocaleString('pt-BR'):'—'}</td>`;
-                }).join('')}
-                <td style="padding:8px 12px;font-size:15px;font-weight:900;text-align:center;color:${cor};border-left:2px solid #ffb30030">${tot.toLocaleString('pt-BR')}</td>
-              </tr>`;
-            }).join('')}
-            <tr style="background:#080b0f;border-top:2px solid #1e2530">
-              <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase">TOTAL</td>
-              ${codigos.map(cod=>`<td style="padding:8px 10px;font-size:14px;font-weight:900;text-align:center;color:#00e87a">${totaisCod[cod]>0?totaisCod[cod].toLocaleString('pt-BR'):'—'}</td>`).join('')}
-              <td style="padding:8px 12px;font-size:16px;font-weight:900;text-align:center;color:#ffb300;border-left:2px solid #ffb30030">${totalGeral.toLocaleString('pt-BR')}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>`;
 }
 
