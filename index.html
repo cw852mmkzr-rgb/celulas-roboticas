@@ -5407,8 +5407,14 @@ function renderGabBtns(){
   if(!el) return;
   el.innerHTML = isGabAdmin
     ? `<button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
-       <span style="font-size:11px;color:#a78bfa;padding:0 8px">✓ Editando</span>`
+       <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
+       <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
     : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
+}
+
+function sairModoEdicaoGab(){
+  isGabAdmin = false;
+  renderGabaritagem();
 }
 
 function confirmarGabLogin(){
@@ -5533,10 +5539,10 @@ function renderGabaritagem(){
           :`<span style="font-size:14px;font-weight:700;color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
         }
       </td>
-      <td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}">
+      <td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
         ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
       </td>
-      <td style="padding:8px 8px;text-align:center;border-right:2px solid #1e2530;font-size:14px;font-weight:900;color:${pct===null?'#2a3040':corPct}">
+      <td style="padding:8px 8px;text-align:center;border-right:2px solid #1e2530;font-size:14px;font-weight:900;color:${pct===null?'#2a3040':corPct}" id="gabpct-${cod}">
         ${pct===null?'—':pct+'%'}
       </td>
       ${dias.map(d=>{
@@ -5592,26 +5598,46 @@ function updateGab(cod, dia, val){
   const n = parseInt(val)||0;
   if(n>0) gabDados[chave][cod][dia]=n;
   else delete gabDados[chave][cod][dia];
-  // Atualiza total da linha sem rerenderizar
+
   const mes = parseInt(document.getElementById("gabMes")?.value||0);
   const ano = parseInt(document.getElementById("gabAno")?.value||2026);
   const dias = getDiasUteis(ano, mes);
-  const total = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
-  // Atualiza célula do total da linha
-  const totalEl = document.getElementById(`gabtotal-${cod}`);
-  if(totalEl) totalEl.textContent = total>0?total.toLocaleString("pt-BR"):'—';
+  const codigos = gabDados[chave].codigos||[];
+
+  // Atualiza total da linha
+  const totalLinha = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
+  const prog = parseInt(gabDados[chave][cod]?._prog||0);
+  const falta = prog>0?prog-totalLinha:null;
+  const pct = prog>0?Math.round(totalLinha/prog*100):null;
+  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+
+  const elTotal = document.getElementById(`gabtotal-${cod}`);
+  if(elTotal) elTotal.textContent = totalLinha>0?totalLinha.toLocaleString('pt-BR'):'—';
+
+  const elFalta = document.getElementById(`gabfalta-${cod}`);
+  if(elFalta){
+    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
+    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
+  }
+  const elPct = document.getElementById(`gabpct-${cod}`);
+  if(elPct){
+    elPct.style.color = pct===null?'#2a3040':corPct;
+    elPct.textContent = pct===null?'—':pct+'%';
+  }
+
   // Atualiza total da coluna do dia
-  const totalDiaEl = document.getElementById(`gabtotaldia-${dia}`);
-  if(totalDiaEl){
-    const totalDia = gabDados[chave].codigos.reduce((s,c)=>s+(parseInt((gabDados[chave][c]||{})[dia])||0),0);
-    totalDiaEl.textContent = totalDia>0?totalDia:'—';
+  const totalDia = codigos.reduce((s,c)=>s+(parseInt((gabDados[chave][c]||{})[dia])||0),0);
+  const elDia = document.getElementById(`gabtotaldia-${dia}`);
+  if(elDia){
+    elDia.textContent = totalDia>0?totalDia:'—';
+    elDia.style.color = totalDia>0?'#ffb300':'#2a3040';
   }
+
   // Atualiza total geral
-  const totalGeralEl = document.getElementById("gabtotalgeral");
-  if(totalGeralEl){
-    const tg = gabDados[chave].codigos.reduce((s,c)=>s+dias.reduce((ss,d)=>ss+(parseInt((gabDados[chave][c]||{})[d])||0),0),0);
-    totalGeralEl.textContent = tg>0?tg.toLocaleString("pt-BR"):'—';
-  }
+  const totalGeral = codigos.reduce((s,c)=>s+dias.reduce((ss,d)=>ss+(parseInt((gabDados[chave][c]||{})[d])||0),0),0);
+  const elGeral = document.getElementById("gabtotalgeral");
+  if(elGeral) elGeral.textContent = totalGeral>0?totalGeral.toLocaleString('pt-BR'):'—';
+
   saveGabDados();
 }
 
@@ -5622,6 +5648,27 @@ function updateGabProg(cod, val){
   const n = parseInt(val)||0;
   if(n>0) gabDados[chave][cod]._prog=n;
   else delete gabDados[chave][cod]._prog;
+
+  // Recalcula falta e % em tempo real
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const dias = getDiasUteis(ano, mes);
+  const total = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
+  const prog = n;
+  const falta = prog>0?prog-total:null;
+  const pct = prog>0?Math.round(total/prog*100):null;
+  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+
+  const elFalta = document.getElementById(`gabfalta-${cod}`);
+  if(elFalta){
+    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
+    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
+  }
+  const elPct = document.getElementById(`gabpct-${cod}`);
+  if(elPct){
+    elPct.style.color = pct===null?'#2a3040':corPct;
+    elPct.textContent = pct===null?'—':pct+'%';
+  }
   saveGabDados();
 }
 
