@@ -5512,8 +5512,8 @@ function renderGabaritagem(){
       const dow=new Date(ano,mes,d).getDay();
       const isHoje=d===diaHoje;
       return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:70px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
-        <div>${diasNomes[dow]}</div>
-        <div style="font-size:13px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
+        <div style="font-size:12px">${diasNomes[dow]}</div>
+        <div style="font-size:18px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
       </th>`;
     }).join('')}
     <th style="padding:10px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:80px;background:#080b0f">TOTAL</th>
