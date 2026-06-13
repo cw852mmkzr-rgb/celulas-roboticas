@@ -5505,19 +5505,19 @@ function renderGabaritagem(){
   // Monta thead
   let thead = `<tr style="background:#080b0f">
     <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f;min-width:120px">CÓDIGO</th>
-    <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:90px;background:#080b0f">PROG.<br>MÊS</th>
-    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:80px;background:#080b0f">MÉDIA<br>DIA</th>
-    <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:80px;background:#080b0f">FALTA</th>
-    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:70px;background:#080b0f">%</th>
+    <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:72px;background:#080b0f">PROG.<br>MÊS</th>
+    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
+    <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">FALTA</th>
+    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:55px;background:#080b0f">%</th>
     ${dias.map(d=>{
       const dow=new Date(ano,mes,d).getDay();
       const isHoje=d===diaHoje;
-      return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:70px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
+      return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:56px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
         <div style="font-size:12px">${diasNomes[dow]}</div>
-        <div style="font-size:18px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
+        <div style="font-size:14px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
       </th>`;
     }).join('')}
-    <th style="padding:10px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:80px;background:#080b0f">TOTAL</th>
+    <th style="padding:10px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">TOTAL</th>
     ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:36px"></th>`:''}
   </tr>`;
 
@@ -5529,12 +5529,12 @@ function renderGabaritagem(){
     const pct=prog>0?Math.round(totais[cod]/prog*100):null;
     const corPct=pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
     const bg=ri%2===0?'#0a0d12':'#080b0f';
-    return`<tr style="background:${bg};border-bottom:1px solid #0a0d12">
+    return`<tr data-cod="${esc(cod)}" style="background:${bg};border-bottom:1px solid #0a0d12">
       <td style="padding:8px 14px;font-size:16px;font-weight:900;color:#00e87a;text-align:center;border-right:2px solid #1e2530;position:sticky;left:0;background:${bg}">${esc(cod)}</td>
       <td style="padding:4px 8px;text-align:center;border-right:1px solid #1e2530">
         ${isGabAdmin
           ?`<input type="number" min="0" value="${prog||''}" placeholder="—"
-             style="width:75px;background:transparent;border:1px solid #a78bfa40;border-radius:4px;outline:none;color:#a78bfa;font-family:'Courier New',monospace;font-size:14px;font-weight:700;text-align:center;padding:4px"
+             style="width:60px;background:transparent;border:1px solid #a78bfa40;border-radius:4px;outline:none;color:#a78bfa;font-family:'Courier New',monospace;font-size:14px;font-weight:700;text-align:center;padding:4px"
              onchange="updateGabProg('${esc(cod)}',this.value)">`
           :`<span style="font-size:14px;font-weight:700;color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
         }
@@ -5542,12 +5542,12 @@ function renderGabaritagem(){
       ${(()=>{
         const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
         const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
-        return`<td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:#3d9eff">${media>0?media.toLocaleString('pt-BR'):'—'}</td>`;
+        return`<td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:#3d9eff">${media>0?media.toLocaleString('pt-BR'):'—'}</td>`;
       })()}
-      <td style="padding:8px 8px;text-align:center;border-right:1px solid #1e2530;font-size:14px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
+      <td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
         ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
       </td>
-      <td style="padding:8px 8px;text-align:center;border-right:2px solid #1e2530;font-size:14px;font-weight:900;color:${pct===null?'#2a3040':corPct}" id="gabpct-${cod}">
+      <td style="padding:5px 6px;text-align:center;border-right:2px solid #1e2530;font-size:13px;font-weight:900;color:${pct===null?'#2a3040':corPct}" id="gabpct-${cod}">
         ${pct===null?'—':pct+'%'}
       </td>
       ${dias.map(d=>{
@@ -5556,11 +5556,11 @@ function renderGabaritagem(){
         return`<td style="padding:2px;text-align:center;border-right:1px solid #0d1117;background:${isHoje?'#ffb30008':''}">
           ${isGabAdmin
             ?`<input type="number" min="0" value="${v||''}" placeholder="—"
-               style="width:60px;background:transparent;border:none;outline:none;color:${v>0?'#d8dde6':'#2a3040'};font-family:'Courier New',monospace;font-size:20px;font-weight:700;text-align:center;padding:8px 0"
+               style="width:48px;background:transparent;border:none;outline:none;color:${v>0?'#d8dde6':'#2a3040'};font-family:'Courier New',monospace;font-size:15px;font-weight:700;text-align:center;padding:5px 0"
                onchange="updateGab('${esc(cod)}',${d},this.value)"
                onfocus="this.style.background='#ffffff10';this.style.borderRadius='4px'"
                onblur="this.style.background='transparent'">`
-            :`<span style="font-size:20px;font-weight:700;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v:'—'}</span>`
+            :`<span style="font-size:15px;font-weight:700;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v:'—'}</span>`
           }
         </td>`;
       }).join('')}
@@ -5590,10 +5590,18 @@ function renderGabaritagem(){
   document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${mediaReal.toLocaleString('pt-BR')}</span> peças/dia <span style="color:#4a5568;font-size:11px">(${diasComRegistro.length} dia(s) registrado(s))</span>`;
 
   document.getElementById("gabPanel").innerHTML=`
+  <!-- Busca -->
+  <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
+    <input id="gabBusca" placeholder="🔍 Buscar código..." value="${dados._busca||''}"
+      style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;width:250px;outline:none"
+      oninput="filtrarGab(this.value)"
+      onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
+    <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
+  </div>
   <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
-    <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace">
+    <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
       <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
-      <tbody>${tbody}${tfooter}</tbody>
+      <tbody id="gabTbody">${tbody}${tfooter}</tbody>
     </table>
   </div>`;
 }
@@ -5677,6 +5685,24 @@ function updateGabProg(cod, val){
     elPct.textContent = pct===null?'—':pct+'%';
   }
   saveGabDados();
+}
+
+function filtrarGab(busca){
+  const chave = getGabChave();
+  if(gabDados[chave]) gabDados[chave]._busca = busca;
+  const termo = busca.toLowerCase().trim();
+  const tbody = document.getElementById("gabTbody");
+  if(!tbody) return;
+  const rows = tbody.querySelectorAll("tr[data-cod]");
+  let visiveis = 0;
+  rows.forEach(tr=>{
+    const cod = tr.getAttribute("data-cod")||"";
+    const show = !termo || cod.toLowerCase().includes(termo);
+    tr.style.display = show?"":"none";
+    if(show) visiveis++;
+  });
+  const count = document.getElementById("gabBuscaCount");
+  if(count) count.textContent = `${visiveis} código(s)`;
 }
 
 function abrirModalNovaCodGab(){
