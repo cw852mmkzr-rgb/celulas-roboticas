@@ -5042,12 +5042,14 @@ function animarGrafico(){
   const pontos = document.getElementById("grafPontos");
   if(!linha||!area||!pontos) return;
 
+  // Limpa tudo
   linha.setAttribute("points","");
   area.setAttribute("d","");
   pontos.innerHTML="";
 
   let i = 0;
-  const intervalo = Math.max(300, Math.min(800, 4000/pts.length));
+  // Velocidade: 1.2 segundos por ponto, mínimo 600ms
+  const intervalo = Math.max(600, Math.min(1200, 12000/pts.length));
 
   const step = ()=>{
     if(i>=pts.length){
@@ -5055,16 +5057,26 @@ function animarGrafico(){
       return;
     }
     const vistos = pts.slice(0,i+1);
+
+    // Atualiza linha
     linha.setAttribute("points", vistos.map(p=>`${p.x},${p.y}`).join(' '));
+
+    // Atualiza área
     if(vistos.length>1){
-      const ap = `M${vistos[0].x},${H} `+vistos.map(p=>`L${p.x},${p.y}`).join(' ')+` L${vistos[vistos.length-1].x},${H} Z`;
+      const ap=`M${vistos[0].x},${H} `+vistos.map(p=>`L${p.x},${p.y}`).join(' ')+` L${vistos[vistos.length-1].x},${H} Z`;
       area.setAttribute("d", ap);
     }
-    const p = pts[i];
-    pontos.innerHTML += `
-      <circle cx="${p.x}" cy="${p.y}" r="5" fill="#ffb300" stroke="#04070d" stroke-width="2"/>
-      <text x="${p.x}" y="${p.y-10}" text-anchor="middle" font-size="9" fill="#ffb300" font-weight="700">${p.v.toLocaleString('pt-BR')}</text>
-      <text x="${p.x}" y="${H+8}" text-anchor="middle" font-size="8" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>`;
+
+    // Redesenha TODOS os pontos do zero (evita duplicatas)
+    pontos.innerHTML = vistos.map((p,idx)=>{
+      const isUltimo = idx===vistos.length-1;
+      const cor = isUltimo?'#ffb300':'#00e87a';
+      const raio = isUltimo?'6':'4';
+      return`<circle cx="${p.x}" cy="${p.y}" r="${raio}" fill="${cor}" stroke="#04070d" stroke-width="2"/>
+        <text x="${p.x}" y="${p.y-10}" text-anchor="middle" font-size="9" fill="${isUltimo?'#ffb300':'#4a5568'}" font-weight="${isUltimo?'700':'400'}">${p.v.toLocaleString('pt-BR')}</text>
+        <text x="${p.x}" y="${H+8}" text-anchor="middle" font-size="8" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>`;
+    }).join('');
+
     i++;
     setTimeout(step, intervalo);
   };
