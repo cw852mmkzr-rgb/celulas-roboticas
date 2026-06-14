@@ -3426,7 +3426,8 @@ function renderHistoricoRobo(key) {
 
   const maxTotal = Math.max(...registros.map(r => r.totalGeral), 1);
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
-  const mediaDiaria = Math.round(totalAcumulado / registros.length);
+  const registrosComProd = registros.filter(r => r.totalGeral > 0);
+  const mediaDiaria = registrosComProd.length>0 ? Math.round(totalAcumulado / registrosComProd.length) : 0;
   const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= r.meta * 9).length; // ~9h produtivas/dia
   const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
 
@@ -3530,7 +3531,8 @@ function renderRelatorio(){
 
   const diasComDados = Object.keys(diasDoMes).map(Number).sort((a,b)=>a-b);
   const totalMes = diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0);
-  const mediaDia = diasComDados.length>0 ? Math.round(totalMes/diasComDados.length) : 0;
+  const diasComProd = diasComDados.filter(d=>diasDoMes[d].totalGeral>0);
+  const mediaDia = diasComProd.length>0 ? Math.round(totalMes/diasComProd.length) : 0;
   const melhorDia = diasComDados.reduce((best,d)=>diasDoMes[d].totalGeral>diasDoMes[best]?.totalGeral?d:best, diasComDados[0]);
 
   // ── 2. Eficiência por robô no mês ──
