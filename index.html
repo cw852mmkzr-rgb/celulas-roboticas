@@ -3768,9 +3768,11 @@ function renderRelatorio(){
           <text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="8" fill="#4a5568">${p.v.toLocaleString('pt-BR')}</text>
           <text x="${p.x}" y="${H-2}" text-anchor="middle" font-size="8" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>
         `).join('');
-        const ptsJson = btoa(unescape(encodeURIComponent(JSON.stringify(pts))));
+        window._grafPtsData = pts;
+        window._grafWData = W;
+        window._grafHData = H;
         return`<div style="overflow-x:auto">
-          <svg id="grafEvolucao" data-pts="${ptsJson}" data-w="${W}" data-h="${H}" data-pad="${pad}" viewBox="0 0 ${W} ${H+10}" style="width:100%;min-width:400px;height:120px" preserveAspectRatio="none">
+          <svg id="grafEvolucao" viewBox="0 0 ${W} ${H+10}" style="width:100%;min-width:400px;height:120px" preserveAspectRatio="none">
             <defs>
               <linearGradient id="ecgGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#00e87a" stop-opacity="0.3"/>
@@ -5027,11 +5029,9 @@ function _filtrarCatalogo(){
 }
 
 function animarGrafico(){
-  const svg = document.getElementById("grafEvolucao");
-  if(!svg) return;
-  const pts = JSON.parse(decodeURIComponent(escape(atob(svg.dataset.pts||'W10='))));
-  const W = parseInt(svg.dataset.w)||800;
-  const H = parseInt(svg.dataset.h)||100;
+  const pts = window._grafPtsData;
+  const W = window._grafWData||800;
+  const H = window._grafHData||100;
   if(!pts||pts.length<2) return;
 
   const btn = document.getElementById("btnAnimarGraf");
@@ -5042,13 +5042,11 @@ function animarGrafico(){
   const pontos = document.getElementById("grafPontos");
   if(!linha||!area||!pontos) return;
 
-  // Limpa tudo
   linha.setAttribute("points","");
   area.setAttribute("d","");
   pontos.innerHTML="";
 
   let i = 0;
-  // Velocidade: 1.2 segundos por ponto, mínimo 600ms
   const intervalo = Math.max(600, Math.min(1200, 12000/pts.length));
 
   const step = ()=>{
@@ -5058,16 +5056,13 @@ function animarGrafico(){
     }
     const vistos = pts.slice(0,i+1);
 
-    // Atualiza linha
     linha.setAttribute("points", vistos.map(p=>`${p.x},${p.y}`).join(' '));
 
-    // Atualiza área
     if(vistos.length>1){
       const ap=`M${vistos[0].x},${H} `+vistos.map(p=>`L${p.x},${p.y}`).join(' ')+` L${vistos[vistos.length-1].x},${H} Z`;
       area.setAttribute("d", ap);
     }
 
-    // Redesenha TODOS os pontos do zero (evita duplicatas)
     pontos.innerHTML = vistos.map((p,idx)=>{
       const isUltimo = idx===vistos.length-1;
       const cor = isUltimo?'#ffb300':'#00e87a';
