@@ -3745,11 +3745,13 @@ function renderRelatorio(){
       <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
       ${(()=>{
         if(!diasComDados.length) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
-        const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
-        const minVal=Math.min(...diasComDados.map(d=>diasDoMes[d].totalGeral));
+        const diasGrafico = diasComDados.filter(d=>diasDoMes[d].totalGeral>0);
+        if(!diasGrafico.length) return '<div style="font-size:12px;color:#2a3040">Sem produção registrada.</div>';
+        const maxVal=Math.max(...diasGrafico.map(d=>diasDoMes[d].totalGeral),1);
+        const minVal=Math.min(...diasGrafico.map(d=>diasDoMes[d].totalGeral));
         const W=800, H=100, pad=10;
-        const n=diasComDados.length;
-        const pts=diasComDados.map((d,i)=>{
+        const n=diasGrafico.length;
+        const pts=diasGrafico.map((d,i)=>{
           const x=pad+(i/(Math.max(n-1,1)))*(W-pad*2);
           const y=H-pad-((diasDoMes[d].totalGeral-minVal)/(maxVal-minVal||1))*(H-pad*2);
           return{x,y,d,v:diasDoMes[d].totalGeral};
@@ -3960,7 +3962,7 @@ function handleImgUpload(file){
   const img = new Image();
   const url = URL.createObjectURL(file);
   img.onload = async function(){
-    const maxSize = 300;
+    const maxSize = 800;
     let w = img.width, h = img.height;
     if(w>maxSize||h>maxSize){
       if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
@@ -3968,27 +3970,19 @@ function handleImgUpload(file){
     }
     canvas.width=w; canvas.height=h;
     ctx.drawImage(img,0,0,w,h);
-    let compressed = canvas.toDataURL('image/jpeg', 0.5);
-    if(compressed.length > 60000){
-      compressed = canvas.toDataURL('image/jpeg', 0.3);
-    }
+    const compressed = canvas.toDataURL('image/jpeg', 0.85);
     URL.revokeObjectURL(url);
 
     try{
-      // Carrega imagens existentes
-      const r = await fetch(BASE_URL_IMG+"/latest",{headers:HEADERS_R});
+      const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
       const d = await r.json();
-      const imgs = (d.record && d.record.imagens) ? d.record.imagens : {};
-      // Salva imagem com chave = selected
+      const imgs = (d&&d[0]&&d[0].imagens) ? d[0].imagens : {};
       imgs[selected] = compressed;
-      await fetch(BASE_URL_IMG,{method:'PUT',headers:HEADERS_W,body:JSON.stringify({imagens:imgs})});
-      // Salva referência no BIN principal
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
       celulas[selected].img_peca = compressed;
-      saveToAPI(celulas);
       renderDetail();
       showToast("Imagem salva ✓");
     }catch(e){
-      // Fallback: salva direto no BIN principal
       celulas[selected].img_peca = compressed;
       saveToAPI(celulas);
       renderDetail();
@@ -4176,13 +4170,7 @@ function _dashGetDados(){
   const ch2=`${ano}_${mes+1}_${dia}`;
   if(mc.metas_dias[ch2]) return mc.metas_dias[ch2];
 
-  // Fallback: data selecionada na célula
-  const ch3=`${mc.metas_ano||ano}_${mc.metas_mes!==undefined?mc.metas_mes:mes}_${mc.metas_dia||dia}`;
-  if(mc.metas_dias[ch3]) return mc.metas_dias[ch3];
-
-  // Último recurso: dia mais recente disponível
-  const chaves=Object.keys(mc.metas_dias).sort();
-  if(chaves.length) return mc.metas_dias[chaves[chaves.length-1]];
+  // Sem dados para hoje — retorna vazio
   return {};
 }
 
