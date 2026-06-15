@@ -2560,7 +2560,11 @@ async function loadFromAPI(){
     const tipo=getCellTipo(selected);
     // Não rerenderiza armário se tiver algum card aberto
     const temGabAberto = document.querySelector('.arm-gabarito.open');
-    if(tipo!=='robo' && !(tipo==='armario' && temGabAberto)) renderDetail();
+    // Não rerenderiza catálogo se usuário scrollou para baixo
+    const mainPanel = document.getElementById('mainPanel');
+    const catalogoScrollado = tipo==='catalogo_pecas' && mainPanel && mainPanel.scrollTop > 50;
+    if(tipo!=='robo' && !(tipo==='armario' && temGabAberto) && !catalogoScrollado) renderDetail();
+    else if(catalogoScrollado) _filtrarCatalogo(); // atualiza só o tbody sem perder scroll
   }
 }
 
