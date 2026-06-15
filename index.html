@@ -30,10 +30,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Montserrat', sans-serif; font-weight: 600; }
 .cell-peca { font-size: 10px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-green { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
-.dot-amber { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
-.dot-blue  { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
-.dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
+.dot-green  { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
+.dot-amber  { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
+.dot-blue   { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
+.dot-red    { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
+.dot-purple { background: #a78bfa; box-shadow: 0 0 5px #a78bfa; }
 .dot-gray  { background: #4a5568; }
 
 .btn-menu { display: none; background: none; border: none; color: #d8dde6; font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
@@ -2411,10 +2412,11 @@ const defaultData = {
 };
 
 const SC = {
-  "Produzindo": { dot:"dot-green", bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
-  "Manutenção": { dot:"dot-amber", bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
-  "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
-  "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+  "Produzindo":       { dot:"dot-green",  bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
+  "Manutenção":       { dot:"dot-amber",  bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
+  "Aguardando":       { dot:"dot-blue",   bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
+  "Parado":           { dot:"dot-red",    bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+  "Sem mão de obra":  { dot:"dot-purple", bg:"#a78bfa20", border:"#a78bfa40", text:"#a78bfa" },
 };
 
 // ── tipo da célula detectado pelo nome ───────
@@ -3241,7 +3243,8 @@ function renderDetail(){
   if(tipo==='manutencao'){renderManutencao();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
-  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+  const isManutencao = c.status==="Manutenção";
+  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado","Sem mão de obra"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
   const alertsHTML=(c.alertas||[]).map((a,i)=>`
     <div class="alert-item">
       <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
@@ -3259,6 +3262,16 @@ function renderDetail(){
       </div>`;
 
   document.getElementById("mainPanel").innerHTML=`
+  <div style="position:relative">
+  ${isManutencao?`<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:8px;background:#ffb30020;padding:5px 16px;border-radius:99px;border:1px solid #ffb30040;pointer-events:none">
+    <svg width="14" height="14" viewBox="0 0 24 24" style="animation:spin 2s linear infinite">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffb300" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span style="font-size:11px;font-weight:700;color:#ffb300;letter-spacing:0.1em">EM MANUTENÇÃO</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" style="animation:spin 2s linear infinite reverse">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffb300" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>`:''}
   <div>
     <div class="detail-hdr">
       <div><div class="detail-title">${esc(c.nome)}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
@@ -3373,6 +3386,7 @@ function renderDetail(){
       </div>
     </div>
     ${renderHistoricoRobo(selected)}
+  </div>
   </div>`;
   // Gera QR depois que o DOM renderizou
   setTimeout(() => gerarQR(selected), 80);
