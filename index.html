@@ -249,7 +249,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .btn-menu { display: block; }
   .sidebar { position: fixed; top: 52px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
-  .main { padding: 12px; width: 100%; }
+  .main { padding: 8px; width: 100%; box-sizing: border-box; }
   .grid2 { grid-template-columns: 1fr; }
   .grid3 { grid-template-columns: 1fr; }
   .grid4 { grid-template-columns: 1fr 1fr; }
@@ -257,6 +257,23 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .detail-title { font-size: 18px; }
   #savedLabel { display: none; }
   .prod-day-grid { grid-template-columns: repeat(4, 1fr); }
+  /* Tabelas com scroll horizontal */
+  .metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* Header topbar compacto */
+  .topbar { flex-wrap: wrap; gap: 4px; padding: 6px 10px; }
+  .topbar button { font-size: 10px; padding: 4px 8px; }
+  /* Células do robô em coluna */
+  .detail-hdr { flex-direction: column; gap: 8px; }
+  .robo-img-wrap { flex-direction: column; }
+  /* Fontes menores em tabelas */
+  .metas-table th { font-size: 11px !important; padding: 6px 4px !important; }
+  .metas-table input.hora-inp { font-size: 14px !important; }
+  /* Painel principal sem overflow */
+  #mainPanel { overflow-x: hidden; }
+  /* Seções em coluna única */
+  .section { padding: 10px; }
+  .field label { font-size: 10px; }
+  .field input, .field select, .field textarea { font-size: 13px; }
 }
 </style>
 </head>
@@ -3500,7 +3517,7 @@ function renderHistoricoRobo(key) {
     </div>
 
     <!-- Tabela de registros -->
-    <div style="overflow-x:auto;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
       <table style="border-collapse:collapse;width:100%;min-width:440px;font-family:'Courier New',monospace">
         <thead>
           <tr style="background:#0a0d11">
@@ -3717,7 +3734,7 @@ function renderRelatorio(){
       <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
         Detalhe por Dia — todos os robôs
       </div>
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table style="border-collapse:collapse;width:100%;min-width:500px;font-family:'Courier New',monospace">
           <thead>
             <tr style="background:#0a0d11">
@@ -3795,7 +3812,7 @@ function renderRelatorio(){
         window._grafPtsData = pts;
         window._grafWData = W;
         window._grafHData = H;
-        return`<div style="overflow-x:auto">
+        return`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
           <svg id="grafEvolucao" viewBox="0 0 ${W} ${H+10}" style="width:100%;min-width:400px;height:120px" preserveAspectRatio="none">
             <defs>
               <linearGradient id="ecgGrad" x1="0" y1="0" x2="0" y2="1">
@@ -5233,7 +5250,7 @@ function renderCatalogoPecas(){
         ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
       </div>
     `:`
-      <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #1e2530">
         <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:#080b0f">
@@ -5661,7 +5678,7 @@ function renderGabaritagem(){
   let thead = `<tr style="background:#080b0f">
     <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f;min-width:120px">CÓDIGO</th>
     <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:72px;background:#080b0f">PROG.<br>MÊS</th>
-    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
+    <th style="padding:10px 8px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">TOTAL</th>
     <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">FALTA</th>
     <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:55px;background:#080b0f">%</th>
     ${dias.map(d=>{
@@ -5672,7 +5689,7 @@ function renderGabaritagem(){
         <div style="font-size:14px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
       </th>`;
     }).join('')}
-    <th style="padding:10px 10px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">TOTAL</th>
+    <th style="padding:10px 10px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
     ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:36px"></th>`:''}
   </tr>`;
 
@@ -5697,7 +5714,7 @@ function renderGabaritagem(){
       ${(()=>{
         const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
         const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
-        return`<td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:#3d9eff">${media>0?media.toLocaleString('pt-BR'):'—'}</td>`;
+        return`<td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:#00e87a" id="gabtotal-${cod}">${totais[cod]>0?totais[cod].toLocaleString('pt-BR'):'—'}</td>`;
       })()}
       <td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
         ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
@@ -5719,7 +5736,11 @@ function renderGabaritagem(){
           }
         </td>`;
       }).join('')}
-      <td style="padding:8px 10px;font-size:16px;font-weight:900;color:#00e87a;text-align:center;border-left:2px solid #00e87a30" id="gabtotal-${cod}">${totais[cod]>0?totais[cod].toLocaleString('pt-BR'):'—'}</td>
+      ${(()=>{
+        const diasComVal2 = dias.filter(d=>parseInt((vals[d]||0))>0);
+        const media2 = diasComVal2.length>0?Math.round(totais[cod]/diasComVal2.length):0;
+        return`<td style="padding:8px 10px;font-size:14px;font-weight:900;color:#3d9eff;text-align:center;border-left:2px solid #3d9eff30">${media2>0?media2.toLocaleString('pt-BR'):'—'}</td>`;
+      })()}
       ${isGabAdmin?`<td style="padding:4px;text-align:center"><button onclick="excluirCodGab('${esc(cod)}')" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:4px">🗑</button></td>`:''}
     </tr>`;
   }).join('');
@@ -5753,7 +5774,7 @@ function renderGabaritagem(){
       onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
     <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
   </div>
-  <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #1e2530">
     <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
       <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
       <tbody id="gabTbody">${tbody}${tfooter}</tbody>
@@ -5926,7 +5947,7 @@ function renderGabDesempenho(){
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
       <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
       ${diasComDados.length>0?`
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <svg viewBox="0 0 900 110" style="width:100%;min-width:400px;height:130px" preserveAspectRatio="none">
           <defs>
             <linearGradient id="gabGrad" x1="0" y1="0" x2="0" y2="1">
