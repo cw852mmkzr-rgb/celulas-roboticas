@@ -5607,7 +5607,7 @@ function getDiasUteis(ano, mes){
   const total = new Date(ano, mes+1, 0).getDate();
   for(let d=1;d<=total;d++){
     const dow = new Date(ano, mes, d).getDay();
-    if(dow!==0 && dow!==6) dias.push(d);
+    if(dow!==0) dias.push(d); // Remove só domingo
   }
   return dias;
 }
