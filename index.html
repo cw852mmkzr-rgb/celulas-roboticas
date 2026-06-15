@@ -35,6 +35,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dot-blue   { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
 .dot-red    { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
 .dot-purple { background: #a78bfa; box-shadow: 0 0 5px #a78bfa; }
+.dot-orange { background: #ff6a00; box-shadow: 0 0 5px #ff6a00; }
 .dot-gray  { background: #4a5568; }
 
 .btn-menu { display: none; background: none; border: none; color: #d8dde6; font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
@@ -2412,11 +2413,12 @@ const defaultData = {
 };
 
 const SC = {
-  "Produzindo":       { dot:"dot-green",  bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
-  "Manutenção":       { dot:"dot-amber",  bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
-  "Aguardando":       { dot:"dot-blue",   bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
-  "Parado":           { dot:"dot-red",    bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
-  "Sem mão de obra":  { dot:"dot-purple", bg:"#a78bfa20", border:"#a78bfa40", text:"#a78bfa" },
+  "Produzindo":        { dot:"dot-green",  bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
+  "Manutenção":        { dot:"dot-amber",  bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
+  "Aguardando":        { dot:"dot-blue",   bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
+  "Parado":            { dot:"dot-red",    bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+  "Sem mão de obra":   { dot:"dot-purple", bg:"#a78bfa20", border:"#a78bfa40", text:"#a78bfa" },
+  "Setup/Troca Peça":  { dot:"dot-orange", bg:"#ff6a0020", border:"#ff6a0040", text:"#ff6a00" },
 };
 
 // ── tipo da célula detectado pelo nome ───────
@@ -3244,7 +3246,7 @@ function renderDetail(){
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
   const isManutencao = c.status==="Manutenção";
-  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado","Sem mão de obra"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado","Sem mão de obra","Setup/Troca Peça"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
   const alertsHTML=(c.alertas||[]).map((a,i)=>`
     <div class="alert-item">
       <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
