@@ -241,10 +241,13 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .sidebar-recolher { padding: 9px 14px; cursor: pointer; text-align: center; color: #4a5568; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; border-top: 1px solid #1e2530; }
 .sidebar-recolher:hover { background: #ffffff06; }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0d12; border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 99px; border: 2px solid #0a0d12; }
+::-webkit-scrollbar-thumb:hover { background: #3d4a60; }
+::-webkit-scrollbar-corner { background: #0a0d12; }
 
+.metas-carousel { display:none; }
 @media (max-width: 700px) {
   .metas-table-wrap { display:none; }
   .metas-carousel { display:block; }
