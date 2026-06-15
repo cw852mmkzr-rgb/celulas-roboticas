@@ -128,9 +128,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
-.dash-header { display:flex; justify-content:space-between; align-items:center; padding:14px 28px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; }
+.dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; flex-wrap:wrap; gap:8px; }
 .dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
-.dash-clock { font-size:52px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-clock { font-size:clamp(24px,6vw,52px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
 .dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
@@ -189,7 +189,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
 /* METAS */
-.metas-table-wrap { overflow-x: auto; }
+.metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; cursor: grab; overscroll-behavior-x: contain; }
 .metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
@@ -5250,7 +5250,7 @@ function renderCatalogoPecas(){
         ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
       </div>
     `:`
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #1e2530">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
         <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:#080b0f">
@@ -5774,7 +5774,7 @@ function renderGabaritagem(){
       onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
     <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
   </div>
-  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;border:1px solid #1e2530">
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
     <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
       <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
       <tbody id="gabTbody">${tbody}${tfooter}</tbody>
@@ -6058,6 +6058,16 @@ function excluirCodGab(cod){
 }
 // ===== FIM GABARITAGEM =====
 
+// Drag scroll para tabelas no mobile
+function enableDragScroll(el){
+  if(!el) return;
+  let isDown=false, startX, scrollLeft;
+  el.addEventListener('mousedown', e=>{isDown=true;el.style.cursor='grabbing';startX=e.pageX-el.offsetLeft;scrollLeft=el.scrollLeft;});
+  el.addEventListener('mouseleave',()=>{isDown=false;el.style.cursor='grab';});
+  el.addEventListener('mouseup',()=>{isDown=false;el.style.cursor='grab';});
+  el.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x=e.pageX-el.offsetLeft;el.scrollLeft=scrollLeft-(x-startX);});
+}
+
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
@@ -6115,56 +6125,47 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 <!-- Tela Gabaritagem -->
 <div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:12px">
-      <svg viewBox="0 0 70 75" width="70" height="75" style="flex-shrink:0;overflow:visible">
-        <style>
-          @keyframes gab-hit{0%{transform:rotate(-55deg)}65%{transform:rotate(20deg)}70%{transform:rotate(15deg)}100%{transform:rotate(-55deg)}}
-          @keyframes gab-s1{0%,65%{opacity:0;transform:translate(0,0)}67%{opacity:1}100%{opacity:0;transform:translate(-12px,-14px)}}
-          @keyframes gab-s2{0%,65%{opacity:0;transform:translate(0,0)}67%{opacity:1}100%{opacity:0;transform:translate(10px,-16px)}}
-          @keyframes gab-s3{0%,65%{opacity:0;transform:translate(0,0)}67%{opacity:1}100%{opacity:0;transform:translate(-6px,-18px)}}
-          @keyframes gab-s4{0%,65%{opacity:0;transform:translate(0,0)}67%{opacity:1}100%{opacity:0;transform:translate(14px,-10px)}}
-          @keyframes gab-flash{0%,63%{opacity:0}66%{opacity:1}80%{opacity:0}100%{opacity:0}}
-        </style>
-
-        <!-- Pivot na ponta do cabo em baixo — cabeça faz arco de cima pra baixo -->
-        <g style="transform-origin:35px 57px;animation:gab-hit 0.55s cubic-bezier(0.25,0.1,0.25,1) infinite">
-          <!-- Cabeça do martelo no topo -->
-          <rect x="17" y="8" width="36" height="13" rx="3" fill="#ffb300"/>
-          <rect x="17" y="8" width="11" height="13" rx="3" fill="#ff6a00"/>
-          <!-- Cabo -->
-          <rect x="32" y="21" width="6" height="36" rx="3" fill="#d8dde6"/>
-        </g>
-
-        <!-- Ponto de impacto fixo em baixo -->
-        <circle cx="46" cy="59" r="3.5" fill="#ffb300" style="animation:gab-flash 0.55s infinite"/>
-        <line x1="46" y1="59" x2="46" y2="59" stroke="#ffb300" stroke-width="2.5" stroke-linecap="round" style="animation:gab-s1 0.55s infinite"/>
-        <line x1="46" y1="59" x2="46" y2="59" stroke="#ff6a00" stroke-width="2.5" stroke-linecap="round" style="animation:gab-s2 0.55s infinite"/>
-        <line x1="46" y1="59" x2="46" y2="59" stroke="#ffb300" stroke-width="2" stroke-linecap="round" style="animation:gab-s3 0.55s infinite"/>
-        <line x1="46" y1="59" x2="46" y2="59" stroke="#fff" stroke-width="2" stroke-linecap="round" style="animation:gab-s4 0.55s infinite"/>
-      </svg>
-      <div>
-        <div style="font-size:18px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">🔨 Controle de Gabaritagem</div>
-        <div style="font-size:13px;color:#4a5568;margin-top:2px" id="gabSubtitle">—</div>
+  <!-- Header -->
+  <div style="background:#080b0f;border-bottom:1px solid #1e2530;flex-shrink:0;padding:10px 14px">
+    <!-- Linha 1: título + voltar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 70 75" width="36" height="38" style="flex-shrink:0;overflow:visible">
+          <style>
+            @keyframes gab-hit{0%{transform:rotate(-55deg)}65%{transform:rotate(20deg)}70%{transform:rotate(15deg)}100%{transform:rotate(-55deg)}}
+            @keyframes gab-flash{0%,63%{opacity:0}66%{opacity:1}80%{opacity:0}100%{opacity:0}}
+          </style>
+          <g style="transform-origin:35px 57px;animation:gab-hit 0.55s cubic-bezier(0.25,0.1,0.25,1) infinite">
+            <rect x="17" y="8" width="36" height="13" rx="3" fill="#ffb300"/>
+            <rect x="17" y="8" width="11" height="13" rx="3" fill="#ff6a00"/>
+            <rect x="32" y="21" width="6" height="36" rx="3" fill="#d8dde6"/>
+          </g>
+          <circle cx="46" cy="59" r="3.5" fill="#ffb300" style="animation:gab-flash 0.55s infinite"/>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">🔨 Gabaritagem</div>
+          <div style="font-size:11px;color:#4a5568" id="gabSubtitle">—</div>
+        </div>
       </div>
+      <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✕ Voltar</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button onclick="backupGabaritagem()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
-      <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho Mensal</button>
-      <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
+    <!-- Linha 2: botões e seletores -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <button onclick="backupGabaritagem()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
+      <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho</button>
+      <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
         <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
         <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
         <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
         <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
       </select>
-      <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
+      <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
         <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
       </select>
-      <div id="gabBtns" style="display:flex;gap:8px;align-items:center"></div>
-      <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair</button>
+      <div id="gabBtns" style="display:flex;gap:6px;align-items:center"></div>
     </div>
   </div>
-  <div style="flex:1;overflow:auto;padding:16px">
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px">
     <div id="gabPanel"></div>
   </div>
 </div>
