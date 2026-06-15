@@ -5842,6 +5842,23 @@ function updateGabProg(cod, val){
   saveGabDados();
 }
 
+async function backupGabaritagem(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    const gab = (d&&d[0]&&d[0].imagens&&d[0].imagens._gabaritagem) ? d[0].imagens._gabaritagem : gabDados;
+    if(!gab||!Object.keys(gab).length){ showToast("Nenhum dado para exportar",true); return; }
+    const now = new Date();
+    const nome = `backup_gabaritagem_${String(now.getDate()).padStart(2,'0')}_${String(now.getMonth()+1).padStart(2,'0')}_${now.getFullYear()}__${String(now.getHours()).padStart(2,'0')}_${String(now.getMinutes()).padStart(2,'0')}.json`;
+    const blob = new Blob([JSON.stringify(gab, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nome;
+    a.click();
+    showToast("Backup baixado ✓");
+  }catch(e){ showToast("Erro ao fazer backup",true); }
+}
+
 function abrirGabDesempenho(){
   document.getElementById("gabDesempenhoScreen").style.display="flex";
   renderGabDesempenho();
@@ -6112,6 +6129,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     </div>
     <div style="display:flex;gap:8px;align-items:center">
       <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho Mensal</button>
+      <button onclick="backupGabaritagem()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
       <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px">
         <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
         <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
