@@ -2859,6 +2859,7 @@ function buildTurnoTable(c,turno,chave){
 function renderMetasDiaria(){
   const c=celulas[selected];
   const podeEditar = isAdmin || isAdminMetas;
+  fixTouchScroll();
   const anoAtual=new Date().getFullYear();
   const ano=c.metas_ano||anoAtual;
   const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
@@ -5774,12 +5775,13 @@ function renderGabaritagem(){
       onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
     <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
   </div>
-  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
+  <div class="gab-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
     <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
       <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
       <tbody id="gabTbody">${tbody}${tfooter}</tbody>
     </table>
   </div>`;
+  setTimeout(fixTouchScroll, 100);
 }
 
 function updateGab(cod, dia, val){
@@ -6058,15 +6060,27 @@ function excluirCodGab(cod){
 }
 // ===== FIM GABARITAGEM =====
 
-// Drag scroll para tabelas no mobile
-function enableDragScroll(el){
-  if(!el) return;
-  let isDown=false, startX, scrollLeft;
-  el.addEventListener('mousedown', e=>{isDown=true;el.style.cursor='grabbing';startX=e.pageX-el.offsetLeft;scrollLeft=el.scrollLeft;});
-  el.addEventListener('mouseleave',()=>{isDown=false;el.style.cursor='grab';});
-  el.addEventListener('mouseup',()=>{isDown=false;el.style.cursor='grab';});
-  el.addEventListener('mousemove',e=>{if(!isDown)return;e.preventDefault();const x=e.pageX-el.offsetLeft;el.scrollLeft=scrollLeft-(x-startX);});
+// Scroll horizontal nas tabelas no mobile
+function fixTouchScroll(){
+  document.querySelectorAll('.metas-table-wrap, .gab-table-wrap').forEach(el=>{
+    let startX, startY, startScroll;
+    el.addEventListener('touchstart', e=>{
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startScroll = el.scrollLeft;
+    },{passive:true});
+    el.addEventListener('touchmove', e=>{
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if(Math.abs(dx) > Math.abs(dy)){
+        // Movimento horizontal — previne scroll da página
+        e.stopPropagation();
+        el.scrollLeft = startScroll - dx;
+      }
+    },{passive:false});
+  });
 }
+setTimeout(fixTouchScroll, 1000);
 
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
@@ -6200,3 +6214,4 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
 </body>
 </html>
+
