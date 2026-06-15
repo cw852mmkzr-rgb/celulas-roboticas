@@ -246,6 +246,14 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 ::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
 
 @media (max-width: 700px) {
+  .metas-table-wrap { display:none; }
+  .metas-carousel { display:block; }
+  .metas-car-nav { display:flex; align-items:center; justify-content:space-between; padding:6px 0; margin-bottom:6px; }
+  .metas-car-nav button { background:#1e2530; border:1px solid #2a3040; color:#d8dde6; border-radius:8px; padding:8px 18px; font-size:20px; cursor:pointer; }
+  .metas-car-nav span { font-size:13px; color:#4a5568; font-family:'Courier New',monospace; font-weight:700; }
+  .metas-car-table { width:100%; border-collapse:collapse; font-family:'Courier New',monospace; }
+  .metas-car-table th { background:#080b0f; color:#4a5568; font-size:13px; padding:8px 6px; border:1px solid #1e2530; text-align:center; }
+  .metas-car-table td { border:1px solid #1e2530; padding:8px 4px; text-align:center; font-size:15px; }
   .btn-menu { display: block; }
   .sidebar { position: fixed; top: 52px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
@@ -2906,14 +2914,19 @@ function renderMetasDiaria(){
         <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
       </div>
       ${buildTurnoTable(c,'dia',chave)}
+      <div class="metas-carousel" id="carDia">
+        ${_renderCarrossel(HORAS_DIA,(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected)}
+      </div>
     </div>
     <div style="margin-top:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
         <span style="font-size:12px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
-        <span style="font-size:10px;color:#4a5568;margin-left:6px">← coluna "Total Geral do Dia" = Sub Dia + Sub Noite</span>
       </div>
       ${buildTurnoTable(c,'noite',chave)}
+      <div class="metas-carousel" id="carNoite">
+        ${_renderCarrossel(HORAS_NOITE,(c.metas_dias&&c.metas_dias[chave])||{},true,'Sub Noite','#a78bfa','sub-noite',isAdmin,podeEditar,selected)}
+      </div>
     </div>
     <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
@@ -5208,6 +5221,92 @@ function animarGrafico(){
   passo();
 }
 
+// Carrossel mobile para metas
+let _carIdx = 0;
+const _carStep = 3; // horas por vez
+
+function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdmin, podeEditar, selected){
+  const total = HORAS.length;
+  const grupo = HORAS.slice(_carIdx, _carIdx + _carStep);
+  const horaAtual = new Date().getHours();
+  const ro = !podeEditar ? 'readonly' : '';
+
+  const linhas = ROBOS.map(robo=>{
+    const rd = data[robo]||{};
+    const meta = parseInt(rd.meta)||0;
+    const cod = rd.cod||'';
+    const pontosCell = isAdmin ? `<td style="color:#ff6a00;font-size:12px">${rd.pontos||'—'}</td>` : '';
+    const horasCells = grupo.map(h=>{
+      const isCafe = HORAS_CAFE.includes(h);
+      const campo = campoH(h);
+      const rawVal = (rd[campo])||'';
+      const {num,isAjuste} = parseCelVal(rawVal);
+      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      let bg='', cor='#d8dde6';
+      if(isAjuste){cor='#3d9eff';}
+      else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
+      if(isCafe&&!isAjuste){bg='#ffb30018';cor='#ffb300';}
+      const isAtual = parseInt(h)===horaAtual;
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
+        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)">`
+        :`${num>0?num:'—'}`}</td>`;
+    }).join('');
+
+    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    return`<tr>
+      <td style="color:#00e87a;font-weight:900;font-size:15px;text-align:left;padding-left:8px;background:#04070d;position:sticky;left:0">${robo}</td>
+      <td style="color:#3d9eff;font-size:13px;background:#04070d">${meta||'—'}</td>
+      <td style="color:#ffb300;font-size:12px;background:#04070d">${esc(cod)||'—'}</td>
+      ${horasCells}
+      <td style="color:${subColor};font-weight:800;font-size:14px">${subRow>0?subRow:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Totais
+  const totalRow = grupo.map(h=>{
+    const s=ROBOS.reduce((acc,r)=>acc+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return`<td style="color:#d8dde6;font-weight:900;font-size:14px">${s>0?s:'—'}</td>`;
+  }).join('');
+  const subTotal=ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+
+  const de = _carIdx+1;
+  const ate = Math.min(_carIdx+_carStep, total);
+
+  return`<div class="metas-carousel-inner">
+    <div class="metas-car-nav">
+      <button onclick="_carPrev()" ${_carIdx===0?'disabled style="opacity:0.3"':''}>◀</button>
+      <span>${grupo.map(h=>`${h}`).join(' · ')}</span>
+      <button onclick="_carNext(${total})" ${_carIdx+_carStep>=total?'disabled style="opacity:0.3"':''}>▶</button>
+    </div>
+    <table class="metas-car-table">
+      <thead><tr>
+        <th style="text-align:left;padding-left:8px">Robô</th>
+        <th>Meta/h</th>
+        <th>Código</th>
+        ${grupo.map(h=>`<th style="${HORAS_CAFE.includes(h)?'color:#ffb300':''};${parseInt(h)===horaAtual?'border:2px solid #ffb300':''}">${h}</th>`).join('')}
+        <th style="color:${subColor}">${subLabel}</th>
+      </tr></thead>
+      <tbody>${linhas}
+        <tr style="border-top:2px solid #1e2530">
+          <td colspan="3" style="color:#4a5568;font-size:10px;text-align:right;padding-right:6px">TOTAL/HORA</td>
+          ${totalRow}
+          <td style="color:${subColor};font-weight:900;font-size:15px">${subTotal>0?subTotal:'—'}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function _carPrev(){
+  _carIdx = Math.max(0, _carIdx - _carStep);
+  renderMetasDiaria();
+}
+function _carNext(total){
+  _carIdx = Math.min(total - _carStep, _carIdx + _carStep);
+  if(_carIdx < 0) _carIdx = 0;
+  renderMetasDiaria();
+}
+
 function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
@@ -6214,4 +6313,3 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
 </body>
 </html>
-
