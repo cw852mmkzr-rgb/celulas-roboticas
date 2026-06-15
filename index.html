@@ -5030,65 +5030,134 @@ function _filtrarCatalogo(){
 
 function animarGrafico(){
   const pts = window._grafPtsData;
+  if(!pts||pts.length<2){ showToast("Sem dados para animar",true); return; }
+
   const W = window._grafWData||800;
   const H = window._grafHData||100;
 
-  if(!pts||!pts.length){
-    showToast("Abra o Relatório Mensal primeiro", true);
-    return;
+  // Cria modal de animação
+  let modal = document.getElementById("modalGrafAnim");
+  if(!modal){
+    modal = document.createElement("div");
+    modal.id = "modalGrafAnim";
+    modal.style.cssText = "position:fixed;inset:0;background:#000000ee;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px";
+    modal.innerHTML = `
+      <div style="font-size:14px;color:#4a5568;font-family:'Courier New',monospace;letter-spacing:0.1em">EVOLUÇÃO DIÁRIA</div>
+      <canvas id="grafAnimCanvas" style="border-radius:12px;background:#0f1318;max-width:90vw"></canvas>
+      <div id="grafAnimLabel" style="font-size:24px;font-weight:900;color:#00e87a;font-family:'Courier New',monospace">—</div>
+      <button onclick="document.getElementById('modalGrafAnim').remove()" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:8px;padding:8px 24px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>`;
+    document.body.appendChild(modal);
   }
 
-  const btn = document.getElementById("btnAnimarGraf");
-  if(btn){ btn.textContent="⏳ Animando... ("+pts.length+" dias)"; btn.disabled=true; }
+  const canvas = document.getElementById("grafAnimCanvas");
+  const CW = Math.min(window.innerWidth*0.85, 900);
+  const CH = 300;
+  canvas.width = CW;
+  canvas.height = CH;
+  const ctx = canvas.getContext("2d");
+  const pad = 40;
 
-  const linha = document.getElementById("grafLinha");
-  const area  = document.getElementById("grafArea");
-  const pontos = document.getElementById("grafPontos");
-  if(!linha||!area||!pontos){
-    showToast("Gráfico não encontrado",true);
-    if(btn){btn.textContent="▶ Animar";btn.disabled=false;}
-    return;
-  }
+  const maxV = Math.max(...pts.map(p=>p.v));
+  const minV = Math.min(...pts.map(p=>p.v));
+  const range = maxV - minV || 1;
 
-  linha.setAttribute("points","");
-  area.setAttribute("d","");
-  pontos.innerHTML="";
+  // Recalcula coordenadas no canvas
+  const cpts = pts.map((p,i)=>({
+    x: pad + (i/(pts.length-1))*(CW-pad*2),
+    y: CH-pad - ((p.v-minV)/range)*(CH-pad*2),
+    d: p.d,
+    v: p.v
+  }));
 
-  // 800ms por ponto
-  const intervalo = 800;
+  const label = document.getElementById("grafAnimLabel");
   let i = 0;
+  const intervalo = Math.max(500, Math.min(1000, 9000/pts.length));
 
-  function passo(){
-    if(i >= pts.length){
-      if(btn){ btn.textContent="▶ Animar"; btn.disabled=false; }
-      return;
+  function draw(){
+    ctx.clearRect(0,0,CW,CH);
+
+    // Grade horizontal
+    ctx.strokeStyle = "#1e2530";
+    ctx.lineWidth = 1;
+    for(let g=0;g<4;g++){
+      const gy = pad + (g/3)*(CH-pad*2);
+      ctx.beginPath(); ctx.moveTo(pad,gy); ctx.lineTo(CW-pad,gy); ctx.stroke();
     }
 
-    const vistos = pts.slice(0, i+1);
-
-    // Linha
-    linha.setAttribute("points", vistos.map(p=>p.x+","+p.y).join(" "));
+    const vistos = cpts.slice(0,i+1);
 
     // Área
-    if(vistos.length > 1){
-      let ap = "M"+vistos[0].x+","+H;
-      vistos.forEach(p=>{ ap += " L"+p.x+","+p.y; });
-      ap += " L"+vistos[vistos.length-1].x+","+H+" Z";
-      area.setAttribute("d", ap);
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, CH-pad);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(vistos[vistos.length-1].x, CH-pad);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0,0,0,CH);
+      grad.addColorStop(0,"rgba(0,232,122,0.3)");
+      grad.addColorStop(1,"rgba(0,232,122,0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
     }
 
-    // Pontos
-    let html = "";
-    vistos.forEach(function(p, idx){
-      const ultimo = idx === vistos.length-1;
-      html += '<circle cx="'+p.x+'" cy="'+p.y+'" r="'+(ultimo?6:4)+'" fill="'+(ultimo?'#ffb300':'#00e87a')+'" stroke="#04070d" stroke-width="2"/>';
-      html += '<text x="'+p.x+'" y="'+(p.y-10)+'" text-anchor="middle" font-size="9" fill="'+(ultimo?'#ffb300':'#4a5568')+'" font-weight="'+(ultimo?700:400)+'">'+(p.v||0).toLocaleString("pt-BR")+'</text>';
-      html += '<text x="'+p.x+'" y="'+(H+8)+'" text-anchor="middle" font-size="8" fill="#4a5568">'+String(p.d).padStart(2,"0")+'</text>';
-    });
-    pontos.innerHTML = html;
+    // Linha
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, vistos[0].y);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle = "#00e87a";
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
 
-    i++;
-    setTimeout(passo, intervalo);
+    // Pontos anteriores
+    vistos.slice(0,-1).forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,4,0,Math.PI*2);
+      ctx.fillStyle = "#00e87a";
+      ctx.fill();
+      // Dia
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "11px Courier New";
+      ctx.textAlign = "center";
+      ctx.fillText(String(p.d).padStart(2,"0"), p.x, CH-pad+16);
+      // Valor
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "10px Courier New";
+      ctx.fillText(p.v.toLocaleString("pt-BR"), p.x, p.y-10);
+    });
+
+    // Ponto atual em destaque
+    const atual = vistos[vistos.length-1];
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 8, 0, Math.PI*2);
+    ctx.fillStyle = "#ffb300";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 12, 0, Math.PI*2);
+    ctx.strokeStyle = "rgba(255,179,0,0.3)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // Label dia atual
+    ctx.fillStyle = "#ffb300";
+    ctx.font = "bold 12px Courier New";
+    ctx.textAlign = "center";
+    ctx.fillText(String(atual.d).padStart(2,"0"), atual.x, CH-pad+16);
+    ctx.fillText(atual.v.toLocaleString("pt-BR"), atual.x, atual.y-16);
+
+    // Label principal
+    if(label) label.textContent = "Dia "+String(atual.d).padStart(2,"0")+" — "+atual.v.toLocaleString("pt-BR")+" peças";
+  }
+
+  function passo(){
+    draw();
+    if(i < cpts.length-1){
+      i++;
+      setTimeout(passo, intervalo);
+    } else {
+      if(label) label.textContent = "✓ Total: "+pts.reduce((s,p)=>s+p.v,0).toLocaleString("pt-BR")+" peças";
+    }
   }
 
   passo();
