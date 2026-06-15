@@ -2541,19 +2541,19 @@ async function saveToAPI(data){
     const semImg = JSON.parse(JSON.stringify(data));
     const imgs = {};
     Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
-    // Preserva _gabaritagem existente no campo imagens
-    try{
-      const ri = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
-      const di = await ri.json();
-      if(di&&di[0]&&di[0].imagens&&di[0].imagens._gabaritagem){
-        imgs._gabaritagem = di[0].imagens._gabaritagem;
-      }
-    }catch(e){}
     // Salva dados
     await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
-    // Salva imagens separado se houver
+    // Salva imagens preservando _gabaritagem
     if(Object.keys(imgs).length>0){
-      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
+      try{
+        const ri=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+        const di=await ri.json();
+        const imgsAtuais=(di&&di[0]&&di[0].imagens)||{};
+        const gab=imgsAtuais._gabaritagem;
+        Object.assign(imgsAtuais,imgs);
+        if(gab!==undefined) imgsAtuais._gabaritagem=gab;
+        await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgsAtuais})});
+      }catch(ei){}
     }
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
@@ -4003,12 +4003,12 @@ function handleImgUpload(file){
     try{
       const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
       const d = await r.json();
-      const imgs = (d&&d[0]&&d[0].imagens) ? {...d[0].imagens} : {};
-      delete imgs._gabaritagem; // não mexe na gabaritagem
-      // Restaura gabaritagem se existia
-      if(d&&d[0]&&d[0].imagens&&d[0].imagens._gabaritagem) imgs._gabaritagem = d[0].imagens._gabaritagem;
-      imgs[selected] = compressed;
-      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
+      const imgsAtuais = (d&&d[0]&&d[0].imagens) ? d[0].imagens : {};
+      // Nunca mexe no _gabaritagem
+      const gab = imgsAtuais._gabaritagem;
+      imgsAtuais[selected] = compressed;
+      if(gab !== undefined) imgsAtuais._gabaritagem = gab;
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgsAtuais})});
       celulas[selected].img_peca = compressed;
       renderDetail();
       showToast("Imagem salva ✓");
