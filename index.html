@@ -582,6 +582,669 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 <div class="toast" id="toastEl"></div>
 
 <script>
+
+// ===== FUNÇÕES BASE (esc, showToast, fixTouchScroll) =====
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function showToast(msg, isError){
+  const el = document.getElementById('toastEl');
+  if(!el) return;
+  el.textContent = msg;
+  el.className = 'toast show ' + (isError ? 'error' : 'ok');
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(()=>{ el.classList.remove('show'); }, 2500);
+}
+
+function fixTouchScroll(){
+  document.querySelectorAll('.metas-table-wrap, .gab-table-wrap').forEach(el=>{
+    if(el._touchFixed) return;
+    el._touchFixed = true;
+    let startX, startY, startScroll;
+    el.addEventListener('touchstart', e=>{
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startScroll = el.scrollLeft;
+    },{passive:true});
+    el.addEventListener('touchmove', e=>{
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if(Math.abs(dx) > Math.abs(dy)){
+        e.stopPropagation();
+        el.scrollLeft = startScroll - dx;
+      }
+    },{passive:false});
+  });
+}
+
+function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdminP, podeEditar, selectedKey){
+  if(!window._carIdx) window._carIdx = 0;
+  const total = HORAS.length;
+  const step = 3;
+  const grupo = HORAS.slice(window._carIdx, window._carIdx + step);
+  const horaAtual = new Date().getHours();
+  const ro = !podeEditar ? 'readonly' : '';
+
+  const linhas = ROBOS.map(robo=>{
+    const rd = data[robo]||{};
+    const meta = parseInt(rd.meta)||0;
+    const cod = rd.cod||'';
+    const horasCells = grupo.map(h=>{
+      const isCafe = HORAS_CAFE.includes(h);
+      const campo = campoH(h);
+      const rawVal = (rd[campo])||'';
+      const {num,tipo} = parseCelVal(rawVal);
+      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      let bg='', cor='#d8dde6';
+      if(tipo==='ajuste'){cor='#3d9eff';}
+      else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
+      if(isCafe&&tipo!=='ajuste'){bg='#ffb30018';cor='#ffb300';}
+      const isAtual = parseInt(h)===horaAtual;
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
+        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="text" value="${esc(String(rawVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selectedKey}',${robo},'${campo}',this.value)">`
+        :`${num>0?num:'—'}`}</td>`;
+    }).join('');
+
+    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    return`<tr>
+      <td style="color:#00e87a;font-weight:900;font-size:15px;text-align:left;padding-left:8px;background:#04070d;position:sticky;left:0">${robo}</td>
+      <td style="color:#3d9eff;font-size:13px;background:#04070d">${meta||'—'}</td>
+      <td style="color:#ffb300;font-size:12px;background:#04070d">${esc(cod)||'—'}</td>
+      ${horasCells}
+      <td style="color:${subColor};font-weight:800;font-size:14px">${subRow>0?subRow:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const totalRow = grupo.map(h=>{
+    const s=ROBOS.reduce((acc,r)=>acc+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return`<td style="color:#d8dde6;font-weight:900;font-size:14px">${s>0?s:'—'}</td>`;
+  }).join('');
+  const subTotal=ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+
+  return`<div class="metas-carousel-inner">
+    <div class="metas-car-nav">
+      <button onclick="_carPrev()" ${window._carIdx===0?'disabled style="opacity:0.3"':''}>◀</button>
+      <span>${grupo.map(h=>`${h}`).join(' · ')}</span>
+      <button onclick="_carNext(${total})" ${window._carIdx+step>=total?'disabled style="opacity:0.3"':''}>▶</button>
+    </div>
+    <table class="metas-car-table">
+      <thead><tr>
+        <th style="text-align:left;padding-left:8px">Robô</th>
+        <th>Meta/h</th>
+        <th>Código</th>
+        ${grupo.map(h=>`<th style="${HORAS_CAFE.includes(h)?'color:#ffb300':''};${parseInt(h)===horaAtual?'border:2px solid #ffb300':''}">${h}</th>`).join('')}
+        <th style="color:${subColor}">${subLabel}</th>
+      </tr></thead>
+      <tbody>${linhas}
+        <tr style="border-top:2px solid #1e2530">
+          <td colspan="3" style="color:#4a5568;font-size:10px;text-align:right;padding-right:6px">TOTAL/HORA</td>
+          ${totalRow}
+          <td style="color:${subColor};font-weight:900;font-size:15px">${subTotal>0?subTotal:'—'}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function _carPrev(){
+  window._carIdx = Math.max(0, (window._carIdx||0) - 3);
+  renderMetasDiaria();
+}
+function _carNext(total){
+  window._carIdx = Math.min(total - 3, (window._carIdx||0) + 3);
+  if(window._carIdx < 0) window._carIdx = 0;
+  renderMetasDiaria();
+}
+
+function handleMetasInput(key, robo, campo, valor){
+  updateMetasCell(key, robo, campo, valor);
+}
+
+function deleteCell(key){
+  if(!isAdmin){showToast("Apenas o Host pode excluir células",true);return;}
+  if(!confirm(`Excluir a célula "${celulas[key].nome}"? Esta ação não pode ser desfeita.`)) return;
+  delete celulas[key];
+  if(selected===key){
+    const keys=Object.keys(celulas).sort();
+    selected=keys.length?keys[0]:null;
+  }
+  saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  showToast("Célula excluída ✓");
+}
+
+function triggerImgUpload(){
+  document.getElementById("imgFileInput").click();
+}
+function triggerCamera(){
+  document.getElementById("imgCameraInput").click();
+}
+
+function handleImgUpload(file){
+  if(!file||!selected) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      const maxDim = 800;
+      let w = img.width, h = img.height;
+      if(w>h){ if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;} }
+      else { if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;} }
+      canvas.width=w; canvas.height=h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const compressed = canvas.toDataURL('image/jpeg',0.85);
+      celulas[selected].img_peca = compressed;
+      saveToAPI(celulas);
+      renderDetail();
+      showToast("Imagem salva ✓");
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg(){
+  if(!selected) return;
+  celulas[selected].img_peca = "";
+  saveToAPI(celulas);
+  renderDetail();
+  showToast("Imagem removida ✓");
+}
+
+function openLightbox(src){
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("lightboxEl").classList.add("open");
+}
+function closeLightbox(){
+  document.getElementById("lightboxEl").classList.remove("open");
+}
+
+function addAlert(key){
+  if(!celulas[key].alertas) celulas[key].alertas=[];
+  celulas[key].alertas.push("Novo alerta");
+  saveToAPI(celulas);
+  renderDetail();
+}
+function updAlert(key,idx,val){
+  if(!celulas[key].alertas) return;
+  celulas[key].alertas[idx]=val;
+  saveToAPI(celulas);
+}
+function delAlert(key,idx){
+  if(!celulas[key].alertas) return;
+  celulas[key].alertas.splice(idx,1);
+  saveToAPI(celulas);
+  renderDetail();
+}
+
+function abrirDropdownPeca(input){
+  // Autocomplete simples de código de peça baseado no cadastro
+  const cadKey = Object.keys(celulas).find(k=>getCellTipo(k)==='cadastro_pecas');
+  if(!cadKey||!celulas[cadKey].pecas) return;
+  const termo = input.value.toLowerCase().trim();
+  if(!termo) return;
+  const match = Object.keys(celulas[cadKey].pecas).find(cod=>cod.toLowerCase()===termo);
+  if(match && selected){
+    const p = celulas[cadKey].pecas[match];
+    if(p.img) celulas[selected].img_peca = p.img;
+  }
+}
+
+function copiarDiaAnterior(key){
+  if(!isAdmin) return;
+  const c = celulas[key];
+  const ano=c.metas_ano||new Date().getFullYear();
+  const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
+  const dia=c.metas_dia||new Date().getDate();
+  if(dia<=1){ showToast("Não há dia anterior neste mês",true); return; }
+  const chaveAtual = `${ano}_${mes}_${dia}`;
+  const chaveAnterior = `${ano}_${mes}_${dia-1}`;
+  if(!c.metas_dias || !c.metas_dias[chaveAnterior]){ showToast("Dia anterior sem dados",true); return; }
+  if(!confirm("Copiar Meta e Código de Peça do dia anterior? (não copia produção por hora)")) return;
+  if(!c.metas_dias[chaveAtual]) c.metas_dias[chaveAtual]={};
+  const anteriorData = c.metas_dias[chaveAnterior];
+  ROBOS.forEach(robo=>{
+    const rdAnt = anteriorData[robo]||{};
+    if(!c.metas_dias[chaveAtual][robo]) c.metas_dias[chaveAtual][robo]={};
+    if(rdAnt.meta) c.metas_dias[chaveAtual][robo].meta = rdAnt.meta;
+    if(rdAnt.cod) c.metas_dias[chaveAtual][robo].cod = rdAnt.cod;
+  });
+  saveToAPI(celulas);
+  renderMetasDiaria();
+  showToast("Copiado ✓");
+}
+
+function exportarPDFDia(){
+  window.print();
+}
+
+function baixarQR(key){
+  const box = document.getElementById('qrcode-box');
+  if (!box) return;
+  const canvas = box.querySelector('canvas');
+  const img = box.querySelector('img');
+  const src = canvas ? canvas.toDataURL() : (img ? img.src : '');
+  if(!src) return;
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = `qr_${celulas[key].nome.replace(/\s+/g,'_')}.png`;
+  a.click();
+}
+
+function animarGrafico(){
+  const pts = window._grafPtsData;
+  if(!pts||pts.length<2){ showToast("Sem dados para animar",true); return; }
+  const W = window._grafWData||800;
+  const H = window._grafHData||100;
+
+  let modal = document.getElementById("modalGrafAnim");
+  if(!modal){
+    modal = document.createElement("div");
+    modal.id = "modalGrafAnim";
+    modal.style.cssText = "position:fixed;inset:0;background:#000000ee;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px";
+    modal.innerHTML = `
+      <div style="font-size:14px;color:#4a5568;font-family:'Courier New',monospace;letter-spacing:0.1em">EVOLUÇÃO DIÁRIA</div>
+      <canvas id="grafAnimCanvas" style="border-radius:12px;background:#0f1318;max-width:90vw"></canvas>
+      <div id="grafAnimLabel" style="font-size:24px;font-weight:900;color:#00e87a;font-family:'Courier New',monospace">—</div>
+      <button onclick="document.getElementById('modalGrafAnim').remove()" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:8px;padding:8px 24px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>`;
+    document.body.appendChild(modal);
+  }
+
+  const canvas = document.getElementById("grafAnimCanvas");
+  const CW = Math.min(window.innerWidth*0.85, 900);
+  const CH = 300;
+  canvas.width = CW;
+  canvas.height = CH;
+  const ctx = canvas.getContext("2d");
+  const pad = 40;
+
+  const maxV = Math.max(...pts.map(p=>p.v));
+  const minV = Math.min(...pts.map(p=>p.v));
+  const range = maxV - minV || 1;
+
+  const cpts = pts.map((p,i)=>({
+    x: pad + (i/(pts.length-1))*(CW-pad*2),
+    y: CH-pad - ((p.v-minV)/range)*(CH-pad*2),
+    d: p.d,
+    v: p.v
+  }));
+
+  const label = document.getElementById("grafAnimLabel");
+  let i = 0;
+  const intervalo = Math.max(500, Math.min(1000, 9000/pts.length));
+
+  function draw(){
+    ctx.clearRect(0,0,CW,CH);
+    ctx.strokeStyle = "#1e2530";
+    ctx.lineWidth = 1;
+    for(let g=0;g<4;g++){
+      const gy = pad + (g/3)*(CH-pad*2);
+      ctx.beginPath(); ctx.moveTo(pad,gy); ctx.lineTo(CW-pad,gy); ctx.stroke();
+    }
+    const vistos = cpts.slice(0,i+1);
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, CH-pad);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(vistos[vistos.length-1].x, CH-pad);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0,0,0,CH);
+      grad.addColorStop(0,"rgba(0,232,122,0.3)");
+      grad.addColorStop(1,"rgba(0,232,122,0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, vistos[0].y);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle = "#00e87a";
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
+    vistos.slice(0,-1).forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,4,0,Math.PI*2);
+      ctx.fillStyle = "#00e87a";
+      ctx.fill();
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "11px Courier New";
+      ctx.textAlign = "center";
+      ctx.fillText(String(p.d).padStart(2,"0"), p.x, CH-pad+16);
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "10px Courier New";
+      ctx.fillText(p.v.toLocaleString("pt-BR"), p.x, p.y-10);
+    });
+    const atual = vistos[vistos.length-1];
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 8, 0, Math.PI*2);
+    ctx.fillStyle = "#ffb300";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 12, 0, Math.PI*2);
+    ctx.strokeStyle = "rgba(255,179,0,0.3)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#ffb300";
+    ctx.font = "bold 12px Courier New";
+    ctx.textAlign = "center";
+    ctx.fillText(String(atual.d).padStart(2,"0"), atual.x, CH-pad+16);
+    ctx.fillText(atual.v.toLocaleString("pt-BR"), atual.x, atual.y-16);
+    if(label) label.textContent = "Dia "+String(atual.d).padStart(2,"0")+" — "+atual.v.toLocaleString("pt-BR")+" peças";
+  }
+
+  function passo(){
+    draw();
+    if(i < cpts.length-1){
+      i++;
+      setTimeout(passo, intervalo);
+    } else {
+      if(label) label.textContent = "✓ Total: "+pts.reduce((s,p)=>s+p.v,0).toLocaleString("pt-BR")+" peças";
+    }
+  }
+  passo();
+}
+
+function renderCadastroPecas(){
+  const cadKey = selected;
+  const c = celulas[cadKey];
+  if(!c.pecas) c.pecas={};
+  const pecas = c.pecas;
+  const codigos = Object.keys(pecas).sort();
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div style="font-size:22px;font-weight:800;color:#fff">🔧 ${esc(c.nome)}</div>
+      <button class="btn btn-green" onclick="abrirModalNovaPeca()">+ Nova Peça</button>
+    </div>
+    <div class="peca-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+      ${codigos.length===0?'<div style="color:#2a3040;padding:20px">Nenhuma peça cadastrada.</div>':codigos.map(cod=>{
+        const p = pecas[cod];
+        return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:14px">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <div style="font-size:16px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+            <button class="btn btn-red" style="padding:3px 8px;font-size:11px" onclick="excluirPeca('${esc(cod)}')">🗑</button>
+          </div>
+          <div style="font-size:11px;color:#4a5568">Cliente: <span style="color:#d8dde6">${esc(p.cliente||'—')}</span></div>
+          <div style="font-size:11px;color:#4a5568">Meta/h: <span style="color:#3d9eff">${esc(p.meta_hora||'—')}</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderCatalogoPecas(){
+  const cadKey = Object.keys(celulas).find(k=>getCellTipo(k)==='cadastro_pecas');
+  const pecas = cadKey ? (celulas[cadKey].pecas||{}) : {};
+  const codigos = Object.keys(pecas).sort();
+  const c = celulas[selected];
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:14px">📋 ${esc(c.nome)}</div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">🔍</span>
+      <input id="catalogoBusca" placeholder="Buscar peça..." oninput="_filtrarCatalogo()" style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:14px;color:#d8dde6;outline:none">
+    </div>
+    <div style="overflow-x:auto">
+      <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace">
+        <thead><tr style="background:#0a0d11">
+          <th style="padding:8px 12px;text-align:left;font-size:10px;color:#4a5568;text-transform:uppercase">Código</th>
+          <th style="padding:8px 12px;text-align:left;font-size:10px;color:#4a5568;text-transform:uppercase">Cliente</th>
+          <th style="padding:8px 12px;text-align:center;font-size:10px;color:#4a5568;text-transform:uppercase">Meta/h</th>
+        </tr></thead>
+        <tbody id="catalogoTbody">
+          ${codigos.map(cod=>{
+            const p = pecas[cod];
+            return`<tr data-cod="${esc(cod)}" style="border-bottom:1px solid #1e2530">
+              <td style="padding:8px 12px;color:#ffb300;font-weight:700">${esc(cod)}</td>
+              <td style="padding:8px 12px;color:#d8dde6">${esc(p.cliente||'—')}</td>
+              <td style="padding:8px 12px;text-align:center;color:#3d9eff">${esc(p.meta_hora||'—')}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function _filtrarCatalogo(){
+  const input = document.getElementById("catalogoBusca");
+  if(!input) return;
+  const termo = input.value.toLowerCase().trim();
+  const rows = document.querySelectorAll("#catalogoTbody tr[data-cod]");
+  rows.forEach(tr=>{
+    const cod = (tr.getAttribute("data-cod")||"").toLowerCase();
+    tr.style.display = !termo || cod.includes(termo) ? "" : "none";
+  });
+}
+
+function excluirPeca(cod){
+  if(!confirm(`Excluir peça ${cod}?`)) return;
+  const cadKey = Object.keys(celulas).find(k=>getCellTipo(k)==='cadastro_pecas');
+  if(cadKey && celulas[cadKey].pecas) delete celulas[cadKey].pecas[cod];
+  saveToAPI(celulas);
+  renderDetail();
+  showToast("Peça excluída ✓");
+}
+
+function abrirModalNovaPeca(){
+  const cod = prompt("Código da nova peça:");
+  if(!cod||!cod.trim()) return;
+  const cadKey = selected;
+  if(!celulas[cadKey].pecas) celulas[cadKey].pecas={};
+  celulas[cadKey].pecas[cod.trim()] = {nome:cod.trim(), cliente:'', meta_hora:0, img:''};
+  saveToAPI(celulas);
+  renderDetail();
+}
+
+function renderManutencao(){
+  const c = celulas[selected];
+  if(!c.manutencoes) c.manutencoes={};
+  const manuts = c.manutencoes;
+  let html = `<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:14px">🔩 ${esc(c.nome)}</div>`;
+  ROBOS.forEach(robo=>{
+    const lista = manuts[robo]||[];
+    const pendentes = lista.filter(m=>!m.concluido);
+    html+=`<div class="section">
+      <div class="sec-title">⚙ Robô ${robo} ${pendentes.length>0?`<span style="color:#ffb300">(${pendentes.length} pendente(s))</span>`:''}
+        <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="adicionarManutencao(${robo})">+ Adicionar</button>
+      </div>
+      ${lista.length===0?'<div style="font-size:12px;color:#2a3040">Nenhuma manutenção registrada.</div>':lista.map((m,i)=>`
+        <div style="background:${m.concluido?'#00e87a08':'#ffb30008'};border:1px solid ${m.concluido?'#00e87a30':'#ffb30030'};border-radius:8px;padding:10px 14px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:start">
+            <div style="flex:1">
+              <div style="font-size:13px;color:#d8dde6">${esc(m.descricao)}</div>
+              <div style="font-size:10px;color:#4a5568;margin-top:4px">👤 ${esc(m.responsavel)} · 📅 ${esc(m.data)}</div>
+            </div>
+            ${!m.concluido?`<button class="btn btn-green" style="padding:3px 10px;font-size:10px" onclick="concluirManutencao(${robo},${i})">✓ Concluir</button>`:'<span style="color:#00e87a;font-size:11px">✓ Concluído</span>'}
+          </div>
+        </div>`).join('')}
+    </div>`;
+  });
+  document.getElementById("mainPanel").innerHTML=`<div>${html}</div>`;
+}
+
+function adicionarManutencao(robo){
+  const desc = prompt("Descreva o problema:");
+  if(!desc||!desc.trim()) return;
+  const resp = prompt("Responsável:") || "—";
+  const c = celulas[selected];
+  if(!c.manutencoes) c.manutencoes={};
+  if(!c.manutencoes[robo]) c.manutencoes[robo]=[];
+  c.manutencoes[robo].push({
+    descricao: desc.trim(),
+    responsavel: resp.trim(),
+    data: new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}),
+    concluido: false
+  });
+  saveToAPI(celulas);
+  renderManutencao();
+}
+
+function concluirManutencao(robo,idx){
+  const c = celulas[selected];
+  if(!c.manutencoes||!c.manutencoes[robo]||!c.manutencoes[robo][idx]) return;
+  c.manutencoes[robo][idx].concluido = true;
+  c.manutencoes[robo][idx].data_conclusao = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  saveToAPI(celulas);
+  renderManutencao();
+}
+
+// ── MODAIS GERAIS ──
+function openModal(){ document.getElementById("modalEl").classList.add("open"); document.getElementById("mNum").focus(); }
+function closeModal(){ document.getElementById("modalEl").classList.remove("open"); }
+function createCell(){
+  const num = document.getElementById("mNum").value.trim();
+  const nome = document.getElementById("mNome").value.trim();
+  if(!num||!nome){ showToast("Preencha número e nome",true); return; }
+  celulas[num] = {
+    nome, status:"Aguardando", cliente:"—", peca:"—", codigo_peca:"—", img_peca:"",
+    eletrodo:"—", tipo_eletrodo:"—", tempo_peca:"—", meta_hora:0, operador:"—", turno:"—",
+    tempo_solda:"—", corrente:"—", pre_pressao:"—", pontos_solda:"—", ultima_troca:"—", alertas:[]
+  };
+  saveToAPI(celulas);
+  renderSidebar();
+  closeModal();
+  selectCell(num);
+  showToast("Célula criada ✓");
+}
+
+function openGerenciar(){
+  const keys = Object.keys(celulas).sort();
+  document.getElementById("gerenciarLista").innerHTML = keys.map(k=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e2530">
+      <span style="font-size:13px;color:#d8dde6">${esc(celulas[k].nome)}</span>
+      <button class="btn btn-red" style="padding:3px 10px;font-size:11px" onclick="deleteCell('${k}');openGerenciar()">🗑</button>
+    </div>`).join('');
+  document.getElementById("gerenciarModalEl").classList.add("open");
+}
+function closeGerenciar(){ document.getElementById("gerenciarModalEl").classList.remove("open"); }
+
+function openXlsxModal(){ document.getElementById("xlsxModalEl").classList.add("open"); }
+function closeXlsxModal(){
+  document.getElementById("xlsxModalEl").classList.remove("open");
+  document.getElementById("xlsxPreview").style.display="none";
+  document.getElementById("btnConfirmXlsx").style.display="none";
+  xlsxPendingData=null;
+}
+function handleXlsxFile(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data,{type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet,{header:1});
+      const parsed = [];
+      for(let i=1;i<rows.length;i++){
+        const r = rows[i];
+        if(!r||!r[0]) continue;
+        const cel = String(r[0]).trim();
+        const ciclos = parseInt(r[1])||0;
+        const meta = parseInt(r[2])||0;
+        const found = !!celulas[cel];
+        parsed.push({cel, ciclos, meta, found});
+      }
+      xlsxPendingData = parsed;
+      document.getElementById("xlsxPreviewList").innerHTML = parsed.map(p=>`
+        <div class="xlsx-row">
+          <span class="xlsx-cell-num">${esc(p.cel)}</span>
+          <span class="xlsx-val">${p.ciclos} peças</span>
+          <span class="xlsx-val">meta ${p.meta}</span>
+          <span class="${p.found?'xlsx-found':'xlsx-notfound'}">${p.found?'✓ encontrada':'✕ não encontrada'}</span>
+        </div>`).join('');
+      document.getElementById("xlsxSummary").textContent = `${parsed.length} linha(s) lida(s), ${parsed.filter(p=>p.found).length} célula(s) encontrada(s)`;
+      document.getElementById("xlsxPreview").style.display="block";
+      document.getElementById("btnConfirmXlsx").style.display="inline-block";
+    }catch(err){ showToast("Erro ao ler arquivo",true); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function confirmXlsxImport(){
+  if(!xlsxPendingData) return;
+  xlsxPendingData.forEach(p=>{
+    if(celulas[p.cel]){
+      celulas[p.cel].peca = celulas[p.cel].peca || '—';
+      if(p.meta>0) celulas[p.cel].meta_hora = p.meta;
+    }
+  });
+  saveToAPI(celulas);
+  renderSidebar();
+  renderDetail();
+  closeXlsxModal();
+  showToast("Importação concluída ✓");
+}
+
+// ── LOGIN ──
+function autoLogin(){
+  const pw = document.getElementById("pwInput").value;
+  if(pw===ADMIN_PW){ isAdmin=true; isAdminMetas=false; startApp(); }
+  else if(pw===ADMIN_METAS_PW){ isAdmin=false; isAdminMetas=true; startApp(); }
+  else{
+    document.getElementById("loginErr").style.display="block";
+    document.getElementById("pwInput").classList.add("err");
+  }
+}
+function startViewer(){ isAdmin=false; isAdminMetas=false; startApp(); }
+
+function startApp(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+  const badge = document.getElementById("modeBadge");
+  if(isAdmin){ badge.textContent="HOST"; badge.className="badge badge-admin"; }
+  else if(isAdminMetas){ badge.textContent="METAS"; badge.className="badge badge-metas"; }
+  else{ badge.textContent="VIEWER"; badge.className="badge badge-viewer"; }
+  document.getElementById("btnAdd").style.display = isAdmin?"inline-block":"none";
+  document.getElementById("btnBackup").style.display = isAdmin?"inline-block":"none";
+  document.getElementById("btnRestore").style.display = isAdmin?"inline-block":"none";
+  document.getElementById("btnGerenciar").style.display = isAdmin?"inline-block":"none";
+  document.getElementById("btnXlsx").style.display = isAdmin?"inline-block":"none";
+  loadFromAPI();
+  pollTimer = setInterval(loadFromAPI, 3000);
+}
+
+function doLogout(){
+  clearInterval(pollTimer);
+  isAdmin=false; isAdminMetas=false; selected=null;
+  document.getElementById("appScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("pwInput").value="";
+  document.getElementById("loginErr").style.display="none";
+}
+
+// ── DASHBOARD TV ──
+function startDashboard(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("dashboardScreen").style.display="flex";
+  isAdmin=false; isAdminMetas=false;
+  loadFromAPI();
+  pollTimer = setInterval(loadFromAPI, 3000);
+  setInterval(atualizarRelogioDash, 1000);
+  atualizarRelogioDash();
+}
+function sairDashboard(){
+  clearInterval(pollTimer);
+  document.getElementById("dashboardScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+}
+function atualizarRelogioDash(){
+  const now = new Date();
+  const clock = document.getElementById("dashClock");
+  const hcheia = document.getElementById("dashHoraCheia");
+  const date = document.getElementById("dashDate");
+  if(clock) clock.textContent = now.toLocaleTimeString("pt-BR");
+  if(hcheia) hcheia.textContent = String(now.getHours()).padStart(2,'0')+":00";
+  if(date) date.textContent = now.toLocaleDateString("pt-BR",{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+
+
 const SUPABASE_URL = "https://dtsrisqueekmomm moqxf.supabase.co".replace(/ /g,"");
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0c3Jpc3F1ZWVrbW9tbW1vcXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjEwMzIsImV4cCI6MjA5Njc5NzAzMn0.Zdo1zJraLw0BanX-o9A2SreMr9tiVHvgrIyTeNqQC6g";
 const ADMIN_PW      = "tremps3102";
