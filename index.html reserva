@@ -30,10 +30,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cell-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Montserrat', sans-serif; font-weight: 600; }
 .cell-peca { font-size: 10px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-green { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
-.dot-amber { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
-.dot-blue  { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
-.dot-red   { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
+.dot-green  { background: #00e87a; box-shadow: 0 0 5px #00e87a; }
+.dot-amber  { background: #ffb300; box-shadow: 0 0 5px #ffb300; }
+.dot-blue   { background: #3d9eff; box-shadow: 0 0 5px #3d9eff; }
+.dot-red    { background: #ff4d4d; box-shadow: 0 0 5px #ff4d4d; }
+.dot-purple { background: #a78bfa; box-shadow: 0 0 5px #a78bfa; }
+.dot-orange { background: #ff6a00; box-shadow: 0 0 5px #ff6a00; }
 .dot-gray  { background: #4a5568; }
 
 .btn-menu { display: none; background: none; border: none; color: #d8dde6; font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
@@ -126,9 +128,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
-.dash-header { display:flex; justify-content:space-between; align-items:center; padding:14px 28px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; }
+.dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; flex-wrap:wrap; gap:8px; }
 .dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
-.dash-clock { font-size:52px; font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-clock { font-size:clamp(24px,6vw,52px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
 .dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
@@ -187,7 +189,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 
 /* METAS */
-.metas-table-wrap { overflow-x: auto; }
+.metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; cursor: grab; overscroll-behavior-x: contain; }
 .metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
@@ -239,15 +241,26 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .sidebar-recolher { padding: 9px 14px; cursor: pointer; text-align: center; color: #4a5568; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; border-top: 1px solid #1e2530; }
 .sidebar-recolher:hover { background: #ffffff06; }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e2530; border-radius: 99px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0a0d12; border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 99px; border: 2px solid #0a0d12; }
+::-webkit-scrollbar-thumb:hover { background: #3d4a60; }
+::-webkit-scrollbar-corner { background: #0a0d12; }
 
+.metas-carousel { display:none; }
 @media (max-width: 700px) {
+  .metas-table-wrap { display:none; }
+  .metas-carousel { display:block; }
+  .metas-car-nav { display:flex; align-items:center; justify-content:space-between; padding:6px 0; margin-bottom:6px; }
+  .metas-car-nav button { background:#1e2530; border:1px solid #2a3040; color:#d8dde6; border-radius:8px; padding:8px 18px; font-size:20px; cursor:pointer; }
+  .metas-car-nav span { font-size:13px; color:#4a5568; font-family:'Courier New',monospace; font-weight:700; }
+  .metas-car-table { width:100%; border-collapse:collapse; font-family:'Courier New',monospace; }
+  .metas-car-table th { background:#080b0f; color:#4a5568; font-size:13px; padding:8px 6px; border:1px solid #1e2530; text-align:center; }
+  .metas-car-table td { border:1px solid #1e2530; padding:8px 4px; text-align:center; font-size:15px; }
   .btn-menu { display: block; }
   .sidebar { position: fixed; top: 52px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
-  .main { padding: 12px; width: 100%; }
+  .main { padding: 8px; width: 100%; box-sizing: border-box; }
   .grid2 { grid-template-columns: 1fr; }
   .grid3 { grid-template-columns: 1fr; }
   .grid4 { grid-template-columns: 1fr 1fr; }
@@ -255,6 +268,23 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .detail-title { font-size: 18px; }
   #savedLabel { display: none; }
   .prod-day-grid { grid-template-columns: repeat(4, 1fr); }
+  /* Tabelas com scroll horizontal */
+  .metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* Header topbar compacto */
+  .topbar { flex-wrap: wrap; gap: 4px; padding: 6px 10px; }
+  .topbar button { font-size: 10px; padding: 4px 8px; }
+  /* Células do robô em coluna */
+  .detail-hdr { flex-direction: column; gap: 8px; }
+  .robo-img-wrap { flex-direction: column; }
+  /* Fontes menores em tabelas */
+  .metas-table th { font-size: 11px !important; padding: 6px 4px !important; }
+  .metas-table input.hora-inp { font-size: 14px !important; }
+  /* Painel principal sem overflow */
+  #mainPanel { overflow-x: hidden; }
+  /* Seções em coluna única */
+  .section { padding: 10px; }
+  .field label { font-size: 10px; }
+  .field input, .field select, .field textarea { font-size: 13px; }
 }
 </style>
 </head>
@@ -348,6 +378,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')autoLogin()">
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#a78bfa;border-color:#a78bfa40" onclick="abrirGabaritagem()">🔨 Controle de Gabaritagem</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#3d9eff;border-color:#3d9eff30" onclick="abrirMapaProducao()">🏭 Mapa da Produção</button>
     <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
   </div>
@@ -2410,10 +2442,12 @@ const defaultData = {
 };
 
 const SC = {
-  "Produzindo": { dot:"dot-green", bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
-  "Manutenção": { dot:"dot-amber", bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
-  "Aguardando": { dot:"dot-blue",  bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
-  "Parado":     { dot:"dot-red",   bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+  "Produzindo":        { dot:"dot-green",  bg:"#00e87a20", border:"#00e87a40", text:"#00e87a" },
+  "Manutenção":        { dot:"dot-amber",  bg:"#ffb30020", border:"#ffb30040", text:"#ffb300" },
+  "Aguardando":        { dot:"dot-blue",   bg:"#3d9eff20", border:"#3d9eff40", text:"#3d9eff" },
+  "Parado":            { dot:"dot-red",    bg:"#ff4d4d20", border:"#ff4d4d40", text:"#ff4d4d" },
+  "Sem mão de obra":   { dot:"dot-purple", bg:"#a78bfa20", border:"#a78bfa40", text:"#a78bfa" },
+  "Setup/Troca Peça":  { dot:"dot-orange", bg:"#ff6a0020", border:"#ff6a0040", text:"#ff6a00" },
 };
 
 // ── tipo da célula detectado pelo nome ───────
@@ -2527,7 +2561,11 @@ async function loadFromAPI(){
     const tipo=getCellTipo(selected);
     // Não rerenderiza armário se tiver algum card aberto
     const temGabAberto = document.querySelector('.arm-gabarito.open');
-    if(tipo!=='robo' && !(tipo==='armario' && temGabAberto)) renderDetail();
+    // Não rerenderiza catálogo se usuário scrollou para baixo
+    const mainPanel = document.getElementById('mainPanel');
+    const catalogoScrollado = tipo==='catalogo_pecas' && mainPanel && mainPanel.scrollTop > 50;
+    if(tipo!=='robo' && !(tipo==='armario' && temGabAberto) && !catalogoScrollado) renderDetail();
+    else if(catalogoScrollado) _filtrarCatalogo(); // atualiza só o tbody sem perder scroll
   }
 }
 
@@ -2538,9 +2576,17 @@ async function saveToAPI(data){
     Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
     // Salva dados
     await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
-    // Salva imagens separado se houver
+    // Salva imagens preservando _gabaritagem
     if(Object.keys(imgs).length>0){
-      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgs})});
+      try{
+        const ri=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+        const di=await ri.json();
+        const imgsAtuais=(di&&di[0]&&di[0].imagens)||{};
+        const gab=imgsAtuais._gabaritagem;
+        Object.assign(imgsAtuais,imgs);
+        if(gab!==undefined) imgsAtuais._gabaritagem=gab;
+        await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgsAtuais})});
+      }catch(ei){}
     }
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
@@ -2829,6 +2875,7 @@ function buildTurnoTable(c,turno,chave){
 function renderMetasDiaria(){
   const c=celulas[selected];
   const podeEditar = isAdmin || isAdminMetas;
+  fixTouchScroll();
   const anoAtual=new Date().getFullYear();
   const ano=c.metas_ano||anoAtual;
   const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
@@ -2875,14 +2922,19 @@ function renderMetasDiaria(){
         <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
       </div>
       ${buildTurnoTable(c,'dia',chave)}
+      <div class="metas-carousel" id="carDia">
+        ${_renderCarrossel(HORAS_DIA,(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected)}
+      </div>
     </div>
     <div style="margin-top:24px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">🌙</span>
         <span style="font-size:12px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
-        <span style="font-size:10px;color:#4a5568;margin-left:6px">← coluna "Total Geral do Dia" = Sub Dia + Sub Noite</span>
       </div>
       ${buildTurnoTable(c,'noite',chave)}
+      <div class="metas-carousel" id="carNoite">
+        ${_renderCarrossel(HORAS_NOITE,(c.metas_dias&&c.metas_dias[chave])||{},true,'Sub Noite','#a78bfa','sub-noite',isAdmin,podeEditar,selected)}
+      </div>
     </div>
     <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <div>
@@ -3240,7 +3292,8 @@ function renderDetail(){
   if(tipo==='manutencao'){renderManutencao();return;}
 
   const c=celulas[selected];const s=SC[c.status]||SC["Parado"];const ro=!isAdmin?'readonly':'';
-  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
+  const isManutencao = c.status==="Manutenção";
+  const statusOpts=["Produzindo","Manutenção","Aguardando","Parado","Sem mão de obra","Setup/Troca Peça"].map(st=>`<option ${st===c.status?"selected":""}>${st}</option>`).join("");
   const alertsHTML=(c.alertas||[]).map((a,i)=>`
     <div class="alert-item">
       <input value="${esc(a)}" ${ro} onchange="updAlert('${selected}',${i},this.value)" style="color:${isAdmin?'#ffd166':'#b8960a'}">
@@ -3258,6 +3311,16 @@ function renderDetail(){
       </div>`;
 
   document.getElementById("mainPanel").innerHTML=`
+  <div style="position:relative">
+  ${isManutencao?`<div style="position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:8px;background:#ffb30020;padding:5px 16px;border-radius:99px;border:1px solid #ffb30040;pointer-events:none">
+    <svg width="14" height="14" viewBox="0 0 24 24" style="animation:spin 2s linear infinite">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffb300" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span style="font-size:11px;font-weight:700;color:#ffb300;letter-spacing:0.1em">EM MANUTENÇÃO</span>
+    <svg width="14" height="14" viewBox="0 0 24 24" style="animation:spin 2s linear infinite reverse">
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#ffb300" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+  </div>`:''}
   <div>
     <div class="detail-hdr">
       <div><div class="detail-title">${esc(c.nome)}</div><div class="detail-sub">👤 ${esc(c.operador)} · ⏰ ${esc(c.turno)}</div></div>
@@ -3372,6 +3435,7 @@ function renderDetail(){
       </div>
     </div>
     ${renderHistoricoRobo(selected)}
+  </div>
   </div>`;
   // Gera QR depois que o DOM renderizou
   setTimeout(() => gerarQR(selected), 80);
@@ -3425,7 +3489,8 @@ function renderHistoricoRobo(key) {
 
   const maxTotal = Math.max(...registros.map(r => r.totalGeral), 1);
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
-  const mediaDiaria = Math.round(totalAcumulado / registros.length);
+  const registrosComProd = registros.filter(r => r.totalGeral > 0);
+  const mediaDiaria = registrosComProd.length>0 ? Math.round(totalAcumulado / registrosComProd.length) : 0;
   const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= r.meta * 9).length; // ~9h produtivas/dia
   const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
 
@@ -3474,7 +3539,7 @@ function renderHistoricoRobo(key) {
     </div>
 
     <!-- Tabela de registros -->
-    <div style="overflow-x:auto;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #1e2530;border-radius:10px;overflow:hidden">
       <table style="border-collapse:collapse;width:100%;min-width:440px;font-family:'Courier New',monospace">
         <thead>
           <tr style="background:#0a0d11">
@@ -3529,7 +3594,8 @@ function renderRelatorio(){
 
   const diasComDados = Object.keys(diasDoMes).map(Number).sort((a,b)=>a-b);
   const totalMes = diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0);
-  const mediaDia = diasComDados.length>0 ? Math.round(totalMes/diasComDados.length) : 0;
+  const diasComProd = diasComDados.filter(d=>diasDoMes[d].totalGeral>0);
+  const mediaDia = diasComProd.length>0 ? Math.round(totalMes/diasComProd.length) : 0;
   const melhorDia = diasComDados.reduce((best,d)=>diasDoMes[d].totalGeral>diasDoMes[best]?.totalGeral?d:best, diasComDados[0]);
 
   // ── 2. Eficiência por robô no mês ──
@@ -3633,20 +3699,38 @@ function renderRelatorio(){
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
 
-      <!-- Eficiência por robô -->
+      <!-- Heatmap de Produção -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Eficiência por Robô</div>
-        ${eficienciaRobo.length>0?eficienciaRobo.map((r,i)=>{
-          const cor = r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
-          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span style="font-size:11px;color:#00e87a;font-weight:700;min-width:36px">${r.robo}</span>
-            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
-              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
-            </div>
-            <span style="font-size:11px;font-weight:700;color:${cor};min-width:42px;text-align:right">${r.efic}%</span>
-            <span style="font-size:10px;color:#4a5568;min-width:50px;text-align:right">${r.totalProd.toLocaleString("pt-BR")}</span>
-          </div>`;
-        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+          ${(()=>{
+            const diasNoMes=new Date(anoSel,mesIdx+1,0).getDate();
+            const primeiroDia=new Date(anoSel,mesIdx,1).getDay();
+            const maxVal=Math.max(...diasComDados.map(d=>diasDoMes[d].totalGeral),1);
+            const semanas=['D','S','T','Q','Q','S','S'];
+            let html=semanas.map(s=>`<div style="font-size:9px;color:#4a5568;text-align:center;font-weight:700;padding:2px 0">${s}</div>`).join('');
+            for(let i=0;i<primeiroDia;i++) html+=`<div></div>`;
+            for(let dia=1;dia<=diasNoMes;dia++){
+              const val=diasDoMes[dia]?.totalGeral||0;
+              const pct=val/maxVal;
+              const bg=val===0?'#0a0d12':pct<0.3?'#00e87a25':pct<0.6?'#00e87a55':pct<0.85?'#00e87a99':'#00e87a';
+              const bdr=val>0?'#00e87a40':'#1e2530';
+              html+=`<div title="${dia}/${mesIdx+1} — ${val.toLocaleString('pt-BR')} peças" style="background:${bg};border:1px solid ${bdr};border-radius:3px;padding:3px 1px;text-align:center">
+                <div style="font-size:8px;color:#4a5568">${dia}</div>
+                <div style="font-size:8px;font-weight:700;color:${val>0?'#00e87a':'transparent'}">${val>0?val:'-'}</div>
+              </div>`;
+            }
+            return html;
+          })()}
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:9px;color:#4a5568">
+          <span>Baixo</span>
+          <div style="width:10px;height:10px;background:#00e87a25;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a55;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a99;border-radius:2px"></div>
+          <div style="width:10px;height:10px;background:#00e87a;border-radius:2px"></div>
+          <span>Alto</span>
+        </div>
       </div>
 
       <!-- Top peças -->
@@ -3672,7 +3756,7 @@ function renderRelatorio(){
       <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
         Detalhe por Dia — todos os robôs
       </div>
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table style="border-collapse:collapse;width:100%;min-width:500px;font-family:'Courier New',monospace">
           <thead>
             <tr style="background:#0a0d11">
@@ -3717,6 +3801,161 @@ function renderRelatorio(){
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Evolução Diária -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">📈 Evolução Diária</div>
+        <button id="btnAnimarGraf" onclick="animarGrafico()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">▶ Animar</button>
+      </div>
+      ${(()=>{
+        if(!diasComDados.length) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const diasGrafico = diasComDados.filter(d=>diasDoMes[d].totalGeral>0);
+        if(!diasGrafico.length) return '<div style="font-size:12px;color:#2a3040">Sem produção registrada.</div>';
+        const maxVal=Math.max(...diasGrafico.map(d=>diasDoMes[d].totalGeral),1);
+        const minVal=Math.min(...diasGrafico.map(d=>diasDoMes[d].totalGeral));
+        const W=800, H=100, pad=10;
+        const n=diasGrafico.length;
+        const pts=diasGrafico.map((d,i)=>{
+          const x=pad+(i/(Math.max(n-1,1)))*(W-pad*2);
+          const y=H-pad-((diasDoMes[d].totalGeral-minVal)/(maxVal-minVal||1))*(H-pad*2);
+          return{x,y,d,v:diasDoMes[d].totalGeral};
+        });
+        const polyline=pts.map(p=>`${p.x},${p.y}`).join(' ');
+        const areaPath=`M${pts[0].x},${H} `+pts.map(p=>`L${p.x},${p.y}`).join(' ')+` L${pts[pts.length-1].x},${H} Z`;
+        const circles=pts.map(p=>`
+          <circle cx="${p.x}" cy="${p.y}" r="4" fill="#00e87a" stroke="#04070d" stroke-width="2">
+            <title>Dia ${String(p.d).padStart(2,'0')} — ${p.v.toLocaleString('pt-BR')} peças</title>
+          </circle>
+          <text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="8" fill="#4a5568">${p.v.toLocaleString('pt-BR')}</text>
+          <text x="${p.x}" y="${H-2}" text-anchor="middle" font-size="8" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>
+        `).join('');
+        window._grafPtsData = pts;
+        window._grafWData = W;
+        window._grafHData = H;
+        return`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <svg id="grafEvolucao" viewBox="0 0 ${W} ${H+10}" style="width:100%;min-width:400px;height:120px" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="ecgGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00e87a" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00e87a" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="grafArea" d="${areaPath}" fill="url(#ecgGrad)"/>
+            <polyline id="grafLinha" points="${polyline}" fill="none" stroke="#00e87a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+            <g id="grafPontos">${circles}</g>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#4a5568">
+          <span>Média: <b style="color:#d8dde6">${Math.round(diasComDados.reduce((s,d)=>s+diasDoMes[d].totalGeral,0)/diasComProd.length).toLocaleString("pt-BR")}</b>/dia</span>
+          <span>Melhor: <b style="color:#00e87a">${(()=>{const m=diasGrafico.reduce((a,d)=>diasDoMes[d].totalGeral>diasDoMes[a].totalGeral?d:a,diasGrafico[0]);return'dia '+String(m).padStart(2,'0')+' — '+diasDoMes[m].totalGeral.toLocaleString("pt-BR");})()}</b></span>
+        </div>`;
+      })()}
+    </div>
+
+    <!-- Metas Atingidas por Robô -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🎯 Metas Atingidas por Robô no Mês</div>
+      ${(()=>{
+        const metasKey2 = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+        if(!metasKey2) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const mc2 = celulas[metasKey2];
+        if(!mc2.metas_dias) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
+        const diasMes2 = Object.entries(mc2.metas_dias).filter(([chave])=>{
+          const p=chave.split('_');
+          return parseInt(p[0])===anoSel && parseInt(p[1])===mesIdx;
+        });
+        const rows2 = ROBOS.map(robo=>{
+          let atingiu=0, naoAtingiu=0, cod='—';
+          diasMes2.forEach(([,dia])=>{
+            const rd=dia[robo]||{};
+            const meta=parseInt(rd.meta)||0;
+            if(rd.cod&&rd.cod!=='—') cod=rd.cod;
+            if(meta<=0) return;
+            [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
+              const v=parseCelVal((rd[campoH(h)])||'').num;
+              if(v<=0) return;
+              if(v>=meta) atingiu++; else naoAtingiu++;
+            });
+          });
+          if(atingiu===0&&naoAtingiu===0) return null;
+          const total=atingiu+naoAtingiu;
+          const pct=Math.round(atingiu/total*100);
+          return {robo,cod,atingiu,naoAtingiu,total,pct};
+        }).filter(Boolean).sort((a,b)=>b.pct-a.pct);
+        if(!rows2.length) return '<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>';
+        return rows2.map(r=>{
+          const cor=r.pct>=80?'#00e87a':r.pct>=50?'#ffb300':'#ff4d4d';
+          return`<div style="margin-bottom:12px;background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:16px;font-weight:900;color:#fff">Robô ${r.robo}</span>
+                <span style="font-size:13px;color:#ffb300;font-weight:700">${esc(r.cod)}</span>
+              </div>
+              <span style="font-size:20px;font-weight:900;color:${cor}">${r.pct}% de aproveitamento</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <div style="flex:1;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:22px;font-weight:900;color:#00e87a">${r.atingiu}x</div>
+                <div style="font-size:10px;color:#4a5568;margin-top:2px">✅ Atingiu a meta</div>
+              </div>
+              <div style="flex:1;background:#ff4d4d15;border:1px solid #ff4d4d30;border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:22px;font-weight:900;color:#ff4d4d">${r.naoAtingiu}x</div>
+                <div style="font-size:10px;color:#4a5568;margin-top:2px">❌ Não atingiu</div>
+              </div>
+            </div>
+            <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${r.pct}%;background:${cor};border-radius:99px"></div>
+            </div>
+          </div>`;
+        }).join('');
+      })()}
+    </div>
+
+    <!-- Melhor e Pior Desempenho -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">⚙ Eficiência por Robô no Mês</div>
+      ${(()=>{
+        const robosComMeta = eficienciaRobo.filter(r=>r.mediaMetaHora>0&&r.diasAtivo>0);
+        if(!robosComMeta.length) return `<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>`;
+        const melhor = robosComMeta.reduce((a,b)=>b.efic>a.efic?b:a);
+        const pior   = robosComMeta.reduce((a,b)=>b.efic<a.efic?b:a);
+        return`
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <!-- Melhor -->
+          <div style="background:#00e87a10;border:1px solid #00e87a30;border-radius:10px;padding:14px 16px;text-align:center">
+            <div style="font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">🥇 Melhor Desempenho</div>
+            <div style="font-size:32px;font-weight:900;color:#00e87a">Robô ${melhor.robo}</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${melhor.efic}%</div>
+            <div style="font-size:11px;color:#4a5568">${melhor.totalProd.toLocaleString("pt-BR")} peças · ${melhor.diasAtivo} dia(s)</div>
+            <div style="font-size:11px;color:#4a5568">Meta média: ${melhor.mediaMetaHora}/h</div>
+          </div>
+          <!-- Pior -->
+          <div style="background:#ff4d4d10;border:1px solid #ff4d4d30;border-radius:10px;padding:14px 16px;text-align:center">
+            <div style="font-size:10px;color:#ff4d4d;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">📉 Menor Desempenho</div>
+            <div style="font-size:32px;font-weight:900;color:#ff4d4d">Robô ${pior.robo}</div>
+            <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${pior.efic}%</div>
+            <div style="font-size:11px;color:#4a5568">${pior.totalProd.toLocaleString("pt-BR")} peças · ${pior.diasAtivo} dia(s)</div>
+            <div style="font-size:11px;color:#4a5568">Meta média: ${pior.mediaMetaHora}/h</div>
+          </div>
+        </div>
+        <!-- Ranking completo -->
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:10px">Ranking completo</div>
+        ${robosComMeta.sort((a,b)=>b.efic-a.efic).map((r,i)=>{
+          const cor=r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
+          const medalha=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
+          return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:14px;min-width:28px">${medalha}</span>
+            <span style="font-size:13px;font-weight:800;color:#fff;min-width:50px">Robô ${r.robo}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:8px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(r.efic,100)}%;background:${cor};border-radius:99px"></div>
+            </div>
+            <span style="font-size:14px;font-weight:900;color:${cor};min-width:52px;text-align:right">${r.efic}%</span>
+            <span style="font-size:11px;color:#4a5568;min-width:80px;text-align:right">${r.totalProd.toLocaleString("pt-BR")} pcs</span>
+          </div>`;
+        }).join('')}`;
+      })()}
     </div>`}
   </div>`;
 }
@@ -3789,7 +4028,7 @@ function handleImgUpload(file){
   const img = new Image();
   const url = URL.createObjectURL(file);
   img.onload = async function(){
-    const maxSize = 300;
+    const maxSize = 800;
     let w = img.width, h = img.height;
     if(w>maxSize||h>maxSize){
       if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
@@ -3797,27 +4036,22 @@ function handleImgUpload(file){
     }
     canvas.width=w; canvas.height=h;
     ctx.drawImage(img,0,0,w,h);
-    let compressed = canvas.toDataURL('image/jpeg', 0.5);
-    if(compressed.length > 60000){
-      compressed = canvas.toDataURL('image/jpeg', 0.3);
-    }
+    const compressed = canvas.toDataURL('image/jpeg', 0.85);
     URL.revokeObjectURL(url);
 
     try{
-      // Carrega imagens existentes
-      const r = await fetch(BASE_URL_IMG+"/latest",{headers:HEADERS_R});
+      const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
       const d = await r.json();
-      const imgs = (d.record && d.record.imagens) ? d.record.imagens : {};
-      // Salva imagem com chave = selected
-      imgs[selected] = compressed;
-      await fetch(BASE_URL_IMG,{method:'PUT',headers:HEADERS_W,body:JSON.stringify({imagens:imgs})});
-      // Salva referência no BIN principal
+      const imgsAtuais = (d&&d[0]&&d[0].imagens) ? d[0].imagens : {};
+      // Nunca mexe no _gabaritagem
+      const gab = imgsAtuais._gabaritagem;
+      imgsAtuais[selected] = compressed;
+      if(gab !== undefined) imgsAtuais._gabaritagem = gab;
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgsAtuais})});
       celulas[selected].img_peca = compressed;
-      saveToAPI(celulas);
       renderDetail();
       showToast("Imagem salva ✓");
     }catch(e){
-      // Fallback: salva direto no BIN principal
       celulas[selected].img_peca = compressed;
       saveToAPI(celulas);
       renderDetail();
@@ -4005,13 +4239,7 @@ function _dashGetDados(){
   const ch2=`${ano}_${mes+1}_${dia}`;
   if(mc.metas_dias[ch2]) return mc.metas_dias[ch2];
 
-  // Fallback: data selecionada na célula
-  const ch3=`${mc.metas_ano||ano}_${mc.metas_mes!==undefined?mc.metas_mes:mes}_${mc.metas_dia||dia}`;
-  if(mc.metas_dias[ch3]) return mc.metas_dias[ch3];
-
-  // Último recurso: dia mais recente disponível
-  const chaves=Object.keys(mc.metas_dias).sort();
-  if(chaves.length) return mc.metas_dias[chaves[chaves.length-1]];
+  // Sem dados para hoje — retorna vazio
   return {};
 }
 
@@ -4866,6 +5094,227 @@ function _filtrarCatalogo(){
   tbody.innerHTML=html;
 }
 
+function animarGrafico(){
+  const pts = window._grafPtsData;
+  if(!pts||pts.length<2){ showToast("Sem dados para animar",true); return; }
+
+  const W = window._grafWData||800;
+  const H = window._grafHData||100;
+
+  // Cria modal de animação
+  let modal = document.getElementById("modalGrafAnim");
+  if(!modal){
+    modal = document.createElement("div");
+    modal.id = "modalGrafAnim";
+    modal.style.cssText = "position:fixed;inset:0;background:#000000ee;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px";
+    modal.innerHTML = `
+      <div style="font-size:14px;color:#4a5568;font-family:'Courier New',monospace;letter-spacing:0.1em">EVOLUÇÃO DIÁRIA</div>
+      <canvas id="grafAnimCanvas" style="border-radius:12px;background:#0f1318;max-width:90vw"></canvas>
+      <div id="grafAnimLabel" style="font-size:24px;font-weight:900;color:#00e87a;font-family:'Courier New',monospace">—</div>
+      <button onclick="document.getElementById('modalGrafAnim').remove()" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:8px;padding:8px 24px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>`;
+    document.body.appendChild(modal);
+  }
+
+  const canvas = document.getElementById("grafAnimCanvas");
+  const CW = Math.min(window.innerWidth*0.85, 900);
+  const CH = 300;
+  canvas.width = CW;
+  canvas.height = CH;
+  const ctx = canvas.getContext("2d");
+  const pad = 40;
+
+  const maxV = Math.max(...pts.map(p=>p.v));
+  const minV = Math.min(...pts.map(p=>p.v));
+  const range = maxV - minV || 1;
+
+  // Recalcula coordenadas no canvas
+  const cpts = pts.map((p,i)=>({
+    x: pad + (i/(pts.length-1))*(CW-pad*2),
+    y: CH-pad - ((p.v-minV)/range)*(CH-pad*2),
+    d: p.d,
+    v: p.v
+  }));
+
+  const label = document.getElementById("grafAnimLabel");
+  let i = 0;
+  const intervalo = Math.max(500, Math.min(1000, 9000/pts.length));
+
+  function draw(){
+    ctx.clearRect(0,0,CW,CH);
+
+    // Grade horizontal
+    ctx.strokeStyle = "#1e2530";
+    ctx.lineWidth = 1;
+    for(let g=0;g<4;g++){
+      const gy = pad + (g/3)*(CH-pad*2);
+      ctx.beginPath(); ctx.moveTo(pad,gy); ctx.lineTo(CW-pad,gy); ctx.stroke();
+    }
+
+    const vistos = cpts.slice(0,i+1);
+
+    // Área
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, CH-pad);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(vistos[vistos.length-1].x, CH-pad);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0,0,0,CH);
+      grad.addColorStop(0,"rgba(0,232,122,0.3)");
+      grad.addColorStop(1,"rgba(0,232,122,0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+
+    // Linha
+    if(vistos.length>1){
+      ctx.beginPath();
+      ctx.moveTo(vistos[0].x, vistos[0].y);
+      vistos.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle = "#00e87a";
+      ctx.lineWidth = 3;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+    }
+
+    // Pontos anteriores
+    vistos.slice(0,-1).forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,4,0,Math.PI*2);
+      ctx.fillStyle = "#00e87a";
+      ctx.fill();
+      // Dia
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "11px Courier New";
+      ctx.textAlign = "center";
+      ctx.fillText(String(p.d).padStart(2,"0"), p.x, CH-pad+16);
+      // Valor
+      ctx.fillStyle = "#4a5568";
+      ctx.font = "10px Courier New";
+      ctx.fillText(p.v.toLocaleString("pt-BR"), p.x, p.y-10);
+    });
+
+    // Ponto atual em destaque
+    const atual = vistos[vistos.length-1];
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 8, 0, Math.PI*2);
+    ctx.fillStyle = "#ffb300";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(atual.x, atual.y, 12, 0, Math.PI*2);
+    ctx.strokeStyle = "rgba(255,179,0,0.3)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    // Label dia atual
+    ctx.fillStyle = "#ffb300";
+    ctx.font = "bold 12px Courier New";
+    ctx.textAlign = "center";
+    ctx.fillText(String(atual.d).padStart(2,"0"), atual.x, CH-pad+16);
+    ctx.fillText(atual.v.toLocaleString("pt-BR"), atual.x, atual.y-16);
+
+    // Label principal
+    if(label) label.textContent = "Dia "+String(atual.d).padStart(2,"0")+" — "+atual.v.toLocaleString("pt-BR")+" peças";
+  }
+
+  function passo(){
+    draw();
+    if(i < cpts.length-1){
+      i++;
+      setTimeout(passo, intervalo);
+    } else {
+      if(label) label.textContent = "✓ Total: "+pts.reduce((s,p)=>s+p.v,0).toLocaleString("pt-BR")+" peças";
+    }
+  }
+
+  passo();
+}
+
+// Carrossel mobile para metas
+let _carIdx = 0;
+const _carStep = 3; // horas por vez
+
+function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdmin, podeEditar, selected){
+  const total = HORAS.length;
+  const grupo = HORAS.slice(_carIdx, _carIdx + _carStep);
+  const horaAtual = new Date().getHours();
+  const ro = !podeEditar ? 'readonly' : '';
+
+  const linhas = ROBOS.map(robo=>{
+    const rd = data[robo]||{};
+    const meta = parseInt(rd.meta)||0;
+    const cod = rd.cod||'';
+    const pontosCell = isAdmin ? `<td style="color:#ff6a00;font-size:12px">${rd.pontos||'—'}</td>` : '';
+    const horasCells = grupo.map(h=>{
+      const isCafe = HORAS_CAFE.includes(h);
+      const campo = campoH(h);
+      const rawVal = (rd[campo])||'';
+      const {num,isAjuste} = parseCelVal(rawVal);
+      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      let bg='', cor='#d8dde6';
+      if(isAjuste){cor='#3d9eff';}
+      else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
+      if(isCafe&&!isAjuste){bg='#ffb30018';cor='#ffb300';}
+      const isAtual = parseInt(h)===horaAtual;
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
+        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)">`
+        :`${num>0?num:'—'}`}</td>`;
+    }).join('');
+
+    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    return`<tr>
+      <td style="color:#00e87a;font-weight:900;font-size:15px;text-align:left;padding-left:8px;background:#04070d;position:sticky;left:0">${robo}</td>
+      <td style="color:#3d9eff;font-size:13px;background:#04070d">${meta||'—'}</td>
+      <td style="color:#ffb300;font-size:12px;background:#04070d">${esc(cod)||'—'}</td>
+      ${horasCells}
+      <td style="color:${subColor};font-weight:800;font-size:14px">${subRow>0?subRow:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Totais
+  const totalRow = grupo.map(h=>{
+    const s=ROBOS.reduce((acc,r)=>acc+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
+    return`<td style="color:#d8dde6;font-weight:900;font-size:14px">${s>0?s:'—'}</td>`;
+  }).join('');
+  const subTotal=ROBOS.reduce((sum,r)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
+
+  const de = _carIdx+1;
+  const ate = Math.min(_carIdx+_carStep, total);
+
+  return`<div class="metas-carousel-inner">
+    <div class="metas-car-nav">
+      <button onclick="_carPrev()" ${_carIdx===0?'disabled style="opacity:0.3"':''}>◀</button>
+      <span>${grupo.map(h=>`${h}`).join(' · ')}</span>
+      <button onclick="_carNext(${total})" ${_carIdx+_carStep>=total?'disabled style="opacity:0.3"':''}>▶</button>
+    </div>
+    <table class="metas-car-table">
+      <thead><tr>
+        <th style="text-align:left;padding-left:8px">Robô</th>
+        <th>Meta/h</th>
+        <th>Código</th>
+        ${grupo.map(h=>`<th style="${HORAS_CAFE.includes(h)?'color:#ffb300':''};${parseInt(h)===horaAtual?'border:2px solid #ffb300':''}">${h}</th>`).join('')}
+        <th style="color:${subColor}">${subLabel}</th>
+      </tr></thead>
+      <tbody>${linhas}
+        <tr style="border-top:2px solid #1e2530">
+          <td colspan="3" style="color:#4a5568;font-size:10px;text-align:right;padding-right:6px">TOTAL/HORA</td>
+          ${totalRow}
+          <td style="color:${subColor};font-weight:900;font-size:15px">${subTotal>0?subTotal:'—'}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function _carPrev(){
+  _carIdx = Math.max(0, _carIdx - _carStep);
+  renderMetasDiaria();
+}
+function _carNext(total){
+  _carIdx = Math.min(total - _carStep, _carIdx + _carStep);
+  if(_carIdx < 0) _carIdx = 0;
+  renderMetasDiaria();
+}
+
 function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
@@ -4909,7 +5358,7 @@ function renderCatalogoPecas(){
         ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
       </div>
     `:`
-      <div style="overflow-x:auto;border-radius:12px;border:1px solid #1e2530">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
         <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:#080b0f">
@@ -5214,6 +5663,787 @@ function showToast(msg,err=false){
   void t.offsetWidth;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2500);
 }
 
+// ===== GABARITAGEM =====
+const GAB_PW = "1711";
+let isGabAdmin = false;
+let gabDados = {}; // {ano_mes: {cod: {dia: valor}}}
+
+function abrirGabaritagem(){
+  document.getElementById("gabScreen").style.display="flex";
+  const now = new Date();
+  document.getElementById("gabMes").value = now.getMonth();
+  document.getElementById("gabAno").value = now.getFullYear();
+  loadGabDados().then(()=>renderGabaritagem());
+}
+
+function fecharGabaritagem(){
+  document.getElementById("gabScreen").style.display="none";
+  isGabAdmin = false;
+  renderGabBtns();
+}
+
+function renderGabBtns(){
+  const el = document.getElementById("gabBtns");
+  if(!el) return;
+  el.innerHTML = isGabAdmin
+    ? `<button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
+       <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
+       <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
+    : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
+}
+
+function sairModoEdicaoGab(){
+  isGabAdmin = false;
+  renderGabaritagem();
+}
+
+function confirmarGabLogin(){
+  const pw = document.getElementById("gabPwInput").value;
+  if(pw === GAB_PW){
+    isGabAdmin = true;
+    document.getElementById("modalGabLogin").style.display="none";
+    renderGabBtns();
+    renderGabaritagem();
+    showToast("Modo edição ativado ✓");
+  } else {
+    document.getElementById("gabLoginErr").style.display="block";
+  }
+}
+
+async function loadGabDados(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    if(d&&d[0]&&d[0].imagens&&d[0].imagens._gabaritagem){
+      gabDados = d[0].imagens._gabaritagem;
+    }
+  }catch(e){}
+}
+
+async function saveGabDados(){
+  try{
+    // Carrega imagens atuais e adiciona _gabaritagem sem mexer nas fotos
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    const imagens = (d&&d[0]&&d[0].imagens)||{};
+    imagens._gabaritagem = gabDados;
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens,atualizado_em:new Date().toISOString()})});
+    showToast("Salvo ✓");
+  }catch(e){showToast("Erro ao salvar",true);}
+}
+
+function getGabChave(){
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  return `${ano}_${mes}`;
+}
+
+function getDiasUteis(ano, mes){
+  const dias = [];
+  const total = new Date(ano, mes+1, 0).getDate();
+  for(let d=1;d<=total;d++){
+    const dow = new Date(ano, mes, d).getDay();
+    if(dow!==0) dias.push(d); // Remove só domingo
+  }
+  return dias;
+}
+
+function renderGabaritagem(){
+  renderGabBtns();
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const chave = getGabChave();
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  document.getElementById("gabSubtitle").textContent = meses[mes]+' '+ano;
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  const dados = gabDados[chave];
+  const codigos = dados.codigos||[];
+  const dias = getDiasUteis(ano, mes);
+  const diasNomes = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+  const hoje = new Date();
+  const diaHoje = hoje.getMonth()===mes&&hoje.getFullYear()===ano?hoje.getDate():null;
+
+  if(codigos.length===0){
+    document.getElementById("gabPanel").innerHTML=`
+      <div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">
+        Nenhum código cadastrado.<br>
+        ${isGabAdmin?`<button onclick="abrirModalNovaCodGab()" style="margin-top:16px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace">+ Adicionar Código</button>`:''}
+      </div>`;
+    return;
+  }
+
+  // Calcula totais por código
+  const totais = {};
+  codigos.forEach(cod=>{
+    totais[cod] = dias.reduce((s,d)=>s+(parseInt((dados[cod]||{})[d])||0),0);
+  });
+  const totalGeral = codigos.reduce((s,cod)=>s+totais[cod],0);
+
+  // Número de colunas fixas à esquerda: CÓDIGO + PROG.MÊS + FALTA + %
+  const nFixed = 4;
+
+  // Monta thead
+  let thead = `<tr style="background:#080b0f">
+    <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f;min-width:120px">CÓDIGO</th>
+    <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:72px;background:#080b0f">PROG.<br>MÊS</th>
+    <th style="padding:10px 8px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">TOTAL</th>
+    <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">FALTA</th>
+    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:55px;background:#080b0f">%</th>
+    ${dias.map(d=>{
+      const dow=new Date(ano,mes,d).getDay();
+      const isHoje=d===diaHoje;
+      return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:56px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
+        <div style="font-size:12px">${diasNomes[dow]}</div>
+        <div style="font-size:14px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
+      </th>`;
+    }).join('')}
+    <th style="padding:10px 10px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
+    ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:36px"></th>`:''}
+  </tr>`;
+
+  // Monta tbody
+  let tbody = codigos.map((cod,ri)=>{
+    const vals=dados[cod]||{};
+    const prog=parseInt(dados[cod]?._prog||0);
+    const falta=prog>0?prog-totais[cod]:null;
+    const pct=prog>0?Math.round(totais[cod]/prog*100):null;
+    const corPct=pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+    const bg=ri%2===0?'#0a0d12':'#080b0f';
+    return`<tr data-cod="${esc(cod)}" style="background:${bg};border-bottom:1px solid #0a0d12">
+      <td style="padding:8px 14px;font-size:16px;font-weight:900;color:#00e87a;text-align:center;border-right:2px solid #1e2530;position:sticky;left:0;background:${bg}">${esc(cod)}</td>
+      <td style="padding:4px 8px;text-align:center;border-right:1px solid #1e2530">
+        ${isGabAdmin
+          ?`<input type="number" min="0" value="${prog||''}" placeholder="—"
+             style="width:60px;background:transparent;border:1px solid #a78bfa40;border-radius:4px;outline:none;color:#a78bfa;font-family:'Courier New',monospace;font-size:14px;font-weight:700;text-align:center;padding:4px"
+             onchange="updateGabProg('${esc(cod)}',this.value)">`
+          :`<span style="font-size:14px;font-weight:700;color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
+        }
+      </td>
+      ${(()=>{
+        const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
+        const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
+        return`<td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:#00e87a" id="gabtotal-${cod}">${totais[cod]>0?totais[cod].toLocaleString('pt-BR'):'—'}</td>`;
+      })()}
+      <td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
+        ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
+      </td>
+      <td style="padding:5px 6px;text-align:center;border-right:2px solid #1e2530;font-size:13px;font-weight:900;color:${pct===null?'#2a3040':corPct}" id="gabpct-${cod}">
+        ${pct===null?'—':pct+'%'}
+      </td>
+      ${dias.map(d=>{
+        const v=parseInt(vals[d])||0;
+        const isHoje=d===diaHoje;
+        return`<td style="padding:2px;text-align:center;border-right:1px solid #0d1117;background:${isHoje?'#ffb30008':''}">
+          ${isGabAdmin
+            ?`<input type="number" min="0" value="${v||''}" placeholder="—"
+               style="width:48px;background:transparent;border:none;outline:none;color:${v>0?'#d8dde6':'#2a3040'};font-family:'Courier New',monospace;font-size:15px;font-weight:700;text-align:center;padding:5px 0"
+               onchange="updateGab('${esc(cod)}',${d},this.value)"
+               onfocus="this.style.background='#ffffff10';this.style.borderRadius='4px'"
+               onblur="this.style.background='transparent'">`
+            :`<span style="font-size:15px;font-weight:700;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v:'—'}</span>`
+          }
+        </td>`;
+      }).join('')}
+      ${(()=>{
+        const diasComVal2 = dias.filter(d=>parseInt((vals[d]||0))>0);
+        const media2 = diasComVal2.length>0?Math.round(totais[cod]/diasComVal2.length):0;
+        return`<td style="padding:8px 10px;font-size:14px;font-weight:900;color:#3d9eff;text-align:center;border-left:2px solid #3d9eff30">${media2>0?media2.toLocaleString('pt-BR'):'—'}</td>`;
+      })()}
+      ${isGabAdmin?`<td style="padding:4px;text-align:center"><button onclick="excluirCodGab('${esc(cod)}')" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:4px">🗑</button></td>`:''}
+    </tr>`;
+  }).join('');
+
+  // Linha de totais por dia
+  let tfooter = `<tr style="background:#080b0f;border-top:2px solid #1e2530">
+    <td style="padding:10px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
+    <td style="border-right:1px solid #1e2530"></td>
+    <td style="border-right:1px solid #1e2530"></td>
+    <td style="border-right:1px solid #1e2530"></td>
+    <td style="border-right:2px solid #1e2530"></td>
+    ${dias.map(d=>{
+      const tot=codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
+      return`<td id="gabtotaldia-${d}" style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:14px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
+    }).join('')}
+    <td id="gabtotalgeral" style="padding:8px 10px;font-size:18px;font-weight:900;color:#ffb300;text-align:center;border-left:2px solid #00e87a30">${totalGeral>0?totalGeral.toLocaleString('pt-BR'):'—'}</td>
+    ${isGabAdmin?`<td></td>`:''}
+  </tr>`;
+
+  // Dias que têm pelo menos um valor registrado
+  const diasComRegistro = dias.filter(d=>codigos.some(cod=>parseInt((dados[cod]||{})[d]||0)>0));
+  const mediaReal = diasComRegistro.length>0?Math.round(totalGeral/diasComRegistro.length):0;
+  document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${mediaReal.toLocaleString('pt-BR')}</span> peças/dia <span style="color:#4a5568;font-size:11px">(${diasComRegistro.length} dia(s) registrado(s))</span>`;
+
+  document.getElementById("gabPanel").innerHTML=`
+  <!-- Busca -->
+  <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
+    <input id="gabBusca" placeholder="🔍 Buscar código..." value="${dados._busca||''}"
+      style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;width:250px;outline:none"
+      oninput="filtrarGab(this.value)"
+      onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
+    <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
+  </div>
+  <div class="gab-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
+    <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
+      <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
+      <tbody id="gabTbody">${tbody}${tfooter}</tbody>
+    </table>
+  </div>`;
+  setTimeout(fixTouchScroll, 100);
+}
+
+function updateGab(cod, dia, val){
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  if(!gabDados[chave][cod]) gabDados[chave][cod]={};
+  const n = parseInt(val)||0;
+  if(n>0) gabDados[chave][cod][dia]=n;
+  else delete gabDados[chave][cod][dia];
+
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const dias = getDiasUteis(ano, mes);
+  const codigos = gabDados[chave].codigos||[];
+
+  // Atualiza total da linha
+  const totalLinha = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
+  const prog = parseInt(gabDados[chave][cod]?._prog||0);
+  const falta = prog>0?prog-totalLinha:null;
+  const pct = prog>0?Math.round(totalLinha/prog*100):null;
+  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+
+  const elTotal = document.getElementById(`gabtotal-${cod}`);
+  if(elTotal) elTotal.textContent = totalLinha>0?totalLinha.toLocaleString('pt-BR'):'—';
+
+  const elFalta = document.getElementById(`gabfalta-${cod}`);
+  if(elFalta){
+    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
+    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
+  }
+  const elPct = document.getElementById(`gabpct-${cod}`);
+  if(elPct){
+    elPct.style.color = pct===null?'#2a3040':corPct;
+    elPct.textContent = pct===null?'—':pct+'%';
+  }
+
+  // Atualiza total da coluna do dia
+  const totalDia = codigos.reduce((s,c)=>s+(parseInt((gabDados[chave][c]||{})[dia])||0),0);
+  const elDia = document.getElementById(`gabtotaldia-${dia}`);
+  if(elDia){
+    elDia.textContent = totalDia>0?totalDia:'—';
+    elDia.style.color = totalDia>0?'#ffb300':'#2a3040';
+  }
+
+  // Atualiza total geral
+  const totalGeral = codigos.reduce((s,c)=>s+dias.reduce((ss,d)=>ss+(parseInt((gabDados[chave][c]||{})[d])||0),0),0);
+  const elGeral = document.getElementById("gabtotalgeral");
+  if(elGeral) elGeral.textContent = totalGeral>0?totalGeral.toLocaleString('pt-BR'):'—';
+
+  saveGabDados();
+}
+
+function updateGabProg(cod, val){
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  if(!gabDados[chave][cod]) gabDados[chave][cod]={};
+  const n = parseInt(val)||0;
+  if(n>0) gabDados[chave][cod]._prog=n;
+  else delete gabDados[chave][cod]._prog;
+
+  // Recalcula falta e % em tempo real
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const dias = getDiasUteis(ano, mes);
+  const total = dias.reduce((s,d)=>s+(parseInt((gabDados[chave][cod]||{})[d])||0),0);
+  const prog = n;
+  const falta = prog>0?prog-total:null;
+  const pct = prog>0?Math.round(total/prog*100):null;
+  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+
+  const elFalta = document.getElementById(`gabfalta-${cod}`);
+  if(elFalta){
+    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
+    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
+  }
+  const elPct = document.getElementById(`gabpct-${cod}`);
+  if(elPct){
+    elPct.style.color = pct===null?'#2a3040':corPct;
+    elPct.textContent = pct===null?'—':pct+'%';
+  }
+  saveGabDados();
+}
+
+async function backupGabaritagem(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    const gab = (d&&d[0]&&d[0].imagens&&d[0].imagens._gabaritagem) ? d[0].imagens._gabaritagem : gabDados;
+    if(!gab||!Object.keys(gab).length){ showToast("Nenhum dado para exportar",true); return; }
+    const now = new Date();
+    const nome = `backup_gabaritagem_${String(now.getDate()).padStart(2,'0')}_${String(now.getMonth()+1).padStart(2,'0')}_${now.getFullYear()}__${String(now.getHours()).padStart(2,'0')}_${String(now.getMinutes()).padStart(2,'0')}.json`;
+    const blob = new Blob([JSON.stringify(gab, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = nome;
+    a.click();
+    showToast("Backup baixado ✓");
+  }catch(e){ showToast("Erro ao fazer backup",true); }
+}
+
+function abrirGabDesempenho(){
+  document.getElementById("gabDesempenhoScreen").style.display="flex";
+  renderGabDesempenho();
+}
+
+function renderGabDesempenho(){
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const chave = getGabChave();
+  const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const dados = gabDados[chave]||{codigos:[]};
+  const codigos = dados.codigos||[];
+  const dias = getDiasUteis(ano, mes);
+  const diasNomes = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  document.getElementById("gabDesSubtitle").textContent = `${meses[mes]} ${ano}`;
+
+  if(!codigos.length){
+    document.getElementById("gabDesPanel").innerHTML=`<div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">Nenhum dado cadastrado.</div>`;
+    return;
+  }
+
+  // Calcula totais por dia e por código
+  const totalPorDia = {};
+  dias.forEach(d=>{ totalPorDia[d]=codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0); });
+  const totalGeral = Object.values(totalPorDia).reduce((s,v)=>s+v,0);
+  const diasComDados = dias.filter(d=>totalPorDia[d]>0);
+  const mediaGeral = diasComDados.length>0?Math.round(totalGeral/diasComDados.length):0;
+  const melhorDia = diasComDados.length>0?diasComDados.reduce((a,b)=>totalPorDia[b]>totalPorDia[a]?b:a,diasComDados[0]):null;
+  const piorDia = diasComDados.length>0?diasComDados.reduce((a,b)=>totalPorDia[b]<totalPorDia[a]?b:a,diasComDados[0]):null;
+  const maxDia = melhorDia?totalPorDia[melhorDia]:1;
+
+  // Totais por código
+  const totaisCod = {};
+  codigos.forEach(cod=>{ totaisCod[cod]=dias.reduce((s,d)=>s+(parseInt((dados[cod]||{})[d])||0),0); });
+
+  document.getElementById("gabDesPanel").innerHTML=`
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:28px;font-weight:900;color:#00e87a">${totalGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">peças produzidas</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #ffb30030;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:28px;font-weight:900;color:#ffb300">${mediaGeral.toLocaleString("pt-BR")}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">${diasComDados.length} dia(s) registrado(s)</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:28px;font-weight:900;color:#00e87a">${melhorDia?String(melhorDia).padStart(2,'0')+'/'+String(mes+1).padStart(2,'0'):'—'}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">${melhorDia?totalPorDia[melhorDia].toLocaleString("pt-BR")+' peças':'—'}</div>
+      </div>
+      <div style="background:#0f1318;border:1px solid #3d9eff30;border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Códigos Ativos</div>
+        <div style="font-size:28px;font-weight:900;color:#3d9eff">${codigos.length}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">no período</div>
+      </div>
+    </div>
+
+    <!-- Gráfico evolução diária -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
+      ${diasComDados.length>0?`
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <svg viewBox="0 0 900 110" style="width:100%;min-width:400px;height:130px" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gabGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00e87a" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00e87a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          ${(()=>{
+            const W=880, H=90, pad=10;
+            const n=diasComDados.length;
+            const minV=Math.min(...diasComDados.map(d=>totalPorDia[d]));
+            const maxV=Math.max(...diasComDados.map(d=>totalPorDia[d]),1);
+            const pts=diasComDados.map((d,i)=>({
+              x:pad+(i/(Math.max(n-1,1)))*(W-pad*2),
+              y:H-pad-((totalPorDia[d]-minV)/(maxV-minV||1))*(H-pad*2),
+              d,v:totalPorDia[d]
+            }));
+            const poly=pts.map(p=>`${p.x},${p.y}`).join(' ');
+            const area=`M${pts[0].x},${H} `+pts.map(p=>`L${p.x},${p.y}`).join(' ')+` L${pts[pts.length-1].x},${H} Z`;
+            const circles=pts.map(p=>`
+              <circle cx="${p.x}" cy="${p.y}" r="4" fill="#00e87a" stroke="#04070d" stroke-width="2"/>
+              <text x="${p.x}" y="${p.y-7}" text-anchor="middle" font-size="7" fill="#4a5568">${p.v.toLocaleString('pt-BR')}</text>
+              <text x="${p.x}" y="${H+8}" text-anchor="middle" font-size="7" fill="#4a5568">${String(p.d).padStart(2,'0')}</text>
+            `).join('');
+            return`<path d="${area}" fill="url(#gabGrad)"/>
+              <polyline points="${poly}" fill="none" stroke="#00e87a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+              ${circles}`;
+          })()}
+        </svg>
+      </div>`:'<div style="color:#2a3040;font-size:12px">Sem dados registrados.</div>'}
+    </div>
+
+    <!-- Ranking de Melhor Produção -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🏆 Ranking de Produção por Código</div>
+      ${(()=>{
+        const ranking = [...codigos].sort((a,b)=>totaisCod[b]-totaisCod[a]);
+        const maxVal = Math.max(...ranking.map(c=>totaisCod[c]),1);
+        const medalhas = ['🥇','🥈','🥉'];
+        return ranking.map((cod,i)=>{
+          const v = totaisCod[cod];
+          const prog = parseInt(dados[cod]?._prog||0);
+          const pct = prog>0?Math.round(v/prog*100):null;
+          const cor = pct===null?'#00e87a':pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+          const barPct = Math.round(v/maxVal*100);
+          const diasCod = dias.filter(d=>parseInt((dados[cod]||{})[d]||0)>0);
+          const mediaCod = diasCod.length>0?Math.round(v/diasCod.length):0;
+          return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <span style="font-size:20px;min-width:28px;text-align:center">${medalhas[i]||((i+1)+'°')}</span>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:16px;font-weight:900;color:#00e87a">${esc(cod)}</span>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:11px;color:#4a5568">Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b></span>
+                  ${pct!==null?`<span style="font-size:13px;font-weight:900;color:${cor}">${pct}%</span>`:''}
+                  <span style="font-size:18px;font-weight:900;color:#fff">${v.toLocaleString('pt-BR')}</span>
+                  ${prog>0?`<span style="font-size:11px;color:#4a5568">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
+                </div>
+              </div>
+              <div style="background:#1e2530;border-radius:99px;height:10px;overflow:hidden">
+                <div style="height:100%;width:${barPct}%;background:${cor};border-radius:99px;transition:width .3s"></div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      })()}
+    </div>
+  </div>`;
+}
+
+function filtrarGab(busca){
+  const chave = getGabChave();
+  if(gabDados[chave]) gabDados[chave]._busca = busca;
+  const termo = busca.toLowerCase().trim();
+  const tbody = document.getElementById("gabTbody");
+  if(!tbody) return;
+  const rows = tbody.querySelectorAll("tr[data-cod]");
+  let visiveis = 0;
+  rows.forEach(tr=>{
+    const cod = tr.getAttribute("data-cod")||"";
+    const show = !termo || cod.toLowerCase().includes(termo);
+    tr.style.display = show?"":"none";
+    if(show) visiveis++;
+  });
+  const count = document.getElementById("gabBuscaCount");
+  if(count) count.textContent = `${visiveis} código(s)`;
+}
+
+function abrirModalNovaCodGab(){
+  const cod = prompt("Código da peça/gabarito:");
+  if(!cod||!cod.trim()) return;
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave]={codigos:[]};
+  if(!gabDados[chave].codigos) gabDados[chave].codigos=[];
+  if(gabDados[chave].codigos.includes(cod.trim())){showToast("Código já existe",true);return;}
+  gabDados[chave].codigos.push(cod.trim().toUpperCase());
+  saveGabDados();
+  renderGabaritagem();
+}
+
+function excluirCodGab(cod){
+  if(!confirm(`Excluir código "${cod}" e todos os dados?`)) return;
+  const chave = getGabChave();
+  gabDados[chave].codigos = gabDados[chave].codigos.filter(c=>c!==cod);
+  delete gabDados[chave][cod];
+  saveGabDados();
+  renderGabaritagem();
+}
+// ===== FIM GABARITAGEM =====
+
+// ===== MAPA DA PRODUÇÃO =====
+const MAPA_SC = {
+  "Produzindo":       { cor:"#00e87a", textCor:"#04070d" },
+  "Setup/Troca Peça": { cor:"#ffb300", textCor:"#04070d" },
+  "Parado":           { cor:"#ff4d4d", textCor:"#fff" },
+  "Manutenção":       { cor:"#4a5568", textCor:"#fff" },
+  "Desligada":        { cor:"#3d9eff", textCor:"#fff" },
+};
+
+let mapaDados = {};
+let isMapaEdit = false;
+
+async function abrirMapaProducao(){
+  document.getElementById("mapaScreen").style.display="flex";
+  await loadMapaDados();
+  renderMapaProducao();
+}
+
+function fecharMapaProducao(){
+  document.getElementById("mapaScreen").style.display="none";
+  isMapaEdit = false;
+  updateMapaEditUI();
+}
+
+function toggleMapaEdit(){
+  if(!isMapaEdit && !isAdmin && !isAdminMetas){
+    showToast("Apenas Host ou Metas podem editar", true);
+    return;
+  }
+  isMapaEdit = !isMapaEdit;
+  updateMapaEditUI();
+  renderMapaProducao();
+}
+
+function updateMapaEditUI(){
+  const btn = document.getElementById("mapaEditBtn");
+  const badge = document.getElementById("mapaEditBadge");
+  if(btn) btn.textContent = isMapaEdit ? "✓ Concluir Edição" : "✏ Editar Status";
+  if(badge) badge.style.display = isMapaEdit ? "inline-block" : "none";
+}
+
+async function loadMapaDados(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    if(d&&d[0]&&d[0].imagens&&d[0].imagens._mapa_producao){
+      mapaDados = d[0].imagens._mapa_producao;
+    } else {
+      mapaDados = getMapaDadosDefault();
+    }
+  }catch(e){
+    mapaDados = getMapaDadosDefault();
+  }
+}
+
+async function saveMapaDados(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    const imagens = (d&&d[0]&&d[0].imagens)||{};
+    imagens._mapa_producao = mapaDados;
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens})});
+  }catch(e){ showToast("Erro ao salvar mapa", true); }
+}
+
+function getMapaDadosDefault(){
+  const maquinas = {};
+  const lista = [
+    {n:"90",x:355,y:140},{n:"91",x:415,y:140},{n:"87",x:475,y:140},{n:"88",x:535,y:140},
+    {n:"75",x:355,y:200},{n:"42",x:415,y:200},{n:"46",x:475,y:200},{n:"79",x:535,y:200},
+    {n:"33",x:415,y:260},
+    {n:"83",x:675,y:140},{n:"40",x:735,y:140},{n:"37",x:795,y:140},
+    {n:"65",x:735,y:200},
+    {n:"241",x:255,y:460},{n:"242",x:315,y:460},{n:"243",x:375,y:460},
+    {n:"247",x:255,y:520},{n:"224",x:315,y:520},{n:"227",x:375,y:520},
+    {n:"245",x:315,y:580},{n:"228",x:375,y:580},
+    {n:"190",x:195,y:640},{n:"141",x:255,y:640},
+    {n:"154",x:255,y:700},
+    {n:"406",x:480,y:460},{n:"410",x:540,y:460},{n:"404",x:600,y:460},{n:"407",x:660,y:460},{n:"405",x:720,y:460},{n:"411",x:780,y:460},{n:"420",x:840,y:460},{n:"39",x:900,y:460},
+    {n:"182",x:900,y:520},
+    {n:"110",x:480,y:520},{n:"113",x:540,y:520},{n:"179",x:660,y:520},{n:"178",x:720,y:520},{n:"180",x:780,y:520},{n:"184",x:840,y:520},
+    {n:"132",x:900,y:580},
+    {n:"156",x:780,y:580},{n:"177",x:840,y:580},
+    {n:"146",x:900,y:640},
+    {n:"188",x:230,y:860},{n:"191",x:345,y:860},{n:"189",x:430,y:860},
+    {n:"105",x:985,y:830},{n:"112",x:985,y:890},
+  ];
+  lista.forEach(m=>{
+    maquinas[m.n] = {
+      x:m.x, y:m.y,
+      status: m.n==="105"||m.n==="112" ? "Desligada" : "Produzindo",
+      nome: "Máquina "+m.n,
+      capacidade: "",
+      operadores: "",
+      cod_peca: "",
+      observacao: ""
+    };
+  });
+  return { maquinas };
+}
+
+function renderMapaProducao(){
+  const maquinas = mapaDados.maquinas||{};
+  const ids = Object.keys(maquinas);
+
+  // KPIs
+  const counts = {Produzindo:0,"Setup/Troca Peça":0,Parado:0,"Manutenção":0,Desligada:0};
+  ids.forEach(id=>{ const st=maquinas[id].status; if(counts[st]!==undefined) counts[st]++; });
+
+  const kpiIcons = {Produzindo:"▶",  "Setup/Troca Peça":"⚙", Parado:"⛔", "Manutenção":"🔧", Desligada:"🔌"};
+  const kpiLabels = {Produzindo:"PRODUZINDO", "Setup/Troca Peça":"SETUP", Parado:"PARADA", "Manutenção":"MANUTENÇÃO", Desligada:"DESLIGADA"};
+
+  document.getElementById("mapaKPIs").innerHTML = Object.keys(counts).map(st=>{
+    const c = MAPA_SC[st];
+    return`<div style="background:#0a0d12;border:1px solid ${c.cor}40;border-radius:8px;padding:6px 14px;text-align:center;min-width:80px">
+      <div style="font-size:10px;color:${c.cor};font-weight:700;letter-spacing:0.05em">${kpiIcons[st]} ${kpiLabels[st]}</div>
+      <div style="font-size:18px;font-weight:900;color:${c.cor}">${counts[st]}</div>
+    </div>`;
+  }).join('') + `<div style="background:#0a0d12;border:1px solid #3d9eff40;border-radius:8px;padding:6px 14px;text-align:center;min-width:80px">
+      <div style="font-size:10px;color:#3d9eff;font-weight:700;letter-spacing:0.05em">🏭 TOTAL</div>
+      <div style="font-size:18px;font-weight:900;color:#3d9eff">${ids.length}</div>
+    </div>`;
+
+  // Mapa SVG
+  const W = 1000, H = 940;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#0a0d12;border-radius:12px" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Áreas/zonas (retângulos pontilhados)
+  svg += `<rect x="345" y="120" width="240" height="170" fill="none" stroke="#2a3040" stroke-width="1.5" stroke-dasharray="5,4" rx="8"/>`;
+  svg += `<rect x="665" y="120" width="170" height="170" fill="none" stroke="#2a3040" stroke-width="1.5" stroke-dasharray="5,4" rx="8"/>`;
+  svg += `<rect x="175" y="420" width="295" height="270" fill="none" stroke="#2a3040" stroke-width="1.5" stroke-dasharray="5,4" rx="8"/>`;
+  svg += `<rect x="480" y="420" width="450" height="220" fill="none" stroke="#2a3040" stroke-width="1.5" stroke-dasharray="5,4" rx="8"/>`;
+  svg += `<rect x="175" y="820" width="290" height="100" fill="none" stroke="#2a3040" stroke-width="1.5" stroke-dasharray="5,4" rx="8"/>`;
+
+  // Labels de zona
+  svg += `<text x="555" y="380" text-anchor="middle" font-size="28" font-weight="900" fill="#fff" font-family="Montserrat,sans-serif">C6</text>`;
+  svg += `<text x="222" y="445" font-size="13" font-weight="700" fill="#4a5568" font-family="Courier New">RETRABALHO</text>`;
+
+  // Setas direcionais
+  const setas = [
+    {x:330,y:160,rot:90},{x:650,y:160,rot:90},
+    {x:290,y:380,rot:180},{x:705,y:380,rot:0},
+    {x:340,y:725,rot:180},{x:880,y:725,rot:0},
+  ];
+  setas.forEach(s=>{
+    svg += `<g transform="translate(${s.x},${s.y}) rotate(${s.rot})">
+      <line x1="-15" y1="0" x2="15" y2="0" stroke="#ff4d4d" stroke-width="2.5"/>
+      <path d="M8,-6 L16,0 L8,6" fill="none" stroke="#ff4d4d" stroke-width="2.5"/>
+    </g>`;
+  });
+
+  // Máquinas
+  ids.forEach(id=>{
+    const m = maquinas[id];
+    const sc = MAPA_SC[m.status]||MAPA_SC["Produzindo"];
+    const label = m.label || id;
+    svg += `<g class="mapa-maquina" data-id="${id}" style="cursor:pointer" onclick="abrirPainelMaquina('${id}')">
+      <rect x="${m.x-26}" y="${m.y-16}" width="52" height="32" rx="6" fill="${sc.cor}22" stroke="${sc.cor}" stroke-width="2"/>
+      <text x="${m.x}" y="${m.y+5}" text-anchor="middle" font-size="13" font-weight="900" fill="${sc.cor}" font-family="Courier New">${esc(label)}</text>
+    </g>`;
+  });
+
+  svg += `</svg>`;
+
+  document.getElementById("mapaSvgWrap").innerHTML = svg;
+}
+
+function abrirPainelMaquina(id){
+  const m = mapaDados.maquinas[id];
+  if(!m) return;
+  const sc = MAPA_SC[m.status]||MAPA_SC["Produzindo"];
+  const podeEditar = isMapaEdit && (isAdmin || isAdminMetas);
+
+  const statusOpts = Object.keys(MAPA_SC).map(st=>
+    `<option value="${st}" ${st===m.status?'selected':''}>${st}</option>`
+  ).join('');
+
+  document.getElementById("modalMaquinaContent").innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;color:#4a5568;letter-spacing:0.1em">MÁQUINA</div>
+        <div style="font-size:24px;font-weight:900;color:${sc.cor};font-family:'Courier New',monospace">${esc(id)}</div>
+      </div>
+      <button onclick="document.getElementById('modalMaquina').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+
+    <div style="background:${sc.cor}15;border:1px solid ${sc.cor}40;border-radius:10px;padding:12px;margin-bottom:16px;text-align:center">
+      ${podeEditar
+        ? `<select onchange="updateMaquinaStatus('${id}',this.value)" style="background:transparent;border:none;color:${sc.cor};font-size:16px;font-weight:900;font-family:'Courier New',monospace;text-align:center;outline:none;cursor:pointer">${statusOpts}</select>`
+        : `<span style="font-size:16px;font-weight:900;color:${sc.cor}">${esc(m.status)}</span>`
+      }
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Nome</div>
+        ${podeEditar
+          ? `<input value="${esc(m.nome||'')}" onchange="updateMaquinaCampo('${id}','nome',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;outline:none;box-sizing:border-box">`
+          : `<div style="font-size:14px;color:#d8dde6">${esc(m.nome||'—')}</div>`
+        }
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Capacidade/h</div>
+          ${podeEditar
+            ? `<input type="number" value="${esc(m.capacidade||'')}" onchange="updateMaquinaCampo('${id}','capacidade',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;outline:none;box-sizing:border-box">`
+            : `<div style="font-size:14px;color:#d8dde6">${esc(m.capacidade||'—')}</div>`
+          }
+        </div>
+        <div>
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Operadores</div>
+          ${podeEditar
+            ? `<input type="number" value="${esc(m.operadores||'')}" onchange="updateMaquinaCampo('${id}','operadores',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;outline:none;box-sizing:border-box">`
+            : `<div style="font-size:14px;color:#d8dde6">${esc(m.operadores||'—')}</div>`
+          }
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Código da Peça</div>
+        ${podeEditar
+          ? `<input value="${esc(m.cod_peca||'')}" onchange="updateMaquinaCampo('${id}','cod_peca',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#ffb300;padding:8px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;outline:none;box-sizing:border-box">`
+          : `<div style="font-size:14px;color:#ffb300;font-weight:700">${esc(m.cod_peca||'—')}</div>`
+        }
+      </div>
+      <div>
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Observação</div>
+        ${podeEditar
+          ? `<textarea onchange="updateMaquinaCampo('${id}','observacao',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;outline:none;box-sizing:border-box;min-height:60px;resize:vertical">${esc(m.observacao||'')}</textarea>`
+          : `<div style="font-size:13px;color:#d8dde6">${esc(m.observacao||'—')}</div>`
+        }
+      </div>
+    </div>`;
+
+  document.getElementById("modalMaquina").style.display = "flex";
+}
+
+function updateMaquinaStatus(id, status){
+  if(!mapaDados.maquinas[id]) return;
+  mapaDados.maquinas[id].status = status;
+  saveMapaDados();
+  renderMapaProducao();
+  abrirPainelMaquina(id);
+  showToast("Status atualizado ✓");
+}
+
+function updateMaquinaCampo(id, campo, valor){
+  if(!mapaDados.maquinas[id]) return;
+  mapaDados.maquinas[id][campo] = valor;
+  saveMapaDados();
+  showToast("Salvo ✓");
+}
+// ===== FIM MAPA DA PRODUÇÃO =====
+
+
+
+// Scroll horizontal nas tabelas no mobile
+function fixTouchScroll(){
+  document.querySelectorAll('.metas-table-wrap, .gab-table-wrap').forEach(el=>{
+    let startX, startY, startScroll;
+    el.addEventListener('touchstart', e=>{
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startScroll = el.scrollLeft;
+    },{passive:true});
+    el.addEventListener('touchmove', e=>{
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if(Math.abs(dx) > Math.abs(dy)){
+        // Movimento horizontal — previne scroll da página
+        e.stopPropagation();
+        el.scrollLeft = startScroll - dx;
+      }
+    },{passive:false});
+  });
+}
+setTimeout(fixTouchScroll, 1000);
+
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeXlsxModal();closeLightbox();closeSidebar();closeGerenciar();}});
 document.getElementById("modalEl").addEventListener("click",closeModal);
 document.getElementById("xlsxModalEl").addEventListener("click",closeXlsxModal);
@@ -5269,5 +6499,107 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     </div>
   </div>
 </div>
+<!-- Tela Gabaritagem -->
+<div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
+  <!-- Header -->
+  <div style="background:#080b0f;border-bottom:1px solid #1e2530;flex-shrink:0;padding:10px 14px">
+    <!-- Linha 1: título + voltar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <svg viewBox="0 0 70 75" width="36" height="38" style="flex-shrink:0;overflow:visible">
+          <style>
+            @keyframes gab-hit{0%{transform:rotate(-55deg)}65%{transform:rotate(20deg)}70%{transform:rotate(15deg)}100%{transform:rotate(-55deg)}}
+            @keyframes gab-flash{0%,63%{opacity:0}66%{opacity:1}80%{opacity:0}100%{opacity:0}}
+          </style>
+          <g style="transform-origin:35px 57px;animation:gab-hit 0.55s cubic-bezier(0.25,0.1,0.25,1) infinite">
+            <rect x="17" y="8" width="36" height="13" rx="3" fill="#ffb300"/>
+            <rect x="17" y="8" width="11" height="13" rx="3" fill="#ff6a00"/>
+            <rect x="32" y="21" width="6" height="36" rx="3" fill="#d8dde6"/>
+          </g>
+          <circle cx="46" cy="59" r="3.5" fill="#ffb300" style="animation:gab-flash 0.55s infinite"/>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">🔨 Gabaritagem</div>
+          <div style="font-size:11px;color:#4a5568" id="gabSubtitle">—</div>
+        </div>
+      </div>
+      <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✕ Voltar</button>
+    </div>
+    <!-- Linha 2: botões e seletores -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <button onclick="backupGabaritagem()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
+      <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho</button>
+      <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
+        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+        <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
+        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+      </select>
+      <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
+        <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+      </select>
+      <div id="gabBtns" style="display:flex;gap:6px;align-items:center"></div>
+    </div>
+  </div>
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px">
+    <div id="gabPanel"></div>
+  </div>
+</div>
+
+<!-- Modal login gabaritagem -->
+<div id="modalGabLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9100;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">📐 Gabaritagem</div>
+    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Digite a senha para editar</div>
+    <input type="password" id="gabPwInput" placeholder="Senha"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
+      onkeydown="if(event.key==='Enter')confirmarGabLogin()">
+    <div id="gabLoginErr" style="display:none;color:#ff4d4d;font-size:11px;margin-bottom:8px">Senha incorreta</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      <button onclick="document.getElementById('modalGabLogin').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="confirmarGabLogin()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tela Desempenho Gabaritagem -->
+<div id="gabDesempenhoScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9500;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
+    <div>
+      <div style="font-size:18px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">📊 Desempenho Mensal — Gabaritagem</div>
+      <div style="font-size:12px;color:#4a5568;margin-top:2px" id="gabDesSubtitle">—</div>
+    </div>
+    <button onclick="document.getElementById('gabDesempenhoScreen').style.display='none'" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px" id="gabDesPanel"></div>
+</div>
+
+<!-- Tela Mapa da Produção -->
+<div id="mapaScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9300;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px">🏭</span>
+      <div>
+        <div style="font-size:17px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">Mapa da Produção</div>
+        <div style="font-size:11px;color:#4a5568">Planta Industrial</div>
+      </div>
+    </div>
+    <div id="mapaKPIs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="mapaEditBadge" style="display:none;font-size:11px;color:#a78bfa;background:#a78bfa20;padding:5px 10px;border-radius:6px;border:1px solid #a78bfa40">✓ Editando</span>
+      <button id="mapaEditBtn" onclick="toggleMapaEdit()" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar Status</button>
+      <button onclick="fecharMapaProducao()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Voltar</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:16px" id="mapaScrollArea">
+    <div id="mapaSvgWrap" style="position:relative;min-width:1000px"></div>
+  </div>
+</div>
+
+<!-- Modal painel da máquina -->
+<div id="modalMaquina" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9400;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px;max-height:85vh;overflow-y:auto" id="modalMaquinaContent"></div>
+</div>
+
 </body>
 </html>
