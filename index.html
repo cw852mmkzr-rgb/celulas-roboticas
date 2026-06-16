@@ -1301,444 +1301,755 @@ const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Ag
 const defaultData = {
   "12": {
     "nome": "Catalago de Peças",
-    "status": "Aguardando",
-    "cliente": "—",
     "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
     "turno": "—",
-    "tempo_solda": "—",
+    "status": "Aguardando",
+    "alertas": [],
+    "cliente": "—",
     "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
     "pre_pressao": "—",
+    "tempo_solda": "—",
     "pontos_solda": "—",
     "ultima_troca": "—",
-    "alertas": []
+    "tipo_eletrodo": "—"
   },
   "15": {
     "nome": "Manutenção",
-    "status": "Aguardando",
-    "cliente": "—",
     "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
     "turno": "—",
-    "tempo_solda": "—",
-    "corrente": "—",
-    "pre_pressao": "—",
-    "pontos_solda": "—",
-    "ultima_troca": "—",
+    "status": "Aguardando",
     "alertas": [],
+    "cliente": "—",
+    "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
     "manutencoes": {
       "604": [
         {
-          "descricao": "Superaquecimento no painel",
-          "responsavel": "Eduardo botelho",
           "data": "10/06/2026, 21:26",
-          "concluido": false
+          "concluido": false,
+          "descricao": "Superaquecimento no painel",
+          "responsavel": "Eduardo botelho"
         }
       ],
       "605": [
         {
-          "descricao": "Vazamento no cilindro de ar da pinça",
-          "responsavel": "Leonardo Favaro",
           "data": "11/06/2026, 06:48",
-          "concluido": false
+          "concluido": false,
+          "descricao": "Vazamento no cilindro de ar da pinça",
+          "responsavel": "Leonardo Favaro"
+        }
+      ],
+      "610": [
+        {
+          "data": "11/06/2026, 15:28",
+          "concluido": true,
+          "descricao": "bateria descarregou e descalibrou",
+          "responsavel": "Eduardo botelho",
+          "realizado_por": "EDUARDO BOTELHO",
+          "data_conclusao": "11/06/2026, 15:29"
+        }
+      ],
+      "611": [
+        {
+          "data": "11/06/2026, 15:27",
+          "concluido": true,
+          "descricao": "Erro de calibragem",
+          "responsavel": "Eduardo botelho",
+          "realizado_por": "Eduardo botelho",
+          "data_conclusao": "11/06/2026, 15:28"
         }
       ]
-    }
+    },
+    "pre_pressao": "—",
+    "tempo_solda": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "tipo_eletrodo": "—"
   },
   "600": {
     "nome": "Robo Fanuc 600",
-    "status": "Produzindo",
     "peca": "50698",
-    "codigo_peca": "50698",
-    "eletrodo": " Reto",
-    "tipo_eletrodo": "RETO",
-    "tempo_peca": "45S",
-    "operador": "— Eduardo Botelho ",
     "turno": "— manha 07:00 as 17:00",
-    "corrente": "3,45KA",
-    "ultima_troca": "04/06/2026, 10:05",
+    "status": "Produzindo",
     "alertas": [],
+    "cliente": "MUELLER",
     "membro1": "— MAGNO",
     "membro2": "—ERIVELTON",
     "membro3": "—MARCOS",
-    "tempo_solda": "125",
-    "pre_pressao": "120",
+    "corrente": "3,45KA",
+    "eletrodo": " Reto",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "— Eduardo Botelho ",
     "meta_hora": 45,
-    "cliente": "MUELLER",
+    "tempo_peca": "45S",
+    "codigo_peca": "50698",
+    "pre_pressao": "120",
+    "tempo_solda": "125",
     "pontos_solda": "13 PONTOS",
-    "img_peca": "",
+    "ultima_troca": "04/06/2026, 10:05",
+    "tipo_eletrodo": "cobre duro",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "04/06/2026, 10:05",
-        "eletrodo": " Reto",
-        "tipo": " COBRE DURO"
+        "tipo": " COBRE DURO",
+        "eletrodo": " Reto"
       }
-    ]
+    ],
+    "limite_eletrodo_aviso": 5000
   },
   "601": {
     "nome": "Robo Fanuc 601",
-    "status": "Produzindo",
-    "cliente": "MUELLER",
     "peca": "—",
-    "codigo_peca": "63102",
-    "img_peca": "",
-    "eletrodo": "RETO ",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "55S",
-    "meta_hora": 50,
-    "operador": "EDUARDO BOTELHO",
     "turno": "MANHA 07:00 AS 17:00 ",
-    "tempo_solda": "110",
+    "status": "Produzindo",
+    "alertas": [],
+    "cliente": "MUELLER",
+    "membro1": "CAROL",
+    "membro2": "FABIANA",
+    "membro3": "",
     "corrente": "3,30KA",
+    "eletrodo": "RETO ",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 50,
+    "tempo_peca": "55S",
+    "codigo_peca": "63102",
     "pre_pressao": "110",
+    "tempo_solda": "110",
     "pontos_solda": "16 PONTOS",
     "ultima_troca": "08/06/2026, 13:29",
-    "alertas": [],
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "08/06/2026, 13:29",
-        "eletrodo": "RETO ",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO "
       }
     ],
-    "membro1": "CAROL",
-    "membro2": "FABIANA",
-    "membro3": ""
+    "limite_eletrodo_aviso": 5000
   },
   "602": {
     "nome": "Robo Fanuc 602",
-    "status": "Parado",
     "peca": "50697",
-    "codigo_peca": "50697",
-    "eletrodo": "Reto",
-    "tipo_eletrodo": "cobre duro",
-    "tempo_peca": "48s",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "3,45KA",
-    "ultima_troca": "09/06/2026, 13:49",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 46,
-    "tempo_solda": "135",
-    "pre_pressao": "25s",
-    "pontos_solda": "16 PONTOS",
     "cliente": "MUELLER",
+    "corrente": "3,45KA",
+    "eletrodo": "Reto",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 45,
+    "tempo_peca": "48s",
+    "codigo_peca": "50697",
+    "pre_pressao": "25s",
+    "tempo_solda": "135",
+    "pontos_solda": "16 PONTOS",
+    "ultima_troca": "09/06/2026, 13:49",
+    "tipo_eletrodo": "cobre duro",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 13:49",
-        "eletrodo": "reto",
-        "tipo": "—"
+        "tipo": "—",
+        "eletrodo": "reto"
       }
-    ]
+    ],
+    "limite_eletrodo_aviso": 5000
   },
   "603": {
     "nome": "Robo Fanuc 603",
-    "status": "Produzindo",
-    "peca": "16211",
-    "codigo_peca": "16211",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "28S",
-    "operador": "EDUARDO BOTELHO",
+    "peca": "12757",
     "turno": "07:00 AS 22:00",
-    "corrente": "2,80KA",
-    "ultima_troca": "09/06/2026, 14:44",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 65,
-    "tempo_solda": "110",
-    "pre_pressao": "80",
-    "pontos_solda": "14 PONTOS",
     "cliente": "ITATIAIA",
+    "membro1": "MARIA ANGELA",
+    "membro2": "PATRICIA",
+    "membro3": "MARIA",
+    "corrente": "3,45KA",
+    "eletrodo": "eletrodo maior 65mm",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 100,
+    "tempo_peca": "13s",
+    "codigo_peca": "12757",
+    "pre_pressao": "110",
+    "tempo_solda": "132",
+    "pontos_solda": "4",
+    "ultima_troca": "15/06/2026, 15:36",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 14:44",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
+      },
+      {
+        "data": "15/06/2026, 15:36",
+        "tipo": "COBRE DURO",
+        "eletrodo": "eletrodo maior 65mm",
+        "pecas_feitas": 720
       }
     ],
-    "membro1": "MARIA ANGELA",
-    "membro2": "PATRICIA",
-    "membro3": "MARIA"
+    "limite_eletrodo_aviso": 5000
   },
   "604": {
     "nome": "Robo Fanuc 604",
-    "status": "Produzindo",
     "peca": "PR-69",
-    "codigo_peca": "PR-69",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "38S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "3,65KA",
-    "ultima_troca": "09/06/2026, 14:45",
+    "status": "Setup/Troca Peça",
     "alertas": [
       " alerta Robo com problema de aquecimento interno falha: dcal"
     ],
-    "img_peca": "",
-    "meta_hora": 40,
-    "tempo_solda": "135",
-    "pre_pressao": "90",
-    "pontos_solda": "16 PONTOS",
     "cliente": "FERREIRA",
+    "corrente": "3,65KA",
+    "eletrodo": "RETO",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 40,
+    "tempo_peca": "38S",
+    "codigo_peca": "PR-69",
+    "pre_pressao": "90",
+    "tempo_solda": "135",
+    "pontos_solda": "16 PONTOS",
+    "ultima_troca": "15/06/2026, 15:37",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 14:45",
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
+      },
+      {
+        "data": "15/06/2026, 15:37",
+        "tipo": "COBRE DURO",
         "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "pecas_feitas": 418
       }
-    ]
+    ],
+    "limite_eletrodo_aviso": 5000
   },
   "605": {
     "nome": "Robo kuka 605",
-    "status": "Produzindo",
     "peca": "3799",
-    "codigo_peca": "3799",
-    "eletrodo": "reto",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "21S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "3,90",
-    "ultima_troca": "09/06/2026, 14:46",
+    "status": "Setup/Troca Peça",
     "alertas": [
       "Novo alerta pequeno vazamento de ar na PINÇA"
     ],
-    "meta_hora": 80,
-    "img_peca": "",
-    "tempo_solda": "145",
-    "pre_pressao": "90",
-    "pontos_solda": "10 PONTOS",
     "cliente": "ESMALTEC",
-    "historico_eletrodo": [
-      {
-        "data": "09/06/2026, 14:46",
-        "eletrodo": "reto",
-        "tipo": "COBRE DURO"
-      }
-    ],
     "membro1": "JHENIFER",
     "membro2": "RUTHE",
     "membro3": "MARINA",
-    "membro4": ""
+    "membro4": "",
+    "corrente": "3,90",
+    "eletrodo": "reto",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 80,
+    "tempo_peca": "21S",
+    "codigo_peca": "3799",
+    "pre_pressao": "90",
+    "tempo_solda": "145",
+    "pontos_solda": "10 PONTOS",
+    "ultima_troca": "09/06/2026, 14:46",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 14:46",
+        "tipo": "COBRE DURO",
+        "eletrodo": "reto"
+      }
+    ],
+    "limite_eletrodo_aviso": 5000
   },
   "606": {
     "nome": "Robo kuka 606",
-    "status": "Produzindo",
     "peca": "14082",
-    "codigo_peca": "14082",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "29S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "2,80KA",
-    "ultima_troca": "09/06/2026, 14:49",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 70,
-    "tempo_solda": "105",
-    "pre_pressao": "85",
-    "pontos_solda": "16 PONTOS",
     "cliente": "ITATIAIA",
+    "membro1": "TALITA",
+    "membro2": "LUMA",
+    "membro3": "KELLY",
+    "membro4": "",
+    "corrente": "2,80KA",
+    "eletrodo": "RETO",
+    "img_peca": "",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 70,
+    "tempo_peca": "29S",
+    "codigo_peca": "14082",
+    "pre_pressao": "85",
+    "tempo_solda": "105",
+    "pontos_solda": "16 PONTOS",
+    "ultima_troca": "15/06/2026, 15:37",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 14:49",
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
+      },
+      {
+        "data": "15/06/2026, 15:37",
+        "tipo": "COBRE DURO",
         "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "pecas_feitas": 2391
       }
     ],
-    "membro1": "TALITA",
-    "membro2": "LUMA",
-    "membro4": "",
-    "membro3": "KELLY"
+    "limite_eletrodo_aviso": 5000
   },
   "607": {
     "nome": "Robo Kuka 607",
-    "status": "Produzindo",
     "peca": "13951",
-    "codigo_peca": "13951",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "35S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "3,20KA",
-    "ultima_troca": "09/06/2026, 14:51",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 50,
-    "tempo_solda": "110",
-    "pre_pressao": "80",
-    "pontos_solda": "12 PONTOS",
     "cliente": "ITATIAIA",
+    "membro1": "BEATRIZ",
+    "membro2": "STEFFANY",
+    "membro3": "ROSICLEIDE",
+    "corrente": "3,20KA",
+    "eletrodo": "RETO",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 50,
+    "tempo_peca": "35S",
+    "codigo_peca": "13951",
+    "pre_pressao": "80",
+    "tempo_solda": "110",
+    "pontos_solda": "12 PONTOS",
+    "ultima_troca": "09/06/2026, 14:51",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 14:51",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
       }
     ],
-    "membro1": "BEATRIZ",
-    "membro2": "STEFFANY",
-    "membro3": "ROSICLEIDE"
+    "limite_eletrodo_aviso": 5000
   },
   "608": {
     "nome": "Robo Kuka 608",
-    "status": "Produzindo",
     "peca": "16210",
-    "codigo_peca": "16210",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "28S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "2,92KA",
-    "ultima_troca": "09/06/2026, 14:54",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 65,
-    "tempo_solda": "110",
-    "pre_pressao": "60",
-    "pontos_solda": "12 PONTOS",
     "cliente": "ITATIAIA",
+    "membro1": "ADRIANA",
+    "membro2": "ERICA",
+    "membro3": "DAIANE",
+    "corrente": "2,92KA",
+    "eletrodo": "RETO",
+    "img_peca": "",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 65,
+    "tempo_peca": "28S",
+    "codigo_peca": "16210",
+    "pre_pressao": "60",
+    "tempo_solda": "110",
+    "pontos_solda": "12 PONTOS",
+    "ultima_troca": "09/06/2026, 14:54",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 14:54",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
       }
     ],
-    "membro1": "ADRIANA",
-    "membro2": "ERICA",
-    "membro3": "DAIANE"
+    "limite_eletrodo_aviso": 5000
   },
   "609": {
     "nome": "Robo Kuka 609",
-    "status": "Produzindo",
     "peca": "1083",
-    "codigo_peca": "1083",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "35S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "3,20KA",
-    "ultima_troca": "09/06/2026, 15:10",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 60,
-    "tempo_solda": "110",
-    "pre_pressao": "120",
-    "pontos_solda": "18 PONTOS",
     "cliente": "MUELLER",
+    "membro1": "",
+    "corrente": "3,20KA",
+    "eletrodo": "RETO",
+    "img_peca": "",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 60,
+    "tempo_peca": "35S",
+    "codigo_peca": "1083",
+    "pre_pressao": "120",
+    "tempo_solda": "110",
+    "pontos_solda": "18 PONTOS",
+    "ultima_troca": "09/06/2026, 15:10",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 15:10",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
       }
     ],
-    "membro1": ""
+    "limite_eletrodo_aviso": 5000
   },
   "610": {
     "nome": "Robo Kuka 610",
-    "status": "Produzindo",
     "peca": "16211",
-    "codigo_peca": "16211",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "28S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "2,80KA",
-    "ultima_troca": "09/06/2026, 15:11",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 65,
-    "tempo_solda": "110",
-    "pre_pressao": "80",
-    "pontos_solda": "14 PONTOS",
     "cliente": "ITATIAIA",
+    "corrente": "2,80KA",
+    "eletrodo": "RETO",
+    "img_peca": "data:image/jpeg;base64,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",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 65,
+    "tempo_peca": "28S",
+    "codigo_peca": "16211",
+    "pre_pressao": "80",
+    "tempo_solda": "110",
+    "pontos_solda": "14 PONTOS",
+    "ultima_troca": "09/06/2026, 15:11",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
     "historico_eletrodo": [
       {
         "data": "09/06/2026, 15:11",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
       }
-    ]
+    ],
+    "limite_eletrodo_aviso": 5000
   },
   "611": {
     "nome": "Robo Kuka 611",
-    "status": "Produzindo",
     "peca": "3689",
-    "codigo_peca": "3689",
-    "eletrodo": "RETO",
-    "tipo_eletrodo": "COBRE DURO",
-    "tempo_peca": "21S",
-    "operador": "EDUARDO BOTELHO",
     "turno": "07:00 AS 22:00",
-    "corrente": "2,65KA",
-    "ultima_troca": "09/06/2026, 15:12",
+    "status": "Produzindo",
     "alertas": [],
-    "img_peca": "",
-    "meta_hora": 65,
-    "tempo_solda": "115",
-    "pre_pressao": "90",
-    "pontos_solda": "14 PONTOS",
     "cliente": "ESMALTEC",
-    "historico_eletrodo": [
-      {
-        "data": "09/06/2026, 15:12",
-        "eletrodo": "RETO",
-        "tipo": "COBRE DURO"
-      }
-    ],
     "membro1": "BEATRIZ",
     "membro2": "EMILLY",
     "membro3": "CAUANY",
-    "membro4": ""
+    "membro4": "",
+    "corrente": "2,65KA",
+    "eletrodo": "RETO",
+    "img_peca": "",
+    "operador": "EDUARDO BOTELHO",
+    "meta_hora": 65,
+    "tempo_peca": "21S",
+    "codigo_peca": "3689",
+    "pre_pressao": "90",
+    "tempo_solda": "115",
+    "pontos_solda": "14 PONTOS",
+    "ultima_troca": "09/06/2026, 15:12",
+    "tipo_eletrodo": "COBRE DURO",
+    "limite_eletrodo": 10000,
+    "historico_eletrodo": [
+      {
+        "data": "09/06/2026, 15:12",
+        "tipo": "COBRE DURO",
+        "eletrodo": "RETO"
+      }
+    ],
+    "limite_eletrodo_aviso": 5000
+  },
+  "00": {
+    "nome": "Produção Mensal",
+    "peca": "—",
+    "turno": "—",
+    "status": "Aguardando",
+    "alertas": [],
+    "cliente": "—",
+    "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
+    "pre_pressao": "—",
+    "tempo_solda": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "tipo_eletrodo": "—",
+    "producao_meses": {
+      "2026_0": {
+        "1": 5,
+        "2": 0,
+        "5": 0,
+        "6": 0,
+        "15": 0
+      },
+      "2026_4": {
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0
+      },
+      "2026_5": {
+        "1": 4454,
+        "2": 4823,
+        "3": 4648,
+        "4": 3924,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 4817,
+        "9": 4832,
+        "10": 4937,
+        "11": 4506,
+        "12": 6185,
+        "13": 0,
+        "14": 0,
+        "15": 4590,
+        "16": 1654
+      },
+      "2026_6": {
+        "12": 0
+      }
+    },
+    "ano_selecionado": 2026,
+    "mes_selecionado": 5
+  },
+  "01": {
+    "nome": "Relatorio mensal",
+    "peca": "—",
+    "turno": "—",
+    "status": "Aguardando",
+    "alertas": [],
+    "cliente": "—",
+    "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
+    "pre_pressao": "—",
+    "tempo_solda": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "tipo_eletrodo": "—"
   },
   "02": {
     "nome": "Meta diaria",
-    "status": "Aguardando",
-    "cliente": "—",
     "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
     "turno": "—",
-    "tempo_solda": "—",
-    "corrente": "—",
-    "pre_pressao": "—",
-    "pontos_solda": "—",
-    "ultima_troca": "—",
+    "status": "Aguardando",
     "alertas": [],
-    "metas_dia": 11,
+    "cliente": "—",
+    "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "metas_dia": 16,
     "metas_mes": 5,
     "metas_dias": {
+      "2026_0_1": {
+        "600": {
+          "cod": "50698",
+          "meta": "40",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "5",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "601": {
+          "cod": "14083",
+          "meta": "70",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "602": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "603": {
+          "cod": "3798",
+          "meta": "65",
+          "h0900": ""
+        },
+        "604": {
+          "cod": "3692",
+          "meta": "85",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "85",
+          "h0800": ""
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "607": {
+          "cod": "1083",
+          "meta": "60",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1300": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": "",
+          "h2200": ""
+        },
+        "608": {
+          "cod": "3692",
+          "meta": "85",
+          "h0800": "",
+          "h0900": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": ""
+        },
+        "609": {
+          "cod": "13951",
+          "meta": "60",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1100": "",
+          "h1200": "",
+          "h1400": "",
+          "h1500": "",
+          "h1600": "",
+          "h1700": "",
+          "h2200": ""
+        },
+        "610": {
+          "cod": "manutençao"
+        },
+        "611": {
+          "cod": "64601 cromo",
+          "meta": "65"
+        }
+      },
+      "2026_0_2": {
+        "600": {
+          "cod": "50698",
+          "meta": "40"
+        },
+        "601": {
+          "cod": "14083",
+          "meta": "70"
+        },
+        "602": {
+          "cod": "14082",
+          "meta": "70"
+        },
+        "603": {
+          "cod": "3798",
+          "meta": "65"
+        },
+        "604": {
+          "cod": "3692",
+          "meta": "85"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "85"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70"
+        },
+        "607": {
+          "cod": "1083",
+          "meta": "60"
+        },
+        "608": {
+          "cod": "3692",
+          "meta": "85"
+        },
+        "609": {
+          "cod": "13951",
+          "meta": "60"
+        },
+        "610": {
+          "cod": "manutençao"
+        },
+        "611": {
+          "cod": "64601 cromo",
+          "meta": "65"
+        }
+      },
       "2026_5_1": {
         "600": {
-          "meta": "45",
           "cod": "50698",
+          "meta": "45",
           "h0800": "45",
           "h0900": "48",
           "h1000": "19",
@@ -1750,8 +2061,8 @@ const defaultData = {
           "h1700": "38"
         },
         "601": {
-          "meta": "50",
           "cod": "63103",
+          "meta": "50",
           "h0800": "50",
           "h0900": "67",
           "h1000": "37"
@@ -1869,8 +2180,8 @@ const defaultData = {
       },
       "2026_5_2": {
         "600": {
-          "meta": "45",
           "cod": "50698",
+          "meta": "45",
           "h0800": "42",
           "h0900": "48",
           "h1000": "20",
@@ -1882,8 +2193,8 @@ const defaultData = {
           "h1700": "35"
         },
         "601": {
-          "meta": "50",
           "cod": "63102",
+          "meta": "50",
           "h1100": "55",
           "h1200": "40",
           "h1300": "27",
@@ -2128,8 +2439,8 @@ const defaultData = {
       },
       "2026_5_4": {
         "600": {
-          "meta": "45",
           "cod": "50698",
+          "meta": "45",
           "h0800": "45",
           "h0900": "43",
           "h1000": "22",
@@ -2250,6 +2561,12 @@ const defaultData = {
           "h1600": "44"
         }
       },
+      "2026_5_7": {
+        "600": {
+          "h0800": "",
+          "pontos": "0"
+        }
+      },
       "2026_5_8": {
         "600": {
           "cod": "50698",
@@ -2335,8 +2652,8 @@ const defaultData = {
           "meta": "70",
           "h0800": "71",
           "h0900": "70",
-          "h1100": "47",
           "h1000": "41",
+          "h1100": "47",
           "h1200": "38",
           "h1300": "32",
           "h1400": "71",
@@ -2407,11 +2724,11 @@ const defaultData = {
           "meta": "45",
           "h0800": "38",
           "h0900": "45",
+          "h1000": "20",
           "h1100": "46",
           "h1200": "40",
           "h1400": "47",
           "h1500": "39",
-          "h1000": "20",
           "h1600": "48",
           "h1700": "35"
         },
@@ -2420,11 +2737,11 @@ const defaultData = {
           "meta": "50",
           "h0800": "50",
           "h0900": "33",
+          "h1000": "19",
           "h1100": "53",
           "h1200": "50",
           "h1400": "51",
           "h1500": "30",
-          "h1000": "19",
           "h1600": "50",
           "h1700": "50",
           "h1800": "23",
@@ -2441,11 +2758,11 @@ const defaultData = {
           "meta": "65",
           "h0800": "67",
           "h0900": "67",
+          "h1000": "22",
           "h1100": "68",
           "h1200": "65",
           "h1400": "71",
           "h1500": "58",
-          "h1000": "22",
           "h1600": "68",
           "h1700": "35",
           "h1900": "33"
@@ -2479,9 +2796,9 @@ const defaultData = {
           "meta": "70",
           "h0800": "77",
           "h0900": "71",
+          "h1000": "32",
           "h1400": "50",
           "h1500": "60",
-          "h1000": "32",
           "h1600": "70",
           "h1700": "60",
           "h1800": "24"
@@ -2491,12 +2808,12 @@ const defaultData = {
           "meta": "50",
           "h0800": "65",
           "h0900": "63",
+          "h1000": "29",
           "h1100": "42",
           "h1200": "47",
           "h1300": "41",
           "h1400": "56",
           "h1500": "52",
-          "h1000": "29",
           "h1600": "60",
           "h1700": "45"
         },
@@ -2505,11 +2822,11 @@ const defaultData = {
           "meta": "70",
           "h0800": "92",
           "h0900": "80",
+          "h1000": "41",
           "h1100": "70",
           "h1200": "55",
           "h1400": "53",
           "h1500": "43",
-          "h1000": "41",
           "h1600": "40",
           "h1700": "54"
         },
@@ -2536,11 +2853,11 @@ const defaultData = {
           "meta": "65",
           "h0800": "65",
           "h0900": "49",
+          "h1000": "33",
           "h1100": "70",
           "h1200": "50",
           "h1400": "67",
           "h1500": "46",
-          "h1000": "33",
           "h1600": "65",
           "h1700": "32"
         }
@@ -2549,7 +2866,6 @@ const defaultData = {
         "600": {
           "cod": "50698",
           "meta": "45",
-          "pontos": "",
           "h0800": "34",
           "h0900": "45",
           "h1000": "22",
@@ -2558,12 +2874,13 @@ const defaultData = {
           "h1300": "",
           "h1400": "43",
           "h1500": "31",
-          "h1600": ""
+          "h1600": "45",
+          "h1700": "36",
+          "pontos": ""
         },
         "601": {
           "cod": "63102",
           "meta": "50",
-          "pontos": "",
           "h0800": "52",
           "h0900": "54",
           "h1000": "28",
@@ -2571,172 +2888,815 @@ const defaultData = {
           "h1200": "27",
           "h1300": "",
           "h1400": "52",
-          "h1500": "30"
+          "h1500": "30",
+          "h1600": "36",
+          "h1700": "40",
+          "h1800": "34",
+          "h1900": "35",
+          "h2100": "20",
+          "h2200": "20",
+          "pontos": ""
         },
         "602": {
           "cod": "50697",
           "meta": "45",
-          "pontos": "",
           "h0800": "",
           "h0900": "",
           "h1000": "",
           "h1100": "",
           "h1200": "",
           "h1400": "20",
-          "h1500": "30"
+          "h1500": "30",
+          "h1600": "",
+          "pontos": ""
         },
         "603": {
           "cod": "16211",
           "meta": "65",
-          "pontos": "",
           "h0800": "71",
           "h0900": "",
           "h1000": "",
           "h1100": "",
           "h1300": "",
           "h1400": "40",
-          "h1500": ""
+          "h1500": "",
+          "h1600": "",
+          "pontos": ""
         },
         "604": {
           "cod": "Pr-69",
           "meta": "40",
-          "pontos": "",
           "h0900": "",
           "h1000": "",
           "h1100": "",
           "h1400": "26",
-          "h1500": "14"
+          "h1500": "14",
+          "h1600": "21",
+          "h1700": "25",
+          "h2100": "33",
+          "pontos": ""
         },
         "605": {
           "cod": "3799",
           "meta": "80",
-          "pontos": "",
           "h0800": "55",
           "h0900": "48",
           "h1000": "42",
           "h1100": "80",
+          "h1200": "65",
+          "h1300": "88",
           "h1400": "102",
           "h1500": "48",
-          "h1200": "65",
-          "h1300": "88"
+          "h1600": "64",
+          "h1700": "40",
+          "h1800": "95",
+          "h1900": "80",
+          "h2100": "110",
+          "h2200": "77",
+          "pontos": ""
         },
         "606": {
           "cod": "14082",
           "meta": "70",
-          "pontos": "",
           "h0800": "74",
           "h0900": "70",
           "h1000": "35",
           "h1100": "43",
+          "h1200": "40",
           "h1400": "65",
           "h1500": "54",
-          "h1200": "40"
+          "h1600": "70",
+          "h1700": "41",
+          "pontos": ""
         },
         "607": {
           "cod": "13951",
           "meta": "50",
-          "pontos": "",
           "h0800": "45",
           "h0900": "40",
           "h1000": "31",
           "h1100": "50",
+          "h1200": "30",
           "h1400": "56",
           "h1500": "50",
-          "h1200": "30"
+          "h1600": "35",
+          "h1700": "35",
+          "pontos": ""
         },
         "608": {
           "cod": "16210",
           "meta": "70",
-          "pontos": "",
           "h0800": "75",
           "h0900": "81",
           "h1000": "49",
           "h1100": "65",
+          "h1200": "51",
+          "h1300": "27",
           "h1400": "54",
           "h1500": "46",
-          "h1200": "51",
-          "h1300": "27"
+          "h1600": "57",
+          "h1700": "44",
+          "pontos": ""
         },
         "609": {
           "cod": "1083",
           "meta": "60",
-          "pontos": "",
           "h0900": "",
           "h1000": "",
           "h1100": "",
           "h1400": "70",
-          "h1500": "57"
+          "h1500": "57",
+          "h1600": "46",
+          "h1700": "55",
+          "pontos": ""
         },
         "610": {
           "cod": "16211",
           "meta": "65",
-          "pontos": "",
           "h0900": "55",
           "h1000": "39",
           "h1100": "76",
+          "h1200": "65",
+          "h1300": "20",
           "h1400": "20",
           "h1500": "50",
-          "h1200": "65",
-          "h1300": "20"
+          "h1600": "65",
+          "h1700": "70",
+          "h1800": "65",
+          "h1900": "58",
+          "h2100": "67",
+          "h2200": "50",
+          "pontos": ""
         },
         "611": {
           "cod": "3689",
           "meta": "65",
-          "pontos": "",
           "h0800": "67",
           "h0900": "70",
           "h1000": "25",
           "h1100": "65",
+          "h1200": "55",
           "h1400": "57",
           "h1500": "42",
-          "h1200": "55"
+          "h1600": "66",
+          "h1700": "56",
+          "pontos": ""
         }
       },
       "2026_5_11": {
         "600": {
           "cod": "50698",
           "meta": "45",
-          "pontos": "13",
-          "h0800": ""
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "172",
+          "h1400": "48",
+          "h1500": "30",
+          "h1600": "45",
+          "h1700": "32",
+          "pontos": "0"
         },
         "601": {
           "cod": "63102",
           "meta": "50",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "208",
+          "h1400": "40",
+          "h1500": "50",
+          "h1600": "27",
+          "h1700": "35",
+          "h1800": "26",
+          "h1900": "22",
+          "h2100": "32",
+          "h2200": "34",
+          "pontos": ""
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h1500": "30",
+          "h1600": "25",
+          "h1700": "35",
+          "pontos": ""
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1400": "51",
+          "h1500": "50",
+          "h1600": "62",
+          "h1700": "50",
+          "h1800": "48",
+          "h1900": "38",
+          "h2100": "58",
+          "h2200": "58",
+          "pontos": ""
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h0800": "",
+          "h1200": "27",
+          "h1400": "68",
+          "h1500": "37",
+          "h1600": "20",
+          "h1700": "45",
+          "pontos": ""
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "277",
+          "h1300": "85",
+          "h1400": "60",
+          "h1500": "57",
+          "h1600": "75",
+          "h1700": "48",
+          "h1800": "102",
+          "h1900": "80",
+          "h2100": "95",
+          "h2200": "85",
+          "pontos": ""
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "230",
+          "h1400": "58",
+          "h1500": "46",
+          "h1600": "71",
+          "h1700": "57",
+          "pontos": ""
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "260",
+          "h1400": "37",
+          "h1500": "47",
+          "h1600": "45",
+          "h1700": "38",
+          "pontos": ""
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "240",
+          "h1300": "50",
+          "h1400": "58",
+          "h1500": "40",
+          "h1600": "56",
+          "h1700": "33",
+          "pontos": ""
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1000": "",
+          "h1400": "55",
+          "pontos": ""
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "278",
+          "h1300": "37",
+          "h1400": "65",
+          "pontos": ""
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "",
+          "h0900": "",
+          "h1000": "",
+          "h1200": "77#",
+          "h1500": "57",
+          "h1600": "52",
+          "h1700": "52",
+          "pontos": ""
+        }
+      },
+      "2026_5_12": {
+        "600": {
+          "cod": "50698 ",
+          "meta": "45",
+          "h0800": "40",
+          "h0900": "46",
+          "h1000": "23",
+          "h1100": "48",
+          "h1200": "40",
+          "h1400": "40",
+          "h1500": "45",
+          "h1600": "34",
+          "pontos": ""
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "10",
+          "h0900": "15",
+          "h1000": "14",
+          "h1100": "50",
+          "h1200": "46",
+          "h1400": "38",
+          "h1500": "40",
+          "h1600": "45",
+          "h1700": "27",
+          "h1800": "25",
+          "h1900": "31",
+          "h2100": "39",
+          "h2200": "281",
+          "pontos": ""
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h0800": "24",
+          "h0900": "25",
+          "h1000": "17",
+          "h1100": "35",
+          "h1200": "25",
+          "h1400": "36",
+          "h1500": "25",
+          "h1600": "20",
+          "h2200": "163",
+          "pontos": ""
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h1000": ""
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h1000": ""
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h0800": "51",
+          "h0900": "92",
+          "h1000": "41",
+          "h1100": "65",
+          "h1200": "38",
+          "h1300": "71",
+          "h1400": "77",
+          "h1500": "87",
+          "h1600": "45",
+          "h1700": "74",
+          "h1800": "53",
+          "h1900": "85",
+          "h2100": "36",
+          "pontos": ""
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "70",
+          "h0900": "55",
+          "h1000": "48",
+          "h1100": "59",
+          "h1200": "45",
+          "h1400": "70",
+          "h1500": "56",
+          "h1600": "38",
+          "h2200": "431",
+          "pontos": ""
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "60",
+          "h0900": "59",
+          "h1000": "31",
+          "h1100": "48",
+          "h1200": "28",
+          "h1400": "57",
+          "h1500": "25",
+          "h1600": "30",
+          "pontos": ""
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "h0800": "85",
+          "h0900": "80",
+          "h1000": "36",
+          "h1100": "80",
+          "h1200": "45",
+          "h1300": "32",
+          "h1400": "34",
+          "h1500": "20",
+          "h1600": "18",
+          "h2200": "290",
+          "pontos": ""
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1400": "40",
+          "h1500": "27",
+          "h1600": "22"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "70",
+          "h0900": "72",
+          "h1000": "38",
+          "h1100": "67",
+          "h1200": "53",
+          "h1300": "42",
+          "h1400": "67",
+          "h1500": "75",
+          "h1600": "47",
+          "h1700": "50",
+          "h1800": "50",
+          "h1900": "53",
+          "h2100": "65",
+          "h2200": "467",
+          "pontos": ""
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "55",
+          "h0900": "50",
+          "h1000": "43",
+          "h1100": "73",
+          "h1200": "73",
+          "h1400": "65",
+          "h1500": "65",
+          "h1600": "58",
+          "h2200": "306",
+          "pontos": ""
+        }
+      },
+      "2026_5_13": {
+        "600": {
+          "cod": "50698 ",
+          "meta": "45"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50"
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45"
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65"
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40"
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80"
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70"
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50"
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70"
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60"
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65"
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65"
+        }
+      },
+      "2026_5_14": {
+        "600": {
+          "cod": "50698 ",
+          "meta": "45",
+          "h2200": ""
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h2200": ""
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h2200": ""
+        },
+        "603": {
+          "cod": "16211",
+          "meta": "65",
+          "h2100": "",
+          "h2200": ""
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "h2200": ""
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h2200": ""
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h2200": ""
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h2200": ""
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "h2200": ""
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h2200": ""
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h2200": ""
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h2200": ""
+        }
+      },
+      "2026_5_15": {
+        "600": {
+          "cod": "50698 ",
+          "meta": "45",
+          "h0800": "33",
+          "h1400": "51",
+          "h1500": "35",
+          "h1600": "22",
+          "h1700": "24",
+          "h1800": "",
+          "pontos": ""
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "50",
+          "h0900": "51",
+          "h1000": "32",
+          "h1100": "69",
+          "h1200": "52",
+          "h1300": "20",
+          "h1400": "50",
+          "h1500": "43",
+          "h1600": "50",
+          "h1700": "31",
+          "h1800": "26",
+          "h1900": "29",
+          "h2100": "40",
+          "h2200": "33",
+          "pontos": ""
+        },
+        "602": {
+          "cod": "50697",
+          "meta": "45",
+          "h0800": "17",
+          "h0900": "34",
+          "h1000": "25",
+          "h1100": "41",
+          "h1200": "32",
+          "h1400": "32",
+          "h1500": "35",
+          "h1600": "35",
+          "h1700": "28",
+          "pontos": ""
+        },
+        "603": {
+          "cod": "12757",
+          "meta": "100",
+          "pontos": ""
+        },
+        "604": {
+          "cod": "Pr-69",
+          "meta": "40",
+          "pontos": ""
+        },
+        "605": {
+          "cod": "3799",
+          "meta": "80",
+          "h0900": "75",
+          "h1000": "50",
+          "h1100": "90",
+          "h1200": "97",
+          "h1300": "75",
+          "h1400": "76",
+          "h1500": "61",
+          "h1600": "80",
+          "h1700": "34",
+          "pontos": ""
+        },
+        "606": {
+          "cod": "14082",
+          "meta": "70",
+          "h0800": "72",
+          "h0900": "36",
+          "h1000": "38",
+          "h1100": "55",
+          "h1200": "56",
+          "h1400": "70",
+          "h1500": "62",
+          "h1600": "55",
+          "h1700": "50",
+          "pontos": ""
+        },
+        "607": {
+          "cod": "13951",
+          "meta": "50",
+          "h0800": "24",
+          "h0900": "44",
+          "h1000": "38",
+          "h1100": "60",
+          "h1200": "53",
+          "h1400": "40",
+          "h1500": "53",
+          "h1600": "61",
+          "h1700": "48",
+          "pontos": ""
+        },
+        "608": {
+          "cod": "16210",
+          "meta": "70",
+          "h0900": "44",
+          "h1000": "38",
+          "h1100": "38",
+          "h1200": "19",
+          "h1400": "41",
+          "h1500": "46",
+          "h1600": "31",
+          "h1700": "28",
+          "h1800": "63",
+          "h1900": "46",
+          "h2100": "48",
+          "h2200": "35",
+          "pontos": ""
+        },
+        "609": {
+          "cod": "1083",
+          "meta": "60",
+          "h1000": "38",
+          "h1400": "57",
+          "h1500": "47",
+          "h1600": "55",
+          "h1700": "55",
+          "pontos": ""
+        },
+        "610": {
+          "cod": "16211",
+          "meta": "65",
+          "h0800": "74",
+          "h0900": "71",
+          "h1000": "53",
+          "h1100": "73",
+          "h1200": "58",
+          "h1300": "65",
+          "h1400": "74",
+          "h1500": "52",
+          "h1600": "85",
+          "h1700": "32#",
+          "h1800": "69",
+          "h1900": "53",
+          "h2100": "70",
+          "h2200": "45",
+          "pontos": ""
+        },
+        "611": {
+          "cod": "3689",
+          "meta": "65",
+          "h0800": "54",
+          "h0900": "54",
+          "h1000": "43",
+          "h1100": "68",
+          "h1200": "54",
+          "h1500": "50",
+          "h1600": "56",
+          "h1700": "35",
+          "pontos": ""
+        }
+      },
+      "2026_5_16": {
+        "600": {
+          "cod": "50698 ",
+          "meta": "45",
+          "h0800": "",
+          "h1000": "",
+          "pontos": "13"
+        },
+        "601": {
+          "cod": "63102",
+          "meta": "50",
+          "h0800": "50",
+          "h0900": "51",
+          "h1000": "18",
+          "h1100": "56",
           "pontos": "16"
         },
         "602": {
           "cod": "50697",
           "meta": "45",
+          "h0800": "30",
+          "h0900": "34",
+          "h1000": "16",
+          "h1100": "35",
           "pontos": "16"
         },
         "603": {
-          "cod": "16211",
-          "meta": "65",
-          "pontos": "14"
+          "cod": "12757",
+          "meta": "100",
+          "h1000": "",
+          "h1100": "86#",
+          "pontos": "4"
         },
         "604": {
-          "cod": "Pr-69",
+          "cod": "Pr-70",
           "meta": "40",
-          "pontos": "16"
+          "pontos": "12"
         },
         "605": {
           "cod": "3799",
           "meta": "80",
+          "h0800": "72#",
+          "h0900": "108",
+          "h1000": "45",
+          "h1100": "33#",
           "pontos": "10"
         },
         "606": {
           "cod": "14082",
           "meta": "70",
+          "h0800": "70",
+          "h0900": "63",
+          "h1000": "37",
+          "h1100": "48",
           "pontos": "16"
         },
         "607": {
           "cod": "13951",
           "meta": "50",
+          "h0800": "62",
+          "h0900": "63",
+          "h1000": "33",
+          "h1100": "57",
           "pontos": "12"
         },
         "608": {
           "cod": "16210",
           "meta": "70",
+          "h0800": "47",
+          "h0900": "50",
+          "h1000": "25",
+          "h1100": "26",
           "pontos": "12"
         },
         "609": {
@@ -2747,360 +3707,709 @@ const defaultData = {
         "610": {
           "cod": "16211",
           "meta": "65",
+          "h0800": "66",
+          "h0900": "74",
+          "h1000": "23",
+          "h1100": "77",
           "pontos": "14"
         },
         "611": {
           "cod": "3689",
           "meta": "65",
+          "h0800": "61",
+          "h0900": "54",
+          "h1000": "27",
+          "h1100": "57",
           "pontos": "14"
         }
       }
-    }
+    },
+    "tempo_peca": "—",
+    "codigo_peca": "—",
+    "pre_pressao": "—",
+    "tempo_solda": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "tipo_eletrodo": "—"
   },
   "03": {
     "nome": "Produçao por peça",
-    "status": "Aguardando",
     "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
     "turno": "—",
-    "tempo_solda": "—",
+    "status": "Aguardando",
+    "alertas": [],
     "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "peca_mes": 5,
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
     "pre_pressao": "—",
+    "tempo_solda": "—",
     "pontos_solda": "—",
     "ultima_troca": "—",
-    "alertas": [],
-    "peca_mes": 5
+    "tipo_eletrodo": "—"
   },
   "06": {
     "nome": "cadastro de peças",
-    "status": "Aguardando",
-    "cliente": "—",
     "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
-    "turno": "—",
-    "tempo_solda": "—",
-    "corrente": "—",
-    "pre_pressao": "—",
-    "pontos_solda": "—",
-    "ultima_troca": "—",
-    "alertas": [],
     "pecas": {
       "1083": {
+        "img": "",
         "nome": "1083",
+        "turno": "07:00 AS 22:00",
         "cliente": "MUELLER",
-        "tempo_peca": "35S",
-        "meta_hora": 60,
         "corrente": "3,20KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 60,
+        "tempo_peca": "35S",
         "pre_pressao": "120",
+        "tempo_solda": "110",
         "pontos_solda": "18 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "110",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "2"
       },
-      "3689": {
-        "nome": "3689",
-        "cliente": "ESMALTEC",
+      "1089": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "MUELLER",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
         "tempo_peca": "21S",
-        "meta_hora": 65,
-        "corrente": "2,65KA",
-        "pre_pressao": "90",
-        "pontos_solda": "14 PONTOS",
-        "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "115",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "pares_gabarito": "2",
-        "img": ""
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "1090": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "MUELLER",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "21S",
+        "pre_pressao": "",
+        "tempo_solda": "23S",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "3615": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ESMALTEC",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "10s",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "3798": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ESMALTEC",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "18s",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
       },
       "3799": {
+        "img": "",
         "nome": "3799",
+        "turno": "07:00 AS 22:00",
         "cliente": "ESMALTEC",
-        "tempo_peca": "21S",
-        "meta_hora": 80,
         "corrente": "3,90",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 80,
+        "tempo_peca": "15S",
         "pre_pressao": "90",
+        "tempo_solda": "145",
         "pontos_solda": "10 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "145",
-        "turno": "07:00 AS 22:00",
+        "pares_gabarito": "1"
+      },
+      "4850": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "21S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "12757": {
+        "img": "",
+        "nome": "12757",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "3,45KA",
         "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "meta_hora": 0,
+        "tempo_peca": "13s",
+        "pre_pressao": "110",
+        "tempo_solda": "132",
+        "pontos_solda": "4",
+        "tipo_eletrodo": "COBRE DURO",
+        "pares_gabarito": "1"
+      },
+      "13436": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "15S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
       },
       "13951": {
+        "img": "",
         "nome": "13951",
+        "turno": "07:00 AS 22:00",
         "cliente": "ITATIAIA",
-        "tempo_peca": "35S",
-        "meta_hora": 50,
         "corrente": "3,20KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 50,
+        "tempo_peca": "21S",
         "pre_pressao": "80",
+        "tempo_solda": "110",
         "pontos_solda": "12 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "110",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "1"
+      },
+      "13952": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "24S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
       },
       "14082": {
+        "img": "",
         "nome": "14082",
+        "turno": "07:00 AS 22:00",
         "cliente": "ITATIAIA",
-        "tempo_peca": "25S",
-        "meta_hora": 70,
         "corrente": "2,80KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 70,
+        "tempo_peca": "25S",
         "pre_pressao": "85",
+        "tempo_solda": "105",
         "pontos_solda": "16 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "105",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "2"
+      },
+      "14083": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "21S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "15742": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "35S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "15744": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "ITATIAIA",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "35S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "2"
       },
       "16210": {
+        "img": "",
         "nome": "16210",
+        "turno": "07:00 AS 22:00",
         "cliente": "ITATIAIA",
-        "tempo_peca": "25S",
-        "meta_hora": 70,
         "corrente": "2,92KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 70,
+        "tempo_peca": "25S",
         "pre_pressao": "60",
+        "tempo_solda": "110",
         "pontos_solda": "12 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "110",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "1"
       },
       "16211": {
+        "img": "",
         "nome": "16211",
+        "turno": "07:00 AS 22:00",
         "cliente": "ITATIAIA",
-        "tempo_peca": "28S",
-        "meta_hora": 65,
         "corrente": "2,80KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 65,
+        "tempo_peca": "28S",
         "pre_pressao": "80",
+        "tempo_solda": "110",
         "pontos_solda": "14 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "110",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "2"
       },
       "50697": {
+        "img": "",
         "nome": "50697",
+        "turno": "07:00 AS 22:00",
         "cliente": "MUELLER",
-        "tempo_peca": "48s",
-        "meta_hora": 45,
         "corrente": "3,45KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 45,
+        "tempo_peca": "48s",
         "pre_pressao": "25s",
+        "tempo_solda": "135",
         "pontos_solda": "16 PONTOS",
         "tipo_eletrodo": "RETO",
-        "tempo_solda": "135",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "2"
       },
       "50698": {
+        "img": "",
         "nome": "50698",
+        "turno": "",
         "cliente": "MUELLER",
-        "tempo_peca": "45S",
-        "meta_hora": 45,
         "corrente": "3,45KA",
+        "operador": "",
+        "meta_hora": 45,
+        "tempo_peca": "45S",
         "pre_pressao": "120",
+        "tempo_solda": "",
         "pontos_solda": "13 PONTOS",
         "tipo_eletrodo": "RETO",
-        "img": ""
+        "pares_gabarito": "2"
       },
       "63102": {
+        "img": "",
         "nome": "63102",
+        "turno": "07:00 AS 22:00",
         "cliente": "MUELLER",
-        "tempo_peca": "49S",
-        "meta_hora": 50,
         "corrente": "3,45KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 50,
+        "tempo_peca": "49S",
         "pre_pressao": "120",
+        "tempo_solda": "125",
         "pontos_solda": "16 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "125",
-        "turno": "07:00 AS 22:00",
-        "operador": "EDUARDO BOTELHO",
-        "img": ""
+        "pares_gabarito": "1"
+      },
+      "63103": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "MUELLER",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "48S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-16": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "55S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "2"
+      },
+      "PR-40": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "35S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-46": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "30S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-56": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "25S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-60": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "30S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-62": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "27S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
       },
       "PR-69": {
+        "img": "",
         "nome": "PR-69",
+        "turno": "07:00 AS 22:00",
         "cliente": "Praça",
-        "tempo_peca": "38S",
-        "meta_hora": 40,
         "corrente": "3,65KA",
+        "operador": "EDUARDO BOTELHO",
+        "meta_hora": 40,
+        "tempo_peca": "38S",
         "pre_pressao": "90",
+        "tempo_solda": "135",
         "pontos_solda": "16 PONTOS",
         "tipo_eletrodo": "COBRE DURO",
-        "tempo_solda": "135",
+        "pares_gabarito": "1"
+      },
+      "PR-70": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "38S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-72": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "31S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-73": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "38S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-84": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "48s",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-87": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "34S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-89": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "40s",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-90": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "35S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "PR-145": {
+        "img": "",
+        "nome": "",
+        "turno": "",
+        "cliente": "Praça",
+        "corrente": "",
+        "operador": "",
+        "meta_hora": 0,
+        "tempo_peca": "31S",
+        "pre_pressao": "",
+        "tempo_solda": "",
+        "pontos_solda": "",
+        "tipo_eletrodo": "",
+        "pares_gabarito": "1"
+      },
+      "3689/92/80": {
+        "img": "",
+        "nome": "3689",
         "turno": "07:00 AS 22:00",
+        "cliente": "ESMALTEC",
+        "corrente": "2,65KA",
         "operador": "EDUARDO BOTELHO",
-        "pares_gabarito": "",
-        "img": ""
+        "meta_hora": 65,
+        "tempo_peca": "21S",
+        "pre_pressao": "90",
+        "tempo_solda": "115",
+        "pontos_solda": "14 PONTOS",
+        "tipo_eletrodo": "COBRE DURO",
+        "pares_gabarito": "2"
       }
-    }
+    },
+    "turno": "—",
+    "status": "Aguardando",
+    "alertas": [],
+    "cliente": "—",
+    "corrente": "—",
+    "eletrodo": "—",
+    "img_peca": "",
+    "operador": "—",
+    "meta_hora": 0,
+    "tempo_peca": "—",
+    "codigo_peca": "—",
+    "pre_pressao": "—",
+    "tempo_solda": "—",
+    "pontos_solda": "—",
+    "ultima_troca": "—",
+    "tipo_eletrodo": "—"
   },
   "09": {
     "nome": "Armario de Gabaritos",
-    "tipo_celula": "armario",
     "status": "Aguardando",
-    "img_peca": "",
-    "meta_hora": 0,
     "alertas": [],
     "espacos": {
       "1": {
-        "gabarito": "— pr89",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": " PR-89"
       },
       "2": {
-        "gabarito": "PR-073 PR-084 1090 1089 ",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PR-73 PR-84 1090 1089 "
       },
       "3": {
-        "gabarito": "PR-070 PR-87 PR-090 ",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": " PR-87 PR-90 "
       },
       "4": {
-        "gabarito": "PR-056 1083 63103",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PR-56 1083 63103"
       },
       "5": {
-        "gabarito": "PR-062 PR-46 PR-072 ",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PR-62 PR-46 PR-72 "
       },
       "6": {
-        "gabarito": "",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": ""
       },
       "7": {
-        "gabarito": "BRASLAR 13952",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "BRASLAR 13952"
       },
       "8": {
-        "gabarito": "PR-040 PR-145",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PR-40 PR-145"
       },
       "9": {
-        "gabarito": "13436 4850 PR-016",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "13436 4850 PR-16"
       },
       "10": {
-        "gabarito": "15744 15742",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "15744 15742"
       },
       "11": {
-        "gabarito": "PROTOTIPO",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PROTOTIPO"
       },
       "12": {
-        "gabarito": "",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": ""
       },
       "13": {
-        "gabarito": "50698",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "50698"
       },
       "14": {
-        "gabarito": "3615 PR-016",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "3615 PR-16"
       },
       "15": {
-        "gabarito": "3798",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "3798"
       },
       "16": {
-        "gabarito": "15744",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "15744"
       },
       "17": {
-        "gabarito": "PR-060",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PR-60"
       },
       "18": {
-        "gabarito": "PROTOTIPOS",
-        "status": "Ocupado"
+        "status": "Ocupado",
+        "gabarito": "PROTOTIPOS"
       }
-    }
-  },
-  "01": {
-    "nome": "Relatorio mensal",
-    "status": "Aguardando",
-    "cliente": "—",
-    "peca": "—",
-    "codigo_peca": "—",
+    },
     "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
     "meta_hora": 0,
-    "operador": "—",
-    "turno": "—",
-    "tempo_solda": "—",
-    "corrente": "—",
-    "pre_pressao": "—",
-    "pontos_solda": "—",
-    "ultima_troca": "—",
-    "alertas": []
-  },
-  "00": {
-    "nome": "Produção Mensal",
-    "status": "Aguardando",
-    "cliente": "—",
-    "peca": "—",
-    "codigo_peca": "—",
-    "img_peca": "",
-    "eletrodo": "—",
-    "tipo_eletrodo": "—",
-    "tempo_peca": "—",
-    "meta_hora": 0,
-    "operador": "—",
-    "turno": "—",
-    "tempo_solda": "—",
-    "corrente": "—",
-    "pre_pressao": "—",
-    "pontos_solda": "—",
-    "ultima_troca": "—",
-    "alertas": [],
-    "ano_selecionado": 2026,
-    "mes_selecionado": 5,
-    "producao_meses": {
-      "2026_4": {
-        "1": 0,
-        "2": 0,
-        "3": 0,
-        "4": 0,
-        "5": 0,
-        "6": 0,
-        "7": 0,
-        "8": 0
-      },
-      "2026_5": {
-        "1": 4454,
-        "2": 4823,
-        "3": 4648,
-        "4": 3924,
-        "5": 0,
-        "6": 0,
-        "7": 0,
-        "8": 4817,
-        "9": 4832,
-        "10": 3246,
-        "11": 0,
-        "12": 0
-      }
-    }
+    "tipo_celula": "armario"
   }
 };
 
