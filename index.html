@@ -501,6 +501,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <span id="newDataBadge" onclick="recarregarDados()" title="Clique para atualizar" style="display:none;cursor:pointer;background:#ff6a00;color:#fff;font-size:10px;padding:3px 10px;border-radius:99px;font-weight:700;animation:pisca 1s infinite">🔔 Dados novos — clique aqui</span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
+      <button id="btnRestoreBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="document.getElementById('restoreCelulasInput').click()" title="Restaurar a partir de um arquivo de backup">📂 Restaurar Backup</button>
+      <input type="file" id="restoreCelulasInput" accept=".json" style="display:none" onchange="restaurarBackupCelulas(event)">
       <button id="btnRestore" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none;background:#ff6a00" onclick="restaurarDados()" title="Restaurar dados padrão">🔄 Restaurar</button>
       <button id="btnGerenciar" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="openGerenciar()">⚙ Células</button>
       <button id="btnXlsx" class="btn btn-blue" style="padding:5px 10px;font-size:10px;display:none" onclick="openXlsxModal()">📊</button>
@@ -603,6 +605,32 @@ async function restaurarDados(){
   renderSidebar();
   renderDetail();
   showToast("Dados restaurados ✓");
+}
+
+async function restaurarBackupCelulas(event){
+  const file = event.target.files[0];
+  event.target.value = ""; // permite selecionar o mesmo arquivo de novo depois
+  if(!file) return;
+  try{
+    const texto = await file.text();
+    const novo = JSON.parse(texto);
+    if(typeof novo !== "object" || novo === null || Array.isArray(novo)){
+      showToast("Arquivo inválido",true);
+      return;
+    }
+    const chaves = Object.keys(novo);
+    if(!confirm(`Restaurar backup?\n\nCélulas/itens encontrados: ${chaves.join(", ")}\n\nIsso vai sobrescrever esses itens específicos (os demais não são afetados).`)) return;
+
+    // Recarrega o estado mais atual do banco antes de mesclar, pra não perder edições feitas em outra aba/celular
+    await loadFromAPI();
+    Object.assign(celulas, novo);
+    await saveToAPI(celulas);
+    renderSidebar();
+    renderDetail();
+    showToast("Backup restaurado ✓");
+  }catch(e){
+    showToast("Erro ao ler o arquivo de backup",true);
+  }
 }
 
 function recarregarDados(){
@@ -4468,7 +4496,7 @@ function startApp(){
   selected=null; celulas={};
 
   // Reset todos os botões
-  ["btnAdd","btnXlsx","btnBackup","btnGerenciar","btnRestore"].forEach(id=>{
+  ["btnAdd","btnXlsx","btnBackup","btnRestoreBackup","btnGerenciar","btnRestore"].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display="none";
   });
@@ -4482,6 +4510,7 @@ function startApp(){
     document.getElementById("btnAdd").style.display="inline-block";
     document.getElementById("btnXlsx").style.display="inline-block";
     document.getElementById("btnBackup").style.display="inline-block";
+    document.getElementById("btnRestoreBackup").style.display="inline-block";
     document.getElementById("btnGerenciar").style.display="inline-block";
     document.getElementById("btnRestore").style.display="inline-block";
   } else if(isAdminMetas){
@@ -4534,7 +4563,7 @@ function doLogout(){
   pollTimer=null;
   // Reset completo
   isAdmin=false; isAdminMetas=false; selected=null; celulas={};
-  ["btnAdd","btnXlsx","btnBackup","btnGerenciar","btnRestore"].forEach(id=>{
+  ["btnAdd","btnXlsx","btnBackup","btnRestoreBackup","btnGerenciar","btnRestore"].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.style.display="none";
   });
