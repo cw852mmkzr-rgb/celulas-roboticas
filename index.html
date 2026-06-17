@@ -5685,7 +5685,8 @@ function renderGabBtns(){
   const el = document.getElementById("gabBtns");
   if(!el) return;
   el.innerHTML = isGabAdmin
-    ? `<button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
+    ? `<button onclick="document.getElementById('gabRestoreInput').click()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">↑ Restaurar Backup</button>
+       <button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
        <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
        <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
     : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
@@ -5988,6 +5989,31 @@ async function backupGabaritagem(){
   }catch(e){ showToast("Erro ao fazer backup",true); }
 }
 
+async function restaurarBackupGabaritagem(event){
+  const file = event.target.files[0];
+  event.target.value = ""; // permite selecionar o mesmo arquivo de novo depois
+  if(!file) return;
+  try{
+    const texto = await file.text();
+    const novo = JSON.parse(texto);
+    if(typeof novo !== "object" || novo === null || Array.isArray(novo)){
+      showToast("Arquivo inválido",true);
+      return;
+    }
+    const chaves = Object.keys(novo);
+    if(!confirm(`Restaurar backup?\n\nMeses encontrados: ${chaves.join(", ")}\n\nIsso vai sobrescrever esses meses específicos (os demais meses não são afetados).`)) return;
+
+    // Recarrega o estado mais atual do banco antes de mesclar, pra não perder edições feitas em outra aba
+    await loadGabDados();
+    Object.assign(gabDados, novo);
+    await saveGabDados();
+    renderGabaritagem();
+    showToast("Backup restaurado ✓");
+  }catch(e){
+    showToast("Erro ao ler o arquivo de backup",true);
+  }
+}
+
 function abrirGabDesempenho(){
   document.getElementById("gabDesempenhoScreen").style.display="flex";
   renderGabDesempenho();
@@ -6283,6 +6309,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
         <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
       </select>
       <div id="gabBtns" style="display:flex;gap:6px;align-items:center"></div>
+      <input type="file" id="gabRestoreInput" accept=".json" style="display:none" onchange="restaurarBackupGabaritagem(event)">
     </div>
   </div>
   <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px">
