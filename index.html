@@ -310,6 +310,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .mapa-maq { border-radius:6px; border:1.5px solid; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; font-family:'Courier New',monospace; min-height:38px; cursor:pointer; transition:transform 0.1s; }
 .mapa-maq:hover { transform:scale(1.06); }
 .mapa-maq.mapa-maq-glow { box-shadow:0 0 10px currentColor; }
+.mapa-maq-bateria { position:relative; min-height:72px; font-size:19px; border-radius:14px; border-width:2px !important; }
+.mapa-maq-bateria::before { content:''; position:absolute; top:-7px; left:50%; transform:translateX(-50%); width:42%; height:7px; background:currentColor; border-radius:3px 3px 0 0; opacity:0.85; }
 .mapa-g-slot { display:flex; align-items:center; justify-content:center; color:#3a4250; font-size:12px; font-weight:700; min-height:38px; cursor:default; }
 .mapa-g-slot.editavel { cursor:pointer; border:1.5px dashed #2a3040; border-radius:6px; }
 .mapa-room { border:1.5px solid #2a3040; border-radius:8px; padding:14px; position:relative; color:#4a5568; }
@@ -5519,6 +5521,8 @@ function mapaContarStatus(st){
   return Object.values(mapaDados.maquinas).filter(m=>m.status===st).length;
 }
 
+const MAPA_CODIGOS_BATERIA = ['406','410','404','407','405','411','420'];
+
 function renderMapaZonaHTML(zona){
   const celulasHTML = zona.celulas.map((cod,idx)=>{
     if(cod===null){
@@ -5532,7 +5536,8 @@ function renderMapaZonaHTML(zona){
     const m = mapaDados.maquinas[cod] || {status:'producao'};
     const info = MAPA_STATUS_INFO[m.status]||MAPA_STATUS_INFO.producao;
     const label = cod.replace(/b$/,'');
-    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${esc(label)}</div>`;
+    const ehBateria = MAPA_CODIGOS_BATERIA.includes(label);
+    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${ehBateria?'mapa-maq-bateria':''}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${esc(label)}</div>`;
   }).join('');
   return `<div class="mapa-zona">
     ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
@@ -5575,8 +5580,8 @@ function renderMapaProducao(){
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
       <div class="mapa-sidebar" id="mapaSidebar">
-        ${['Mapa','Produção','Ordens','Estoque','Indicadores','Relatórios','Manutenção','Configurações'].map(it=>{
-          const icones = {Mapa:'📍',Produção:'🏭',Ordens:'📋',Estoque:'📦',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Configurações:'⚙'};
+        ${['Mapa','Produção','Ordens','Estoque','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Ordens:'📋',Estoque:'📦',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it==='Mapa'?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
