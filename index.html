@@ -290,6 +290,41 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .field label { font-size: 10px; }
   .field input, .field select, .field textarea { font-size: 13px; }
 }
+/* ===== MAPA DA PRODUÇÃO ===== */
+.mapa-sidebar { width:190px; background:#080b0f; border-right:1px solid #1e2530; flex-shrink:0; display:flex; flex-direction:column; padding:14px 10px; gap:3px; overflow-y:auto; }
+.mapa-sidebar-item { display:flex; align-items:center; gap:9px; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:13px; color:#9ca3af; font-weight:600; }
+.mapa-sidebar-item:hover { background:#ffffff08; }
+.mapa-sidebar-item.ativo { background:#3d9eff20; color:#3d9eff; }
+.mapa-legend { margin-top:auto; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:12px; font-size:11px; }
+.mapa-legend-title { color:#4a5568; text-transform:uppercase; letter-spacing:0.1em; font-weight:800; margin-bottom:8px; font-size:10px; }
+.mapa-legend-item { display:flex; align-items:center; gap:7px; padding:3px 0; color:#d8dde6; }
+.mapa-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.mapa-stat-card { background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:8px 14px; display:flex; align-items:center; gap:10px; min-width:108px; }
+.mapa-stat-label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; }
+.mapa-stat-val { font-size:20px; font-weight:900; color:#fff; }
+.mapa-canvas-wrap { flex:1; overflow:auto; background:#0a0d12; position:relative; padding:30px; }
+.mapa-canvas { transform-origin:top left; min-width:1000px; }
+.mapa-zona { border:1.5px dashed #2a3040; border-radius:8px; padding:14px; position:relative; }
+.mapa-zona-label { position:absolute; left:10px; top:-12px; background:#0a0d12; padding:0 8px; font-size:11px; font-weight:800; color:#9ca3af; letter-spacing:0.08em; }
+.mapa-grid { display:grid; gap:8px; }
+.mapa-maq { border-radius:6px; border:1.5px solid; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; font-family:'Courier New',monospace; min-height:38px; cursor:pointer; transition:transform 0.1s; }
+.mapa-maq:hover { transform:scale(1.06); }
+.mapa-maq.mapa-maq-glow { box-shadow:0 0 10px currentColor; }
+.mapa-g-slot { display:flex; align-items:center; justify-content:center; color:#3a4250; font-size:12px; font-weight:700; min-height:38px; cursor:default; }
+.mapa-g-slot.editavel { cursor:pointer; border:1.5px dashed #2a3040; border-radius:6px; }
+.mapa-room { border:1.5px solid #2a3040; border-radius:8px; padding:14px; position:relative; color:#4a5568; }
+.mapa-arrow { color:#ff4d4d; font-weight:900; font-size:20px; }
+.mapa-tag { position:absolute; background:#ff4d4d20; border:1px solid #ff4d4d60; color:#ff4d4d; font-size:9px; font-weight:800; padding:1px 5px; border-radius:3px; }
+.mapa-toolbar { display:flex; align-items:center; gap:10px; justify-content:center; padding:10px; background:#080b0f; border-top:1px solid #1e2530; }
+.mapa-tool-btn { background:#1e2530; border:1px solid #2a3040; color:#9ca3af; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; }
+.mapa-tool-btn.ativo { background:#3d9eff; color:#fff; border-color:#3d9eff; }
+.mapa-tool-zoom { font-size:12px; color:#9ca3af; font-family:'Courier New',monospace; min-width:42px; text-align:center; }
+@media (max-width:900px){
+  #mapaBtnMenuMobile { display:flex !important; }
+  .mapa-sidebar { position:fixed; top:0; bottom:0; left:0; z-index:50; transform:translateX(-100%); transition:transform 0.2s; box-shadow:4px 0 16px #000a; }
+  .mapa-sidebar.aberta { transform:translateX(0); }
+  .mapa-canvas-wrap { padding:14px; }
+}
 </style>
 </head>
 <body>
@@ -383,6 +418,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
     <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
     <button class="login-btn-sec" style="margin-bottom:6px;color:#a78bfa;border-color:#a78bfa40" onclick="abrirGabaritagem()">🔨 Controle de Gabaritagem</button>
+    <button class="login-btn-sec" style="margin-bottom:6px;color:#3d9eff;border-color:#3d9eff40" onclick="abrirMapaProducao()">🏭 Mapa da Produção</button>
     <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
     <div class="login-hint"></div>
   </div>
@@ -5349,6 +5385,332 @@ function _carNext(total){
   renderMetasDiaria();
 }
 
+// ===== MAPA DA PRODUÇÃO =====
+const MAPA_PW = "mapa2026";
+let isMapaAdmin = false;
+let mapaDados = null;
+let mapaPollTimer = null;
+let mapaZoomAtual = 100;
+let mapaMaquinaAberta = null;
+let mapaSlotEdicao = null; // {zonaId, idx} quando editando um slot vazio/G
+
+const MAPA_STATUS_INFO = {
+  producao:   { label:'Produzindo',  cor:'#00e87a' },
+  setup:      { label:'Setup',       cor:'#ffb300' },
+  parada:     { label:'Parada',      cor:'#ff4d4d' },
+  manutencao: { label:'Manutenção',  cor:'#9aa5b8' },
+  desligada:  { label:'Desligada',   cor:'#3d9eff' }
+};
+
+function mapaSeedPadrao(){
+  // Estrutura das zonas + status inicial de cada máquina, baseado na foto de referência da planta.
+  // Algumas células (ex: 37/37b, 184/184b) ficaram parecidas na foto — dá pra corrigir o código
+  // de qualquer máquina depois, clicando nela em modo de edição.
+  const zonas = [
+    { id:'topo_esq', cols:4, celulas:['90','91','87','88','75','42','46','79','33',null,'G','G'] },
+    { id:'topo_dir', cols:3, celulas:['83','40','37','G','65','37b','G','G','G'] },
+    { id:'retrabalho', label:'RETRABALHO', cols:3, celulas:['241','242','243','247','224','227','G','245','228','G','190','141',null,'154',null] },
+    { id:'c6_principal', cols:7, celulas:['406','410','404','407','405','411','420','110','113',null,'179','178','180','184',null,null,'184b',null,null,'156','177'] },
+    { id:'c6_lateral', cols:1, celulas:['39','182','132','146'] },
+    { id:'fundo_esq', cols:3, celulas:['188','191','189'] },
+    { id:'cabine_maq', cols:1, celulas:['105','112'] }
+  ];
+  const statusInicial = {
+    '420':'setup', '132':'setup', '190':'setup',
+    '182':'parada',
+    '110':'manutencao', '113':'manutencao',
+    '105':'desligada', '112':'desligada'
+  };
+  const maquinas = {};
+  zonas.forEach(z=>{
+    z.celulas.forEach(cod=>{
+      if(!cod || cod==='G') return;
+      maquinas[cod] = { status: statusInicial[cod]||'producao', peca:'', meta:0, obs:'', historico:[] };
+    });
+  });
+  return { zonas, maquinas };
+}
+
+async function loadMapaDados(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=mapa_producao",{headers:HEADERS_SB});
+    const d = await r.json();
+    if(d && d[0] && d[0].mapa_producao && d[0].mapa_producao.zonas && d[0].mapa_producao.zonas.length){
+      mapaDados = d[0].mapa_producao;
+    } else {
+      mapaDados = mapaSeedPadrao();
+      await saveMapaDados();
+    }
+  }catch(e){
+    if(!mapaDados) mapaDados = mapaSeedPadrao();
+    showToast("Erro ao carregar — usando dados locais",true);
+  }
+}
+
+async function saveMapaDados(){
+  try{
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:mapaDados})});
+  }catch(e){ showToast("Erro ao salvar mapa",true); }
+}
+
+function abrirMapaProducao(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("mapaScreen").style.display="flex";
+  loadMapaDados().then(()=>{
+    renderMapaProducao();
+    clearInterval(mapaPollTimer);
+    mapaPollTimer = setInterval(()=>{ loadMapaDados().then(renderMapaProducao); }, 3000);
+  });
+}
+
+function fecharMapaProducao(){
+  clearInterval(mapaPollTimer);
+  mapaPollTimer = null;
+  isMapaAdmin = false;
+  document.getElementById("mapaScreen").style.display="none";
+  document.getElementById("loginScreen").style.display="flex";
+}
+
+function toggleMapaSidebar(){
+  document.getElementById("mapaSidebar").classList.toggle("aberta");
+}
+
+function mapaSidebarClick(item){
+  if(item==='Mapa') return;
+  showToast(`🚧 "${item}" ainda não foi construído — próxima etapa`);
+}
+
+function mapaZoomIn(){ mapaZoomAtual=Math.min(160,mapaZoomAtual+10); aplicarMapaZoom(); }
+function mapaZoomOut(){ mapaZoomAtual=Math.max(50,mapaZoomAtual-10); aplicarMapaZoom(); }
+function aplicarMapaZoom(){
+  const el=document.getElementById("mapaCanvas");
+  if(el) el.style.transform=`scale(${mapaZoomAtual/100})`;
+  const lbl=document.getElementById("mapaZoomLabel");
+  if(lbl) lbl.textContent=mapaZoomAtual+"%";
+}
+function mapaFullscreen(){
+  const el=document.getElementById("mapaScreen");
+  if(!document.fullscreenElement) el.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+
+function entrarModoEdicaoMapa(){
+  document.getElementById("modalMapaLogin").style.display="flex";
+  document.getElementById("mapaPwInput").value="";
+  document.getElementById("mapaLoginErr").style.display="none";
+}
+function confirmarMapaLogin(){
+  const pw=document.getElementById("mapaPwInput").value;
+  if(pw===MAPA_PW){
+    isMapaAdmin=true;
+    document.getElementById("modalMapaLogin").style.display="none";
+    showToast("Modo edição ativado ✓");
+    renderMapaProducao();
+  } else {
+    document.getElementById("mapaLoginErr").style.display="block";
+  }
+}
+function sairModoEdicaoMapa(){
+  isMapaAdmin=false;
+  renderMapaProducao();
+}
+
+function mapaContarStatus(st){
+  return Object.values(mapaDados.maquinas).filter(m=>m.status===st).length;
+}
+
+function renderMapaZonaHTML(zona){
+  const celulasHTML = zona.celulas.map((cod,idx)=>{
+    if(cod===null){
+      if(isMapaAdmin) return `<div class="mapa-g-slot editavel" onclick="mapaAbrirSlotVazio('${zona.id}',${idx})">+</div>`;
+      return `<div class="mapa-g-slot"></div>`;
+    }
+    if(cod==='G'){
+      if(isMapaAdmin) return `<div class="mapa-g-slot editavel" onclick="mapaAbrirSlotVazio('${zona.id}',${idx})">G</div>`;
+      return `<div class="mapa-g-slot">G</div>`;
+    }
+    const m = mapaDados.maquinas[cod] || {status:'producao'};
+    const info = MAPA_STATUS_INFO[m.status]||MAPA_STATUS_INFO.producao;
+    const label = cod.replace(/b$/,'');
+    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${esc(label)}</div>`;
+  }).join('');
+  return `<div class="mapa-zona">
+    ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
+    <div class="mapa-grid" style="grid-template-columns:repeat(${zona.cols},minmax(46px,1fr))">${celulasHTML}</div>
+  </div>`;
+}
+
+function renderMapaProducao(){
+  const total = Object.keys(mapaDados.maquinas).length;
+  const produzindo = mapaContarStatus('producao');
+  const setup = mapaContarStatus('setup');
+  const parada = mapaContarStatus('parada');
+  const manutencao = mapaContarStatus('manutencao');
+
+  const zonaById = id => mapaDados.zonas.find(z=>z.id===id);
+
+  document.getElementById("mapaConteudo").innerHTML = `
+    <div style="background:#080b0f;border-bottom:1px solid #1e2530;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <button class="mapa-tool-btn" style="display:none" id="mapaBtnMenuMobile" onclick="toggleMapaSidebar()">☰</button>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:26px">🏭</span>
+        <div>
+          <div style="font-size:16px;font-weight:900;color:#fff">MAPA DA PRODUÇÃO</div>
+          <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Planta Industrial</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:8px">
+        <div class="mapa-stat-card"><span style="font-size:18px">▶</span><div><div class="mapa-stat-label" style="color:#00e87a">Produzindo</div><div class="mapa-stat-val">${produzindo}</div></div></div>
+        <div class="mapa-stat-card"><span style="font-size:18px">⚙</span><div><div class="mapa-stat-label" style="color:#ffb300">Setup</div><div class="mapa-stat-val">${setup}</div></div></div>
+        <div class="mapa-stat-card"><span style="font-size:18px">⛔</span><div><div class="mapa-stat-label" style="color:#ff4d4d">Parada</div><div class="mapa-stat-val">${parada}</div></div></div>
+        <div class="mapa-stat-card"><span style="font-size:18px">🔧</span><div><div class="mapa-stat-label" style="color:#9aa5b8">Manutenção</div><div class="mapa-stat-val">${manutencao}</div></div></div>
+        <div class="mapa-stat-card"><span style="font-size:18px">🏢</span><div><div class="mapa-stat-label" style="color:#3d9eff">Total Máquinas</div><div class="mapa-stat-val">${total}</div></div></div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        ${isMapaAdmin
+          ? `<span style="font-size:11px;color:#3d9eff;font-weight:700">✓ Editando</span><button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="sairModoEdicaoMapa()">✕ Sair edição</button>`
+          : `<button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="entrarModoEdicaoMapa()">✏ Editar</button>`}
+        <button class="btn btn-red" style="padding:6px 12px;font-size:11px" onclick="fecharMapaProducao()">✕ Voltar ao login</button>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;overflow:hidden;min-height:0">
+      <div class="mapa-sidebar" id="mapaSidebar">
+        ${['Mapa','Produção','Ordens','Estoque','Indicadores','Relatórios','Manutenção','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Ordens:'📋',Estoque:'📦',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Configurações:'⚙'};
+          return `<div class="mapa-sidebar-item ${it==='Mapa'?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
+        }).join('')}
+        <div class="mapa-legend">
+          <div class="mapa-legend-title">Legenda</div>
+          ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
+        </div>
+      </div>
+      <div class="mapa-canvas-wrap">
+        <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
+
+          <div style="display:flex;gap:26px;align-items:flex-start">
+            <span class="mapa-arrow">↓</span>
+            ${renderMapaZonaHTML(zonaById('topo_esq'))}
+            <span class="mapa-arrow">↓</span>
+            ${renderMapaZonaHTML(zonaById('topo_dir'))}
+            <div class="mapa-room" style="min-width:170px;min-height:230px;text-align:center;padding-top:30px">
+              <div style="font-size:22px;font-weight:900;color:#7a8699">A8</div>
+              <div style="position:absolute;bottom:8px;right:10px;font-size:9px;color:#ff4d4d;border:1px solid #ff4d4d60;background:#ff4d4d15;padding:1px 5px;border-radius:3px">EX</div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 50px;max-width:700px">
+            <span class="mapa-arrow">←</span>
+            <span style="font-size:26px;font-weight:900;color:#e2e6ec;letter-spacing:0.05em">C6</span>
+            <span class="mapa-arrow">→</span>
+          </div>
+
+          <div style="display:flex;gap:26px;align-items:flex-start">
+            ${renderMapaZonaHTML(zonaById('retrabalho'))}
+            ${renderMapaZonaHTML(zonaById('c6_principal'))}
+            ${renderMapaZonaHTML(zonaById('c6_lateral'))}
+            <div class="mapa-room" style="min-width:140px;min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#7a8699">Cabine<br>de<br>Força</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 50px;max-width:700px">
+            <span class="mapa-arrow">←</span>
+            <span class="mapa-arrow">→</span>
+          </div>
+
+          <div style="display:flex;gap:26px;align-items:flex-start">
+            ${renderMapaZonaHTML(zonaById('fundo_esq'))}
+            <div class="mapa-grid" style="grid-template-columns:repeat(9,32px)">${Array.from({length:9}).map(()=>`<div class="mapa-g-slot">G</div>`).join('')}</div>
+            ${renderMapaZonaHTML(zonaById('cabine_maq'))}
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="mapa-toolbar">
+      <button class="mapa-tool-btn ativo">⊙</button>
+      <button class="mapa-tool-btn">✋</button>
+      <button class="mapa-tool-btn" onclick="mapaZoomOut()">−</button>
+      <span class="mapa-tool-zoom" id="mapaZoomLabel">${mapaZoomAtual}%</span>
+      <button class="mapa-tool-btn" onclick="mapaZoomIn()">+</button>
+      <button class="mapa-tool-btn" onclick="mapaFullscreen()">⛶</button>
+    </div>
+  `;
+  aplicarMapaZoom();
+}
+
+function mapaAbrirSlotVazio(zonaId, idx){
+  if(!isMapaAdmin) return;
+  const cod = prompt("Código da nova máquina:");
+  if(!cod) return;
+  const codTrim = cod.trim();
+  if(!codTrim) return;
+  if(mapaDados.maquinas[codTrim]){ showToast("Já existe uma máquina com esse código",true); return; }
+  const zona = mapaDados.zonas.find(z=>z.id===zonaId);
+  zona.celulas[idx] = codTrim;
+  mapaDados.maquinas[codTrim] = { status:'producao', peca:'', meta:0, obs:'', historico:[] };
+  saveMapaDados();
+  renderMapaProducao();
+  showToast("Máquina adicionada ✓");
+}
+
+function mapaAbrirMaquina(cod){
+  mapaMaquinaAberta = cod;
+  const m = mapaDados.maquinas[cod];
+  const podeEditar = isMapaAdmin;
+  const statusOpts = Object.entries(MAPA_STATUS_INFO).map(([k,v])=>`<option value="${k}" ${k===m.status?'selected':''}>${v.label}</option>`).join('');
+  const historicoHTML = (m.historico&&m.historico.length)
+    ? m.historico.slice().reverse().map(h=>`<div class="hist-item"><span class="hist-item-data">${esc(h.data)}</span><span class="hist-item-val">${esc(h.texto)}</span></div>`).join('')
+    : `<div class="hist-empty">Sem histórico ainda.</div>`;
+  document.getElementById("mapaMaquinaModalBody").innerHTML = `
+    <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:14px">Máquina ${esc(cod.replace(/b$/,''))}</div>
+    <div class="modal-field"><label>Status</label>
+      <select class="modal-input" id="mapaMaqStatus" ${podeEditar?'':'disabled'}>${statusOpts}</select>
+    </div>
+    <div class="modal-field"><label>Peça/Código em produção</label>
+      <input class="modal-input" id="mapaMaqPeca" value="${esc(m.peca||'')}" ${podeEditar?'':'readonly'} placeholder="—">
+    </div>
+    <div class="modal-field"><label>Meta de produção / hora</label>
+      <input class="modal-input" type="number" id="mapaMaqMeta" value="${m.meta||0}" ${podeEditar?'':'readonly'}>
+    </div>
+    <div class="modal-field"><label>Observações</label>
+      <textarea class="modal-input" id="mapaMaqObs" rows="3" ${podeEditar?'':'readonly'} placeholder="—">${esc(m.obs||'')}</textarea>
+    </div>
+    <div style="margin-top:10px">
+      <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Histórico</label>
+      <div style="max-height:140px;overflow-y:auto;margin-top:6px">${historicoHTML}</div>
+    </div>
+    <div class="modal-actions" style="margin-top:18px">
+      <button class="btn btn-gray" onclick="mapaFecharMaquina()">Fechar</button>
+      ${podeEditar?`<button class="btn btn-green" onclick="mapaSalvarMaquina()">✓ Salvar</button>`:''}
+    </div>
+  `;
+  document.getElementById("modalMapaMaquina").style.display="flex";
+}
+
+function mapaFecharMaquina(){
+  document.getElementById("modalMapaMaquina").style.display="none";
+  mapaMaquinaAberta = null;
+}
+
+function mapaSalvarMaquina(){
+  const cod = mapaMaquinaAberta;
+  if(!cod) return;
+  const m = mapaDados.maquinas[cod];
+  const novoStatus = document.getElementById("mapaMaqStatus").value;
+  const agora = new Date().toLocaleString("pt-BR");
+  if(novoStatus !== m.status){
+    if(!m.historico) m.historico=[];
+    m.historico.push({ data: agora, texto: `Status alterado: ${MAPA_STATUS_INFO[m.status].label} → ${MAPA_STATUS_INFO[novoStatus].label}` });
+  }
+  m.status = novoStatus;
+  m.peca = document.getElementById("mapaMaqPeca").value;
+  m.meta = parseInt(document.getElementById("mapaMaqMeta").value)||0;
+  m.obs = document.getElementById("mapaMaqObs").value;
+  saveMapaDados();
+  mapaFecharMaquina();
+  renderMapaProducao();
+  showToast("Máquina atualizada ✓");
+}
+
 function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
@@ -6378,6 +6740,30 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     <button onclick="document.getElementById('gabDesempenhoScreen').style.display='none'" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:20px" id="gabDesPanel"></div>
+</div>
+
+<!-- ===== MAPA DA PRODUÇÃO ===== -->
+<div id="mapaScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
+  <div id="mapaConteudo" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+</div>
+
+<div id="modalMapaLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">🏭 Mapa da Produção</div>
+    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Digite a senha para editar</div>
+    <input type="password" id="mapaPwInput" placeholder="Senha"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
+      onkeydown="if(event.key==='Enter')confirmarMapaLogin()">
+    <div id="mapaLoginErr" style="display:none;color:#ff4d4d;font-size:11px;margin-bottom:8px">Senha incorreta</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      <button onclick="document.getElementById('modalMapaLogin').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="confirmarMapaLogin()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalMapaMaquina" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
+  <div class="modal" style="width:380px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()" id="mapaMaquinaModalBody"></div>
 </div>
 
 </body>
