@@ -312,6 +312,14 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .mapa-maq.mapa-maq-glow { box-shadow:0 0 10px currentColor; }
 .mapa-maq-bateria { position:relative; min-height:72px; font-size:19px; border-radius:14px; border-width:2px !important; }
 .mapa-maq-bateria::before { content:''; position:absolute; top:-7px; left:50%; transform:translateX(-50%); width:42%; height:7px; background:currentColor; border-radius:3px 3px 0 0; opacity:0.85; }
+.mapa-maq-redonda { border-radius:50% !important; aspect-ratio:1/1; min-height:50px; padding:0; }
+.mapa-maq-caixa { position:relative; min-height:78px; border-radius:7px 7px 4px 4px !important; border-width:2px !important; }
+.mapa-maq-caixa::before, .mapa-maq-caixa::after { content:''; position:absolute; top:-13px; width:1.5px; height:13px; background:currentColor; opacity:0.85; }
+.mapa-maq-caixa::before { left:38%; transform:rotate(-12deg); transform-origin:bottom; }
+.mapa-maq-caixa::after { left:62%; transform:rotate(12deg); transform-origin:bottom; }
+.mapa-maq-caixa .antena-ponta { position:absolute; top:-15px; width:4px; height:4px; border-radius:50%; background:currentColor; }
+.mapa-maq-caixa .antena-ponta-esq { left:calc(38% - 4.2px); }
+.mapa-maq-caixa .antena-ponta-dir { left:calc(62% + 0.2px); }
 .mapa-g-slot { display:flex; align-items:center; justify-content:center; color:#3a4250; font-size:12px; font-weight:700; min-height:38px; cursor:default; }
 .mapa-g-slot.editavel { cursor:pointer; border:1.5px dashed #2a3040; border-radius:6px; }
 .mapa-room { border:1.5px solid #2a3040; border-radius:8px; padding:14px; position:relative; color:#4a5568; }
@@ -5539,6 +5547,8 @@ function mapaContarStatus(st){
 }
 
 const MAPA_CODIGOS_BATERIA = ['406','410','404','407','405','411','420'];
+const MAPA_CODIGOS_REDONDA = ['90','91','87','88','83','40','37'];
+const MAPA_CODIGOS_CAIXA = ['241','242','243','247','224','227','245','228','141','190','154'];
 
 function renderMapaZonaHTML(zona){
   const celulasHTML = zona.celulas.map((cod,idx)=>{
@@ -5554,7 +5564,11 @@ function renderMapaZonaHTML(zona){
     const info = MAPA_STATUS_INFO[m.status]||MAPA_STATUS_INFO.producao;
     const label = cod.replace(/b$/,'');
     const ehBateria = MAPA_CODIGOS_BATERIA.includes(label);
-    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${ehBateria?'mapa-maq-bateria':''}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${esc(label)}</div>`;
+    const ehRedonda = MAPA_CODIGOS_REDONDA.includes(label);
+    const ehCaixa = MAPA_CODIGOS_CAIXA.includes(label);
+    const formaClasse = ehBateria?'mapa-maq-bateria':ehRedonda?'mapa-maq-redonda':ehCaixa?'mapa-maq-caixa':'';
+    const antenas = ehCaixa?`<span class="antena-ponta antena-ponta-esq"></span><span class="antena-ponta antena-ponta-dir"></span>`:'';
+    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${formaClasse}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${antenas}${esc(label)}</div>`;
   }).join('');
   return `<div class="mapa-zona">
     ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
