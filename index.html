@@ -4402,7 +4402,7 @@ function _dashRenderRobo(k){
         <div class="dash-prod-h">Produção ${hora}</div>
         <div class="dash-prod-n" style="color:${cor}">${prod>0?prod:'—'}</div>
         ${meta>0?`<div class="dash-meta-txt">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
-        ${meta>0&&!bateu&&faltam>0?`<div class="dash-meta-txt" style="color:#ff6a00;font-weight:700">Faltam ${faltam} peça${faltam===1?'':'s'} para a meta</div>`:''}
+        ${meta>0&&prod>0&&!bateu&&faltam>0?`<div class="dash-meta-txt" style="color:#ff6a00;font-weight:700">Faltou ${faltam} peça${faltam===1?'':'s'}</div>`:''}
       </div>
 
       <!-- Eficiência em % -->
