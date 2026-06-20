@@ -5863,8 +5863,8 @@ function montarContextoIA(){
   return ctx;
 }
 
-// Monta o histórico de produção diária do mês atual: total da fábrica por dia
-// e total por robô naquele dia (soma das horas lançadas em Metas Diária).
+// Monta o histórico de produção diária do mês atual: total da fábrica por dia,
+// e por robô: total do dia, código da peça, meta, e a quebra hora a hora.
 function montarHistoricoProducaoIA(){
   const historico = {};
   const itemGeral = celulas['00'];
@@ -5883,19 +5883,26 @@ function montarHistoricoProducaoIA(){
     const totalDia = totaisDia[dia];
     if(!totalDia) return; // pula dias sem produção lançada (fim de semana, feriado, dia futuro)
     const dataISO = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-    const entradaDia = { total_fabrica: totalDia };
+    const entradaDia = { total_fabrica: totalDia, robos: {} };
     const dadosRobosDia = metasDias[`${chaveMes}_${dia}`];
     if(dadosRobosDia){
       Object.entries(dadosRobosDia).forEach(([robo,info])=>{
         if(!info || typeof info!=='object') return;
+        const horas = {};
         let somaRobo = 0;
         Object.entries(info).forEach(([campo,valor])=>{
-          if(/^h\d{4}$/.test(campo)){
+          const m = campo.match(/^h(\d{2})(\d{2})$/);
+          if(m){
             const n = parseInt(valor);
-            if(!isNaN(n)) somaRobo += n;
+            if(!isNaN(n)){
+              horas[`${m[1]}:${m[2]}`] = n;
+              somaRobo += n;
+            }
           }
         });
-        if(somaRobo>0) entradaDia[robo] = somaRobo;
+        if(somaRobo>0 || info.cod){
+          entradaDia.robos[robo] = { total: somaRobo, codigo_peca: (info.cod||'').trim()||undefined, meta_hora: info.meta?parseInt(info.meta):undefined, horas };
+        }
       });
     }
     historico[dataISO] = entradaDia;
@@ -5903,11 +5910,71 @@ function montarHistoricoProducaoIA(){
   return historico;
 }
 
+// Monta dados das outras telas do sistema que têm informação própria:
+// Cadastro de Peças, Armário de Gabaritos, Manutenção, e a planilha de Gabaritagem do mês atual.
+async function montarInfoExtraIA(){
+  const info = {};
+
+  // Cadastro de Peças (item '06') — parâmetros padrão de solda por código de peça
+  const cadastro = celulas['06'];
+  if(cadastro && cadastro.pecas && typeof cadastro.pecas==='object'){
+    const pecas = {};
+    Object.entries(cadastro.pecas).forEach(([cod,p])=>{
+      if(!p || typeof p!=='object') return;
+      const limpo = {};
+      Object.entries(p).forEach(([k,v])=>{
+        if(k==='img') return; // nunca manda imagem pra IA
+        if(v!==''&&v!==0&&v!==undefined&&v!==null) limpo[k]=v;
+      });
+      if(Object.keys(limpo).length) pecas[cod]=limpo;
+    });
+    if(Object.keys(pecas).length) info.cadastro_pecas = pecas;
+  }
+
+  // Armário de Gabaritos (item '09') — qual gaveta guarda qual gabarito
+  const armario = celulas['09'];
+  if(armario && armario.espacos && typeof armario.espacos==='object'){
+    info.armario_gabaritos = armario.espacos;
+  }
+
+  // Manutenção (item '15') — histórico de problemas/manutenções por célula
+  const manutencaoItem = celulas['15'];
+  if(manutencaoItem && manutencaoItem.manutencoes && typeof manutencaoItem.manutencoes==='object'){
+    const naoVazias = {};
+    Object.entries(manutencaoItem.manutencoes).forEach(([celula,lista])=>{
+      if(Array.isArray(lista) && lista.length) naoVazias[celula]=lista;
+    });
+    if(Object.keys(naoVazias).length) info.manutencoes = naoVazias;
+  }
+
+  // Gabaritagem (coluna separada no Supabase) — produção mensal por código de peça
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=gabaritagem",{headers:HEADERS_SB});
+    const d = await r.json();
+    const gab = d && d[0] && d[0].gabaritagem;
+    if(gab && typeof gab==='object'){
+      const agora = new Date();
+      const chaveMesGab = `${agora.getFullYear()}_${agora.getMonth()}`;
+      const mesAtualGab = gab[chaveMesGab];
+      if(mesAtualGab && typeof mesAtualGab==='object'){
+        const limpo = {};
+        Object.entries(mesAtualGab).forEach(([cod,vals])=>{
+          if(cod==='_busca'||cod==='codigos') return;
+          limpo[cod]=vals;
+        });
+        if(Object.keys(limpo).length) info.gabaritagem_producao_mes_atual = limpo;
+      }
+    }
+  }catch(e){ /* segue sem isso se falhar */ }
+
+  return info;
+}
+
 async function iaChamar(tipo, pergunta){
   const r = await fetch(IA_FUNCTION_URL, {
     method:"POST",
     headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
-    body: JSON.stringify({ tipo, pergunta, contexto: montarContextoIA(), baseConhecimento: baseConhecimentoIA, historicoProducao: montarHistoricoProducaoIA() })
+    body: JSON.stringify({ tipo, pergunta, contexto: montarContextoIA(), baseConhecimento: baseConhecimentoIA, historicoProducao: montarHistoricoProducaoIA(), infoExtra: await montarInfoExtraIA() })
   });
   const data = await r.json();
   if(!r.ok || data.error) throw new Error(data.error || "Erro desconhecido");
