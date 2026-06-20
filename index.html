@@ -5755,14 +5755,91 @@ function mapaSalvarMaquina(){
 const IA_FUNCTION_URL = SUPABASE_URL + "/functions/v1/ia-fabrica";
 let baseConhecimentoIA = { geral:"", por_celula:{}, erros:[] };
 let bcCelulaAtualSelecionada = '600';
+let iaVozAtiva = localStorage.getItem('iaVozAtiva') === 'true';
+let iaRecognition = null;
+let iaEscutando = false;
 
 function abrirPainelIA(){
   document.getElementById("painelIA").style.display="flex";
   document.getElementById("iaBtnBaseConhecimento").style.display = isAdmin ? "inline-block" : "none";
+  iaAtualizarBotaoVoz();
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    const btnMic = document.getElementById("iaBtnMic");
+    if(btnMic) btnMic.style.display = "none";
+  }
 }
 function fecharPainelIA(){
   document.getElementById("painelIA").style.display="none";
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if(iaRecognition) iaRecognition.stop();
 }
+
+// ===== VOZ: falar respostas do MR.ROBOT =====
+function iaToggleVoz(){
+  iaVozAtiva = !iaVozAtiva;
+  localStorage.setItem('iaVozAtiva', iaVozAtiva);
+  iaAtualizarBotaoVoz();
+  if(!iaVozAtiva && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+function iaAtualizarBotaoVoz(){
+  const btn = document.getElementById("iaBtnVoz");
+  if(!btn) return;
+  btn.textContent = iaVozAtiva ? "🔊" : "🔇";
+  btn.style.color = iaVozAtiva ? "#00e87a" : "#4a5568";
+}
+function iaFalar(texto){
+  if(!iaVozAtiva || !texto || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(texto);
+  utter.lang = 'pt-BR';
+  window.speechSynthesis.speak(utter);
+}
+
+// ===== VOZ: ouvir pergunta por microfone =====
+function iaToggleEscuta(){
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognitionAPI){
+    showToast("Reconhecimento de voz não é suportado nesse navegador",true);
+    return;
+  }
+  if(iaEscutando){
+    iaRecognition && iaRecognition.stop();
+    return;
+  }
+  iaRecognition = new SpeechRecognitionAPI();
+  iaRecognition.lang = 'pt-BR';
+  iaRecognition.interimResults = false;
+  iaRecognition.maxAlternatives = 1;
+
+  const btnMic = document.getElementById("iaBtnMic");
+
+  iaRecognition.onstart = () => {
+    iaEscutando = true;
+    btnMic.style.background = "#ff4d4d30";
+    btnMic.style.borderColor = "#ff4d4d";
+    btnMic.style.color = "#ff4d4d";
+    btnMic.textContent = "⏹";
+  };
+  iaRecognition.onresult = (event) => {
+    const texto = event.results[0][0].transcript;
+    document.getElementById("iaChatInput").value = texto;
+    iaEnviarChat();
+  };
+  iaRecognition.onerror = (event) => {
+    if(event.error !== 'no-speech' && event.error !== 'aborted'){
+      showToast("Erro ao reconhecer voz",true);
+    }
+  };
+  iaRecognition.onend = () => {
+    iaEscutando = false;
+    btnMic.style.background = "#1e253080";
+    btnMic.style.borderColor = "#2a3040";
+    btnMic.style.color = "#9ca3af";
+    btnMic.textContent = "🎤";
+  };
+  iaRecognition.start();
+}
+
 function iaTrocarAba(aba){
   ['chat','resumo','alertas'].forEach(a=>{
     document.getElementById("iaAba-"+a).style.display = (a===aba) ? 'flex' : 'none';
@@ -5786,11 +5863,51 @@ function montarContextoIA(){
   return ctx;
 }
 
+// Monta o histórico de produção diária do mês atual: total da fábrica por dia
+// e total por robô naquele dia (soma das horas lançadas em Metas Diária).
+function montarHistoricoProducaoIA(){
+  const historico = {};
+  const itemGeral = celulas['00'];
+  const itemMetas = celulas['02'];
+  if(!itemGeral && !itemMetas) return historico;
+
+  const agora = new Date();
+  const anoAtual = agora.getFullYear();
+  const mesAtual = agora.getMonth(); // 0-indexado, igual ao usado no banco (jan=0)
+  const chaveMes = `${anoAtual}_${mesAtual}`;
+
+  const totaisDia = (itemGeral && itemGeral.producao_meses && itemGeral.producao_meses[chaveMes]) || {};
+  const metasDias = (itemMetas && itemMetas.metas_dias) || {};
+
+  Object.keys(totaisDia).forEach(dia=>{
+    const totalDia = totaisDia[dia];
+    if(!totalDia) return; // pula dias sem produção lançada (fim de semana, feriado, dia futuro)
+    const dataISO = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const entradaDia = { total_fabrica: totalDia };
+    const dadosRobosDia = metasDias[`${chaveMes}_${dia}`];
+    if(dadosRobosDia){
+      Object.entries(dadosRobosDia).forEach(([robo,info])=>{
+        if(!info || typeof info!=='object') return;
+        let somaRobo = 0;
+        Object.entries(info).forEach(([campo,valor])=>{
+          if(/^h\d{4}$/.test(campo)){
+            const n = parseInt(valor);
+            if(!isNaN(n)) somaRobo += n;
+          }
+        });
+        if(somaRobo>0) entradaDia[robo] = somaRobo;
+      });
+    }
+    historico[dataISO] = entradaDia;
+  });
+  return historico;
+}
+
 async function iaChamar(tipo, pergunta){
   const r = await fetch(IA_FUNCTION_URL, {
     method:"POST",
     headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
-    body: JSON.stringify({ tipo, pergunta, contexto: montarContextoIA(), baseConhecimento: baseConhecimentoIA })
+    body: JSON.stringify({ tipo, pergunta, contexto: montarContextoIA(), baseConhecimento: baseConhecimentoIA, historicoProducao: montarHistoricoProducaoIA() })
   });
   const data = await r.json();
   if(!r.ok || data.error) throw new Error(data.error || "Erro desconhecido");
@@ -5819,6 +5936,7 @@ async function iaEnviarChat(){
   try{
     const resposta = await iaChamar("chat", pergunta);
     bolhaCarregando.textContent = resposta;
+    iaFalar(resposta);
   }catch(e){
     bolhaCarregando.textContent = "⚠ Erro: " + e.message;
     bolhaCarregando.style.color = "#ff4d4d";
@@ -5829,7 +5947,9 @@ async function iaGerarResumo(){
   const el = document.getElementById("iaResumoConteudo");
   el.textContent = "Gerando resumo...";
   try{
-    el.textContent = await iaChamar("resumo");
+    const texto = await iaChamar("resumo");
+    el.textContent = texto;
+    iaFalar(texto);
   }catch(e){
     el.textContent = "⚠ Erro: " + e.message;
   }
@@ -5839,7 +5959,9 @@ async function iaVerificarAlertas(){
   const el = document.getElementById("iaAlertasConteudo");
   el.textContent = "Verificando...";
   try{
-    el.textContent = await iaChamar("alertas");
+    const texto = await iaChamar("alertas");
+    el.textContent = texto;
+    iaFalar(texto);
   }catch(e){
     el.textContent = "⚠ Erro: " + e.message;
   }
@@ -6977,6 +7099,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     <div style="padding:14px 16px;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:space-between">
       <div style="font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;gap:8px">🤖 MR.ROBOT</div>
       <div style="display:flex;align-items:center;gap:10px">
+        <button id="iaBtnVoz" onclick="iaToggleVoz()" style="background:none;border:none;color:#4a5568;font-size:16px;cursor:pointer" title="Ativar/desativar voz nas respostas">🔇</button>
         <button id="iaBtnBaseConhecimento" onclick="abrirBaseConhecimento()" style="display:none;background:none;border:none;color:#a78bfa;font-size:16px;cursor:pointer" title="Base de conhecimento">🧠</button>
         <button onclick="fecharPainelIA()" style="background:none;border:none;color:#4a5568;font-size:18px;cursor:pointer">✕</button>
       </div>
@@ -6993,6 +7116,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       </div>
       <div style="padding:10px;border-top:1px solid #1e2530;display:flex;gap:8px">
         <input id="iaChatInput" placeholder="Pergunte algo..." style="flex:1;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 12px;border-radius:8px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')iaEnviarChat()">
+        <button id="iaBtnMic" onclick="iaToggleEscuta()" title="Falar pergunta" style="background:#1e253080;border:1px solid #2a3040;color:#9ca3af;border-radius:8px;padding:0 14px;cursor:pointer;font-size:15px">🎤</button>
         <button onclick="iaEnviarChat()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:0 16px;cursor:pointer;font-weight:700">➤</button>
       </div>
     </div>
