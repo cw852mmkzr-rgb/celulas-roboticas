@@ -4570,6 +4570,8 @@ function startApp(){
 
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
+  document.getElementById("iaBtnFlutuante").style.display="flex";
+  loadBaseConhecimento();
 
   if(isAdmin){
     document.getElementById("modeBadge").textContent="⚙ Host";
@@ -4636,6 +4638,8 @@ function doLogout(){
   });
   document.getElementById("appScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
+  document.getElementById("iaBtnFlutuante").style.display="none";
+  document.getElementById("painelIA").style.display="none";
   document.getElementById("pwInput").value="";
   document.getElementById("mainPanel").innerHTML="";
   document.getElementById("sidebar").innerHTML="";
@@ -5747,6 +5751,169 @@ function mapaSalvarMaquina(){
   showToast("Máquina atualizada ✓");
 }
 
+// ===== ASSISTENTE IA =====
+const IA_FUNCTION_URL = SUPABASE_URL + "/functions/v1/ia-fabrica";
+let baseConhecimentoIA = { geral:"", por_celula:{}, erros:[] };
+let bcCelulaAtualSelecionada = '600';
+
+function abrirPainelIA(){
+  document.getElementById("painelIA").style.display="flex";
+  document.getElementById("iaBtnBaseConhecimento").style.display = isAdmin ? "inline-block" : "none";
+}
+function fecharPainelIA(){
+  document.getElementById("painelIA").style.display="none";
+}
+function iaTrocarAba(aba){
+  ['chat','resumo','alertas'].forEach(a=>{
+    document.getElementById("iaAba-"+a).style.display = (a===aba) ? 'flex' : 'none';
+    const btn = document.getElementById("iaTabBtn-"+a);
+    btn.style.color = (a===aba) ? (a==='alertas'?'#ff6a00':'#3d9eff') : '#4a5568';
+    btn.style.borderBottomColor = (a===aba) ? (a==='alertas'?'#ff6a00':'#3d9eff') : 'transparent';
+  });
+}
+
+function montarContextoIA(){
+  const ctx = {};
+  Object.entries(celulas).forEach(([k,c])=>{
+    if(!c || typeof c!=='object') return;
+    if(!/^60\d$|^61[01]$/.test(k)) return; // só células de robô (600-611)
+    ctx[k] = {
+      nome: c.nome, status: c.status, peca: c.peca, codigo_peca: c.codigo_peca,
+      operador: c.operador, turno: c.turno, meta_hora: c.meta_hora,
+      alertas: c.alertas, ultima_troca: c.ultima_troca
+    };
+  });
+  return ctx;
+}
+
+async function iaChamar(tipo, pergunta){
+  const r = await fetch(IA_FUNCTION_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
+    body: JSON.stringify({ tipo, pergunta, contexto: montarContextoIA(), baseConhecimento: baseConhecimentoIA })
+  });
+  const data = await r.json();
+  if(!r.ok || data.error) throw new Error(data.error || "Erro desconhecido");
+  return data.resposta;
+}
+
+function iaAddMsgChat(texto, deQuemEhUsuario){
+  const box = document.getElementById("iaChatMsgs");
+  const bolha = document.createElement("div");
+  bolha.style.cssText = deQuemEhUsuario
+    ? "background:#3d9eff20;border:1px solid #3d9eff40;border-radius:10px;padding:10px 12px;font-size:13px;color:#d8dde6;align-self:flex-end;max-width:85%;white-space:pre-wrap"
+    : "background:#1e253020;border:1px solid #1e2530;border-radius:10px;padding:10px 12px;font-size:13px;color:#d8dde6;align-self:flex-start;max-width:85%;white-space:pre-wrap";
+  bolha.textContent = texto;
+  box.appendChild(bolha);
+  box.scrollTop = box.scrollHeight;
+  return bolha;
+}
+
+async function iaEnviarChat(){
+  const input = document.getElementById("iaChatInput");
+  const pergunta = input.value.trim();
+  if(!pergunta) return;
+  input.value = "";
+  iaAddMsgChat(pergunta, true);
+  const bolhaCarregando = iaAddMsgChat("Pensando...", false);
+  try{
+    const resposta = await iaChamar("chat", pergunta);
+    bolhaCarregando.textContent = resposta;
+  }catch(e){
+    bolhaCarregando.textContent = "⚠ Erro: " + e.message;
+    bolhaCarregando.style.color = "#ff4d4d";
+  }
+}
+
+async function iaGerarResumo(){
+  const el = document.getElementById("iaResumoConteudo");
+  el.textContent = "Gerando resumo...";
+  try{
+    el.textContent = await iaChamar("resumo");
+  }catch(e){
+    el.textContent = "⚠ Erro: " + e.message;
+  }
+}
+
+async function iaVerificarAlertas(){
+  const el = document.getElementById("iaAlertasConteudo");
+  el.textContent = "Verificando...";
+  try{
+    el.textContent = await iaChamar("alertas");
+  }catch(e){
+    el.textContent = "⚠ Erro: " + e.message;
+  }
+}
+
+// ===== BASE DE CONHECIMENTO DA IA =====
+async function loadBaseConhecimento(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=base_conhecimento",{headers:HEADERS_SB});
+    const d = await r.json();
+    if(d && d[0] && d[0].base_conhecimento){
+      baseConhecimentoIA = Object.assign({geral:"",por_celula:{},erros:[]}, d[0].base_conhecimento);
+    }
+  }catch(e){ /* mantém o que já estiver em memória */ }
+}
+
+async function saveBaseConhecimentoNoServidor(){
+  try{
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({base_conhecimento:baseConhecimentoIA})});
+    return true;
+  }catch(e){ return false; }
+}
+
+function abrirBaseConhecimento(){
+  if(!isAdmin) return;
+  document.getElementById("bcGeral").value = baseConhecimentoIA.geral || "";
+  bcCelulaAtualSelecionada = document.getElementById("bcSelectCelula").value || '600';
+  document.getElementById("bcCelulaTexto").value = (baseConhecimentoIA.por_celula||{})[bcCelulaAtualSelecionada] || "";
+  bcRenderErros();
+  document.getElementById("baseConhecimentoScreen").style.display="flex";
+}
+function fecharBaseConhecimento(){
+  document.getElementById("baseConhecimentoScreen").style.display="none";
+}
+function bcTrocarCelula(){
+  bcCelulaAtualSelecionada = document.getElementById("bcSelectCelula").value;
+  document.getElementById("bcCelulaTexto").value = (baseConhecimentoIA.por_celula||{})[bcCelulaAtualSelecionada] || "";
+}
+function bcSalvarCelulaAtual(){
+  if(!baseConhecimentoIA.por_celula) baseConhecimentoIA.por_celula = {};
+  baseConhecimentoIA.por_celula[bcCelulaAtualSelecionada] = document.getElementById("bcCelulaTexto").value;
+}
+function bcRenderErros(){
+  const lista = baseConhecimentoIA.erros || [];
+  document.getElementById("bcListaErros").innerHTML = lista.map((erro,i)=>`
+    <div style="background:#0a0d12;border:1px solid #1e2530;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input value="${esc(erro.codigo||'')}" placeholder="Código do erro" oninput="bcAtualizarErro(${i},'codigo',this.value)" style="flex:1;background:#080b0f;border:1px solid #1e2530;color:#ffb300;padding:7px 9px;border-radius:6px;font-size:12px;font-family:'Courier New',monospace;outline:none">
+        <button onclick="bcRemoverErro(${i})" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;width:28px;height:28px;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+      <textarea placeholder="Problema / sintoma" rows="2" oninput="bcAtualizarErro(${i},'problema',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 9px;border-radius:6px;font-size:12px;font-family:'Courier New',monospace;box-sizing:border-box;resize:vertical;outline:none">${esc(erro.problema||'')}</textarea>
+      <textarea placeholder="Solução" rows="2" oninput="bcAtualizarErro(${i},'solucao',this.value)" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#00e87a;padding:8px 9px;border-radius:6px;font-size:12px;font-family:'Courier New',monospace;box-sizing:border-box;resize:vertical;outline:none">${esc(erro.solucao||'')}</textarea>
+    </div>
+  `).join('') || `<div style="text-align:center;color:#2a3040;font-size:12px;padding:20px">Nenhum erro cadastrado ainda.</div>`;
+}
+function bcAdicionarErro(){
+  if(!baseConhecimentoIA.erros) baseConhecimentoIA.erros = [];
+  baseConhecimentoIA.erros.push({codigo:"",problema:"",solucao:""});
+  bcRenderErros();
+}
+function bcRemoverErro(i){
+  baseConhecimentoIA.erros.splice(i,1);
+  bcRenderErros();
+}
+function bcAtualizarErro(i,campo,valor){
+  baseConhecimentoIA.erros[i][campo] = valor;
+}
+async function salvarBaseConhecimento(){
+  baseConhecimentoIA.geral = document.getElementById("bcGeral").value;
+  bcSalvarCelulaAtual();
+  const ok = await saveBaseConhecimentoNoServidor();
+  showToast(ok ? "Base de conhecimento salva ✓" : "Erro ao salvar",!ok);
+}
+
 function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
@@ -6800,6 +6967,97 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
 <div id="modalMapaMaquina" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
   <div class="modal" style="width:380px;max-height:85vh;overflow-y:auto" onclick="event.stopPropagation()" id="mapaMaquinaModalBody"></div>
+</div>
+
+<!-- ===== ASSISTENTE IA ===== -->
+<button id="iaBtnFlutuante" onclick="abrirPainelIA()" title="MR.ROBOT" style="display:none;position:fixed;bottom:20px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#3d9eff,#a78bfa);border:none;box-shadow:0 4px 16px #00000060;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🤖</button>
+
+<div id="painelIA" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:8500;align-items:flex-end;justify-content:flex-end" onclick="fecharPainelIA()">
+  <div style="background:#0a0d12;border:1px solid #1e2530;border-radius:16px 16px 0 0;width:100%;max-width:420px;height:78vh;max-height:680px;display:flex;flex-direction:column;box-shadow:-4px 0 24px #0008" onclick="event.stopPropagation()">
+    <div style="padding:14px 16px;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;gap:8px">🤖 MR.ROBOT</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button id="iaBtnBaseConhecimento" onclick="abrirBaseConhecimento()" style="display:none;background:none;border:none;color:#a78bfa;font-size:16px;cursor:pointer" title="Base de conhecimento">🧠</button>
+        <button onclick="fecharPainelIA()" style="background:none;border:none;color:#4a5568;font-size:18px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid #1e2530">
+      <button class="ia-tab ativa" id="iaTabBtn-chat" onclick="iaTrocarAba('chat')" style="flex:1;background:none;border:none;color:#3d9eff;padding:10px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid #3d9eff;font-family:'Courier New',monospace">💬 Chat</button>
+      <button class="ia-tab" id="iaTabBtn-resumo" onclick="iaTrocarAba('resumo')" style="flex:1;background:none;border:none;color:#4a5568;padding:10px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:'Courier New',monospace">📄 Resumo</button>
+      <button class="ia-tab" id="iaTabBtn-alertas" onclick="iaTrocarAba('alertas')" style="flex:1;background:none;border:none;color:#4a5568;padding:10px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:'Courier New',monospace">⚠ Alertas</button>
+    </div>
+
+    <div id="iaAba-chat" style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div id="iaChatMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="background:#1e253020;border:1px solid #1e2530;border-radius:10px;padding:10px 12px;font-size:12px;color:#9ca3af;align-self:flex-start;max-width:85%">Olá, sou o MR.ROBOT 🤖 Pergunte algo sobre as células — status, operador, peça em produção, etc.</div>
+      </div>
+      <div style="padding:10px;border-top:1px solid #1e2530;display:flex;gap:8px">
+        <input id="iaChatInput" placeholder="Pergunte algo..." style="flex:1;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 12px;border-radius:8px;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')iaEnviarChat()">
+        <button onclick="iaEnviarChat()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:0 16px;cursor:pointer;font-weight:700">➤</button>
+      </div>
+    </div>
+
+    <div id="iaAba-resumo" style="display:none;flex:1;flex-direction:column;min-height:0;padding:14px;overflow-y:auto">
+      <button onclick="iaGerarResumo()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:10px;cursor:pointer;font-weight:700;font-size:13px;margin-bottom:12px">📄 Gerar resumo agora</button>
+      <div id="iaResumoConteudo" style="font-size:13px;color:#d8dde6;line-height:1.6;white-space:pre-wrap"></div>
+    </div>
+
+    <div id="iaAba-alertas" style="display:none;flex:1;flex-direction:column;min-height:0;padding:14px;overflow-y:auto">
+      <button onclick="iaVerificarAlertas()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:8px;padding:10px;cursor:pointer;font-weight:700;font-size:13px;margin-bottom:12px">⚠ Verificar alertas agora</button>
+      <div id="iaAlertasConteudo" style="font-size:13px;color:#d8dde6;line-height:1.6;white-space:pre-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BASE DE CONHECIMENTO DA IA (oculta, só Host) ===== -->
+<div id="baseConhecimentoScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9700;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
+    <div style="font-size:16px;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px">🧠 Base de Conhecimento da IA
+      <span style="font-size:10px;color:#a78bfa;background:#a78bfa20;border:1px solid #a78bfa40;padding:2px 7px;border-radius:5px;font-weight:700">OCULTA NO SISTEMA</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="salvarBaseConhecimento()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">💾 Salvar</button>
+      <button onclick="fecharBaseConhecimento()" style="background:#1e2530;border:1px solid #2a3040;color:#9ca3af;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:18px;max-width:640px;width:100%;margin:0 auto;box-sizing:border-box">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:20px;line-height:1.5">Esse conteúdo nunca aparece em nenhuma tela normal do sistema — só é enviado para a IA por trás dos panos, pra ela responder com mais contexto.</div>
+
+    <div style="margin-bottom:24px">
+      <label style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;font-weight:800;display:block;margin-bottom:8px">📋 Notas Gerais do Setor</label>
+      <textarea id="bcGeral" rows="5" placeholder="Ex: o setor tem 12 robôs de solda, horário de funcionamento, procedimentos padrão, contatos de manutenção..."
+        style="width:100%;background:#0a0d12;border:1px solid #1e2530;color:#d8dde6;padding:12px;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+    </div>
+
+    <div style="margin-bottom:24px">
+      <label style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;font-weight:800;display:block;margin-bottom:8px">🔧 Notas por Célula</label>
+      <select id="bcSelectCelula" onchange="bcTrocarCelula()" style="width:100%;background:#0a0d12;border:1px solid #1e2530;color:#d8dde6;padding:10px;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;margin-bottom:8px;outline:none">
+        <option value="600">Célula 600</option>
+        <option value="601">Célula 601</option>
+        <option value="602">Célula 602</option>
+        <option value="603">Célula 603</option>
+        <option value="604">Célula 604</option>
+        <option value="605">Célula 605</option>
+        <option value="606">Célula 606</option>
+        <option value="607">Célula 607</option>
+        <option value="608">Célula 608</option>
+        <option value="609">Célula 609</option>
+        <option value="610">Célula 610</option>
+        <option value="611">Célula 611</option>
+      </select>
+      <textarea id="bcCelulaTexto" rows="4" placeholder="Particularidades dessa célula: travas comuns, manhas do robô, histórico..."
+        style="width:100%;background:#0a0d12;border:1px solid #1e2530;color:#d8dde6;padding:12px;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;box-sizing:border-box;resize:vertical;outline:none"
+        oninput="bcSalvarCelulaAtual()"></textarea>
+    </div>
+
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <label style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;font-weight:800">⚠ Erros e Soluções</label>
+        <button onclick="bcAdicionarErro()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">+ Adicionar</button>
+      </div>
+      <div id="bcListaErros" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
 </div>
 
 </body>
