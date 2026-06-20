@@ -5758,6 +5758,26 @@ let bcCelulaAtualSelecionada = '600';
 let iaVozAtiva = localStorage.getItem('iaVozAtiva') === 'true';
 let iaRecognition = null;
 let iaEscutando = false;
+let iaVozEscolhida = null;
+
+// Escolhe e fixa uma única voz em português pro MR.ROBOT, em vez de deixar
+// o navegador sortear uma voz diferente a cada vez.
+function iaCarregarVozPreferida(){
+  if(!('speechSynthesis' in window)) return;
+  const vozes = window.speechSynthesis.getVoices();
+  if(!vozes.length) return; // ainda não carregou — tenta de novo no evento voiceschanged
+  const candidatasPT = vozes.filter(v=>v.lang && v.lang.toLowerCase().startsWith('pt'));
+  // Prioridade: voz masculina em pt-BR > qualquer voz do Google em pt > qualquer pt-BR > qualquer pt
+  iaVozEscolhida =
+    candidatasPT.find(v=>/pt-br/i.test(v.lang) && /(male|masculin)/i.test(v.name)) ||
+    candidatasPT.find(v=>/google/i.test(v.name) && /pt-br/i.test(v.lang)) ||
+    candidatasPT.find(v=>/pt-br/i.test(v.lang)) ||
+    candidatasPT[0] || null;
+}
+if('speechSynthesis' in window){
+  iaCarregarVozPreferida();
+  window.speechSynthesis.onvoiceschanged = iaCarregarVozPreferida;
+}
 
 function abrirPainelIA(){
   document.getElementById("painelIA").style.display="flex";
@@ -5792,6 +5812,11 @@ function iaFalar(texto){
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(texto);
   utter.lang = 'pt-BR';
+  if(iaVozEscolhida){
+    try{ utter.voice = iaVozEscolhida; }catch(e){ /* segue com a voz padrão do navegador */ }
+  }
+  utter.pitch = 0.82; // um pouco mais grave — dá uma identidade fixa de "robô"
+  utter.rate = 1.0;
   window.speechSynthesis.speak(utter);
 }
 
