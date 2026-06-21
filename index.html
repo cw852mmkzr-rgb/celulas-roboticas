@@ -5803,6 +5803,17 @@ function iaToggleVoz(){
   iaVozAtiva = !iaVozAtiva;
   localStorage.setItem('iaVozAtiva', iaVozAtiva);
   iaAtualizarBotaoVoz();
+  if(iaVozAtiva && 'speechSynthesis' in window){
+    // Fala imediatamente no toque do usuário — em vários celulares (especialmente
+    // iPhone), isso "destrava" a síntese de voz pro resto da sessão, já que
+    // respostas que chegam depois de uma chamada de rede não contam como toque direto.
+    window.speechSynthesis.cancel();
+    const aviso = new SpeechSynthesisUtterance('Voz ativada.');
+    aviso.lang = 'pt-BR';
+    if(iaVozEscolhida){ try{ aviso.voice = iaVozEscolhida; }catch(e){} }
+    aviso.pitch = 0.82;
+    window.speechSynthesis.speak(aviso);
+  }
   if(!iaVozAtiva && 'speechSynthesis' in window) window.speechSynthesis.cancel();
 }
 function iaAtualizarBotaoVoz(){
