@@ -5855,9 +5855,14 @@ function iaToggleEscuta(){
     iaEnviarChat();
   };
   iaRecognition.onerror = (event) => {
-    if(event.error !== 'no-speech' && event.error !== 'aborted'){
-      showToast("Erro ao reconhecer voz",true);
-    }
+    if(event.error === 'no-speech' || event.error === 'aborted') return;
+    const mensagens = {
+      'not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
+      'service-not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
+      'audio-capture': 'Nenhum microfone encontrado no dispositivo.',
+      'network': 'Erro de rede no reconhecimento de voz. Tente novamente.'
+    };
+    showToast(mensagens[event.error] || ("Erro ao reconhecer voz: "+event.error), true);
   };
   iaRecognition.onend = () => {
     iaEscutando = false;
