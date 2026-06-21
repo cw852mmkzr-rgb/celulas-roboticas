@@ -4570,8 +4570,12 @@ function startApp(){
 
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("appScreen").style.display="block";
-  document.getElementById("iaBtnFlutuante").style.display="flex";
-  loadBaseConhecimento();
+  if(isAdmin){
+    document.getElementById("iaBtnFlutuante").style.display="flex";
+    loadBaseConhecimento();
+  } else {
+    document.getElementById("iaBtnFlutuante").style.display="none";
+  }
 
   if(isAdmin){
     document.getElementById("modeBadge").textContent="⚙ Host";
@@ -4642,7 +4646,7 @@ function doLogout(){
   document.getElementById("painelIA").style.display="none";
   document.getElementById("pwInput").value="";
   document.getElementById("mainPanel").innerHTML="";
-  document.getElementById("sidebar").innerHTML="";
+  document.getElementById("sidebarList").innerHTML="";
 }
 
 function openXlsxModal(){xlsxPendingData=null;document.getElementById("xlsxPreview").style.display="none";document.getElementById("btnConfirmXlsx").style.display="none";document.getElementById("xlsxFileInput").value="";document.getElementById("xlsxModalEl").classList.add("open");}
