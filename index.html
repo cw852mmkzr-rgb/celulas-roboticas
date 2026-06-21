@@ -5835,43 +5835,47 @@ function iaToggleEscuta(){
     iaRecognition && iaRecognition.stop();
     return;
   }
-  iaRecognition = new SpeechRecognitionAPI();
-  iaRecognition.lang = 'pt-BR';
-  iaRecognition.interimResults = false;
-  iaRecognition.maxAlternatives = 1;
+  try{
+    iaRecognition = new SpeechRecognitionAPI();
+    iaRecognition.lang = 'pt-BR';
+    iaRecognition.interimResults = false;
+    iaRecognition.maxAlternatives = 1;
 
-  const btnMic = document.getElementById("iaBtnMic");
+    const btnMic = document.getElementById("iaBtnMic");
 
-  iaRecognition.onstart = () => {
-    iaEscutando = true;
-    btnMic.style.background = "#ff4d4d30";
-    btnMic.style.borderColor = "#ff4d4d";
-    btnMic.style.color = "#ff4d4d";
-    btnMic.textContent = "⏹";
-  };
-  iaRecognition.onresult = (event) => {
-    const texto = event.results[0][0].transcript;
-    document.getElementById("iaChatInput").value = texto;
-    iaEnviarChat();
-  };
-  iaRecognition.onerror = (event) => {
-    if(event.error === 'no-speech' || event.error === 'aborted') return;
-    const mensagens = {
-      'not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
-      'service-not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
-      'audio-capture': 'Nenhum microfone encontrado no dispositivo.',
-      'network': 'Erro de rede no reconhecimento de voz. Tente novamente.'
+    iaRecognition.onstart = () => {
+      iaEscutando = true;
+      btnMic.style.background = "#ff4d4d30";
+      btnMic.style.borderColor = "#ff4d4d";
+      btnMic.style.color = "#ff4d4d";
+      btnMic.textContent = "⏹";
     };
-    showToast(mensagens[event.error] || ("Erro ao reconhecer voz: "+event.error), true);
-  };
-  iaRecognition.onend = () => {
-    iaEscutando = false;
-    btnMic.style.background = "#1e253080";
-    btnMic.style.borderColor = "#2a3040";
-    btnMic.style.color = "#9ca3af";
-    btnMic.textContent = "🎤";
-  };
-  iaRecognition.start();
+    iaRecognition.onresult = (event) => {
+      const texto = event.results[0][0].transcript;
+      document.getElementById("iaChatInput").value = texto;
+      iaEnviarChat();
+    };
+    iaRecognition.onerror = (event) => {
+      if(event.error === 'no-speech' || event.error === 'aborted') return;
+      const mensagens = {
+        'not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
+        'service-not-allowed': 'Permissão de microfone negada. Verifique nas configurações do navegador/site.',
+        'audio-capture': 'Nenhum microfone encontrado no dispositivo.',
+        'network': 'Erro de rede no reconhecimento de voz. Tente novamente.'
+      };
+      showToast(mensagens[event.error] || ("Erro ao reconhecer voz: "+event.error), true);
+    };
+    iaRecognition.onend = () => {
+      iaEscutando = false;
+      btnMic.style.background = "#1e253080";
+      btnMic.style.borderColor = "#2a3040";
+      btnMic.style.color = "#9ca3af";
+      btnMic.textContent = "🎤";
+    };
+    iaRecognition.start();
+  }catch(e){
+    showToast("Não consegui iniciar o microfone: "+e.message, true);
+  }
 }
 
 function iaTrocarAba(aba){
