@@ -6524,6 +6524,7 @@ function renderGabBtns(){
   if(!el) return;
   el.innerHTML = isGabAdmin
     ? `<button onclick="document.getElementById('gabRestoreInput').click()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">↑ Restaurar Backup</button>
+       <button onclick="document.getElementById('gabFotoInput').click()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📷 Ler Foto</button>
        <button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
        <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
        <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
@@ -6808,6 +6809,91 @@ function updateGabProg(cod, val){
     elPct.textContent = pct===null?'—':pct+'%';
   }
   saveGabDados();
+}
+
+let _gabFotoBase64 = null;
+let _gabFotoMime = 'image/jpeg';
+
+function gabLerFoto(event){
+  const file = event.target.files[0];
+  event.target.value = "";
+  if(!file) return;
+  _gabFotoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    _gabFotoBase64 = dataUrl.split(',')[1];
+    const preview = document.getElementById("gabFotoPreview");
+    preview.src = dataUrl;
+    preview.style.display = "block";
+    document.getElementById("gabFotoStatus").textContent = "Foto carregada. Defina o dia e clique em Analisar.";
+    document.getElementById("gabFotoStatus").style.color = "#00e87a";
+    document.getElementById("gabFotoDia").value = "";
+    document.getElementById("modalGabFoto").style.display = "flex";
+  };
+  reader.readAsDataURL(file);
+}
+
+async function gabAnalisarFoto(){
+  if(!_gabFotoBase64){ showToast("Nenhuma foto carregada",true); return; }
+  const diaInput = parseInt(document.getElementById("gabFotoDia").value);
+  if(!diaInput || diaInput<1 || diaInput>31){ showToast("Informe um dia válido (1-31)",true); return; }
+
+  const btn = document.getElementById("gabFotoBtnAnalisar");
+  const status = document.getElementById("gabFotoStatus");
+  btn.disabled = true;
+  btn.textContent = "⏳ Analisando...";
+  status.style.color = "#ffb300";
+  status.textContent = "Enviando foto para o Gemini...";
+
+  try{
+    const res = await fetch(SUPABASE_URL+"/functions/v1/ia-fabrica", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
+      body: JSON.stringify({ tipo:"ocr_gabaritagem", imagemBase64: _gabFotoBase64, imagemMime: _gabFotoMime })
+    });
+    const data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || "Erro desconhecido");
+
+    const pares = data.pares; // { "3692": 2000, "12756": 4300, ... }
+    if(!pares || !Object.keys(pares).length){
+      status.style.color = "#ff4d4d";
+      status.textContent = "Nenhum par código=valor encontrado na foto.";
+      return;
+    }
+
+    // Preenche a coluna do dia na gabaritagem
+    const now = new Date();
+    const chave = `${parseInt(document.getElementById("gabAno").value)||now.getFullYear()}_${parseInt(document.getElementById("gabMes").value)||now.getMonth()}`;
+    const dia = String(diaInput);
+    let preenchidos = 0;
+    if(!gabDados[chave]) gabDados[chave] = { codigos: [] };
+
+    Object.entries(pares).forEach(([cod, val])=>{
+      const n = parseInt(val);
+      if(!cod || isNaN(n) || n<=0) return;
+      if(!gabDados[chave][cod]) gabDados[chave][cod] = {};
+      gabDados[chave][cod][dia] = n;
+      if(!gabDados[chave].codigos.includes(cod)) gabDados[chave].codigos.push(cod);
+      preenchidos++;
+    });
+
+    await saveGabDados();
+    renderGabaritagem();
+
+    status.style.color = "#00e87a";
+    status.textContent = `✓ ${preenchidos} código(s) preenchidos no dia ${diaInput}:\n`
+      + Object.entries(pares).map(([c,v])=>`  ${c} = ${v}`).join('\n');
+    btn.textContent = "✓ Concluído";
+    showToast(`${preenchidos} código(s) preenchidos no dia ${diaInput} ✓`);
+  }catch(e){
+    status.style.color = "#ff4d4d";
+    status.textContent = "Erro: "+e.message;
+    btn.textContent = "🤖 Analisar e Preencher";
+    showToast("Erro ao analisar foto", true);
+  }finally{
+    btn.disabled = false;
+  }
 }
 
 async function backupGabaritagem(){
@@ -7148,6 +7234,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       </select>
       <div id="gabBtns" style="display:flex;gap:6px;align-items:center"></div>
       <input type="file" id="gabRestoreInput" accept=".json" style="display:none" onchange="restaurarBackupGabaritagem(event)">
+      <input type="file" id="gabFotoInput" accept="image/*" capture="environment" style="display:none" onchange="gabLerFoto(event)">
     </div>
   </div>
   <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px">
@@ -7156,6 +7243,21 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 
 <!-- Modal login gabaritagem -->
+<div id="modalGabFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:24px;width:90%;max-width:400px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher via Foto</div>
+    <img id="gabFotoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
+    <div style="font-size:12px;color:#4a5568">Qual dia da foto deve ser preenchido?</div>
+    <input type="number" id="gabFotoDia" min="1" max="31" placeholder="Dia (ex: 23)"
+      style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+    <div id="gabFotoStatus" style="font-size:12px;color:#4a5568;min-height:16px;white-space:pre-wrap"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button onclick="document.getElementById('modalGabFoto').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="gabAnalisarFoto()" id="gabFotoBtnAnalisar" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">🤖 Analisar e Preencher</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalGabLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9100;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
     <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">📐 Gabaritagem</div>
