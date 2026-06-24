@@ -3355,6 +3355,31 @@ function removerHistEletrodo(key,idx){
   celulas[key].historico_eletrodo.splice(idx,1);saveToAPI(celulas);renderDetail();
 }
 
+function registrarLimpeza(key){
+  if(!isAdmin){ showToast("Apenas o Host pode registrar limpezas",true); return; }
+  const responsavel = prompt("Quem realizou a limpeza?","");
+  if(responsavel === null) return; // cancelou
+  const obs = prompt("Observações (opcional, pode deixar vazio)","");
+  if(obs === null) return; // cancelou
+  const agora = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  if(!celulas[key].historico_limpeza) celulas[key].historico_limpeza = [];
+  celulas[key].historico_limpeza.push({ data:agora, responsavel:responsavel.trim()||'—', obs:obs.trim() });
+  celulas[key].ultima_limpeza = agora;
+  saveToAPI(celulas);
+  renderDetail();
+  showToast("Limpeza registrada ✓");
+}
+
+function removerHistLimpeza(key,idx){
+  if(!celulas[key].historico_limpeza) return;
+  celulas[key].historico_limpeza.splice(idx,1);
+  celulas[key].ultima_limpeza = celulas[key].historico_limpeza.length
+    ? celulas[key].historico_limpeza[celulas[key].historico_limpeza.length-1].data
+    : '—';
+  saveToAPI(celulas);
+  renderDetail();
+}
+
 // ── ROBÔ (layout padrão) ──────────────────────
 function renderDetail(){
   if(!selected||!celulas[selected])return;
@@ -3467,12 +3492,29 @@ function renderDetail(){
         </div>
       </div>
     </div>
+    <div class="section"><div class="sec-title">🧹 Limpeza do Robô e Célula ${isAdmin?`<button class="btn btn-green" style="padding:4px 12px;font-size:10px" onclick="registrarLimpeza('${selected}')">+ Registrar Limpeza Agora</button>`:""}</div>
+      <div class="grid2">
+        <div class="field"><label>Última limpeza registrada</label><input readonly value="${esc((c.ultima_limpeza)||'—')}" style="color:#3d9eff;cursor:default"></div>
+        <div class="field"><label>Realizado por</label><input readonly value="${esc((c.historico_limpeza&&c.historico_limpeza.length?c.historico_limpeza[c.historico_limpeza.length-1].responsavel:'')||'—')}" style="color:#d8dde6;cursor:default"></div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Limpezas (${(c.historico_limpeza||[]).length})</div>
+        <div style="max-height:180px;overflow-y:auto">
+          ${(c.historico_limpeza&&c.historico_limpeza.length>0)
+            ?[...c.historico_limpeza].reverse().map((h,i)=>`
+              <div class="hist-item">
+                <span class="hist-item-data">📅 ${esc(h.data)}</span>
+                <span class="hist-item-val">🧹 ${esc(h.responsavel||'—')}</span>
+                ${h.obs?`<span style="font-size:11px;color:#4a5568;margin-left:6px">${esc(h.obs)}</span>`:''}
+                ${isAdmin?`<button class="btn-x" onclick="removerHistLimpeza('${selected}',${c.historico_limpeza.length-1-i})">✕</button>`:""}
+              </div>`).join('')
+            :'<div class="hist-empty">Nenhuma limpeza registrada ainda.</div>'
+          }
+        </div>
+      </div>
+    </div>
+
     <div class="section"><div class="sec-title">◈ Parâmetros de Soldagem</div>
-      <div class="grid4">
-        <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
-        <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
-        <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
-        <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Responsável Técnico</div>
