@@ -6310,14 +6310,19 @@ function salvarEdicaoManu(){
 }
 
 let _manuCardAbertoRobo = null;
+let _manuCardAbertoTs = 0;
 
 function fecharCardManu(){
+  // Ignora o clique se o modal foi aberto há menos de 300ms — evita que o mesmo
+  // clique que abre o modal também o feche imediatamente (click-through no overlay)
+  if(Date.now() - _manuCardAbertoTs < 300) return;
   document.getElementById("modalCardManu").style.display = 'none';
   _manuCardAbertoRobo = null;
 }
 
 function abrirCardManu(robo){
   _manuCardAbertoRobo = robo;
+  _manuCardAbertoTs = Date.now();
   const c = celulas[selected];
   const lista = (c.manutencoes&&c.manutencoes[robo])||[];
   const pendentes = lista.filter(m=>!m.concluido);
