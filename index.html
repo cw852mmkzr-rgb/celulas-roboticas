@@ -6241,57 +6241,25 @@ function renderManutencao(){
         const temPendente = pendentes.length>0;
         const cor = temPendente?'#ffb300':'#1e2530';
         const bg  = temPendente?'#ffb30010':'#0a0d12';
-        return`<div style="background:${bg};border:1px solid ${cor}40;border-radius:12px;overflow:hidden">
-          <div onclick="toggleManuRobo(${robo})" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none">
-            <div style="display:flex;align-items:center;gap:14px">
-              <span style="font-size:28px">⚙</span>
-              <div>
-                <div style="font-size:20px;font-weight:900;color:#fff">Robô ${robo} <span style="font-size:14px;font-weight:600;color:${robo<=604?'#ffb300':'#00e87a'}">${robo<=604?'Fanuc':'Kuka'}</span></div>
-                <div style="font-size:13px;font-weight:700;color:${temPendente?'#ffb300':'#4a5568'};margin-top:2px">${temPendente?`⚠ ${pendentes.length} manutenção pendente`:concluidas.length>0?`✓ ${concluidas.length} concluída(s)`:'Sem registros'}</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Adicionar</button>`:''}
-              <span style="color:#4a5568;font-size:14px" id="arrow-manu-${robo}">▼</span>
+        return`<div onclick="abrirCardManu(${robo})" style="background:${bg};border:1px solid ${cor}40;border-radius:12px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:all 0.15s">
+          <div style="display:flex;align-items:center;gap:16px">
+            <span style="font-size:32px">⚙</span>
+            <div>
+              <div style="font-size:22px;font-weight:900;color:#fff">Robô ${robo} <span style="font-size:15px;font-weight:600;color:${robo<=604?'#ffb300':'#00e87a'}">${robo<=604?'Fanuc':'Kuka'}</span></div>
+              <div style="font-size:14px;font-weight:700;color:${temPendente?'#ffb300':'#4a5568'};margin-top:3px">${temPendente?`⚠ ${pendentes.length} manutenção pendente`:concluidas.length>0?`✓ ${concluidas.length} concluída(s)`:'Sem registros'}</div>
             </div>
           </div>
-          <div id="manu-list-${robo}" style="display:none;flex-direction:column;border-top:1px solid ${cor}30;padding:14px 18px;gap:10px">
-            ${pendentes.length===0&&concluidas.length===0?`<div style="font-size:14px;color:#2a3040;padding:4px 0">Nenhuma manutenção registrada.</div>`:''}
-
-            ${pendentes.length>0?`
-            <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:4px">⚠ Pendentes (${pendentes.length})</div>
-            ${pendentes.map((m,i)=>{
-              const idxReal = lista.indexOf(m);
-              return`<div style="background:#080b0f;border:1px solid #ffb30040;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
-                <div style="flex:1">
-                  <div style="font-size:16px;font-weight:800;color:#d8dde6">${esc(m.descricao)}</div>
-                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 ${esc(m.data||'—')}${m.responsavel?` · ⏳ <span style="color:#ffb300;font-weight:700">${esc(m.responsavel)}</span>`:''}</div>
-                </div>
-                ${isAdmin?`<div style="display:flex;gap:6px;flex-shrink:0">
-                  <button onclick="editarManu('${selected}',${robo},${idxReal})" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✏</button>
-                  <button onclick="concluirManu('${selected}',${robo},${idxReal})" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✓ Concluir</button>
-                  <button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">🗑</button>
-                </div>`:''}
-              </div>`;
-            }).join('')}`:''}
-
-            ${concluidas.length>0?`
-            <div style="font-size:11px;color:#00e87a;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-top:${pendentes.length>0?'12px':'4px'};margin-bottom:4px">✓ Histórico (${concluidas.length})</div>
-            ${concluidas.map((m,i)=>{
-              const idxReal = lista.indexOf(m);
-              return`<div style="background:#080b0f;border:1px solid #00e87a20;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;opacity:0.8">
-                <div style="flex:1">
-                  <div style="font-size:15px;font-weight:700;color:#4a5568;text-decoration:line-through">${esc(m.descricao)}</div>
-                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 Aberta: ${esc(m.data||'—')}${m.responsavel?` · 👤 Aberto por: <b style="color:#9ca3af">${esc(m.responsavel)}</b>`:''}</div>
-                  <div style="font-size:12px;color:#00e87a;margin-top:3px">✓ Concluído em ${esc(m.data_conclusao||'—')}${m.realizado_por?` · 👷 <b style="color:#fff">${esc(m.realizado_por)}</b>`:''}</div>
-                  ${isAdmin?`<button onclick="editarConclusaoManu('${selected}',${robo},${idxReal})" style="margin-top:6px;background:#3d9eff10;border:1px solid #3d9eff30;color:#3d9eff;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar conclusão</button>`:''}
-                </div>
-                ${isAdmin?`<button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d10;border:1px solid #ff4d4d30;color:#ff4d4d;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;flex-shrink:0">🗑</button>`:''}
-              </div>`;
-            }).join('')}`:''}
+          <div style="display:flex;align-items:center;gap:10px">
+            ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Adicionar</button>`:''}
+            <span style="color:#4a5568;font-size:18px">›</span>
           </div>
         </div>`;
       }).join('')}
+    </div>
+
+    <!-- Modal card do robô -->
+    <div id="modalCardManu" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9990;align-items:center;justify-content:center;padding:16px" onclick="fecharCardManu()">
+      <div id="modalCardManuBody" onclick="event.stopPropagation()" style="background:#0a0d12;border:1px solid #1e2530;border-radius:16px;width:100%;max-width:620px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden"></div>
     </div>
 
     <!-- Modal nova manutenção -->
@@ -6310,11 +6278,6 @@ function renderManutencao(){
     </div>
   </div>`;
 
-  // Abre automaticamente robôs com pendência
-  robosComManu.forEach(r=>{
-    const el = document.getElementById(`manu-list-${r}`);
-    if(el) el.style.display='flex';
-  });
 }
 
 let _manuRoboAtual = null;
@@ -6342,15 +6305,73 @@ function salvarEdicaoManu(){
   saveToAPI(celulas);
   document.getElementById("modalEditManu").style.display = 'none';
   renderManutencao();
+  if(_manuRoboAtual) abrirCardManu(_manuRoboAtual);
   showToast("Manutenção atualizada ✓");
 }
 
-function toggleManuRobo(robo){
-  const el = document.getElementById(`manu-list-${robo}`);
-  if(!el) return;
-  const open = el.style.display !== 'none' && el.style.display !== '';
-  el.style.display = open ? 'none' : 'flex';
+function fecharCardManu(){
+  document.getElementById("modalCardManu").style.display = 'none';
 }
+
+function abrirCardManu(robo){
+  const c = celulas[selected];
+  const lista = (c.manutencoes&&c.manutencoes[robo])||[];
+  const pendentes = lista.filter(m=>!m.concluido);
+  const concluidas = lista.filter(m=>m.concluido);
+  const temPendente = pendentes.length>0;
+
+  const pendentesHTML = pendentes.length===0
+    ? `<div style="font-size:18px;color:#2a3040;padding:20px 0;text-align:center">Nenhuma manutenção pendente</div>`
+    : pendentes.map((m)=>{
+        const idxReal = lista.indexOf(m);
+        return `<div style="background:#080b0f;border:1.5px solid #ffb30050;border-radius:12px;padding:18px 20px">
+          <div style="font-size:20px;font-weight:900;color:#fff;line-height:1.3">${esc(m.descricao)}</div>
+          <div style="font-size:15px;color:#4a5568;margin-top:8px">📅 ${esc(m.data||'—')}</div>
+          ${m.responsavel?`<div style="font-size:15px;color:#ffb300;font-weight:700;margin-top:4px">👤 ${esc(m.responsavel)}</div>`:''}
+          ${isAdmin?`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <button onclick="editarManu('${selected}',${robo},${idxReal})" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;font-weight:700">✏ Editar</button>
+            <button onclick="concluirManu('${selected}',${robo},${idxReal})" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;font-weight:700">✓ Concluir</button>
+            <button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer">🗑</button>
+          </div>`:''}
+        </div>`;
+      }).join('');
+
+  const concluidasHTML = concluidas.length===0 ? ''
+    : concluidas.map((m)=>{
+        const idxReal = lista.indexOf(m);
+        return `<div style="background:#080b0f;border:1px solid #00e87a20;border-radius:12px;padding:16px 20px;opacity:0.8">
+          <div style="font-size:18px;font-weight:700;color:#4a5568;text-decoration:line-through">${esc(m.descricao)}</div>
+          <div style="font-size:14px;color:#4a5568;margin-top:6px">📅 Aberta: ${esc(m.data||'—')}${m.responsavel?` · 👤 <b style="color:#9ca3af">${esc(m.responsavel)}</b>`:''}</div>
+          <div style="font-size:14px;color:#00e87a;margin-top:4px">✓ Concluído: ${esc(m.data_conclusao||'—')}${m.realizado_por?` · 👷 <b style="color:#fff">${esc(m.realizado_por)}</b>`:''}</div>
+          ${isAdmin?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button onclick="editarConclusaoManu('${selected}',${robo},${idxReal})" style="background:#3d9eff10;border:1px solid #3d9eff30;color:#3d9eff;border-radius:7px;padding:6px 14px;font-size:13px;cursor:pointer">✏ Editar conclusão</button>
+            <button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d10;border:1px solid #ff4d4d30;color:#ff4d4d;border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer">🗑</button>
+          </div>`:''}
+        </div>`;
+      }).join('');
+
+  document.getElementById("modalCardManuBody").innerHTML = `
+    <div style="padding:22px 24px;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div>
+        <div style="font-size:24px;font-weight:900;color:#fff">⚙ Robô ${robo} <span style="font-size:16px;color:${robo<=604?'#ffb300':'#00e87a'}">${robo<=604?'Fanuc':'Kuka'}</span></div>
+        <div style="font-size:15px;font-weight:700;color:${temPendente?'#ffb300':'#4a5568'};margin-top:4px">${temPendente?`⚠ ${pendentes.length} pendente(s)`:concluidas.length>0?`✓ ${concluidas.length} concluída(s)`:'Sem registros'}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;font-weight:700">+ Adicionar</button>`:''}
+        <button onclick="fecharCardManu()" style="background:none;border:none;color:#4a5568;font-size:22px;cursor:pointer;padding:4px 8px">✕</button>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding:20px;display:flex;flex-direction:column;gap:12px">
+      ${pendentes.length>0?`<div style="font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;margin-bottom:2px">⚠ Pendentes</div>`:''}
+      ${pendentesHTML}
+      ${concluidas.length>0?`<div style="font-size:12px;color:#00e87a;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;margin-top:${pendentes.length>0?'12px':'0'};margin-bottom:2px">✓ Histórico</div>`:''}
+      ${concluidasHTML}
+    </div>
+  `;
+  document.getElementById("modalCardManu").style.display = 'flex';
+}
+
+function toggleManuRobo(robo){}
 
 function abrirModalManu(robo){
   _manuRoboAtual = robo;
@@ -6398,6 +6419,7 @@ function salvarConclusaoManu(){
   saveToAPI(celulas);
   document.getElementById("modalConcluirManu").style.display = 'none';
   renderManutencao();
+  if(_manuRoboAtual) abrirCardManu(_manuRoboAtual);
   showToast("Manutenção concluída ✓");
 }
 
@@ -6416,6 +6438,7 @@ function excluirManu(key,robo,idx){
   celulas[key].manutencoes[robo].splice(idx,1);
   saveToAPI(celulas);
   renderManutencao();
+  abrirCardManu(robo);
   showToast("Excluído ✓");
 }
 
