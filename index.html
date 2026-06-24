@@ -6278,6 +6278,7 @@ function renderManutencao(){
     </div>
   </div>`;
 
+  if(_manuCardAbertoRobo) abrirCardManu(_manuCardAbertoRobo);
 }
 
 let _manuRoboAtual = null;
@@ -6305,15 +6306,18 @@ function salvarEdicaoManu(){
   saveToAPI(celulas);
   document.getElementById("modalEditManu").style.display = 'none';
   renderManutencao();
-  if(_manuRoboAtual) abrirCardManu(_manuRoboAtual);
   showToast("Manutenção atualizada ✓");
 }
 
+let _manuCardAbertoRobo = null;
+
 function fecharCardManu(){
   document.getElementById("modalCardManu").style.display = 'none';
+  _manuCardAbertoRobo = null;
 }
 
 function abrirCardManu(robo){
+  _manuCardAbertoRobo = robo;
   const c = celulas[selected];
   const lista = (c.manutencoes&&c.manutencoes[robo])||[];
   const pendentes = lista.filter(m=>!m.concluido);
@@ -6419,7 +6423,6 @@ function salvarConclusaoManu(){
   saveToAPI(celulas);
   document.getElementById("modalConcluirManu").style.display = 'none';
   renderManutencao();
-  if(_manuRoboAtual) abrirCardManu(_manuRoboAtual);
   showToast("Manutenção concluída ✓");
 }
 
@@ -6438,7 +6441,6 @@ function excluirManu(key,robo,idx){
   celulas[key].manutencoes[robo].splice(idx,1);
   saveToAPI(celulas);
   renderManutencao();
-  abrirCardManu(robo);
   showToast("Excluído ✓");
 }
 
