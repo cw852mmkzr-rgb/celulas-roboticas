@@ -6282,8 +6282,9 @@ function renderManutencao(){
               return`<div style="background:#080b0f;border:1px solid #00e87a20;border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;opacity:0.8">
                 <div style="flex:1">
                   <div style="font-size:15px;font-weight:700;color:#4a5568;text-decoration:line-through">${esc(m.descricao)}</div>
-                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 Aberta: ${esc(m.data||'—')}</div>
+                  <div style="font-size:12px;color:#4a5568;margin-top:4px">📅 Aberta: ${esc(m.data||'—')}${m.responsavel?` · 👤 Aberto por: <b style="color:#9ca3af">${esc(m.responsavel)}</b>`:''}</div>
                   <div style="font-size:12px;color:#00e87a;margin-top:3px">✓ Concluído em ${esc(m.data_conclusao||'—')}${m.realizado_por?` · 👷 <b style="color:#fff">${esc(m.realizado_por)}</b>`:''}</div>
+                  ${isAdmin?`<button onclick="editarConclusaoManu('${selected}',${robo},${idxReal})" style="margin-top:6px;background:#3d9eff10;border:1px solid #3d9eff30;color:#3d9eff;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar conclusão</button>`:''}
                 </div>
                 ${isAdmin?`<button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d10;border:1px solid #ff4d4d30;color:#ff4d4d;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;flex-shrink:0">🗑</button>`:''}
               </div>`;
@@ -6318,6 +6319,7 @@ function renderManutencao(){
 
 let _manuRoboAtual = null;
 let _manuIdxAtual = null;
+let _manuKeyAtual = null;
 
 function editarManu(key,robo,idx){
   const m = celulas[key].manutencoes[robo][idx];
@@ -6377,15 +6379,36 @@ function salvarManu(){
 }
 
 function concluirManu(key,robo,idx){
-  const realizador = prompt("Quem realizou a manutenção?","");
-  if(realizador === null) return; // cancelou
+  _manuRoboAtual = robo;
+  _manuIdxAtual = idx;
+  _manuKeyAtual = key;
   const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  celulas[key].manutencoes[robo][idx].concluido = true;
-  celulas[key].manutencoes[robo][idx].data_conclusao = now;
-  celulas[key].manutencoes[robo][idx].realizado_por = realizador.trim()||'—';
+  document.getElementById("concManuData").value = now;
+  document.getElementById("concManuRealizado").value = '';
+  document.getElementById("modalConcluirManu").style.display = 'flex';
+}
+
+function salvarConclusaoManu(){
+  const realizado = document.getElementById("concManuRealizado").value.trim();
+  const data = document.getElementById("concManuData").value.trim();
+  if(!data){ showToast("Informe a data de conclusão!", true); return; }
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].concluido = true;
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].data_conclusao = data;
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].realizado_por = realizado||'—';
   saveToAPI(celulas);
+  document.getElementById("modalConcluirManu").style.display = 'none';
   renderManutencao();
   showToast("Manutenção concluída ✓");
+}
+
+function editarConclusaoManu(key,robo,idx){
+  const m = celulas[key].manutencoes[robo][idx];
+  _manuRoboAtual = robo;
+  _manuIdxAtual = idx;
+  _manuKeyAtual = key;
+  document.getElementById("concManuData").value = m.data_conclusao||'';
+  document.getElementById("concManuRealizado").value = m.realizado_por||'';
+  document.getElementById("modalConcluirManu").style.display = 'flex';
 }
 
 function excluirManu(key,robo,idx){
@@ -7190,6 +7213,22 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalPeca()">Cancelar</button>
       <button class="btn btn-gray" style="padding:6px 16px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="salvarPeca()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalConcluirManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #00e87a40;border-radius:16px;padding:24px;width:90%;max-width:420px">
+    <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">✓ Concluir Manutenção</div>
+    <div style="font-size:11px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Data e hora de conclusão</div>
+    <input id="concManuData" placeholder="ex: 23/06/2026, 14:30"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Quem realizou a manutenção</div>
+    <input id="concManuRealizado" placeholder="Nome do responsável"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-gray" style="padding:6px 16px" onclick="document.getElementById('modalConcluirManu').style.display='none'">Cancelar</button>
+      <button class="btn btn-green" style="padding:6px 16px" onclick="salvarConclusaoManu()">✓ Salvar</button>
     </div>
   </div>
 </div>
