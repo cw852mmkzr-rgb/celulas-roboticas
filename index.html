@@ -3515,6 +3515,13 @@ function renderDetail(){
     </div>
 
     <div class="section"><div class="sec-title">◈ Parâmetros de Soldagem</div>
+      <div class="grid4">
+        <div class="field"><label>⏱ Tempo de Solda</label><input value="${esc(c.tempo_solda||'—')}" ${ro} onchange="update('${selected}','tempo_solda',this.value)"></div>
+        <div class="field"><label>⚡ Corrente</label><input value="${esc(c.corrente)}" ${ro} onchange="update('${selected}','corrente',this.value)"></div>
+        <div class="field"><label>🔩 Pré Pressão</label><input value="${esc(c.pre_pressao||'—')}" ${ro} onchange="update('${selected}','pre_pressao',this.value)"></div>
+        <div class="field"><label>🔵 Pontos de Solda</label><input value="${esc(c.pontos_solda||'—')}" ${ro} onchange="update('${selected}','pontos_solda',this.value)"></div>
+        <div class="field"><label>⏲ Tempo/Peça</label><input value="${esc(c.tempo_peca||'—')}" ${ro} onchange="update('${selected}','tempo_peca',this.value)"></div>
+        <div class="field"><label>🔧 Tipo de Eletrodo</label><input value="${esc(c.tipo_eletrodo||'—')}" ${ro} onchange="update('${selected}','tipo_eletrodo',this.value)"></div>
       </div>
     </div>
     <div class="section"><div class="sec-title">◈ Responsável Técnico</div>
