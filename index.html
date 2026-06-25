@@ -5678,41 +5678,46 @@ function renderMapaProducao(){
         </div>
       </div>
       <div class="mapa-canvas-wrap">
-        <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
+        <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:row;gap:16px;align-items:flex-start;min-width:max-content">
 
-          <div style="display:flex;gap:26px;align-items:flex-start">
+          <!-- Coluna esquerda: fundo (188/191/189, Gs, 105/112) -->
+          <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+            ${renderMapaZonaHTML(zonaById('cabine_maq'))}
+            <div style="display:flex;flex-direction:column;gap:4px">${Array.from({length:9}).map(()=>`<div class="mapa-g-slot">G</div>`).join('')}</div>
+            ${renderMapaZonaHTML(zonaById('fundo_esq'))}
+          </div>
+
+          <!-- Seta + label C6 vertical -->
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;align-self:center">
+            <span class="mapa-arrow">↑</span>
+            <span style="font-size:20px;font-weight:900;color:#e2e6ec;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:0.08em">C6</span>
             <span class="mapa-arrow">↓</span>
-            ${renderMapaZonaHTML(zonaById('topo_esq'))}
-            <span class="mapa-arrow">↓</span>
-            ${renderMapaZonaHTML(zonaById('topo_dir'))}
-            <div class="mapa-room" style="min-width:170px;min-height:230px;text-align:center;padding-top:30px">
-              <div style="font-size:22px;font-weight:900;color:#7a8699">A8</div>
-              <div style="position:absolute;bottom:8px;right:10px;font-size:9px;color:#ff4d4d;border:1px solid #ff4d4d60;background:#ff4d4d15;padding:1px 5px;border-radius:3px">EX</div>
+          </div>
+
+          <!-- Zona central: Retrabalho + C6 principal + lateral + Cabine Força -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;gap:16px;align-items:flex-start">
+              ${renderMapaZonaHTML(zonaById('retrabalho'))}
+              ${renderMapaZonaHTML(zonaById('c6_principal'))}
+              ${renderMapaZonaHTML(zonaById('c6_lateral'))}
+              <div class="mapa-room" style="min-width:110px;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#7a8699;font-size:13px">Cabine<br>de<br>Força</div>
             </div>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 50px;max-width:700px">
-            <span class="mapa-arrow">←</span>
-            <span style="font-size:26px;font-weight:900;color:#e2e6ec;letter-spacing:0.05em">C6</span>
+          <!-- Setas → -->
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:30px;align-self:center">
+            <span class="mapa-arrow">→</span>
             <span class="mapa-arrow">→</span>
           </div>
 
-          <div style="display:flex;gap:26px;align-items:flex-start">
-            ${renderMapaZonaHTML(zonaById('retrabalho'))}
-            ${renderMapaZonaHTML(zonaById('c6_principal'))}
-            ${renderMapaZonaHTML(zonaById('c6_lateral'))}
-            <div class="mapa-room" style="min-width:140px;min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;color:#7a8699">Cabine<br>de<br>Força</div>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 50px;max-width:700px">
-            <span class="mapa-arrow">←</span>
-            <span class="mapa-arrow">→</span>
-          </div>
-
-          <div style="display:flex;gap:26px;align-items:flex-start">
-            ${renderMapaZonaHTML(zonaById('fundo_esq'))}
-            <div class="mapa-grid" style="grid-template-columns:repeat(9,32px)">${Array.from({length:9}).map(()=>`<div class="mapa-g-slot">G</div>`).join('')}</div>
-            ${renderMapaZonaHTML(zonaById('cabine_maq'))}
+          <!-- Coluna direita: topo (90,91,87,88 / 83,40,37) + A8 -->
+          <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+            ${renderMapaZonaHTML(zonaById('topo_esq'))}
+            ${renderMapaZonaHTML(zonaById('topo_dir'))}
+            <div class="mapa-room" style="min-width:130px;min-height:140px;text-align:center;padding-top:16px;position:relative">
+              <div style="font-size:20px;font-weight:900;color:#7a8699">A8</div>
+              <div style="position:absolute;bottom:8px;right:10px;font-size:9px;color:#ff4d4d;border:1px solid #ff4d4d60;background:#ff4d4d15;padding:1px 5px;border-radius:3px">EX</div>
+            </div>
           </div>
 
         </div>
