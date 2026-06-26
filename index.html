@@ -7061,10 +7061,14 @@ async function gabAnalisarFoto(){
       // 503 e 429 são temporários — tenta de novo
       if(!res.ok){
         const errText = data.error || JSON.stringify(data);
-        const ehTemporario = res.status === 503 || res.status === 429 || errText.includes("UNAVAILABLE") || errText.includes("overloaded");
-        if(ehTemporario && tentativa < MAX_TENTATIVAS){
-          ultimoErro = errText;
+        const eh503 = res.status===503 || errText.includes("UNAVAILABLE") || errText.includes("overloaded");
+        const eh429 = res.status===429 || errText.includes("RESOURCE_EXHAUSTED");
+        if((eh503 || eh429) && tentativa < MAX_TENTATIVAS){
+          ultimoErro = `⏳ Servidor sobrecarregado (${res.status}), aguardando ${ESPERA_MS/1000}s...`;
           continue;
+        }
+        if(errText.includes("OCR_PARSE_ERROR")){
+          throw new Error("O Gemini leu a foto mas não reconheceu o formato. Tente tirar a foto mais de frente, com boa iluminação e o texto bem visível.");
         }
         throw new Error(errText);
       }
