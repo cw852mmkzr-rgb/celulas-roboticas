@@ -7002,8 +7002,8 @@ function gabLerFoto(event){
   const reader = new FileReader();
   reader.onload = (e) => {
     img.onload = () => {
-      // Reduz pra no máximo 900px no lado maior — suficiente pra OCR de texto
-      const MAX = 900;
+      // Comprime pra no máximo 1400px — OCR de texto manuscrito precisa de mais resolução
+      const MAX = 1400;
       let w = img.width, h = img.height;
       if(w > MAX || h > MAX){
         if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
@@ -7012,7 +7012,7 @@ function gabLerFoto(event){
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92); // qualidade mais alta pra OCR
       _gabFotoBase64 = dataUrl.split(',')[1];
 
       const preview = document.getElementById("gabFotoPreview");
@@ -7039,8 +7039,8 @@ async function gabAnalisarFoto(){
   status.style.color = "#ffb300";
 
   let ultimoErro = null;
-  const MAX_TENTATIVAS = 3;
-  const ESPERA_MS = 5000;
+  const MAX_TENTATIVAS = 5;
+  const ESPERA_MS = 8000;
 
   for(let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
     try{
