@@ -6960,58 +6960,86 @@ async function gabAnalisarFoto(){
   const btn = document.getElementById("gabFotoBtnAnalisar");
   const status = document.getElementById("gabFotoStatus");
   btn.disabled = true;
-  btn.textContent = "⏳ Analisando...";
   status.style.color = "#ffb300";
-  status.textContent = "Enviando foto para o Gemini...";
 
-  try{
-    const res = await fetch(SUPABASE_URL+"/functions/v1/ia-fabrica", {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
-      body: JSON.stringify({ tipo:"ocr_gabaritagem", imagemBase64: _gabFotoBase64, imagemMime: _gabFotoMime })
-    });
-    const data = await res.json();
-    if(!res.ok || data.error) throw new Error(data.error || "Erro desconhecido");
+  let ultimoErro = null;
+  const MAX_TENTATIVAS = 3;
+  const ESPERA_MS = 5000;
 
-    const pares = data.pares; // { "3692": 2000, "12756": 4300, ... }
-    if(!pares || !Object.keys(pares).length){
-      status.style.color = "#ff4d4d";
-      status.textContent = "Nenhum par código=valor encontrado na foto.";
+  for(let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
+    try{
+      status.textContent = tentativa === 1
+        ? "Enviando foto para o Gemini..."
+        : `Tentativa ${tentativa}/${MAX_TENTATIVAS} — aguardando ${ESPERA_MS/1000}s...`;
+      btn.textContent = tentativa === 1 ? "⏳ Analisando..." : `🔄 Tentativa ${tentativa}...`;
+
+      if(tentativa > 1) await new Promise(r => setTimeout(r, ESPERA_MS));
+
+      const res = await fetch(SUPABASE_URL+"/functions/v1/ia-fabrica", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
+        body: JSON.stringify({ tipo:"ocr_gabaritagem", imagemBase64: _gabFotoBase64, imagemMime: _gabFotoMime })
+      });
+      const data = await res.json();
+
+      // 503 e 429 são temporários — tenta de novo
+      if(!res.ok){
+        const errText = data.error || JSON.stringify(data);
+        const ehTemporario = res.status === 503 || res.status === 429 || errText.includes("UNAVAILABLE") || errText.includes("overloaded");
+        if(ehTemporario && tentativa < MAX_TENTATIVAS){
+          ultimoErro = errText;
+          continue;
+        }
+        throw new Error(errText);
+      }
+
+      const pares = data.pares;
+      if(!pares || !Object.keys(pares).length){
+        status.style.color = "#ff4d4d";
+        status.textContent = "Nenhum par código=valor encontrado na foto.";
+        btn.textContent = "🤖 Analisar e Preencher";
+        btn.disabled = false;
+        return;
+      }
+
+      const now = new Date();
+      const chave = `${parseInt(document.getElementById("gabAno").value)||now.getFullYear()}_${parseInt(document.getElementById("gabMes").value)||now.getMonth()}`;
+      const dia = String(diaInput);
+      let preenchidos = 0;
+      if(!gabDados[chave]) gabDados[chave] = { codigos: [] };
+
+      Object.entries(pares).forEach(([cod, val])=>{
+        const n = parseInt(val);
+        if(!cod || isNaN(n) || n<=0) return;
+        if(!gabDados[chave][cod]) gabDados[chave][cod] = {};
+        gabDados[chave][cod][dia] = n;
+        if(!gabDados[chave].codigos.includes(cod)) gabDados[chave].codigos.push(cod);
+        preenchidos++;
+      });
+
+      await saveGabDados();
+      renderGabaritagem();
+
+      status.style.color = "#00e87a";
+      status.textContent = `✓ ${preenchidos} código(s) preenchidos no dia ${diaInput}:\n`
+        + Object.entries(pares).map(([c,v])=>`  ${c} = ${v}`).join('\n');
+      btn.textContent = "✓ Concluído";
+      showToast(`${preenchidos} código(s) preenchidos no dia ${diaInput} ✓`);
+      btn.disabled = false;
       return;
+
+    }catch(e){
+      ultimoErro = e.message;
+      if(tentativa === MAX_TENTATIVAS) break;
     }
-
-    // Preenche a coluna do dia na gabaritagem
-    const now = new Date();
-    const chave = `${parseInt(document.getElementById("gabAno").value)||now.getFullYear()}_${parseInt(document.getElementById("gabMes").value)||now.getMonth()}`;
-    const dia = String(diaInput);
-    let preenchidos = 0;
-    if(!gabDados[chave]) gabDados[chave] = { codigos: [] };
-
-    Object.entries(pares).forEach(([cod, val])=>{
-      const n = parseInt(val);
-      if(!cod || isNaN(n) || n<=0) return;
-      if(!gabDados[chave][cod]) gabDados[chave][cod] = {};
-      gabDados[chave][cod][dia] = n;
-      if(!gabDados[chave].codigos.includes(cod)) gabDados[chave].codigos.push(cod);
-      preenchidos++;
-    });
-
-    await saveGabDados();
-    renderGabaritagem();
-
-    status.style.color = "#00e87a";
-    status.textContent = `✓ ${preenchidos} código(s) preenchidos no dia ${diaInput}:\n`
-      + Object.entries(pares).map(([c,v])=>`  ${c} = ${v}`).join('\n');
-    btn.textContent = "✓ Concluído";
-    showToast(`${preenchidos} código(s) preenchidos no dia ${diaInput} ✓`);
-  }catch(e){
-    status.style.color = "#ff4d4d";
-    status.textContent = "Erro: "+e.message;
-    btn.textContent = "🤖 Analisar e Preencher";
-    showToast("Erro ao analisar foto", true);
-  }finally{
-    btn.disabled = false;
   }
+
+  // Todas as tentativas falharam
+  status.style.color = "#ff4d4d";
+  status.textContent = "Erro após "+MAX_TENTATIVAS+" tentativas: " + ultimoErro;
+  btn.textContent = "🤖 Analisar e Preencher";
+  btn.disabled = false;
+  showToast("Servidor sobrecarregado. Tente novamente em alguns minutos.", true);
 }
 
 async function backupGabaritagem(){
