@@ -5731,6 +5731,8 @@ function renderMapaProducaoTabela(){
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
       <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700;margin-left:8px">📋 Todas as Máquinas</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">🔩 Solda Topo (${totalSoldaTopo})</button>
+      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
+      <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">`:''}
     </div>`;
 
   // Atualiza só a área de conteúdo do mapa, mantendo o cabeçalho/sidebar
@@ -7235,6 +7237,148 @@ function updateGabProg(cod, val){
 let _gabFotoBase64 = null;
 let _gabFotoMime = 'image/jpeg';
 
+let _mapaFotoBase64 = null;
+let _mapaFotoMime = 'image/jpeg';
+
+function mapaLerFoto(event){
+  const file = event.target.files[0];
+  event.target.value = "";
+  if(!file) return;
+  _mapaFotoMime = 'image/jpeg';
+
+  const img = new Image();
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    img.onload = () => {
+      const MAX = 1400;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      _mapaFotoBase64 = dataUrl.split(',')[1];
+
+      const preview = document.getElementById("mapaFotoPreview");
+      preview.src = dataUrl;
+      preview.style.display = "block";
+      document.getElementById("mapaFotoStatus").textContent = `Foto carregada (${w}×${h}px). Clique em Analisar.`;
+      document.getElementById("mapaFotoStatus").style.color = "#00e87a";
+
+      const ano=mapaDados.metas_ano||new Date().getFullYear();
+      const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+      const dia=mapaDados.metas_dia||new Date().getDate();
+      document.getElementById("mapaFotoDataLabel").textContent = `${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
+
+      document.getElementById("modalMapaFoto").style.display = "flex";
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function mapaAnalisarFoto(){
+  if(!_mapaFotoBase64){ showToast("Nenhuma foto carregada",true); return; }
+
+  const btn = document.getElementById("mapaFotoBtnAnalisar");
+  const status = document.getElementById("mapaFotoStatus");
+  btn.disabled = true;
+  status.style.color = "#ffb300";
+
+  let ultimoErro = null;
+  const MAX_TENTATIVAS = 2;
+  const ESPERA_MS = 6000;
+
+  for(let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
+    try{
+      status.textContent = tentativa === 1
+        ? "Enviando foto para o Gemini..."
+        : `⏳ Servidor sobrecarregado, tentativa ${tentativa}/${MAX_TENTATIVAS} — aguardando ${ESPERA_MS/1000}s...`;
+      btn.textContent = tentativa === 1 ? "⏳ Analisando..." : `🔄 Tentativa ${tentativa}...`;
+
+      if(tentativa > 1) await new Promise(r => setTimeout(r, ESPERA_MS));
+
+      const res = await fetch(SUPABASE_URL+"/functions/v1/ia-fabrica", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+SUPABASE_KEY, "apikey":SUPABASE_KEY },
+        body: JSON.stringify({ tipo:"ocr_producao_maquinas", imagemBase64: _mapaFotoBase64, imagemMime: _mapaFotoMime })
+      });
+      const data = await res.json();
+
+      if(!res.ok){
+        const errText = data.error || JSON.stringify(data);
+        const eh503 = res.status===503 || errText.includes("UNAVAILABLE") || errText.includes("overloaded");
+        const eh429 = res.status===429 || errText.includes("RESOURCE_EXHAUSTED");
+        if((eh503 || eh429) && tentativa < MAX_TENTATIVAS){ ultimoErro = errText; continue; }
+        if(errText.includes("OCR_PARSE_ERROR")){
+          throw new Error("O Gemini leu a foto mas não reconheceu o formato. Tente tirar a foto mais de frente, com boa iluminação.");
+        }
+        throw new Error(errText);
+      }
+
+      const maquinas = data.maquinas; // { "244": { cod:"401-1", "08:00":128, "10:00":180, ... }, ... }
+      if(!maquinas || !Object.keys(maquinas).length){
+        status.style.color = "#ff4d4d";
+        status.textContent = "Nenhuma máquina com valores encontrada na foto.";
+        btn.textContent = "🤖 Analisar e Preencher";
+        btn.disabled = false;
+        return;
+      }
+
+      const ano=mapaDados.metas_ano||new Date().getFullYear();
+      const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+      const dia=mapaDados.metas_dia||new Date().getDate();
+      const chave=`${ano}_${mes}_${dia}`;
+      if(!mapaDados.metas_dias) mapaDados.metas_dias={};
+      if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
+
+      let maquinasPreenchidas = 0, celulasPreenchidas = 0;
+      const resumoLinhas = [];
+      Object.entries(maquinas).forEach(([maq, info])=>{
+        if(!maq) return;
+        if(!mapaDados.metas_dias[chave][maq]) mapaDados.metas_dias[chave][maq]={};
+        let countMaq = 0;
+        Object.entries(info).forEach(([k,v])=>{
+          if(k==='cod'){
+            if(v) mapaDados.metas_dias[chave][maq].cod = String(v).trim();
+            return;
+          }
+          const m = k.match(/^(\d{2}):(\d{2})$/);
+          if(!m) return;
+          const n = parseInt(v);
+          if(isNaN(n) || n<=0) return;
+          mapaDados.metas_dias[chave][maq][campoH(k)] = n;
+          countMaq++; celulasPreenchidas++;
+        });
+        if(countMaq>0){ maquinasPreenchidas++; resumoLinhas.push(`  ${maq}: ${countMaq} hora(s)`); }
+      });
+
+      await saveMapaDados();
+      renderMapaProducaoTabela();
+
+      status.style.color = "#00e87a";
+      status.textContent = `✓ ${maquinasPreenchidas} máquina(s), ${celulasPreenchidas} valor(es) preenchidos:\n` + resumoLinhas.join('\n');
+      btn.textContent = "✓ Concluído";
+      showToast(`${maquinasPreenchidas} máquina(s) preenchidas ✓`);
+      btn.disabled = false;
+      return;
+
+    }catch(e){
+      ultimoErro = e.message;
+      if(tentativa === MAX_TENTATIVAS) break;
+    }
+  }
+
+  status.style.color = "#ff4d4d";
+  status.textContent = "Erro após "+MAX_TENTATIVAS+" tentativas: " + ultimoErro;
+  btn.textContent = "🤖 Analisar e Preencher";
+  btn.disabled = false;
+  showToast("Erro ao analisar foto", true);
+}
+
 function gabLerFoto(event){
   const file = event.target.files[0];
   event.target.value = "";
@@ -7728,6 +7872,19 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 
 <!-- Modal login gabaritagem -->
+<div id="modalMapaFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher Produção via Foto</div>
+    <img id="mapaFotoPreview" style="display:none;width:100%;max-height:240px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
+    <div style="font-size:12px;color:#4a5568">A foto será preenchida na data selecionada na tela (<span id="mapaFotoDataLabel" style="color:#a78bfa;font-weight:700"></span>). Para mudar a data, feche este modal e ajuste no seletor de Dia/Mês/Ano antes de tirar a foto.</div>
+    <div id="mapaFotoStatus" style="font-size:12px;color:#4a5568;min-height:16px;white-space:pre-wrap"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button onclick="document.getElementById('modalMapaFoto').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="mapaAnalisarFoto()" id="mapaFotoBtnAnalisar" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">🤖 Analisar e Preencher</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalGabFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:24px;width:90%;max-width:400px;display:flex;flex-direction:column;gap:14px">
     <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher via Foto</div>
