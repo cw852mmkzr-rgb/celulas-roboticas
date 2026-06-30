@@ -708,6 +708,8 @@ let sidebarExpandida = false;
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+// Horário do turno dia só para a planilha de Produção (Mapa → Produção, 50 máquinas) — com 09:30 e 14:30 extras
+const MAPA_HORAS_DIA = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
 const HORAS_CAFE  = ["10:00"];
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -5570,15 +5572,29 @@ function mapaSidebarClick(item){
 
 let mapaTelaAtual = 'Mapa';
 
+const MAQUINAS_SOLDA_TOPO = ['241','242','243','247','224','227','245','228'];
+
 function mapaListaTodasMaquinas(){
-  // Pega todos os códigos de máquina de todas as zonas do mapa, na ordem em que aparecem
+  // Pega todos os códigos de máquina de todas as zonas do mapa, na ordem em que aparecem,
+  // excluindo as que foram separadas pra aba "Solda Topo".
   const codigos = [];
   (mapaDados.zonas||[]).forEach(z=>{
     (z.celulas||[]).forEach(cod=>{
-      if(cod && cod!=='G' && !codigos.includes(cod)) codigos.push(cod);
+      if(cod && cod!=='G' && !codigos.includes(cod) && !MAQUINAS_SOLDA_TOPO.includes(cod)) codigos.push(cod);
     });
   });
   return codigos;
+}
+
+function mapaListaMaquinasSoldaTopo(){
+  // Só as máquinas da aba "Solda Topo", na ordem definida
+  const todas = [];
+  (mapaDados.zonas||[]).forEach(z=>{
+    (z.celulas||[]).forEach(cod=>{
+      if(cod && cod!=='G') todas.push(cod);
+    });
+  });
+  return MAQUINAS_SOLDA_TOPO.filter(cod=>todas.includes(cod));
 }
 
 function mapaUpdateMetasCell(maquina,campo,valor){
@@ -5614,7 +5630,7 @@ function mapaUpdateData(campo,valor){
 function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   const podeEditar = isMapaAdmin;
   const ro=!podeEditar?'readonly':'';
-  const HORAS=turno==='dia'?HORAS_DIA:HORAS_NOITE;
+  const HORAS=turno==='dia'?MAPA_HORAS_DIA:HORAS_NOITE;
   const isNoite=turno==='noite';
   const subClass=isNoite?'sub-noite-val':'sub-dia-val';
   const subId=isNoite?'mapa-sub-noite':'mapa-sub-dia';
@@ -5642,7 +5658,7 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       return`<td ${tdStyle}><input id="mapa-inp-${maq}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="mapaHandleMetasInput('${maq}','${campo}',this.value)"></td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-    const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    const totalG=isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
     return`<tr>
       <td class="robo-label">${esc(maq)}</td>
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="mapaUpdateMetasCell('${maq}','meta',this.value);renderMapaProducaoTabela()"></td>
@@ -5661,7 +5677,7 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
     return`<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
   }).join('');
   const subTotalTurno=maquinas.reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
-  const totalGeralRod=isNoite?maquinas.reduce((sum,m)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
+  const totalGeralRod=isNoite?maquinas.reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
 
   return`<div class="metas-table-wrap"><table class="metas-table">
     <thead><tr>
@@ -5685,8 +5701,15 @@ function mapaAtualizarTotaisProducao(){
   renderMapaProducaoTabela();
 }
 
+let mapaProducaoSubTela = 'todas'; // 'todas' | 'solda_topo'
+
+function mapaTrocarSubTelaProducao(sub){
+  mapaProducaoSubTela = sub;
+  renderMapaProducaoTabela();
+}
+
 function renderMapaProducaoTabela(){
-  const maquinas = mapaListaTodasMaquinas();
+  const maquinas = mapaProducaoSubTela==='solda_topo' ? mapaListaMaquinasSoldaTopo() : mapaListaTodasMaquinas();
   const podeEditar = isMapaAdmin;
   const anoAtual=new Date().getFullYear();
   const ano=mapaDados.metas_ano||anoAtual;
@@ -5694,20 +5717,32 @@ function renderMapaProducaoTabela(){
   const dia=mapaDados.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   const data=(mapaDados.metas_dias&&mapaDados.metas_dias[chave])?mapaDados.metas_dias[chave]:{};
-  const totalDia=maquinas.reduce((s,m)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
+  const totalDia=maquinas.reduce((s,m)=>s+MAPA_HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalNoite=maquinas.reduce((s,m)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalG=totalDia+totalNoite;
   const diasOpts=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
 
+  const totalMaquinasGeral = mapaListaTodasMaquinas().length;
+  const totalSoldaTopo = mapaListaMaquinasSoldaTopo().length;
+  const abas = `
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700;margin-left:8px">📋 Todas as Máquinas</button>
+      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">🔩 Solda Topo (${totalSoldaTopo})</button>
+    </div>`;
+
   // Atualiza só a área de conteúdo do mapa, mantendo o cabeçalho/sidebar
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
+  // Preserva a posição do scroll entre re-renders (polling reconstrói o HTML a cada 3s)
+  const scrollAntigo = document.getElementById('mapaProducaoScroll');
+  const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : 0;
   wrap.innerHTML = `
-  <div style="padding:18px;overflow-y:auto;flex:1;min-height:0">
+  <div style="padding:18px;overflow-y:auto;flex:1;min-height:0" id="mapaProducaoScroll">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${maquinas.length})</div>
+      ${abas}
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📆</span>
@@ -5746,7 +5781,7 @@ function renderMapaProducaoTabela(){
       <div>
         <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;margin-bottom:6px">⚑ Total Geral do Dia — ${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}</div>
         <div style="font-size:48px;font-weight:900;color:#ffb300;letter-spacing:0.04em;line-height:1">${totalG.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia — todas as 50 máquinas</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia — ${mapaProducaoSubTela==='solda_topo'?`Solda Topo (${maquinas.length} máquinas)`:`todas as ${maquinas.length} máquinas`}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
@@ -5760,6 +5795,8 @@ function renderMapaProducaoTabela(){
       </div>
     </div>
   </div>`;
+  const scrollNovo = document.getElementById('mapaProducaoScroll');
+  if(scrollNovo) scrollNovo.scrollTop = scrollTopSalvo;
 }
 
 function mapaZoomIn(){ mapaZoomAtual=Math.min(160,mapaZoomAtual+10); aplicarMapaZoom(); }
