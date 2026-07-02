@@ -130,7 +130,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
 .dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; flex-wrap:wrap; gap:8px; }
 .dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
-.dash-clock { font-size:clamp(40px,12vw,80px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
+.dash-clock { font-size:clamp(60px,16vw,100px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
 .dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
@@ -447,7 +447,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       </div>
       <div style="text-align:center">
         <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
-        <div class="dash-clock" style="color:#ffb300" id="dashHoraCheia">--:--</div>
+        <div class="dash-clock" style="color:#ffb300;font-size:clamp(40px,12vw,80px)" id="dashHoraCheia">--:--</div>
       </div>
     </div>
     <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
