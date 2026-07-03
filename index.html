@@ -146,15 +146,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
 .dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:32px; padding:16px; position:relative; overflow:hidden; flex-wrap:wrap; }
 .dash-robo-svg { flex-shrink:0; }
-.dash-robo-svg svg { width:clamp(80px,14vw,180px); height:auto; }
-.dash-info { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; max-width:700px; }
-.dash-rn { font-size:clamp(13px,2vw,20px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
-.dash-nome { font-size:clamp(22px,4vw,44px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
-.dash-cod { font-size:clamp(14px,2.2vw,22px); color:#ffb300; font-weight:700; }
-.dash-box { background:#080b0f; border:3px solid #1e2530; border-radius:24px; padding:clamp(16px,3vw,36px) clamp(20px,5vw,80px); text-align:center; width:100%; box-sizing:border-box; }
-.dash-prod-h { font-size:clamp(12px,1.8vw,18px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:6px; }
-.dash-prod-n { font-size:clamp(80px,18vw,200px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
-.dash-meta-txt { font-size:clamp(14px,2.2vw,22px); color:#4a5568; margin-top:8px; }
+.dash-robo-svg svg { width:clamp(140px,24vw,340px); height:auto; }
+.dash-info { display:flex; flex-direction:column; align-items:center; gap:18px; flex:1; min-width:240px; max-width:1000px; }
+.dash-rn { font-size:clamp(18px,3vw,32px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
+.dash-nome { font-size:clamp(34px,6vw,72px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
+.dash-cod { font-size:clamp(20px,3.4vw,36px); color:#ffb300; font-weight:700; }
+.dash-box { background:#080b0f; border:4px solid #1e2530; border-radius:28px; padding:clamp(24px,4vw,52px) clamp(28px,6vw,110px); text-align:center; width:100%; box-sizing:border-box; }
+.dash-prod-h { font-size:clamp(18px,2.6vw,30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
+.dash-prod-n { font-size:clamp(120px,26vw,300px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
+.dash-meta-txt { font-size:clamp(22px,3.4vw,38px); color:#4a5568; margin-top:10px; }
 .dash-badge { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; text-align:center; }
 .dash-faltou { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
 .dash-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
@@ -4734,10 +4734,10 @@ function _dashRenderRobo(k){
       <!-- Eficiência em % -->
       ${meta>0&&prod>0?`
       <div style="text-align:center">
-        <div style="font-size:clamp(48px,10vw,80px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
-        <div style="font-size:clamp(13px,2vw,18px);color:#4a5568;margin-top:4px">eficiência da hora</div>
+        <div style="font-size:clamp(72px,14vw,130px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
+        <div style="font-size:clamp(20px,3vw,30px);color:#4a5568;margin-top:6px">eficiência da hora</div>
         <!-- Barra de progresso -->
-        <div style="width:100%;max-width:320px;margin:10px auto 0;background:#1e2530;border-radius:99px;height:10px;overflow:hidden">
+        <div style="width:100%;max-width:520px;margin:14px auto 0;background:#1e2530;border-radius:99px;height:16px;overflow:hidden">
           <div style="height:100%;width:${Math.min(pct,100)}%;background:${cor};border-radius:99px;transition:width .5s"></div>
         </div>
       </div>`:''}
