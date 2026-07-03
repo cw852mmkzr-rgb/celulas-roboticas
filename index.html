@@ -3074,23 +3074,32 @@ function renderProducaoPorPecaResultado(){
   const anoAtual=new Date().getFullYear();
   const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
   const anoSel=c.peca_ano||anoAtual;
+  const verAno=!!c.peca_ver_ano;
   const dadosFiltrados={};
   Object.keys(dados).forEach(cod=>{
     if(pecaBusca&&!cod.toLowerCase().includes(pecaBusca))return;
-    let totalMes=0;const diasMes={};const robosMes={};
+    let totalMes=0;const diasMes={};const robosMes={};const mesesAno={};
     Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
       const[a,m,d]=chave.split('_');
-      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx){diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;totalMes+=qtd;}
+      if(parseInt(a)!==anoSel)return;
+      if(verAno){
+        mesesAno[parseInt(m)]=(mesesAno[parseInt(m)]||0)+qtd;
+        totalMes+=qtd;
+      } else if(parseInt(m)===mesIdx){
+        diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;
+        totalMes+=qtd;
+      }
     });
     Object.entries(dados[cod].robos).forEach(([robo,rdata])=>{
       let totalRoboMes=0;
       Object.entries(rdata.dias).forEach(([chave,qtd])=>{
         const[a,m,d]=chave.split('_');
-        if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalRoboMes+=qtd;
+        if(parseInt(a)!==anoSel)return;
+        if(verAno||parseInt(m)===mesIdx)totalRoboMes+=qtd;
       });
       if(totalRoboMes>0)robosMes[robo]=totalRoboMes;
     });
-    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes,robos:robosMes};
+    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes,robos:robosMes,meses:mesesAno};
   });
   const codigosFiltrados=Object.keys(dadosFiltrados).sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total);
   const maxTotal=Math.max(...codigosFiltrados.map(cod=>dadosFiltrados[cod].total),1);
@@ -3104,14 +3113,27 @@ function renderProducaoPorPecaResultado(){
     return;
   }
   container.innerHTML=codigosFiltrados.map(cod=>{
-    const{total,dias,robos}=dadosFiltrados[cod];
+    const{total,dias,robos,meses}=dadosFiltrados[cod];
     const pct=Math.round(total/maxTotal*100);
-    const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
-    const maxDia=Math.max(...diasOrdenados,1);
-    const sparkBars=diasOrdenados.map((v,i)=>{
-      const h=v>0?Math.max(Math.round(v/maxDia*22),3):1;
-      return`<div title="Dia ${i+1}: ${v}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
-    }).join('');
+    let sparkBars, sparkLabel;
+    if(verAno){
+      // Barras por mês (Jan a Dez)
+      const mesesVals=Array.from({length:12},(_,i)=>meses[i]||0);
+      const maxMes=Math.max(...mesesVals,1);
+      sparkLabel='Meses do ano';
+      sparkBars=mesesVals.map((v,i)=>{
+        const h=v>0?Math.max(Math.round(v/maxMes*22),3):1;
+        return`<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${h}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+      }).join('');
+    } else {
+      const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
+      const maxDia=Math.max(...diasOrdenados,1);
+      sparkLabel='Dias do mês';
+      sparkBars=diasOrdenados.map((v,i)=>{
+        const h=v>0?Math.max(Math.round(v/maxDia*22),3):1;
+        return`<div title="Dia ${i+1}: ${v}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+      }).join('');
+    }
     const robosOrdenados=Object.entries(robos).sort((a,b)=>b[1]-a[1]);
     const robosHTML=robosOrdenados.length>1
       ?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2530">
@@ -3144,19 +3166,19 @@ function renderProducaoPorPecaResultado(){
           <div style="font-size:20px;font-weight:900;color:#ffb300">${esc(cod)}</div>
         </div>
         <div style="flex:1;min-width:200px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Dias do mês</div>
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${sparkLabel}</div>
           <div style="display:flex;align-items:flex-end;gap:2px;height:26px">${sparkBars}</div>
         </div>
         <div style="min-width:140px">
           <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
           <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:#00e87a;border-radius:99px;transition:width 0.4s"></div>
+            <div style="height:100%;width:${pct}%;background:${verAno?'#3d9eff':'#00e87a'};border-radius:99px;transition:width 0.4s"></div>
           </div>
           <div style="font-size:10px;color:#4a5568;margin-top:3px">${pct}% do maior</div>
         </div>
         <div style="text-align:right;min-width:90px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total</div>
-          <div style="font-size:26px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</div>
+          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total ${verAno?'no ano':''}</div>
+          <div style="font-size:26px;font-weight:900;color:${verAno?'#3d9eff':'#00e87a'}">${total.toLocaleString("pt-BR")}</div>
         </div>
       </div>
       ${robosHTML}
@@ -3169,17 +3191,20 @@ function renderProducaoPorPeca(){
   const anoAtual=new Date().getFullYear();
   const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
   const anoSel=c.peca_ano||anoAtual;
+  const verAno=!!c.peca_ver_ano; // modo "total do ano inteiro"
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
   const dados=calcProducaoPorPeca();
   const dadosFiltrados={};
   Object.keys(dados).forEach(cod=>{
-    let totalMes=0;
+    let total=0;
     Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
       const[a,m,d]=chave.split('_');
-      if(parseInt(a)===anoSel&&parseInt(m)===mesIdx)totalMes+=qtd;
+      if(parseInt(a)!==anoSel)return;
+      if(!verAno && parseInt(m)!==mesIdx)return;
+      total+=qtd;
     });
-    if(totalMes>0)dadosFiltrados[cod]=totalMes;
+    if(total>0)dadosFiltrados[cod]=total;
   });
   const totalGeral=Object.values(dadosFiltrados).reduce((s,v)=>s+v,0);
   document.getElementById("mainPanel").innerHTML=`
@@ -3187,17 +3212,21 @@ function renderProducaoPorPeca(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas${verAno?` — <b style="color:#3d9eff">exibindo o ano ${anoSel} inteiro</b>`:''}</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <span style="font-size:16px">📅</span>
-      <div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>
+      ${!verAno?`<div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>`:''}
       <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
+      <button onclick="updatePecaFiltro('${selected}','peca_ver_ano',${verAno?'false':'true'})"
+        style="background:${verAno?'#3d9eff25':'#1e2530'};border:1px solid ${verAno?'#3d9eff60':'#2a3040'};color:${verAno?'#3d9eff':'#9ca3af'};border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">
+        ${verAno?'✓ Total do Ano':'∑ Ver Total do Ano'}
+      </button>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${Object.keys(dadosFiltrados).length} código(s)</div>
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças</div>
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças ${verAno?`em ${anoSel}`:''}</div>
       </div>
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
