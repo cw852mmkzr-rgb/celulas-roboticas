@@ -4847,7 +4847,16 @@ function _dashRenderFooter(){
       <div class="dash-hora-label" style="color:${isAtual?cor:'#4a5568'}">${h}${isAtual?' ◀':''}</div>
       <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
     </div>`;
-  }).join('');
+  }).join('')+(()=>{
+    // Card final com o total geral do dia
+    const totalDia=[...HORAS_DIA,...HORAS_NOITE].reduce((soma,h)=>{
+      return soma+ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num,0);
+    },0);
+    return`<div class="dash-hora-card" style="border-color:#ffb30080;background:#ffb30015">
+      <div class="dash-hora-label" style="color:#ffb300">∑ TOTAL</div>
+      <div class="dash-hora-val" style="color:#ffb300">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
+    </div>`;
+  })();
 }
 
 
