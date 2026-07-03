@@ -6065,7 +6065,9 @@ function renderMapaProducaoTabela(){
     </div>
   </div>`;
   const scrollNovo = document.getElementById('mapaProducaoScroll');
-  if(scrollNovo) scrollNovo.scrollTop = scrollTopSalvo;
+  if(scrollNovo && scrollTopSalvo > 0){
+    requestAnimationFrame(()=>{ scrollNovo.scrollTop = scrollTopSalvo; });
+  }
 }
 
 function mapaZoomIn(){ mapaZoomAtual=Math.min(160,mapaZoomAtual+10); aplicarMapaZoom(); }
