@@ -2533,6 +2533,7 @@ const SC = {
 function getCellTipo(k) {
   const n = (celulas[k].nome||'').toLowerCase();
   if (n.includes('armario')||n.includes('armário')||n.includes('gabarito')) return 'armario';
+  if (n.includes('relat') && n.includes('anual')) return 'relatorio_anual';
   if (n.includes('relat')) return 'relatorio';
   if (n.includes('produ')&&n.includes('pe')) return 'producao_peca';
   if (n.includes('produ')&&(n.includes('men')||n.includes('di'))) return 'producao_mensal';
@@ -2690,7 +2691,7 @@ function renderSidebar(){
   const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
   const robosRestantes = robos.length-1;
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',relatorio_anual:'📈',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
 
   function itemHTML(k){
     const c=celulas[k];const s=SC[c.status]||SC["Parado"];
@@ -3388,6 +3389,7 @@ function renderDetail(){
   const tipo=getCellTipo(selected);
   if(tipo==='armario'){renderArmario();return;}
   if(tipo==='relatorio'){renderRelatorio();return;}
+  if(tipo==='relatorio_anual'){renderRelatorioAnual();return;}
   if(tipo==='producao_peca'){renderProducaoPorPeca();return;}
   if(tipo==='producao_mensal'){renderProducaoDiaria();return;}
   if(tipo==='metas'){renderMetasDiaria();return;}
@@ -3688,6 +3690,228 @@ function renderHistoricoRobo(key) {
 // ── RELATÓRIOS ────────────────────────────────
 function updateRelFiltro(key,campo,valor){
   celulas[key][campo]=valor; saveToAPI(celulas); renderRelatorio();
+}
+
+function renderRelatorioAnual(){
+  const c = celulas[selected];
+  const anoAtual = new Date().getFullYear();
+  const anoSel = c.rel_ano || anoAtual;
+
+  const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const mc = metasKey ? celulas[metasKey] : null;
+
+  // ── Coleta todos os meses do ano selecionado ──
+  // mesData[mes] = { totalGeral, totalDia, totalNoite, dias: Set, robos: {600:{total, dias}}, pecas: {} }
+  const mesData = {};
+  if (mc && mc.metas_dias) {
+    Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
+      const [a,m] = chave.split('_');
+      if (parseInt(a)!==anoSel) return;
+      const mes = parseInt(m);
+      if (!mesData[mes]) mesData[mes] = {totalGeral:0, totalDia:0, totalNoite:0, dias:new Set(), robos:{}, pecas:{}};
+      let algumaProducao = false;
+      ROBOS.forEach(robo => {
+        const rd = (diaData[robo])||{};
+        const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+        const total = totalDia+totalNoite;
+        if(total>0) algumaProducao = true;
+        if(!mesData[mes].robos[robo]) mesData[mes].robos[robo] = {total:0, dias:0};
+        if(total>0){ mesData[mes].robos[robo].total += total; mesData[mes].robos[robo].dias++; }
+        mesData[mes].totalGeral += total;
+        mesData[mes].totalDia += totalDia;
+        mesData[mes].totalNoite += totalNoite;
+        const cod = rd.cod||'';
+        if(cod && cod!=='—' && total>0){
+          if(!mesData[mes].pecas[cod]) mesData[mes].pecas[cod]=0;
+          mesData[mes].pecas[cod]+=total;
+        }
+      });
+      if(algumaProducao) mesData[mes].dias.add(chave);
+    });
+  }
+
+  const mesesComDados = Object.keys(mesData).map(Number).filter(m=>mesData[m].totalGeral>0).sort((a,b)=>a-b);
+  const totalAno = mesesComDados.reduce((s,m)=>s+mesData[m].totalGeral,0);
+  const mediaMes = mesesComDados.length>0 ? Math.round(totalAno/mesesComDados.length) : 0;
+  const melhorMes = mesesComDados.reduce((best,m)=>mesData[m].totalGeral>(mesData[best]?.totalGeral||0)?m:best, mesesComDados[0]);
+  const totalDiasTrabalhados = mesesComDados.reduce((s,m)=>s+mesData[m].dias.size,0);
+
+  // ── Eficiência/produção por robô no ano ──
+  const roboAno = ROBOS.map(robo=>{
+    let total=0, dias=0;
+    mesesComDados.forEach(m=>{
+      const r = mesData[m].robos[robo];
+      if(r){ total+=r.total; dias+=r.dias; }
+    });
+    return {robo, total, dias};
+  }).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+  const maxRobo = roboAno.length>0?roboAno[0].total:1;
+
+  // ── Top peças do ano ──
+  const pecasAno = {};
+  mesesComDados.forEach(m=>{
+    Object.entries(mesData[m].pecas).forEach(([cod,total])=>{
+      if(!pecasAno[cod]) pecasAno[cod]=0;
+      pecasAno[cod]+=total;
+    });
+  });
+  const topPecas = Object.entries(pecasAno).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxPeca = topPecas.length>0?topPecas[0][1]:1;
+
+  const anosOpts = [anoAtual-2,anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
+  const maxMes = Math.max(...mesesComDados.map(m=>mesData[m].totalGeral),1);
+
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📈 ${esc(c.nome)}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:4px">Análise consolidada do ano inteiro — mês a mês</div>
+      </div>
+      ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+    </div>
+
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:16px">📅</span>
+      <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
+      <div style="margin-left:auto;font-size:11px;color:#4a5568">${mesesComDados.length} mês(es) com dados · ${totalDiasTrabalhados} dia(s) trabalhados</div>
+    </div>
+
+    ${mesesComDados.length===0?`
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center;color:#2a3040;font-size:13px">
+      Nenhum dado para ${anoSel}.<br>
+      <span style="font-size:11px">Os dados vêm automaticamente da célula Metas.</span>
+    </div>`:`
+
+    <!-- Cards resumo do ano -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Ano</div>
+        <div style="font-size:26px;font-weight:900;color:#00e87a">${totalAno.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças produzidas</div>
+      </div>
+      <div style="background:#3d9eff15;border:1px solid #3d9eff30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Mensal</div>
+        <div style="font-size:26px;font-weight:900;color:#3d9eff">${mediaMes.toLocaleString("pt-BR")}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças/mês</div>
+      </div>
+      <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Mês</div>
+        <div style="font-size:26px;font-weight:900;color:#ffb300">${melhorMes!==undefined?mesData[melhorMes].totalGeral.toLocaleString("pt-BR"):'—'}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${melhorMes!==undefined?MESES[melhorMes]:''}</div>
+      </div>
+      <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:12px;padding:14px 16px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
+        <div style="font-size:26px;font-weight:900;color:#a78bfa">${roboAno.length}</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">de ${ROBOS.length} robôs no ano</div>
+      </div>
+    </div>
+
+    <!-- Gráfico de produção mensal -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção mensal do ano</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:110px">
+        ${MESES.map((nome,m)=>{
+          const val = mesData[m]?mesData[m].totalGeral:0;
+          const h = val>0?Math.max(Math.round(val/maxMes*84),6):3;
+          const ehMesAtual = m===new Date().getMonth()&&anoSel===anoAtual;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="font-size:9px;font-weight:700;color:${val>0?'#00e87a':'transparent'}">${val>0?val.toLocaleString('pt-BR'):'.'}</span>
+            <div title="${nome}: ${val.toLocaleString('pt-BR')}" style="width:100%;height:${h}px;background:${val>0?(ehMesAtual?'#ffb300':'#00e87a'):'#1e2530'};border-radius:4px 4px 0 0;transition:height 0.3s"></div>
+            <span style="font-size:9px;color:#4a5568;font-weight:700">${nome.slice(0,3)}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <!-- Produção por robô no ano -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Produção por Robô no Ano</div>
+        ${roboAno.length>0?roboAno.map(r=>{
+          const pct=Math.round(r.total/maxRobo*100);
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:11px;color:${r.robo<=604?'#ffb300':'#00e87a'};font-weight:700;min-width:34px">${r.robo}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${r.robo<=604?'#ffb300':'#00e87a'};border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#d8dde6;min-width:64px;text-align:right">${r.total.toLocaleString("pt-BR")}</span>
+            <span style="font-size:9px;color:#4a5568;min-width:44px;text-align:right">${r.dias} dia(s)</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+
+      <!-- Top peças do ano -->
+      <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Ano</div>
+        ${topPecas.length>0?topPecas.map(([cod,total],i)=>{
+          const medalhas=['🥇','🥈','🥉','4º','5º'];
+          const pct=Math.round(total/maxPeca*100);
+          return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;min-width:22px">${medalhas[i]}</span>
+            <span style="font-size:11px;color:#ffb300;font-weight:700;min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cod)}</span>
+            <div style="flex:1;background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+            </div>
+            <span style="font-size:11px;font-weight:700;color:#d8dde6;min-width:56px;text-align:right">${total.toLocaleString("pt-BR")}</span>
+          </div>`;
+        }).join(''):`<div style="font-size:12px;color:#2a3040">Sem dados</div>`}
+      </div>
+    </div>
+
+    <!-- Tabela detalhada por mês -->
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
+      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
+        Detalhe por Mês — todos os robôs
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+        <table style="border-collapse:collapse;width:100%;min-width:560px;font-family:'Courier New',monospace">
+          <thead>
+            <tr style="background:#0a0d11">
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Mês</th>
+              <th style="padding:9px 12px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
+              <th style="padding:9px 12px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
+              <th style="padding:9px 12px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
+              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Dias Trab.</th>
+              <th style="padding:9px 12px;font-size:10px;color:#3d9eff;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Média/Dia</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${mesesComDados.map(m=>{
+              const md = mesData[m];
+              const nDias = md.dias.size;
+              const mediaD = nDias>0?Math.round(md.totalGeral/nDias):0;
+              const pct = Math.round(md.totalGeral/maxMes*100);
+              return`<tr style="border-bottom:1px solid #1e2530" onmouseover="this.style.background='#ffffff04'" onmouseout="this.style.background=''">
+                <td style="padding:9px 12px;font-size:12px;color:#d8dde6;font-weight:700">${MESES[m]}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#00e87a;text-align:center;font-weight:700">${md.totalDia.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px;font-size:13px;color:#a78bfa;text-align:center;font-weight:700">${md.totalNoite.toLocaleString("pt-BR")}</td>
+                <td style="padding:9px 12px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="flex:1;background:#1e2530;border-radius:99px;height:5px;min-width:80px;overflow:hidden">
+                      <div style="height:100%;width:${pct}%;background:#ffb300;border-radius:99px"></div>
+                    </div>
+                    <span style="font-size:14px;font-weight:800;color:#ffb300;min-width:60px;text-align:right">${md.totalGeral.toLocaleString("pt-BR")}</span>
+                  </div>
+                </td>
+                <td style="padding:9px 12px;font-size:12px;color:#4a5568;text-align:center">${nDias}</td>
+                <td style="padding:9px 12px;font-size:12px;color:#3d9eff;text-align:center;font-weight:700">${mediaD.toLocaleString("pt-BR")}</td>
+              </tr>`;
+            }).join('')}
+            <tr style="background:#ffb30010">
+              <td style="padding:10px 12px;font-size:11px;color:#ffb300;font-weight:800;text-transform:uppercase">Total ${anoSel}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#00e87a;text-align:center;font-weight:800">${mesesComDados.reduce((s,m)=>s+mesData[m].totalDia,0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:13px;color:#a78bfa;text-align:center;font-weight:800">${mesesComDados.reduce((s,m)=>s+mesData[m].totalNoite,0).toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:16px;color:#ffb300;font-weight:900">${totalAno.toLocaleString("pt-BR")}</td>
+              <td style="padding:10px 12px;font-size:12px;color:#4a5568;text-align:center;font-weight:700">${totalDiasTrabalhados}</td>
+              <td style="padding:10px 12px;font-size:12px;color:#3d9eff;text-align:center;font-weight:800">${totalDiasTrabalhados>0?Math.round(totalAno/totalDiasTrabalhados).toLocaleString("pt-BR"):'—'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`}
+  </div>`;
 }
 
 function renderRelatorio(){
@@ -6848,7 +7072,7 @@ function renomearCelula(key){
 
 async function openGerenciar(){
   const keys = Object.keys(celulas).sort();
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
+  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',relatorio_anual:'📈',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
 
   document.getElementById("gerenciarLista").innerHTML = keys.map(k=>{
     const c = celulas[k];
