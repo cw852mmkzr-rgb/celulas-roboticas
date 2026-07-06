@@ -5991,7 +5991,7 @@ function mapaTrocarSubTelaProducao(sub){
 function renderMapaProducaoTabela(){
   // Não re-renderiza se o usuário estiver com um input ou select aberto na tabela
   const focado = document.activeElement;
-  if(focado && (focado.tagName === 'INPUT' || focado.tagName === 'SELECT') && focado.closest('#mapaCanvasWrap')){
+  if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && focado.closest('#mapaCanvasWrap')){
     return;
   }
   const maquinas = mapaProducaoSubTela==='solda_topo' ? mapaListaMaquinasSoldaTopo() : mapaListaTodasMaquinas();
@@ -6024,8 +6024,10 @@ function renderMapaProducaoTabela(){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
   // Preserva a posição do scroll entre re-renders (polling reconstrói o HTML a cada 3s)
+  // Se o wrapper externo (renderMapaProducao) foi reconstruído primeiro, usa a var salva
   const scrollAntigo = document.getElementById('mapaProducaoScroll');
-  const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : 0;
+  const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : (window._mapaProdScrollSalvo || 0);
+  window._mapaProdScrollSalvo = 0; // limpa após consumir
   wrap.innerHTML = `
   <div style="padding:18px;overflow-y:auto;flex:1;min-height:0" id="mapaProducaoScroll">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
@@ -6167,6 +6169,10 @@ function renderMapaProducao(){
   const wrapAntigo = conteudoM ? conteudoM.querySelector('.mapa-canvas-wrap') : null;
   const scrollMapaTop = wrapAntigo ? wrapAntigo.scrollTop : 0;
   const scrollMapaLeft = wrapAntigo ? wrapAntigo.scrollLeft : 0;
+  // Salva o scroll da aba Produção (que fica num container interno) numa var externa
+  // pra renderMapaProducaoTabela poder restaurar (o DOM antigo é destruído antes de ela rodar)
+  const scrollProdAntigo = document.getElementById("mapaProducaoScroll");
+  window._mapaProdScrollSalvo = scrollProdAntigo ? scrollProdAntigo.scrollTop : 0;
 
   const total = Object.keys(mapaDados.maquinas).length;
   const produzindo = mapaContarStatus('producao');
@@ -6995,6 +7001,10 @@ function fecharCardManu(){
 }
 
 function abrirCardManu(robo){
+  // Salva scroll atual do card (se estiver aberto) — polling do renderManutencao chama isso a cada 3s
+  const scrollAtualCard = document.getElementById("modalCardManuScroll");
+  const scrollCardSalvo = scrollAtualCard ? scrollAtualCard.scrollTop : 0;
+
   _manuCardAbertoRobo = robo;
   _manuCardAbertoTs = Date.now();
   const c = celulas[selected];
@@ -7044,7 +7054,7 @@ function abrirCardManu(robo){
         <button onclick="fecharCardManu()" style="background:none;border:none;color:#4a5568;font-size:22px;cursor:pointer;padding:4px 8px">✕</button>
       </div>
     </div>
-    <div style="overflow-y:auto;flex:1;padding:20px;display:flex;flex-direction:column;gap:12px">
+    <div id="modalCardManuScroll" style="overflow-y:auto;flex:1;padding:20px;display:flex;flex-direction:column;gap:12px">
       ${pendentes.length>0?`<div style="font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;margin-bottom:2px">⚠ Pendentes</div>`:''}
       ${pendentesHTML}
       ${concluidas.length>0?`<div style="font-size:12px;color:#00e87a;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;margin-top:${pendentes.length>0?'12px':'0'};margin-bottom:2px">✓ Histórico</div>`:''}
@@ -7052,6 +7062,14 @@ function abrirCardManu(robo){
     </div>
   `;
   document.getElementById("modalCardManu").style.display = 'flex';
+
+  // Restaura scroll depois do browser desenhar o novo card
+  if(scrollCardSalvo > 0){
+    requestAnimationFrame(()=>{
+      const el = document.getElementById("modalCardManuScroll");
+      if(el) el.scrollTop = scrollCardSalvo;
+    });
+  }
 }
 
 function toggleManuRobo(robo){}
