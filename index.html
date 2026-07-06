@@ -3414,6 +3414,24 @@ function removerHistLimpeza(key,idx){
 
 // ── ROBÔ (layout padrão) ──────────────────────
 function renderDetail(){
+  // ── Proteção global de scroll e foco para todas as telas ──
+  const mp = document.getElementById("mainPanel");
+  // Se o usuário está digitando em qualquer input/select/textarea da tela, não re-renderiza
+  const focado = document.activeElement;
+  if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && mp && mp.contains(focado)){
+    return;
+  }
+  const scrollSalvo = mp ? mp.scrollTop : 0;
+
+  _renderDetailInner();
+
+  // Restaura a posição do scroll depois do browser pintar o novo conteúdo
+  if(mp && scrollSalvo > 0){
+    requestAnimationFrame(()=>{ mp.scrollTop = scrollSalvo; });
+  }
+}
+
+function _renderDetailInner(){
   if(!selected||!celulas[selected])return;
   const tipo=getCellTipo(selected);
   if(tipo==='armario'){renderArmario();return;}
@@ -6140,6 +6158,16 @@ function renderMapaZonaHTML(zona){
 }
 
 function renderMapaProducao(){
+  // ── Proteção de scroll e foco ──
+  const focadoM = document.activeElement;
+  const conteudoM = document.getElementById("mapaConteudo");
+  if(focadoM && ['INPUT','SELECT','TEXTAREA'].includes(focadoM.tagName) && conteudoM && conteudoM.contains(focadoM)){
+    return;
+  }
+  const wrapAntigo = conteudoM ? conteudoM.querySelector('.mapa-canvas-wrap') : null;
+  const scrollMapaTop = wrapAntigo ? wrapAntigo.scrollTop : 0;
+  const scrollMapaLeft = wrapAntigo ? wrapAntigo.scrollLeft : 0;
+
   const total = Object.keys(mapaDados.maquinas).length;
   const produzindo = mapaContarStatus('producao');
   const setup = mapaContarStatus('setup');
@@ -6241,6 +6269,13 @@ function renderMapaProducao(){
     renderMapaProducaoTabela();
   } else {
     aplicarMapaZoom();
+    // Restaura o scroll do mapa visual após re-render do polling
+    if(scrollMapaTop>0 || scrollMapaLeft>0){
+      requestAnimationFrame(()=>{
+        const wrapNovo = document.querySelector('#mapaConteudo .mapa-canvas-wrap');
+        if(wrapNovo){ wrapNovo.scrollTop = scrollMapaTop; wrapNovo.scrollLeft = scrollMapaLeft; }
+      });
+    }
   }
 }
 
@@ -7280,6 +7315,15 @@ function getDiasUteis(ano, mes){
 }
 
 function renderGabaritagem(){
+  // ── Proteção de scroll e foco ──
+  const gabWrap = document.getElementById("gabScrollWrap");
+  const focadoG = document.activeElement;
+  if(focadoG && ['INPUT','SELECT','TEXTAREA'].includes(focadoG.tagName) && gabWrap && gabWrap.contains(focadoG)){
+    return;
+  }
+  const gabScrollTop = gabWrap ? gabWrap.scrollTop : 0;
+  const gabScrollLeft = gabWrap ? gabWrap.scrollLeft : 0;
+
   renderGabBtns();
   const mes = parseInt(document.getElementById("gabMes")?.value||0);
   const ano = parseInt(document.getElementById("gabAno")?.value||2026);
@@ -7420,6 +7464,13 @@ function renderGabaritagem(){
     </table>
   </div>`;
   setTimeout(fixTouchScroll, 100);
+  // Restaura o scroll salvo antes do re-render
+  if(gabScrollTop>0 || gabScrollLeft>0){
+    requestAnimationFrame(()=>{
+      const w = document.getElementById("gabScrollWrap");
+      if(w){ w.scrollTop = gabScrollTop; w.scrollLeft = gabScrollLeft; }
+    });
+  }
 }
 
 function updateGab(cod, dia, val){
@@ -8135,7 +8186,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
       <input type="file" id="gabFotoInput" accept="image/*" capture="environment" style="display:none" onchange="gabLerFoto(event)">
     </div>
   </div>
-  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px">
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px" id="gabScrollWrap">
     <div id="gabPanel"></div>
   </div>
 </div>
