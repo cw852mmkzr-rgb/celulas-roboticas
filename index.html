@@ -8388,5 +8388,210 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
   </div>
 </div>
 
+<!-- ===== INTRO SCREEN ===== -->
+<div id="introScreen" style="position:fixed;inset:0;background:#04070d;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;overflow:hidden">
+
+  <!-- Partículas de fundo -->
+  <canvas id="introCanvas" style="position:absolute;inset:0;opacity:0.18"></canvas>
+
+  <!-- Robô SVG animado -->
+  <div id="introRobo" style="opacity:0;transform:translateY(40px);transition:all 0.8s cubic-bezier(.34,1.56,.64,1)">
+    <svg viewBox="0 0 120 160" width="140" height="185" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .ir-stroke{stroke:#ff6a00;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+        .ir-eye{fill:#ff6a00;}
+        @keyframes ir-blink{0%,90%,100%{ry:6px}95%{ry:1px}}
+        @keyframes ir-arm-l{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-18deg)}}
+        @keyframes ir-arm-r{0%,100%{transform:rotate(0deg)}50%{transform:rotate(18deg)}}
+        @keyframes ir-glow{0%,100%{filter:drop-shadow(0 0 6px #ff6a00)}50%{filter:drop-shadow(0 0 18px #ff6a00)}}
+        .ir-robo{animation:ir-glow 2s ease-in-out infinite;}
+        .ir-eye-l{animation:ir-blink 3s ease-in-out infinite;}
+        .ir-eye-r{animation:ir-blink 3s ease-in-out 0.1s infinite;}
+        .ir-arm-wrap-l{transform-origin:18px 78px;animation:ir-arm-l 2s ease-in-out infinite;}
+        .ir-arm-wrap-r{transform-origin:102px 78px;animation:ir-arm-r 2s ease-in-out infinite;}
+      </style>
+      <g class="ir-robo">
+        <!-- Antena -->
+        <line x1="60" y1="8" x2="60" y2="22" class="ir-stroke"/>
+        <circle cx="60" cy="6" r="4" class="ir-eye"/>
+        <!-- Cabeça -->
+        <rect x="28" y="22" width="64" height="48" rx="10" class="ir-stroke"/>
+        <!-- Olhos -->
+        <ellipse cx="44" cy="42" rx="8" ry="6" class="ir-eye ir-eye-l"/>
+        <ellipse cx="76" cy="42" rx="8" ry="6" class="ir-eye ir-eye-r"/>
+        <!-- Boca -->
+        <rect x="40" y="56" width="40" height="6" rx="3" class="ir-stroke"/>
+        <!-- Pescoço -->
+        <rect x="52" y="70" width="16" height="8" rx="3" class="ir-stroke"/>
+        <!-- Corpo -->
+        <rect x="22" y="78" width="76" height="54" rx="10" class="ir-stroke"/>
+        <!-- Painel corpo -->
+        <rect x="34" y="88" width="52" height="34" rx="6" class="ir-stroke" style="opacity:0.5"/>
+        <circle cx="48" cy="105" r="5" class="ir-eye" style="opacity:0.7"/>
+        <circle cx="72" cy="105" r="5" class="ir-eye" style="opacity:0.7"/>
+        <line x1="40" y1="117" x2="80" y2="117" class="ir-stroke" style="opacity:0.4"/>
+        <!-- Braço esquerdo -->
+        <g class="ir-arm-wrap-l">
+          <rect x="4" y="78" width="18" height="42" rx="8" class="ir-stroke"/>
+          <rect x="2" y="116" width="22" height="12" rx="5" class="ir-stroke"/>
+        </g>
+        <!-- Braço direito -->
+        <g class="ir-arm-wrap-r">
+          <rect x="98" y="78" width="18" height="42" rx="8" class="ir-stroke"/>
+          <rect x="96" y="116" width="22" height="12" rx="5" class="ir-stroke"/>
+        </g>
+        <!-- Pernas -->
+        <rect x="34" y="132" width="20" height="26" rx="6" class="ir-stroke"/>
+        <rect x="66" y="132" width="20" height="26" rx="6" class="ir-stroke"/>
+        <!-- Pés -->
+        <rect x="28" y="152" width="28" height="10" rx="4" class="ir-stroke"/>
+        <rect x="64" y="152" width="28" height="10" rx="4" class="ir-stroke"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Texto com efeito glitch + letra por letra -->
+  <div style="text-align:center;position:relative">
+    <div id="introSub" style="font-size:12px;letter-spacing:0.4em;color:#4a5568;text-transform:uppercase;margin-bottom:10px;opacity:0;transition:opacity 0.6s">Sistema de Monitoramento</div>
+    <div id="introTitle" style="font-size:clamp(28px,7vw,58px);font-weight:900;color:#ff6a00;letter-spacing:0.12em;text-transform:uppercase;font-family:'Montserrat',sans-serif;min-height:1.2em;position:relative">
+      <span id="introTitleText"></span><span id="introCursor" style="color:#ff6a00;animation:blink-cur 0.7s step-end infinite">|</span>
+    </div>
+    <div id="introTagline" style="font-size:12px;letter-spacing:0.25em;color:#2a3040;text-transform:uppercase;margin-top:10px;opacity:0;transition:opacity 0.6s">TrempsRobotics — Robôs 600 a 611</div>
+  </div>
+
+  <!-- Barra de loading -->
+  <div id="introLoadWrap" style="width:min(320px,80vw);opacity:0;transition:opacity 0.5s">
+    <div style="background:#1e2530;border-radius:99px;height:3px;overflow:hidden">
+      <div id="introBar" style="height:100%;width:0%;background:linear-gradient(90deg,#ff6a00,#ffb300);border-radius:99px;transition:width 0.1s linear"></div>
+    </div>
+    <div id="introBarTxt" style="font-size:10px;color:#2a3040;letter-spacing:0.2em;text-transform:uppercase;margin-top:6px;text-align:center">Inicializando...</div>
+  </div>
+</div>
+
+<style>
+@keyframes blink-cur{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes intro-fade-out{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
+</style>
+
+<script>
+(function(){
+  // ── Partículas ──
+  const canvas = document.getElementById("introCanvas");
+  const ctx = canvas.getContext("2d");
+  let pts = [];
+  function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+  for(let i=0;i<55;i++) pts.push({
+    x: Math.random()*window.innerWidth,
+    y: Math.random()*window.innerHeight,
+    r: Math.random()*1.4+0.4,
+    vx: (Math.random()-0.5)*0.4,
+    vy: (Math.random()-0.5)*0.4,
+    a: Math.random()
+  });
+  function drawPts(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,106,0,${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(drawPts);
+  }
+  drawPts();
+
+  // ── Sequência de animação ──
+  const robo = document.getElementById("introRobo");
+  const sub = document.getElementById("introSub");
+  const titleEl = document.getElementById("introTitleText");
+  const cursor = document.getElementById("introCursor");
+  const tagline = document.getElementById("introTagline");
+  const loadWrap = document.getElementById("introLoadWrap");
+  const bar = document.getElementById("introBar");
+  const barTxt = document.getElementById("introBarTxt");
+  const intro = document.getElementById("introScreen");
+  const fullText = "CÉLULAS ROBÓTICAS";
+  const glitchChars = "!@#$%&*?<>[]{}|/\\";
+
+  // 1. Robô aparece
+  setTimeout(()=>{
+    robo.style.opacity="1";
+    robo.style.transform="translateY(0)";
+  }, 200);
+
+  // 2. Subtítulo fade in
+  setTimeout(()=>{ sub.style.opacity="1"; }, 700);
+
+  // 3. Texto letra a letra com glitch
+  setTimeout(()=>{
+    let i = 0;
+    function typeNext(){
+      if(i >= fullText.length){
+        cursor.style.display="none";
+        // Glitch final
+        let gCount=0;
+        const gTimer=setInterval(()=>{
+          if(gCount>8){ clearInterval(gTimer); titleEl.textContent=fullText; return; }
+          titleEl.textContent=fullText.split('').map((c,idx)=>{
+            return Math.random()<0.12?glitchChars[Math.floor(Math.random()*glitchChars.length)]:c;
+          }).join('');
+          gCount++;
+        },60);
+        return;
+      }
+      // Glitch local antes de revelar
+      let g=0;
+      const gL=setInterval(()=>{
+        if(g>2){
+          clearInterval(gL);
+          titleEl.textContent=fullText.slice(0,i+1);
+          i++; setTimeout(typeNext, i<fullText.length?60:0);
+          return;
+        }
+        titleEl.textContent=fullText.slice(0,i)+glitchChars[Math.floor(Math.random()*glitchChars.length)];
+        g++;
+      },30);
+    }
+    typeNext();
+  }, 900);
+
+  // 4. Tagline e loading aparecem
+  setTimeout(()=>{
+    tagline.style.opacity="1";
+    loadWrap.style.opacity="1";
+  }, 2200);
+
+  // 5. Barra de loading
+  const msgs=["Conectando ao Supabase...","Carregando células...","Sincronizando dados...","Sistema pronto ✓"];
+  let pct=0;
+  const loadStart=2300;
+  setTimeout(()=>{
+    let step=0;
+    const timer=setInterval(()=>{
+      pct+=Math.random()*4+1;
+      if(pct>100)pct=100;
+      bar.style.width=pct+"%";
+      const msgIdx=Math.min(Math.floor(pct/26),msgs.length-1);
+      barTxt.textContent=msgs[msgIdx];
+      if(pct>=100){ clearInterval(timer); }
+    },60);
+  }, loadStart);
+
+  // 6. Fecha a intro
+  setTimeout(()=>{
+    intro.style.animation="intro-fade-out 0.6s ease-in forwards";
+    setTimeout(()=>{ intro.style.display="none"; }, 580);
+  }, 4200);
+})();
+</script>
+
 </body>
 </html>
