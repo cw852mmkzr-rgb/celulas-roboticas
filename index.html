@@ -196,14 +196,14 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 75px; position:sticky; left:65px; z-index:2; }
 .metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 110px; position:sticky; left:140px; z-index:2; }
 /* Colunas fixas mais estreitas na planilha do Mapa → Produção */
-.mapa-table-wrap .metas-table th.col-robo { min-width:52px; }
-.mapa-table-wrap .metas-table th.col-meta { min-width:54px; left:52px; }
-.mapa-table-wrap .metas-table th.col-cod  { min-width:80px; left:106px; }
-.mapa-table-wrap .metas-table td.robo-label { min-width:52px; }
-.mapa-table-wrap .metas-table td.meta-val  { min-width:54px; left:52px; }
-.mapa-table-wrap .metas-table td.cod-val   { min-width:80px; left:106px; }
-.mapa-table-wrap .meta-inp { width:42px; }
-.mapa-table-wrap .cod-inp  { width:68px; font-size:11px; }
+.mapa-table-wrap .metas-table th.col-robo { min-width:42px; font-size:10px; }
+.mapa-table-wrap .metas-table th.col-meta { min-width:42px; left:42px; font-size:10px; }
+.mapa-table-wrap .metas-table th.col-cod  { min-width:64px; left:84px; font-size:10px; }
+.mapa-table-wrap .metas-table td.robo-label { min-width:42px; font-size:12px; }
+.mapa-table-wrap .metas-table td.meta-val  { min-width:42px; left:42px; font-size:11px; }
+.mapa-table-wrap .metas-table td.cod-val   { min-width:64px; left:84px; font-size:11px; }
+.mapa-table-wrap .meta-inp { width:36px; font-size:11px; }
+.mapa-table-wrap .cod-inp  { width:56px; font-size:10px; }
 .metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 76px; }
 .metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 76px; }
 .metas-table th.col-hora-cafe { background: #ffb30018; color: #ffb300; min-width: 76px; border-bottom: 2px solid #ffb30060; }
@@ -6449,7 +6449,6 @@ function renderMapaProducaoTabela(){
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">🔩 Solda Topo (${totalSoldaTopo})</button>
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
       <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
-      <button onclick="mapaAbrirEditarLista()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">✏ Editar Lista</button>
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📋 Copiar Dia Ant.</button>
       `:''}
     </div>`;
@@ -6469,7 +6468,6 @@ function renderMapaProducaoTabela(){
       <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📋 ${totalMaquinasGeral}</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🔩 Topo</button>
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
-      <button onclick="mapaAbrirEditarLista()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">✏</button>
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
       `:''}
       ${!podeEditar?`<button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
@@ -8648,23 +8646,6 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 
 <!-- Modal login gabaritagem -->
-<!-- Modal editar lista de máquinas -->
-<div id="modalMapaLista" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:14px">
-    <div style="font-size:15px;font-weight:800;color:#fff" id="modalMapaListaTitulo">📋 Lista de Máquinas</div>
-    <div style="font-size:12px;color:#4a5568">Uma máquina por linha. A ordem aqui define a ordem na planilha.</div>
-    <span id="modalMapaListaCampo" style="display:none"></span>
-    <textarea id="modalMapaListaTextarea" rows="14"
-      style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;color:#d8dde6;font-family:'Courier New',monospace;font-size:14px;padding:10px;resize:vertical;outline:none;line-height:1.6"></textarea>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button onclick="document.getElementById('modalMapaLista').style.display='none'"
-        style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="mapaConfirmarEditarLista()"
-        style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✓ Salvar</button>
-    </div>
-  </div>
-</div>
-
 <div id="modalMapaFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:14px">
     <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher Produção via Foto</div>
