@@ -195,6 +195,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
 .metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 75px; position:sticky; left:65px; z-index:2; }
 .metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 110px; position:sticky; left:140px; z-index:2; }
+/* Colunas fixas mais estreitas na planilha do Mapa → Produção */
+.mapa-table-wrap .metas-table th.col-robo { min-width:52px; }
+.mapa-table-wrap .metas-table th.col-meta { min-width:54px; left:52px; }
+.mapa-table-wrap .metas-table th.col-cod  { min-width:80px; left:106px; }
+.mapa-table-wrap .metas-table td.robo-label { min-width:52px; }
+.mapa-table-wrap .metas-table td.meta-val  { min-width:54px; left:52px; }
+.mapa-table-wrap .metas-table td.cod-val   { min-width:80px; left:106px; }
+.mapa-table-wrap .meta-inp { width:42px; }
+.mapa-table-wrap .cod-inp  { width:68px; font-size:11px; }
 .metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 76px; }
 .metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 76px; }
 .metas-table th.col-hora-cafe { background: #ffb30018; color: #ffb300; min-width: 76px; border-bottom: 2px solid #ffb30060; }
