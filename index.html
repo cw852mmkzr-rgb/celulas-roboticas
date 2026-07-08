@@ -344,85 +344,149 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     <!-- Card principal: login -->
     <div class="login-box" style="flex:0 0 auto">
       <div class="login-icon" style="display:flex;justify-content:center;margin-bottom:8px">
-        <svg width="160" height="100" viewBox="0 0 440 280">
-          <defs>
-            <filter id="lgn"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="lgb"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="lgg"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <rect width="440" height="280" fill="#04070d"/>
-          <g filter="url(#lgn)">
-            <rect x="18" y="238" width="104" height="20" rx="4" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <rect x="30" y="224" width="80" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-            <rect x="55" y="200" width="30" height="26" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-            <circle cx="70" cy="200" r="20" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="70" cy="200" r="12" fill="none" stroke="#ffd600" stroke-width="1"/>
-            <circle cx="70" cy="200" r="5" fill="#ffd600" opacity="0.9"/>
-            <polygon points="58,148 82,148 88,168 88,198 52,198 52,168" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="70" cy="148" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="70" cy="148" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="70" cy="148" r="4" fill="#ffd600"/>
-            <g transform="rotate(-52 70 148)">
-              <polygon points="58,82 82,82 86,110 86,146 54,146 54,110" fill="none" stroke="#ffd600" stroke-width="2"/>
+        <svg width="200" height="130" viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;overflow:hidden">
+          <defs><style>
+            @keyframes lsh{0%,100%{transform:rotate(0deg)}35%{transform:rotate(-14deg)}70%{transform:rotate(9deg)}}
+            @keyframes lel{0%,100%{transform:rotate(0deg)}30%{transform:rotate(22deg)}65%{transform:rotate(-14deg)}}
+            @keyframes lwr{0%,100%{transform:rotate(0deg)}40%{transform:rotate(-28deg)}75%{transform:rotate(18deg)}}
+            @keyframes rsh{0%,100%{transform:rotate(0deg)}35%{transform:rotate(14deg)}70%{transform:rotate(-9deg)}}
+            @keyframes rel{0%,100%{transform:rotate(0deg)}30%{transform:rotate(-22deg)}65%{transform:rotate(14deg)}}
+            @keyframes rwr{0%,100%{transform:rotate(0deg)}40%{transform:rotate(28deg)}75%{transform:rotate(-18deg)}}
+            @keyframes lspk{0%,88%,100%{opacity:0}90%{opacity:1}97%{opacity:0}}
+            @keyframes rspk{0%,88%,100%{opacity:0}90%{opacity:1}97%{opacity:0}}
+            @keyframes lled{0%,100%{opacity:.9}50%{opacity:.2}}
+            .lshl{animation:lsh 6s ease-in-out infinite;transform-origin:186px 262px}
+            .lell{animation:lel 6s ease-in-out infinite .4s;transform-origin:172px 148px}
+            .lwrl{animation:lwr 6s ease-in-out infinite .7s;transform-origin:268px 138px}
+            .rshr{animation:rsh 6s ease-in-out infinite;transform-origin:494px 262px}
+            .relr{animation:rel 6s ease-in-out infinite .4s;transform-origin:508px 148px}
+            .rwrr{animation:rwr 6s ease-in-out infinite .7s;transform-origin:412px 138px}
+            .lspkl{animation:lspk 6s ease-in-out infinite .7s}
+            .rspkr{animation:rspk 6s ease-in-out infinite 3.7s}
+            .lledp{animation:lled 2s ease-in-out infinite}
+          </style></defs>
+          <rect width="680" height="420" fill="#0a0c10"/>
+          <rect x="0" y="360" width="680" height="60" fill="#12161f"/>
+          <rect x="0" y="358" width="680" height="4" fill="#1e2535"/>
+          <line x1="60" y1="360" x2="60" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <line x1="170" y1="360" x2="170" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <line x1="280" y1="360" x2="280" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <line x1="400" y1="360" x2="400" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <line x1="510" y1="360" x2="510" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <line x1="620" y1="360" x2="620" y2="415" stroke="#1c2230" stroke-width="1"/>
+          <!-- estrelas -->
+          <circle cx="90" cy="35" r="1" fill="#4a5568" opacity=".6"/>
+          <circle cx="230" cy="22" r="1.2" fill="#4a5568" opacity=".5"/>
+          <circle cx="345" cy="48" r=".9" fill="#4a5568" opacity=".6"/>
+          <circle cx="470" cy="25" r="1.1" fill="#4a5568" opacity=".5"/>
+          <circle cx="590" cy="42" r="1" fill="#4a5568" opacity=".6"/>
+          <!-- ROBÔ ESQUERDO -->
+          <rect x="138" y="330" width="96" height="30" rx="4" fill="#1a1c20"/>
+          <rect x="146" y="336" width="10" height="8" rx="2" fill="#0c0e12"/>
+          <rect x="216" y="336" width="10" height="8" rx="2" fill="#0c0e12"/>
+          <rect x="150" y="316" width="72" height="18" rx="3" fill="#26282e"/>
+          <path d="M156,318 L156,286 Q156,276 166,274 L206,274 Q216,276 216,286 L216,318 Z" fill="#f2c200"/>
+          <rect x="162" y="296" width="48" height="10" rx="3" fill="#d4a800"/>
+          <g class="lshl">
+            <circle cx="186" cy="262" r="34" fill="#f2c200"/>
+            <circle cx="186" cy="262" r="24" fill="#1a1c20"/>
+            <circle cx="186" cy="262" r="18" fill="#26282e"/>
+            <circle cx="186" cy="262" r="7" fill="#f2c200"/>
+            <circle cx="186" cy="248" r="2.5" fill="#3a3d45"/>
+            <circle cx="199" cy="256" r="2.5" fill="#3a3d45"/>
+            <circle cx="197" cy="271" r="2.5" fill="#3a3d45"/>
+            <circle cx="174" cy="273" r="2.5" fill="#3a3d45"/>
+            <circle cx="172" cy="255" r="2.5" fill="#3a3d45"/>
+            <path d="M168,258 L158,158 Q157,144 170,140 L186,136 Q198,135 200,148 L206,250 Q200,242 186,242 Q172,242 168,258 Z" fill="#f2c200"/>
+            <path d="M172,240 L165,160 L180,156 L190,238 Z" fill="#d4a800" opacity=".55"/>
+            <g class="lell">
+              <rect x="128" y="128" width="40" height="34" rx="8" fill="#1a1c20"/>
+              <rect x="122" y="134" width="12" height="22" rx="4" fill="#26282e"/>
+              <circle cx="172" cy="148" r="24" fill="#f2c200"/>
+              <circle cx="172" cy="148" r="15" fill="#1a1c20"/>
+              <circle cx="172" cy="148" r="10" fill="#26282e"/>
+              <circle cx="172" cy="148" r="4" fill="#f2c200"/>
+              <path d="M172,132 L268,124 Q280,124 280,136 L280,144 Q280,154 268,154 L172,164 Q160,160 160,148 Q160,136 172,132 Z" fill="#f2c200"/>
+              <rect x="196" y="136" width="60" height="14" rx="4" fill="#d4a800" opacity=".5"/>
+              <path d="M168,128 Q200,112 250,120" fill="none" stroke="#3a3d45" stroke-width="4" stroke-linecap="round"/>
+              <g class="lwrl">
+                <circle cx="268" cy="138" r="14" fill="#f2c200"/>
+                <circle cx="268" cy="138" r="8" fill="#26282e"/>
+                <rect x="260" y="148" width="16" height="22" rx="3" fill="#d4a800"/>
+                <rect x="258" y="168" width="20" height="10" rx="2" fill="#1a1c20"/>
+                <rect x="263" y="178" width="10" height="16" rx="2" fill="#3a3d45"/>
+                <polygon points="265,194 271,194 268,206" fill="#8a8d95"/>
+                <circle cx="268" cy="172" r="3.5" fill="#00dd44" class="lledp"/>
+                <g class="lspkl">
+                  <line x1="265" y1="208" x2="258" y2="218" stroke="#ffcc00" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="268" y1="209" x2="269" y2="221" stroke="#ff8800" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="271" y1="208" x2="279" y2="216" stroke="#ffcc00" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="258" cy="218" r="2" fill="#ffee44"/>
+                  <circle cx="279" cy="216" r="2" fill="#ffee44"/>
+                  <circle cx="269" cy="221" r="1.5" fill="#ff8800"/>
+                </g>
+              </g>
             </g>
-            <circle cx="110" cy="72" r="18" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="110" cy="72" r="10" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="110" cy="72" r="4" fill="#ffd600"/>
-            <g transform="rotate(20 110 72)">
-              <polygon points="100,22 120,22 124,44 124,70 96,70 96,44" fill="none" stroke="#ffd600" stroke-width="2"/>
-            </g>
-            <circle cx="128" cy="34" r="14" fill="none" stroke="#ffd600" stroke-width="2"/>
-            <circle cx="128" cy="34" r="8" fill="none" stroke="#ffd600" stroke-width="1.2"/>
-            <circle cx="128" cy="34" r="3" fill="#ffd600"/>
-            <g transform="rotate(8 128 34)">
-              <rect x="128" y="26" width="28" height="16" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <rect x="154" y="16" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <rect x="154" y="30" width="14" height="12" rx="3" fill="none" stroke="#ffd600" stroke-width="1.5"/>
-              <circle cx="168" cy="22" r="2.5" fill="#ffd600"/>
-              <circle cx="168" cy="36" r="2.5" fill="#ffd600"/>
-            </g>
-            <circle cx="24" cy="245" r="4" fill="#ffd600"/>
           </g>
-          <g filter="url(#lgb)">
-            <rect x="318" y="238" width="104" height="20" rx="4" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <rect x="330" y="224" width="80" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-            <rect x="355" y="200" width="30" height="26" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-            <circle cx="370" cy="200" r="20" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="370" cy="200" r="12" fill="none" stroke="#ff6a00" stroke-width="1"/>
-            <circle cx="370" cy="200" r="5" fill="#ff6a00" opacity="0.9"/>
-            <polygon points="358,148 382,148 388,168 388,198 352,198 352,168" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="370" cy="148" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="370" cy="148" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="370" cy="148" r="4" fill="#ff6a00"/>
-            <g transform="rotate(52 370 148)">
-              <polygon points="358,82 382,82 386,110 386,146 354,146 354,110" fill="none" stroke="#ff6a00" stroke-width="2"/>
+          <!-- ROBÔ DIREITO -->
+          <rect x="446" y="330" width="96" height="30" rx="4" fill="#1a1c20"/>
+          <rect x="454" y="336" width="10" height="8" rx="2" fill="#0c0e12"/>
+          <rect x="524" y="336" width="10" height="8" rx="2" fill="#0c0e12"/>
+          <rect x="458" y="316" width="72" height="18" rx="3" fill="#26282e"/>
+          <path d="M464,318 L464,286 Q464,276 474,274 L514,274 Q524,276 524,286 L524,318 Z" fill="#ff7a1a"/>
+          <rect x="470" y="296" width="48" height="10" rx="3" fill="#d95f08"/>
+          <g class="rshr">
+            <circle cx="494" cy="262" r="34" fill="#ff7a1a"/>
+            <circle cx="494" cy="262" r="24" fill="#1a1c20"/>
+            <circle cx="494" cy="262" r="18" fill="#26282e"/>
+            <circle cx="494" cy="262" r="7" fill="#ff7a1a"/>
+            <circle cx="494" cy="248" r="2.5" fill="#3a3d45"/>
+            <circle cx="481" cy="256" r="2.5" fill="#3a3d45"/>
+            <circle cx="483" cy="271" r="2.5" fill="#3a3d45"/>
+            <circle cx="506" cy="273" r="2.5" fill="#3a3d45"/>
+            <circle cx="508" cy="255" r="2.5" fill="#3a3d45"/>
+            <path d="M512,258 L522,158 Q523,144 510,140 L494,136 Q482,135 480,148 L474,250 Q480,242 494,242 Q508,242 512,258 Z" fill="#ff7a1a"/>
+            <path d="M508,240 L515,160 L500,156 L490,238 Z" fill="#d95f08" opacity=".55"/>
+            <g class="relr">
+              <rect x="512" y="128" width="40" height="34" rx="8" fill="#1a1c20"/>
+              <rect x="546" y="134" width="12" height="22" rx="4" fill="#26282e"/>
+              <circle cx="508" cy="148" r="24" fill="#ff7a1a"/>
+              <circle cx="508" cy="148" r="15" fill="#1a1c20"/>
+              <circle cx="508" cy="148" r="10" fill="#26282e"/>
+              <circle cx="508" cy="148" r="4" fill="#ff7a1a"/>
+              <path d="M508,132 L412,124 Q400,124 400,136 L400,144 Q400,154 412,154 L508,164 Q520,160 520,148 Q520,136 508,132 Z" fill="#ff7a1a"/>
+              <rect x="424" y="136" width="60" height="14" rx="4" fill="#d95f08" opacity=".5"/>
+              <path d="M512,128 Q480,112 430,120" fill="none" stroke="#3a3d45" stroke-width="4" stroke-linecap="round"/>
+              <g class="rwrr">
+                <circle cx="412" cy="138" r="14" fill="#ff7a1a"/>
+                <circle cx="412" cy="138" r="8" fill="#26282e"/>
+                <rect x="404" y="148" width="16" height="22" rx="3" fill="#d95f08"/>
+                <rect x="402" y="168" width="20" height="10" rx="2" fill="#1a1c20"/>
+                <rect x="407" y="178" width="10" height="16" rx="2" fill="#3a3d45"/>
+                <polygon points="409,194 415,194 412,206" fill="#8a8d95"/>
+                <circle cx="412" cy="172" r="3.5" fill="#00ccff" class="lledp"/>
+                <g class="rspkr">
+                  <line x1="409" y1="208" x2="402" y2="218" stroke="#00ccff" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="412" y1="209" x2="413" y2="221" stroke="#00aaff" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="415" y1="208" x2="423" y2="216" stroke="#00ccff" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="402" cy="218" r="2" fill="#44eeff"/>
+                  <circle cx="423" cy="216" r="2" fill="#44eeff"/>
+                  <circle cx="413" cy="221" r="1.5" fill="#00aaff"/>
+                </g>
+              </g>
             </g>
-            <circle cx="330" cy="72" r="18" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="330" cy="72" r="10" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="330" cy="72" r="4" fill="#ff6a00"/>
-            <g transform="rotate(-20 330 72)">
-              <polygon points="316,22 336,22 340,44 340,70 312,70 312,44" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            </g>
-            <circle cx="312" cy="34" r="14" fill="none" stroke="#ff6a00" stroke-width="2"/>
-            <circle cx="312" cy="34" r="8" fill="none" stroke="#ff6a00" stroke-width="1.2"/>
-            <circle cx="312" cy="34" r="3" fill="#ff6a00"/>
-            <g transform="rotate(-8 312 34)">
-              <rect x="284" y="26" width="28" height="16" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <rect x="272" y="16" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <rect x="272" y="30" width="14" height="12" rx="3" fill="none" stroke="#ff6a00" stroke-width="1.5"/>
-              <circle cx="272" cy="22" r="2.5" fill="#ff6a00"/>
-              <circle cx="272" cy="36" r="2.5" fill="#ff6a00"/>
-            </g>
-            <circle cx="416" cy="245" r="4" fill="#ff6a00"/>
           </g>
-          <g filter="url(#lgg)">
-            <circle cx="220" cy="29" r="5" fill="#ff2200"/>
-            <line x1="220" y1="23" x2="220" y2="13" stroke="#ff2200" stroke-width="2.5"/>
-            <line x1="215" y1="25" x2="207" y2="16" stroke="#ff2200" stroke-width="2"/>
-            <line x1="225" y1="25" x2="233" y2="16" stroke="#ff2200" stroke-width="2"/>
-            <line x1="212" y1="29" x2="202" y2="29" stroke="#ff2200" stroke-width="2"/>
-            <line x1="228" y1="29" x2="238" y2="29" stroke="#ff2200" stroke-width="2"/>
-          </g>
+          <!-- cabos chão -->
+          <path d="M150,358 Q186,366 222,358" fill="none" stroke="#2a3040" stroke-width="3" stroke-linecap="round"/>
+          <path d="M458,358 Q494,366 530,358" fill="none" stroke="#2a3040" stroke-width="3" stroke-linecap="round"/>
+          <!-- reflexos -->
+          <ellipse cx="186" cy="364" rx="56" ry="6" fill="#f2c200" opacity=".07"/>
+          <ellipse cx="494" cy="364" rx="56" ry="6" fill="#ff7a1a" opacity=".07"/>
+          <!-- peça central -->
+          <rect x="308" y="322" width="64" height="38" rx="4" fill="#1e2535"/>
+          <rect x="314" y="312" width="52" height="14" rx="3" fill="#2a3348"/>
+          <rect x="322" y="330" width="36" height="8" rx="2" fill="#3a4560"/>
+          <circle cx="340" cy="348" r="3" fill="#ffb300" opacity=".8" class="lledp"/>
         </svg>
       </div>
       <div class="login-title">CÉLULAS ROBÓTICAS</div>
@@ -436,26 +500,63 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
     <!-- Card secundário: Produção e Gabaritagem -->
     <div class="login-box" style="flex:0 0 auto">
-      <!-- Ícone fábrica -->
+      <!-- Fábrica animada -->
       <div style="display:flex;justify-content:center;margin-bottom:12px">
-        <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="90" height="90" fill="#04070d" rx="14"/>
-          <!-- Galpão -->
-          <polygon points="45,12 80,30 80,78 10,78 10,30" fill="none" stroke="#3d9eff" stroke-width="2.5" stroke-linejoin="round"/>
-          <line x1="45" y1="12" x2="45" y2="78" stroke="#3d9eff" stroke-width="1.5" stroke-dasharray="4,3"/>
-          <!-- Porta esq -->
-          <rect x="18" y="54" width="16" height="24" rx="2" fill="none" stroke="#a78bfa" stroke-width="2"/>
-          <!-- Porta dir -->
-          <rect x="56" y="54" width="16" height="24" rx="2" fill="none" stroke="#a78bfa" stroke-width="2"/>
-          <!-- Janelas -->
-          <rect x="22" y="36" width="10" height="10" rx="2" fill="#3d9eff22" stroke="#3d9eff" stroke-width="1.5"/>
-          <rect x="58" y="36" width="10" height="10" rx="2" fill="#3d9eff22" stroke="#3d9eff" stroke-width="1.5"/>
-          <!-- Chaminé -->
-          <rect x="60" y="16" width="8" height="18" rx="2" fill="none" stroke="#ffb300" stroke-width="2"/>
-          <line x1="60" y1="12" x2="68" y2="12" stroke="#ffb300" stroke-width="2.5"/>
-          <!-- Engrenagem -->
-          <circle cx="45" cy="52" r="7" fill="none" stroke="#00e87a" stroke-width="2"/>
-          <circle cx="45" cy="52" r="3" fill="#00e87a" opacity="0.7"/>
+        <svg viewBox="0 0 680 420" width="200" height="124" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;overflow:hidden">
+          <defs>
+            <style>
+              @keyframes psmoke1{0%{transform:translate(0,0) scale(.3);opacity:0}15%{opacity:.55}70%{opacity:.3}100%{transform:translate(-18px,-110px) scale(1.8);opacity:0}}
+              @keyframes psmoke2{0%{transform:translate(0,0) scale(.3);opacity:0}15%{opacity:.5}70%{opacity:.25}100%{transform:translate(12px,-120px) scale(2);opacity:0}}
+              @keyframes psmoke3{0%{transform:translate(0,0) scale(.25);opacity:0}15%{opacity:.45}70%{opacity:.2}100%{transform:translate(-8px,-100px) scale(1.6);opacity:0}}
+              @keyframes psteam{0%{transform:translate(0,0) scale(.2);opacity:0}20%{opacity:.7}100%{transform:translate(5px,-80px) scale(1.4);opacity:0}}
+              @keyframes pblink{0%,100%{opacity:1}48%{opacity:1}50%{opacity:.1}52%{opacity:1}}
+              @keyframes pspin{from{transform-origin:560px 230px;transform:rotate(0deg)}to{transform-origin:560px 230px;transform:rotate(360deg)}}
+              @keyframes ppulse{0%,100%{opacity:.9}50%{opacity:.3}}
+              .ps1a{animation:psmoke1 3.2s ease-out infinite}.ps1b{animation:psmoke1 3.2s ease-out infinite 1.07s}.ps1c{animation:psmoke1 3.2s ease-out infinite 2.14s}
+              .ps2a{animation:psmoke2 3.8s ease-out infinite}.ps2b{animation:psmoke2 3.8s ease-out infinite 1.27s}.ps2c{animation:psmoke2 3.8s ease-out infinite 2.53s}
+              .ps3a{animation:psmoke3 4s ease-out infinite .5s}.ps3b{animation:psmoke3 4s ease-out infinite 1.83s}.ps3c{animation:psmoke3 4s ease-out infinite 3.17s}
+              .psta{animation:psteam 2.4s ease-out infinite}.pstb{animation:psteam 2.4s ease-out infinite .8s}.pstc{animation:psteam 2.4s ease-out infinite 1.6s}
+              .pgear{animation:pspin 4s linear infinite}
+              .ppl{animation:pblink 4s ease-in-out infinite}.ppr{animation:pblink 4s ease-in-out infinite 2s}
+              .pwarn{animation:ppulse 1.2s ease-in-out infinite}
+            </style>
+            <radialGradient id="psky" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#1a1f35"/><stop offset="100%" stop-color="#0a0c14"/></radialGradient>
+            <radialGradient id="pglow1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff8c00" stop-opacity=".35"/><stop offset="100%" stop-color="#ff8c00" stop-opacity="0"/></radialGradient>
+            <radialGradient id="pglow2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff6a00" stop-opacity=".28"/><stop offset="100%" stop-color="#ff6a00" stop-opacity="0"/></radialGradient>
+          </defs>
+          <rect width="680" height="420" fill="url(#psky)"/>
+          <circle cx="60" cy="30" r="1.2" fill="#d8dde6" opacity=".7"/><circle cx="140" cy="55" r=".9" fill="#d8dde6" opacity=".5"/><circle cx="220" cy="20" r="1.4" fill="#d8dde6" opacity=".8"/><circle cx="310" cy="40" r=".8" fill="#d8dde6" opacity=".6"/><circle cx="420" cy="18" r="1.1" fill="#d8dde6" opacity=".7"/><circle cx="510" cy="48" r=".9" fill="#d8dde6" opacity=".5"/><circle cx="600" cy="25" r="1.3" fill="#d8dde6" opacity=".7"/><circle cx="650" cy="60" r=".7" fill="#d8dde6" opacity=".5"/>
+          <circle cx="610" cy="55" r="28" fill="#e8eaf0"/><circle cx="622" cy="48" r="22" fill="#1a1f35"/>
+          <g transform="translate(178,130)"><ellipse class="ps1a" cx="0" cy="0" rx="14" ry="10" fill="#8a9ab0" opacity="0"/><ellipse class="ps1b" cx="4" cy="0" rx="16" ry="11" fill="#7a8fa6" opacity="0"/><ellipse class="ps1c" cx="-3" cy="0" rx="13" ry="9" fill="#9aabb8" opacity="0"/></g>
+          <g transform="translate(310,100)"><ellipse class="ps2a" cx="0" cy="0" rx="18" ry="13" fill="#6e8098" opacity="0"/><ellipse class="ps2b" cx="5" cy="0" rx="20" ry="14" fill="#7a8fa6" opacity="0"/><ellipse class="ps2c" cx="-4" cy="0" rx="16" ry="11" fill="#8a9ab0" opacity="0"/></g>
+          <g transform="translate(448,118)"><ellipse class="ps3a" cx="0" cy="0" rx="14" ry="10" fill="#8a9ab0" opacity="0"/><ellipse class="ps3b" cx="3" cy="0" rx="15" ry="10" fill="#7a8fa6" opacity="0"/><ellipse class="ps3c" cx="-2" cy="0" rx="13" ry="9" fill="#9aabb8" opacity="0"/></g>
+          <g transform="translate(530,195)"><ellipse class="psta" cx="0" cy="0" rx="8" ry="6" fill="#c8d8e8" opacity="0"/><ellipse class="pstb" cx="2" cy="0" rx="9" ry="6" fill="#b8ccd8" opacity="0"/><ellipse class="pstc" cx="-1" cy="0" rx="7" ry="5" fill="#c8d8e8" opacity="0"/></g>
+          <rect x="80" y="260" width="520" height="140" rx="4" fill="#1e2535"/><rect x="80" y="258" width="520" height="6" fill="#2e3850"/>
+          <rect x="60" y="290" width="160" height="110" rx="3" fill="#171e2e"/><rect x="60" y="288" width="160" height="6" fill="#2a3348"/>
+          <polygon points="200,230 480,230 500,265 180,265" fill="#252e42"/><polygon points="200,230 480,230 480,238 200,238" fill="#2e3850"/>
+          <polygon points="55,270 230,270 230,278 55,278" fill="#2a3348"/><polygon points="55,255 230,255 230,270 55,270" fill="#1e2535"/>
+          <rect x="162" y="130" width="32" height="130" rx="3" fill="#2a3348"/><rect x="155" y="125" width="46" height="14" rx="3" fill="#3a4560"/><rect x="162" y="125" width="32" height="8" rx="2" fill="#4a5878"/>
+          <rect x="294" y="100" width="32" height="165" rx="3" fill="#252e42"/><rect x="284" y="93" width="52" height="16" rx="3" fill="#3a4560"/><rect x="294" y="93" width="32" height="9" rx="2" fill="#4a5878"/>
+          <rect x="294" y="140" width="32" height="8" rx="1" fill="#c8302a" opacity=".9"/><rect x="294" y="200" width="32" height="8" rx="1" fill="#c8302a" opacity=".9"/>
+          <rect x="432" y="118" width="28" height="147" rx="3" fill="#2a3348"/><rect x="425" y="112" width="42" height="14" rx="3" fill="#3a4560"/><rect x="432" y="112" width="28" height="8" rx="2" fill="#4a5878"/>
+          <rect x="432" y="155" width="28" height="6" rx="1" fill="#c8302a" opacity=".9"/>
+          <rect x="220" y="285" width="40" height="28" rx="2" fill="#0d1220"/><rect x="222" y="287" width="36" height="24" rx="1" fill="#1a3a6e" opacity=".7"/><line x1="240" y1="287" x2="240" y2="311" stroke="#2a5aae" stroke-width="1" opacity=".6"/><line x1="222" y1="299" x2="258" y2="299" stroke="#2a5aae" stroke-width="1" opacity=".6"/>
+          <rect x="285" y="285" width="40" height="28" rx="2" fill="#0d1220"/><rect x="287" y="287" width="36" height="24" rx="1" fill="#ff8c00" opacity=".3"/>
+          <rect x="350" y="285" width="40" height="28" rx="2" fill="#0d1220"/><rect x="352" y="287" width="36" height="24" rx="1" fill="#1a3a6e" opacity=".7"/>
+          <rect x="415" y="285" width="40" height="28" rx="2" fill="#0d1220"/><rect x="417" y="287" width="36" height="24" rx="1" fill="#ff8c00" opacity=".25"/>
+          <rect x="480" y="285" width="40" height="28" rx="2" fill="#0d1220"/><rect x="482" y="287" width="36" height="24" rx="1" fill="#1a3a6e" opacity=".7"/>
+          <rect x="85" y="305" width="32" height="22" rx="2" fill="#0d1220"/><rect x="87" y="307" width="28" height="18" rx="1" fill="#1a3a6e" opacity=".5"/>
+          <rect x="130" y="305" width="32" height="22" rx="2" fill="#0d1220"/><rect x="132" y="307" width="28" height="18" rx="1" fill="#ff8c00" opacity=".2"/>
+          <rect x="306" y="330" width="68" height="70" rx="3" fill="#141c2e"/><rect x="308" y="332" width="64" height="66" rx="2" fill="#0d1422"/><rect x="306" y="328" width="68" height="8" rx="2" fill="#2a3860"/>
+          <line x1="340" y1="332" x2="340" y2="400" stroke="#1e2a4e" stroke-width="2"/><line x1="308" y1="360" x2="372" y2="360" stroke="#1e2a4e" stroke-width="2"/>
+          <rect x="108" y="346" width="44" height="54" rx="2" fill="#141c2e"/><rect x="110" y="348" width="40" height="50" rx="1" fill="#0d1422"/>
+          <circle cx="240" cy="280" r="5" fill="#ff4400" class="ppl"/><circle cx="240" cy="280" r="9" fill="#ff4400" opacity=".15" class="ppl"/>
+          <circle cx="480" cy="280" r="5" fill="#00dd44" class="ppr"/><circle cx="480" cy="280" r="9" fill="#00dd44" opacity=".15" class="ppr"/>
+          <circle cx="310" cy="100" r="5" fill="#ff2200" class="pwarn"/><circle cx="310" cy="100" r="10" fill="#ff2200" opacity=".12" class="pwarn"/>
+          <g class="pgear"><circle cx="560" cy="230" r="22" fill="none" stroke="#3a4a6a" stroke-width="4"/><circle cx="560" cy="230" r="10" fill="#2a3a5a"/><rect x="555" y="205" width="10" height="10" rx="2" fill="#3a4a6a"/><rect x="555" y="245" width="10" height="10" rx="2" fill="#3a4a6a"/><rect x="535" y="225" width="10" height="10" rx="2" fill="#3a4a6a"/><rect x="575" y="225" width="10" height="10" rx="2" fill="#3a4a6a"/><rect x="540" y="211" width="10" height="10" rx="2" fill="#3a4a6a" transform="rotate(45 545 216)"/><rect x="570" y="211" width="10" height="10" rx="2" fill="#3a4a6a" transform="rotate(45 575 216)"/><rect x="540" y="239" width="10" height="10" rx="2" fill="#3a4a6a" transform="rotate(45 545 244)"/><rect x="570" y="239" width="10" height="10" rx="2" fill="#3a4a6a" transform="rotate(45 575 244)"/></g>
+          <rect x="518" y="192" width="28" height="8" rx="4" fill="#3a4a6a"/>
+          <rect x="40" y="395" width="600" height="12" rx="2" fill="#151c2c"/><rect x="40" y="393" width="600" height="5" rx="2" fill="#1e2838"/>
+          <ellipse cx="302" cy="299" rx="26" ry="18" fill="url(#pglow2)"/><ellipse cx="432" cy="299" rx="26" ry="18" fill="url(#pglow1)"/><ellipse cx="145" cy="316" rx="22" ry="15" fill="url(#pglow2)"/>
         </svg>
       </div>
       <div class="login-title" style="font-size:18px;margin-bottom:4px">PRODUÇÃO &amp; GABARITAGEM</div>
