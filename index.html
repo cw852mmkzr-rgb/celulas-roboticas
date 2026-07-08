@@ -5948,6 +5948,83 @@ function _carNext(total){
   renderMetasDiaria();
 }
 
+// ===== Carrossel Mapa Produção (mobile) =====
+let _mapaCarIdx = 0;
+const _mapaCarStep = 3; // horas por página
+
+function _mapaCarPrev(turno){ _mapaCarIdx = Math.max(0, _mapaCarIdx - _mapaCarStep); renderMapaProducaoTabela(); }
+function _mapaCarNext(total,turno){ _mapaCarIdx = Math.min(total - _mapaCarStep, _mapaCarIdx + _mapaCarStep); if(_mapaCarIdx<0)_mapaCarIdx=0; renderMapaProducaoTabela(); }
+
+function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
+  const podeEditar = isMapaAdmin;
+  const subColor = isNoite ? '#a78bfa' : '#00e87a';
+  const subLabel = isNoite ? 'Noite' : 'Dia';
+  const total = HORAS.length;
+  const grupo = HORAS.slice(_mapaCarIdx, _mapaCarIdx + _mapaCarStep);
+  const horaAtual = new Date().getHours();
+
+  const linhas = maquinas.map(maq=>{
+    const rd = (data[maq])||{};
+    const meta = parseInt(rd.meta)||0;
+    const cod = rd.cod||'';
+    const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const horasCells = grupo.map(h=>{
+      const isCafe = HORAS_CAFE.includes(h);
+      const campo = campoH(h);
+      const rawVal = (rd[campo])||'';
+      const {num,tipo} = parseCelVal(rawVal);
+      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      let bg='', cor='#d8dde6';
+      if(tipo==='ajuste'){cor='#3d9eff';}
+      else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
+      if(isCafe&&tipo!=='ajuste'){bg='#ffb30018';cor='#ffb300';}
+      const isAtual = parseInt(h)===horaAtual;
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
+        ?`<input class="hora-inp${isCafe?' cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" onchange="mapaHandleMetasInput('${maq}','${campo}',this.value)">`
+        :`${num>0?num:'—'}`}</td>`;
+    }).join('');
+    return`<tr>
+      <td style="color:#00e87a;font-weight:900;font-size:13px;text-align:left;padding:6px 8px;background:#04070d;position:sticky;left:0;white-space:nowrap">${esc(maq)}</td>
+      <td style="color:#3d9eff;font-size:11px;background:#04070d;padding:6px 4px">${meta||'—'}</td>
+      <td style="color:#ffb300;font-size:10px;background:#04070d;padding:6px 4px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cod)||'—'}</td>
+      ${horasCells}
+      <td style="color:${subColor};font-weight:800;font-size:13px;padding:6px 4px">${subRow>0?subRow:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const totalRow = grupo.map(h=>{
+    const s=maquinas.reduce((acc,m)=>acc+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0);
+    return`<td style="color:#d8dde6;font-weight:900;font-size:12px;padding:6px 4px">${s>0?s:'—'}</td>`;
+  }).join('');
+  const subTotal=maquinas.reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
+
+  return`<div style="margin-bottom:16px">
+    <div class="metas-car-nav">
+      <button onclick="_mapaCarPrev('${isNoite?'n':'d'}')" ${_mapaCarIdx===0?'disabled style="opacity:0.3"':''}>◀</button>
+      <span style="font-size:11px">${grupo.join(' · ')}</span>
+      <button onclick="_mapaCarNext(${total},'${isNoite?'n':'d'}')" ${_mapaCarIdx+_mapaCarStep>=total?'disabled style="opacity:0.3"':''}>▶</button>
+    </div>
+    <div class="metas-car-table-wrap">
+      <table class="metas-car-table">
+        <thead><tr>
+          <th style="text-align:left;padding-left:8px;position:sticky;left:0;background:#080b0f;min-width:40px">Máq.</th>
+          <th style="min-width:32px">Meta</th>
+          <th style="min-width:50px">Cód.</th>
+          ${grupo.map(h=>`<th style="${HORAS_CAFE.includes(h)?'color:#ffb300':'color:#d8dde6'};${parseInt(h)===horaAtual?'border:2px solid #ffb300':''}">${h}</th>`).join('')}
+          <th style="color:${subColor}">${subLabel}</th>
+        </tr></thead>
+        <tbody>${linhas}
+          <tr style="border-top:2px solid #1e2530">
+            <td colspan="3" style="color:#4a5568;font-size:10px;text-align:right;padding-right:6px">TOTAL</td>
+            ${totalRow}
+            <td style="color:${subColor};font-weight:900;font-size:13px">${subTotal>0?subTotal:'—'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
 // ===== MAPA DA PRODUÇÃO =====
 const MAPA_PW = "mapa2026";
 let isMapaAdmin = false;
@@ -6182,6 +6259,7 @@ let mapaProducaoSubTela = 'todas'; // 'todas' | 'solda_topo'
 
 function mapaTrocarSubTelaProducao(sub){
   mapaProducaoSubTela = sub;
+  _mapaCarIdx = 0;
   renderMapaProducaoTabela();
 }
 
@@ -6259,6 +6337,12 @@ function renderMapaProducaoTabela(){
       <span><span style="color:#ffb300">■</span> Café</span>
       <span><span style="color:#3d9eff">■</span> Ajuste (43#)</span>
     </div>
+    ${window.innerWidth<=700?`
+    <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia</div>
+    ${_mapaRenderCarrossel(MAPA_HORAS_DIA,data,maquinas,false,chave)}
+    <div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🌙 Turno Noite</div>
+    ${_mapaRenderCarrossel(HORAS_NOITE,data,maquinas,true,chave)}
+    `:`
     <div style="margin-bottom:4px">
       <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia — 08:00 às 17:00</div>
       ${mapaBuildTurnoTableProducao('dia',chave,maquinas)}
@@ -6267,6 +6351,7 @@ function renderMapaProducaoTabela(){
       <div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🌙 Turno Noite — 18:00 às 22:00</div>
       ${mapaBuildTurnoTableProducao('noite',chave,maquinas)}
     </div>
+    `}
     <div style="background:#ffb30015;border:2px solid #ffb30050;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div>
         <div style="font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:.1em;font-weight:700">⚑ Total do Dia</div>
