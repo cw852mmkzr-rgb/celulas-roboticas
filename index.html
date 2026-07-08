@@ -5955,6 +5955,80 @@ const _mapaCarStep = 3; // horas por página
 function _mapaCarPrev(turno){ _mapaCarIdx = Math.max(0, _mapaCarIdx - _mapaCarStep); renderMapaProducaoTabela(); }
 function _mapaCarNext(total,turno){ _mapaCarIdx = Math.min(total - _mapaCarStep, _mapaCarIdx + _mapaCarStep); if(_mapaCarIdx<0)_mapaCarIdx=0; renderMapaProducaoTabela(); }
 
+// Lista de máquinas editável — armazenada em mapaDados.lista_maquinas
+// Começa com 50 slots vazios, usuario digita os números na ordem que quiser
+function mapaGetListaMaquinas(){
+  if(!mapaDados.lista_maquinas){
+    // Inicializa com 50 slots vazios (aba Todas) + 8 slots Solda Topo
+    mapaDados.lista_maquinas = { todas: Array(50).fill(''), solda_topo: Array(8).fill('') };
+  }
+  // Garante que sempre tem pelo menos 50/8 slots
+  if(!mapaDados.lista_maquinas.todas) mapaDados.lista_maquinas.todas = Array(50).fill('');
+  if(!mapaDados.lista_maquinas.solda_topo) mapaDados.lista_maquinas.solda_topo = Array(8).fill('');
+  return mapaDados.lista_maquinas;
+}
+
+function mapaGetMaquinasAtivas(){
+  const lista = mapaGetListaMaquinas();
+  const chave = mapaProducaoSubTela === 'solda_topo' ? 'solda_topo' : 'todas';
+  // Retorna todos os slots (incluindo vazios) pra manter as posições fixas
+  return lista[chave];
+}
+
+function mapaSetMaquina(idx, valor){
+  const lista = mapaGetListaMaquinas();
+  const chave = mapaProducaoSubTela === 'solda_topo' ? 'solda_topo' : 'todas';
+  lista[chave][idx] = valor.trim();
+  mapaDados.lista_maquinas = lista;
+  saveMapaDados();
+}
+
+function mapaCopiarDiaAnterior(){
+  const ano = mapaDados.metas_ano || new Date().getFullYear();
+  const mes = mapaDados.metas_mes !== undefined ? mapaDados.metas_mes : new Date().getMonth();
+  const dia = mapaDados.metas_dia || new Date().getDate();
+
+  // Encontra o dia anterior mais recente com dados
+  let diaAnt = dia - 1;
+  let mesAnt = mes;
+  let anoAnt = ano;
+  if(diaAnt < 1){
+    mesAnt = mes - 1;
+    if(mesAnt < 0){ mesAnt = 11; anoAnt = ano - 1; }
+    diaAnt = new Date(anoAnt, mesAnt + 1, 0).getDate();
+  }
+
+  let dadosAnt = null;
+  for(let d = diaAnt; d >= 1; d--){
+    const ch = `${anoAnt}_${mesAnt}_${d}`;
+    if(mapaDados.metas_dias && mapaDados.metas_dias[ch] && Object.keys(mapaDados.metas_dias[ch]).length > 0){
+      dadosAnt = mapaDados.metas_dias[ch];
+      break;
+    }
+  }
+
+  if(!dadosAnt){ showToast("Nenhum dia anterior encontrado!", true); return; }
+
+  const chaveAtual = `${ano}_${mes}_${dia}`;
+  if(!mapaDados.metas_dias) mapaDados.metas_dias = {};
+  if(!mapaDados.metas_dias[chaveAtual]) mapaDados.metas_dias[chaveAtual] = {};
+
+  // Copia só cod e meta — não copia as horas
+  const maquinas = mapaGetMaquinasAtivas().filter(m=>m);
+  maquinas.forEach(maq => {
+    const ant = dadosAnt[maq] || {};
+    if(ant.cod || ant.meta){
+      if(!mapaDados.metas_dias[chaveAtual][maq]) mapaDados.metas_dias[chaveAtual][maq] = {};
+      if(ant.cod)    mapaDados.metas_dias[chaveAtual][maq].cod    = ant.cod;
+      if(ant.meta)   mapaDados.metas_dias[chaveAtual][maq].meta   = ant.meta;
+    }
+  });
+
+  saveMapaDados();
+  renderMapaProducaoTabela();
+  showToast("Códigos e metas copiados ✓");
+}
+
 function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
   const podeEditar = isMapaAdmin;
   const subColor = isNoite ? '#a78bfa' : '#00e87a';
@@ -6129,8 +6203,10 @@ let mapaTelaAtual = 'Mapa';
 const MAQUINAS_SOLDA_TOPO = ['241','242','243','247','224','227','245','228'];
 
 function mapaListaTodasMaquinas(){
-  // Pega todos os códigos de máquina de todas as zonas do mapa, na ordem em que aparecem,
-  // excluindo as que foram separadas pra aba "Solda Topo".
+  // Usa lista customizada se existir, senão extrai das zonas (excluindo Solda Topo)
+  if(mapaDados.lista_maquinas && mapaDados.lista_maquinas.length>0){
+    return mapaDados.lista_maquinas;
+  }
   const codigos = [];
   (mapaDados.zonas||[]).forEach(z=>{
     (z.celulas||[]).forEach(cod=>{
@@ -6141,7 +6217,10 @@ function mapaListaTodasMaquinas(){
 }
 
 function mapaListaMaquinasSoldaTopo(){
-  // Só as máquinas da aba "Solda Topo", na ordem definida
+  // Usa lista customizada de Solda Topo se existir
+  if(mapaDados.lista_solda_topo && mapaDados.lista_solda_topo.length>0){
+    return mapaDados.lista_solda_topo;
+  }
   const todas = [];
   (mapaDados.zonas||[]).forEach(z=>{
     (z.celulas||[]).forEach(cod=>{
@@ -6149,6 +6228,66 @@ function mapaListaMaquinasSoldaTopo(){
     });
   });
   return MAQUINAS_SOLDA_TOPO.filter(cod=>todas.includes(cod));
+}
+
+function mapaAbrirEditarLista(){
+  const isTopo = mapaProducaoSubTela === 'solda_topo';
+  const lista = isTopo ? mapaListaMaquinasSoldaTopo() : mapaListaTodasMaquinas();
+  const campo = isTopo ? 'lista_solda_topo' : 'lista_maquinas';
+  const texto = lista.join('\n');
+  document.getElementById('modalMapaListaTitulo').textContent = isTopo ? '🔩 Solda Topo — Lista de Máquinas' : '📋 Todas as Máquinas — Lista';
+  document.getElementById('modalMapaListaCampo').textContent = campo;
+  document.getElementById('modalMapaListaTextarea').value = texto;
+  document.getElementById('modalMapaLista').style.display = 'flex';
+}
+
+function mapaConfirmarEditarLista(){
+  const campo = document.getElementById('modalMapaListaCampo').textContent;
+  const val = document.getElementById('modalMapaListaTextarea').value;
+  const lista = val.split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+  mapaDados[campo] = lista;
+  saveMapaDados();
+  document.getElementById('modalMapaLista').style.display = 'none';
+  renderMapaProducaoTabela();
+  showToast(`Lista atualizada: ${lista.length} máquinas ✓`);
+}
+
+function mapaCopiarDiaAnterior(){
+  const ano = mapaDados.metas_ano || new Date().getFullYear();
+  const mes = mapaDados.metas_mes !== undefined ? mapaDados.metas_mes : new Date().getMonth();
+  const dia = mapaDados.metas_dia || new Date().getDate();
+
+  let diaAnt = dia-1, mesAnt = mes, anoAnt = ano;
+  if(diaAnt<1){ mesAnt=mes-1; if(mesAnt<0){mesAnt=11;anoAnt=ano-1;} diaAnt=new Date(anoAnt,mesAnt+1,0).getDate(); }
+
+  let dadosAnt = null;
+  for(let d=diaAnt; d>=1; d--){
+    const ch=`${anoAnt}_${mesAnt}_${d}`;
+    if(mapaDados.metas_dias && mapaDados.metas_dias[ch] && Object.keys(mapaDados.metas_dias[ch]).length>0){
+      dadosAnt=mapaDados.metas_dias[ch]; break;
+    }
+  }
+  if(!dadosAnt){ showToast("Nenhum dia anterior encontrado!", true); return; }
+
+  const chaveAtual = `${ano}_${mes}_${dia}`;
+  if(!mapaDados.metas_dias) mapaDados.metas_dias={};
+  if(!mapaDados.metas_dias[chaveAtual]) mapaDados.metas_dias[chaveAtual]={};
+
+  // Copia apenas cod e meta das máquinas (não as horas)
+  const todasMaq = [...mapaListaTodasMaquinas(), ...mapaListaMaquinasSoldaTopo()];
+  let copiadas = 0;
+  todasMaq.forEach(maq=>{
+    const ant = dadosAnt[maq]||{};
+    if(ant.cod || ant.meta){
+      if(!mapaDados.metas_dias[chaveAtual][maq]) mapaDados.metas_dias[chaveAtual][maq]={};
+      if(ant.cod) mapaDados.metas_dias[chaveAtual][maq].cod = ant.cod;
+      if(ant.meta) mapaDados.metas_dias[chaveAtual][maq].meta = ant.meta;
+      copiadas++;
+    }
+  });
+  saveMapaDados();
+  renderMapaProducaoTabela();
+  showToast(`Códigos e metas copiados de ${copiadas} máquina(s) ✓`);
 }
 
 function mapaUpdateMetasCell(maquina,campo,valor){
@@ -6198,10 +6337,11 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
     return`<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
   }).join('');
 
-  const linhas=maquinas.map(maq=>{
+  // maquinas pode ser array de strings (incluindo strings vazias = slots vazios)
+  const linhas=maquinas.map((maq, idx)=>{
     const rd=(data[maq])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
     const horasCells=HORAS.map(h=>{
-      const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
+      const campo=campoH(h);const rawVal=(maq?rd[campo]:'')||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
       let cc='';
       if(isCafe) cc='cafe';
@@ -6209,29 +6349,34 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
+      if(!maq) return`<td ${tdStyle} style="opacity:0.2">—</td>`;
       return`<td ${tdStyle}><input id="mapa-inp-${maq}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="mapaHandleMetasInput('${maq}','${campo}',this.value)"></td>`;
     }).join('');
-    const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
-    const totalG=isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
-    return`<tr>
-      <td class="robo-label">${esc(maq)}</td>
-      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="mapaUpdateMetasCell('${maq}','meta',this.value);renderMapaProducaoTabela()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="mapaUpdateMetasCell('${maq}','cod',this.value)"></td>
+    const subRow=maq?HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0):0;
+    const totalG=maq&&isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    // Campo editável do número da máquina
+    const maqCell = podeEditar
+      ? `<td class="robo-label" style="padding:2px 4px"><input type="text" value="${esc(maq)}" placeholder="#" title="Número da máquina" style="width:46px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:3px 2px" onchange="mapaSetMaquina(${idx},this.value)"></td>`
+      : `<td class="robo-label">${esc(maq)||'—'}</td>`;
+    return`<tr style="${!maq?'opacity:0.35':''}">
+      ${maqCell}
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!maq||!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${maq}','meta',this.value);renderMapaProducaoTabela()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${!maq||!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${maq}','cod',this.value)"></td>
       ${horasCells}
-      <td id="${subId}-${maq}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
-      ${isNoite?`<td id="mapa-total-g-${maq}" class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
+      <td id="${subId}-${maq||'empty'+idx}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
+      ${isNoite?`<td class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
     </tr>`;
   }).join('');
 
   const rodapeHoras=HORAS.map(h=>{
     const campo=campoH(h);const isCafe=HORAS_CAFE.includes(h);
-    const soma=maquinas.reduce((s,m)=>s+(parseCelVal(((data[m]||{})[campo])||'').num),0);
+    const soma=maquinas.filter(m=>m).reduce((s,m)=>s+(parseCelVal(((data[m]||{})[campo])||'').num),0);
     const cor=isCafe?'#ffb300':(isNoite?'#a78bfa':'#d8dde6');
     const bg=isCafe?'#ffb30010':(isNoite?'#a78bfa08':'#ffffff06');
     return`<td style="color:${cor};font-weight:800;font-size:12px;background:${bg}">${soma>0?soma:'—'}</td>`;
   }).join('');
-  const subTotalTurno=maquinas.reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
-  const totalGeralRod=isNoite?maquinas.reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
+  const subTotalTurno=maquinas.filter(m=>m).reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
+  const totalGeralRod=isNoite?maquinas.filter(m=>m).reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
 
   return`<div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
     <thead><tr>
@@ -6269,7 +6414,8 @@ function renderMapaProducaoTabela(){
   if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && focado.closest('#mapaCanvasWrap')){
     return;
   }
-  const maquinas = mapaProducaoSubTela==='solda_topo' ? mapaListaMaquinasSoldaTopo() : mapaListaTodasMaquinas();
+  const maquinasSlots = mapaGetMaquinasAtivas(); // array com slots (pode ter strings vazias)
+  const maquinas = maquinasSlots.filter(m=>m); // só as preenchidas, pra cálculos de total
   const podeEditar = isMapaAdmin;
   const anoAtual=new Date().getFullYear();
   const ano=mapaDados.metas_ano||anoAtual;
@@ -6284,15 +6430,19 @@ function renderMapaProducaoTabela(){
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
 
-  const totalMaquinasGeral = mapaListaTodasMaquinas().length;
-  const totalSoldaTopo = mapaListaMaquinasSoldaTopo().length;
+  const listaGeral = mapaGetListaMaquinas();
+  const totalMaquinasGeral = listaGeral.todas.filter(m=>m).length;
+  const totalSoldaTopo = listaGeral.solda_topo.filter(m=>m).length;
   const abas = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
       <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700;margin-left:8px">📋 Todas as Máquinas</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">🔩 Solda Topo (${totalSoldaTopo})</button>
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
-      <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">`:''}
+      <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
+      <button onclick="mapaAbrirEditarLista()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">✏ Editar Lista</button>
+      <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📋 Copiar Dia Ant.</button>
+      `:''}
     </div>`;
 
   // Atualiza só a área de conteúdo do mapa, mantendo o cabeçalho/sidebar
@@ -6309,8 +6459,11 @@ function renderMapaProducaoTabela(){
       <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
       <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📋 ${totalMaquinasGeral}</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🔩 Topo</button>
-      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">`:''
-}      ${!podeEditar?`<button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
+      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
+      <button onclick="mapaAbrirEditarLista()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">✏</button>
+      <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
+      `:''}
+      ${!podeEditar?`<button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div class="date-sel"><label>Dia</label><select onchange="mapaUpdateData('metas_dia',+this.value)">${diasOpts}</select></div>
@@ -6339,17 +6492,17 @@ function renderMapaProducaoTabela(){
     </div>
     ${window.innerWidth<=700?`
     <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia</div>
-    ${_mapaRenderCarrossel(MAPA_HORAS_DIA,data,maquinas,false,chave)}
+    ${_mapaRenderCarrossel(MAPA_HORAS_DIA,data,maquinasSlots,false,chave)}
     <div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🌙 Turno Noite</div>
-    ${_mapaRenderCarrossel(HORAS_NOITE,data,maquinas,true,chave)}
+    ${_mapaRenderCarrossel(HORAS_NOITE,data,maquinasSlots,true,chave)}
     `:`
     <div style="margin-bottom:4px">
       <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia — 08:00 às 17:00</div>
-      ${mapaBuildTurnoTableProducao('dia',chave,maquinas)}
+      ${mapaBuildTurnoTableProducao('dia',chave,maquinasSlots)}
     </div>
     <div style="margin-top:16px;margin-bottom:20px">
       <div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🌙 Turno Noite — 18:00 às 22:00</div>
-      ${mapaBuildTurnoTableProducao('noite',chave,maquinas)}
+      ${mapaBuildTurnoTableProducao('noite',chave,maquinasSlots)}
     </div>
     `}
     <div style="background:#ffb30015;border:2px solid #ffb30050;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
@@ -8486,6 +8639,23 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </div>
 
 <!-- Modal login gabaritagem -->
+<!-- Modal editar lista de máquinas -->
+<div id="modalMapaLista" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:15px;font-weight:800;color:#fff" id="modalMapaListaTitulo">📋 Lista de Máquinas</div>
+    <div style="font-size:12px;color:#4a5568">Uma máquina por linha. A ordem aqui define a ordem na planilha.</div>
+    <span id="modalMapaListaCampo" style="display:none"></span>
+    <textarea id="modalMapaListaTextarea" rows="14"
+      style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;color:#d8dde6;font-family:'Courier New',monospace;font-size:14px;padding:10px;resize:vertical;outline:none;line-height:1.6"></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="document.getElementById('modalMapaLista').style.display='none'"
+        style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
+      <button onclick="mapaConfirmarEditarLista()"
+        style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalMapaFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:14px">
     <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher Produção via Foto</div>
