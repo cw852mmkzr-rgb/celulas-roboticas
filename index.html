@@ -5481,6 +5481,44 @@ document.addEventListener('click', function(e){
   if(!e.target.closest('#pecaDropdown') && !e.target.closest('.campo-codigo-peca')) fecharDropdownPeca();
 });
 
+function handleMetasInputEl(el, key, robo, campo){
+  // Versão do handleMetasInput pra mobile (sem busca por id — recebe o elemento direto)
+  const c = celulas[key];
+  const chave = getMetasChave(key);
+  if(!c.metas_dias) c.metas_dias={};
+  if(!c.metas_dias[chave]) c.metas_dias[chave]={};
+  if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
+  const rd = c.metas_dias[chave][robo];
+  const pontos = parseInt(rd.pontos)||0;
+  const valor = el.value;
+  const numVal = parseInt(valor)||0;
+  let valorFinal = valor;
+
+  // Divide por pontos se aplicável
+  if(pontos>1 && numVal>0 && !String(valor).includes('#')){
+    const dividido = Math.round(numVal/pontos);
+    if(dividido>=1 && dividido<=999 && dividido!==numVal){
+      valorFinal = String(dividido);
+      el.value = valorFinal;
+    }
+  }
+
+  // Atualiza cor do input
+  const meta = parseInt(rd.meta)||0;
+  const {num, tipo} = parseCelVal(valorFinal);
+  const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
+  const isCafe = HORAS_CAFE.includes(horaOrigem);
+  el.className = 'hora-inp';
+  if(isCafe) el.classList.add('cafe');
+  else if(tipo==='ajuste') el.classList.add('cell-adj');
+  else if(num>0){
+    if(meta>0&&num>=meta) el.classList.add('cell-ok');
+    else if(meta>0&&num<meta) el.classList.add('cell-fail');
+    else el.classList.add('cell-ok');
+  }
+  updateMetasCell(key, robo, campo, valorFinal);
+}
+
 function handleMetasInput(key,robo,campo,valor){
   const c = celulas[key];
   const chave = getMetasChave(key);
@@ -5727,7 +5765,7 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       if(isCafe&&!isAjuste){bg='#ffb30018';cor='#ffb300';}
       const isAtual = parseInt(h)===horaAtual;
       return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
-        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'${campo}',this.value)">`
+        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
         :`${num>0?num:'—'}`}</td>`;
     }).join('');
 
