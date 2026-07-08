@@ -249,8 +249,27 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 .metas-carousel { display:none; }
 @media (max-width: 700px) {
-  .metas-table-wrap { display:none; }
+  .metas-table-wrap:not(.mapa-table-wrap) { display:none; }
   .metas-carousel { display:block; }
+  /* Tabela do Mapa → Produção fica visível no mobile com fontes menores */
+  .mapa-table-wrap { display:block !important; }
+  .mapa-table-wrap .metas-table { min-width: 520px; }
+  .mapa-table-wrap .metas-table th { font-size:10px; padding:6px 4px; }
+  .mapa-table-wrap .metas-table td { padding:4px 3px; font-size:11px; }
+  .mapa-table-wrap .metas-table td.robo-label { font-size:11px; min-width:38px; }
+  .mapa-table-wrap .metas-table td.meta-val { font-size:10px; min-width:36px; }
+  .mapa-table-wrap .metas-table td.cod-val { font-size:10px; min-width:54px; }
+  .mapa-table-wrap .hora-inp { font-size:11px; width:34px; padding:2px; }
+  .mapa-table-wrap .metas-table th.col-robo { min-width:38px; }
+  .mapa-table-wrap .metas-table th.col-meta { min-width:36px; left:38px; }
+  .mapa-table-wrap .metas-table th.col-cod  { min-width:54px; left:74px; }
+  .mapa-table-wrap .metas-table td.meta-val { left:38px; }
+  .mapa-table-wrap .metas-table td.cod-val  { left:74px; }
+  .mapa-table-wrap .metas-table th.col-hora,
+  .mapa-table-wrap .metas-table th.col-hora-noite,
+  .mapa-table-wrap .metas-table th.col-hora-cafe { min-width:44px; font-size:9px; padding:5px 2px; }
+  .mapa-table-wrap .metas-table th.col-sub { min-width:44px; font-size:9px; }
+  .mapa-table-wrap .metas-table th.col-total-geral { min-width:60px; font-size:9px; }
   .metas-car-nav { display:flex; align-items:center; justify-content:space-between; padding:6px 0; margin-bottom:6px; }
   .metas-car-nav button { background:#1e2530; border:1px solid #2a3040; color:#d8dde6; border-radius:8px; padding:8px 18px; font-size:20px; cursor:pointer; }
   .metas-car-nav span { font-size:13px; color:#4a5568; font-family:'Courier New',monospace; font-weight:700; }
@@ -6137,7 +6156,7 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   const subTotalTurno=maquinas.reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalGeralRod=isNoite?maquinas.reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
 
-  return`<div class="metas-table-wrap"><table class="metas-table">
+  return`<div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
     <thead><tr>
       <th class="col-robo">Máquina</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
       ${horasHeader}
@@ -6207,59 +6226,53 @@ function renderMapaProducaoTabela(){
   const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : (window._mapaProdScrollSalvo || 0);
   window._mapaProdScrollSalvo = 0; // limpa após consumir
   wrap.innerHTML = `
-  <div style="padding:18px;overflow-y:auto;flex:1;min-height:0" id="mapaProducaoScroll">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      ${abas}
+  <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch" id="mapaProducaoScroll">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📋 ${totalMaquinasGeral}</button>
+      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" style="background:${mapaProducaoSubTela==='solda_topo'?'#ffb30020':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='solda_topo'?'#ffb30060':'#2a3040'};color:${mapaProducaoSubTela==='solda_topo'?'#ffb300':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🔩 Topo</button>
+      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">`:''
+}      ${!podeEditar?`<button class="btn btn-gray" style="padding:5px 10px;font-size:10px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <span style="font-size:16px">📆</span>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div class="date-sel"><label>Dia</label><select onchange="mapaUpdateData('metas_dia',+this.value)">${diasOpts}</select></div>
       <div class="date-sel"><label>Mês</label><select onchange="mapaUpdateData('metas_mes',+this.value)">${mesesOpts}</select></div>
       <div class="date-sel"><label>Ano</label><select onchange="mapaUpdateData('metas_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:4px 10px;font-size:11px;color:#00e87a;font-weight:700">☀ ${totalDia.toLocaleString("pt-BR")}</div>
-        <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:6px;padding:4px 10px;font-size:11px;color:#a78bfa;font-weight:700">🌙 ${totalNoite.toLocaleString("pt-BR")}</div>
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:4px 10px;font-size:11px;color:#ffb300;font-weight:700">∑ ${totalG.toLocaleString("pt-BR")}</div>
-        ${!podeEditar?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="entrarModoEdicaoMapa()">✏ Editar</button>`:''}
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <div style="flex:1;background:#00e87a10;border:1px solid #00e87a30;border-radius:7px;padding:6px 8px;text-align:center">
+        <div style="font-size:9px;color:#4a5568;text-transform:uppercase">☀ Dia</div>
+        <div style="font-size:16px;font-weight:800;color:#00e87a">${totalDia.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="flex:1;background:#a78bfa10;border:1px solid #a78bfa30;border-radius:7px;padding:6px 8px;text-align:center">
+        <div style="font-size:9px;color:#4a5568;text-transform:uppercase">🌙 Noite</div>
+        <div style="font-size:16px;font-weight:800;color:#a78bfa">${totalNoite.toLocaleString("pt-BR")}</div>
+      </div>
+      <div style="flex:1;background:#ffb30010;border:1px solid #ffb30030;border-radius:7px;padding:6px 8px;text-align:center">
+        <div style="font-size:9px;color:#4a5568;text-transform:uppercase">∑ Total</div>
+        <div style="font-size:16px;font-weight:800;color:#ffb300">${totalG.toLocaleString("pt-BR")}</div>
       </div>
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;gap:20px;font-size:12px;color:#9ca3af;letter-spacing:0.04em;flex-wrap:wrap;align-items:center">
-      <span><span style="color:#00e87a;font-weight:800;font-size:14px">■</span> Atingiu a meta</span>
-      <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
-      <span><span style="color:#ffb300;font-weight:800;font-size:14px">■</span> Horário de café — meta reduzida</span>
-      <span><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico</span>
-      <span style="color:#4a5568;font-size:11px">← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
+    <div style="display:flex;gap:8px;font-size:10px;color:#4a5568;margin-bottom:10px;flex-wrap:wrap">
+      <span><span style="color:#00e87a">■</span> Meta atingida</span>
+      <span><span style="color:#ff4d4d">■</span> Abaixo</span>
+      <span><span style="color:#ffb300">■</span> Café</span>
+      <span><span style="color:#3d9eff">■</span> Ajuste (43#)</span>
     </div>
-    <div style="margin-bottom:6px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:15px">☀</span>
-        <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
-      </div>
+    <div style="margin-bottom:4px">
+      <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia — 08:00 às 17:00</div>
       ${mapaBuildTurnoTableProducao('dia',chave,maquinas)}
     </div>
-    <div style="margin-top:24px;margin-bottom:30px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:15px">🌙</span>
-        <span style="font-size:12px;font-weight:800;color:#a78bfa;letter-spacing:0.1em;text-transform:uppercase">Turno Noite — 18:00 às 22:00</span>
-      </div>
+    <div style="margin-top:16px;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:800;color:#a78bfa;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">🌙 Turno Noite — 18:00 às 22:00</div>
       ${mapaBuildTurnoTableProducao('noite',chave,maquinas)}
     </div>
-    <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div style="background:#ffb30015;border:2px solid #ffb30050;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div>
-        <div style="font-size:11px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;margin-bottom:6px">⚑ Total Geral do Dia — ${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}</div>
-        <div style="font-size:48px;font-weight:900;color:#ffb300;letter-spacing:0.04em;line-height:1">${totalG.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:6px">peças produzidas no dia — ${mapaProducaoSubTela==='solda_topo'?`Solda Topo (${maquinas.length} máquinas)`:`todas as ${maquinas.length} máquinas`}</div>
+        <div style="font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:.1em;font-weight:700">⚑ Total do Dia</div>
+        <div style="font-size:10px;color:#4a5568;margin-top:2px">${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano} · ${maquinas.length} máq.</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">☀ Turno Dia</div>
-          <div style="font-size:24px;font-weight:800;color:#00e87a">${totalDia.toLocaleString("pt-BR")}</div>
-        </div>
-        <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:8px;padding:8px 16px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">🌙 Turno Noite</div>
-          <div style="font-size:24px;font-weight:800;color:#a78bfa">${totalNoite.toLocaleString("pt-BR")}</div>
-        </div>
-      </div>
+      <div style="font-size:34px;font-weight:900;color:#ffb300">${totalG.toLocaleString("pt-BR")}</div>
     </div>
   </div>`;
   const scrollNovo = document.getElementById('mapaProducaoScroll');
