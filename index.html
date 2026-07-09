@@ -2785,8 +2785,7 @@ async function loadFromAPI(){
       const anterior=JSON.stringify(celulas);
       const novo=JSON.stringify(d[0].conteudo);
       if(anterior&&anterior!=='{}'&&novo!==anterior){
-        const badge=document.getElementById("newDataBadge");
-        if(badge) badge.style.display="inline-block";
+        // badge removido — não exibe mais o alerta piscando
       }
       celulas=d[0].conteudo;
       if(d[0].imagens){
