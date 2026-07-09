@@ -5987,9 +5987,24 @@ function mapaGetMaquinasAtivas(){
 function mapaSetMaquina(idx, valor){
   const lista = mapaGetListaMaquinas();
   const chave = mapaProducaoSubTela === 'solda_topo' ? 'solda_topo' : 'todas';
-  lista[chave][idx] = valor.trim();
+  const valorLimpo = valor.trim();
+  const chaveAntiga = lista[chave][idx] || `__slot_${idx}`;
+
+  lista[chave][idx] = valorLimpo;
   mapaDados.lista_maquinas = lista;
+
+  // Migra dados do slot temporário para a nova chave
+  if(valorLimpo && chaveAntiga !== valorLimpo && mapaDados.metas_dias){
+    Object.keys(mapaDados.metas_dias).forEach(dia=>{
+      const dadosDia = mapaDados.metas_dias[dia];
+      if(dadosDia[chaveAntiga]){
+        dadosDia[valorLimpo] = dadosDia[chaveAntiga];
+        delete dadosDia[chaveAntiga];
+      }
+    });
+  }
   saveMapaDados();
+  renderMapaProducaoTabela();
 }
 
 function mapaCopiarDiaAnterior(){
@@ -6154,7 +6169,11 @@ function mapaSeedPadrao(){
   return { zonas, maquinas };
 }
 
+let _mapaLastSave = 0;
+
 async function loadMapaDados(){
+  // Não recarrega do servidor se acabou de salvar (evita sobrescrever edições em andamento)
+  if(Date.now() - _mapaLastSave < 5000) return;
   try{
     const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=mapa_producao",{headers:HEADERS_SB});
     const d = await r.json();
@@ -6171,6 +6190,7 @@ async function loadMapaDados(){
 }
 
 async function saveMapaDados(){
+  _mapaLastSave = Date.now();
   try{
     await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:mapaDados})});
   }catch(e){ showToast("Erro ao salvar mapa",true); }
@@ -6351,9 +6371,11 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
 
   // maquinas pode ser array de strings (incluindo strings vazias = slots vazios)
   const linhas=maquinas.map((maq, idx)=>{
-    const rd=(data[maq])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
+    // Chave de dados: se máquina preenchida usa o código, senão usa __slot_idx (temporário)
+    const chaveM = maq || `__slot_${idx}`;
+    const rd=(data[chaveM])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
     const horasCells=HORAS.map(h=>{
-      const campo=campoH(h);const rawVal=(maq?rd[campo]:'')||'';const{num,tipo}=parseCelVal(rawVal);
+      const campo=campoH(h);const rawVal=(rd[campo])||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
       let cc='';
       if(isCafe) cc='cafe';
@@ -6361,21 +6383,20 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
-      if(!maq) return`<td ${tdStyle} style="opacity:0.2">—</td>`;
-      return`<td ${tdStyle}><input id="mapa-inp-${maq}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="mapaHandleMetasInput('${maq}','${campo}',this.value)"></td>`;
+      return`<td ${tdStyle}><input id="mapa-inp-${chaveM}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="mapaHandleMetasInput('${chaveM}','${campo}',this.value)"></td>`;
     }).join('');
-    const subRow=maq?HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0):0;
-    const totalG=maq&&isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
+    const subRow=HORAS.reduce((s,h)=>s+(parseCelVal((data[chaveM]?.[campoH(h)])||'').num),0);
+    const totalG=isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((data[chaveM]?.[campoH(h)])||'').num),0)):null;
     // Campo editável do número da máquina
     const maqCell = podeEditar
-      ? `<td class="robo-label" style="padding:2px 4px"><input type="text" value="${esc(maq)}" placeholder="#" title="Número da máquina" style="width:46px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:3px 2px" onchange="mapaSetMaquina(${idx},this.value)"></td>`
+      ? `<td class="robo-label" style="padding:2px 4px"><input type="text" value="${esc(maq)}" placeholder="#" title="Número da máquina" style="width:100%;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:3px 2px" onchange="mapaSetMaquina(${idx},this.value)"></td>`
       : `<td class="robo-label">${esc(maq)||'—'}</td>`;
-    return`<tr style="${!maq?'opacity:0.35':''}">
+    return`<tr>
       ${maqCell}
-      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!maq||!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${maq}','meta',this.value);renderMapaProducaoTabela()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${!maq||!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${maq}','cod',this.value)"></td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','meta',this.value);renderMapaProducaoTabela()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','cod',this.value)"></td>
       ${horasCells}
-      <td id="${subId}-${maq||'empty'+idx}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
+      <td id="${subId}-${chaveM}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
       ${isNoite?`<td class="total-geral-val" style="font-size:18px;font-weight:900;padding:8px 10px;border-left:2px solid #ffb30060">${totalG>0?totalG:'—'}</td>`:''}
     </tr>`;
   }).join('');
