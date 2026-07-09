@@ -6457,9 +6457,13 @@ function mapaTrocarSubTelaProducao(sub){
 }
 
 function renderMapaProducaoTabela(){
-  // Não re-renderiza se o usuário estiver com um input ou select aberto na tabela
+  // Não re-renderiza se o usuário estiver com um input ativo na tabela
   const focado = document.activeElement;
   if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && focado.closest('#mapaCanvasWrap')){
+    return;
+  }
+  // Também não re-renderiza por 4s após qualquer save (evita polling destruir edição recente)
+  if(Date.now() - _mapaLastSave < 4000){
     return;
   }
   const maquinasSlots = mapaGetMaquinasAtivas(); // array com slots (pode ter strings vazias)
