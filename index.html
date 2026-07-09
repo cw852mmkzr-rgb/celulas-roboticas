@@ -714,7 +714,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
-      <span id="newDataBadge" onclick="recarregarDados()" title="Clique para atualizar" style="display:none;cursor:pointer;background:#ff6a00;color:#fff;font-size:10px;padding:3px 10px;border-radius:99px;font-weight:700;animation:pisca 1s infinite">🔔 Dados novos — clique aqui</span>
+      <span id="newDataBadge" style="display:none"></span>
       <span class="badge" id="modeBadge"></span>
       <button id="btnBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="baixarBackupLocal()" title="Baixar backup JSON">⬇ Backup</button>
       <button id="btnRestoreBackup" class="btn btn-gray" style="padding:5px 10px;font-size:10px;display:none" onclick="document.getElementById('restoreCelulasInput').click()" title="Restaurar a partir de um arquivo de backup">📂 Restaurar Backup</button>
