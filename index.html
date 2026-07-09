@@ -5967,21 +5967,13 @@ function _mapaCarNext(total,turno){ _mapaCarIdx = Math.min(total - _mapaCarStep,
 // Lista de máquinas editável — armazenada em mapaDados.lista_maquinas
 // Começa com 50 slots vazios, usuario digita os números na ordem que quiser
 function mapaGetListaMaquinas(){
-  if(!mapaDados.lista_maquinas){
-    // Inicializa com 50 slots vazios (aba Todas) + 8 slots Solda Topo
-    mapaDados.lista_maquinas = { todas: Array(50).fill(''), solda_topo: Array(8).fill('') };
-  }
-  // Garante que sempre tem pelo menos 50/8 slots
-  if(!mapaDados.lista_maquinas.todas) mapaDados.lista_maquinas.todas = Array(50).fill('');
-  if(!mapaDados.lista_maquinas.solda_topo) mapaDados.lista_maquinas.solda_topo = Array(8).fill('');
-  return mapaDados.lista_maquinas;
+  // Mantido só pra compatibilidade — não é mais usado para chaves de dados
+  return { todas: Array(MAPA_LINHAS_TODAS).fill(''), solda_topo: Array(MAPA_LINHAS_TOPO).fill('') };
 }
 
 function mapaGetMaquinasAtivas(){
-  const lista = mapaGetListaMaquinas();
-  const chave = mapaProducaoSubTela === 'solda_topo' ? 'solda_topo' : 'todas';
-  // Retorna todos os slots (incluindo vazios) pra manter as posições fixas
-  return lista[chave];
+  // Sempre retorna chaves fixas por posição (ex: t_0..t_49 ou s_0..s_7)
+  return mapaChaveLinhas(mapaProducaoSubTela);
 }
 
 function mapaSetMaquina(idx, valor){
@@ -6466,8 +6458,7 @@ function renderMapaProducaoTabela(){
   if(Date.now() - _mapaLastSave < 4000){
     return;
   }
-  const maquinasSlots = mapaGetMaquinasAtivas(); // array com slots (pode ter strings vazias)
-  const maquinas = maquinasSlots.filter(m=>m); // só as preenchidas, pra cálculos de total
+  const maquinasSlots = mapaGetMaquinasAtivas(); // chaves fixas: t_0..t_49 ou s_0..s_7
   const podeEditar = isMapaAdmin;
   const anoAtual=new Date().getFullYear();
   const ano=mapaDados.metas_ano||anoAtual;
@@ -6475,6 +6466,7 @@ function renderMapaProducaoTabela(){
   const dia=mapaDados.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   const data=(mapaDados.metas_dias&&mapaDados.metas_dias[chave])?mapaDados.metas_dias[chave]:{};
+  const maquinas = maquinasSlots; // todas as chaves fixas (t_0..t_49 ou s_0..s_7)
   const totalDia=maquinas.reduce((s,m)=>s+MAPA_HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalNoite=maquinas.reduce((s,m)=>s+HORAS_NOITE.reduce((ss,h)=>ss+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalG=totalDia+totalNoite;
@@ -6482,9 +6474,8 @@ function renderMapaProducaoTabela(){
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
 
-  const listaGeral = mapaGetListaMaquinas();
-  const totalMaquinasGeral = listaGeral.todas.filter(m=>m).length;
-  const totalSoldaTopo = listaGeral.solda_topo.filter(m=>m).length;
+  const totalMaquinasGeral = MAPA_LINHAS_TODAS;
+  const totalSoldaTopo = MAPA_LINHAS_TOPO;
   const abas = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
