@@ -6186,6 +6186,9 @@ async function loadMapaDados(){
 
 async function saveMapaDados(){
   _mapaLastSave = Date.now();
+  // Mostra indicador de salvo na tela
+  const ind = document.getElementById('mapaSaveIndicator');
+  if(ind){ ind.style.opacity='1'; clearTimeout(window._mapaSaveTimer); window._mapaSaveTimer=setTimeout(()=>{ind.style.opacity='0';},2000); }
   try{
     await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:mapaDados})});
   }catch(e){ showToast("Erro ao salvar mapa",true); }
@@ -6634,6 +6637,11 @@ function renderMapaProducao(){
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
   if(focadoM && ['INPUT','SELECT','TEXTAREA'].includes(focadoM.tagName) && conteudoM && conteudoM.contains(focadoM)){
+    return;
+  }
+  // Se estamos na aba Produção e houve save recente, não reconstrói (evita flash preto)
+  if(mapaTelaAtual==='Produção' && Date.now() - _mapaLastSave < 5000){
+    renderMapaProducaoTabela();
     return;
   }
   const wrapAntigo = conteudoM ? conteudoM.querySelector('.mapa-canvas-wrap') : null;
@@ -8738,6 +8746,8 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 <!-- ===== MAPA DA PRODUÇÃO ===== -->
 <div id="mapaScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
   <div id="mapaConteudo" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
+  <!-- Indicador de salvo -->
+  <div id="mapaSaveIndicator" style="position:fixed;bottom:18px;right:18px;background:#00e87a;color:#000;font-size:12px;font-weight:800;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9100;font-family:'Courier New',monospace;letter-spacing:0.08em">✓ Salvo</div>
 </div>
 
 <div id="modalMapaLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
