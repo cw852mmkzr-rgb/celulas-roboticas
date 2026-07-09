@@ -6061,8 +6061,9 @@ function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
   const grupo = HORAS.slice(_mapaCarIdx, _mapaCarIdx + _mapaCarStep);
   const horaAtual = new Date().getHours();
 
-  const linhas = maquinas.map(maq=>{
-    const rd = (data[maq])||{};
+  const linhas = maquinas.map((chaveM,idx)=>{
+    const nomeM = mapaGetNomeMaquina(chaveM);
+    const rd = (data[chaveM])||{};
     const meta = parseInt(rd.meta)||0;
     const cod = rd.cod||'';
     const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
@@ -6078,13 +6079,15 @@ function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
       if(isCafe&&tipo!=='ajuste'){bg='#ffb30018';cor='#ffb300';}
       const isAtual = parseInt(h)===horaAtual;
       return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
-        ?`<input class="hora-inp${isCafe?' cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" onchange="mapaHandleMetasInput('${maq}','${campo}',this.value)">`
+        ?`<input class="hora-inp${isCafe?' cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" onchange="mapaHandleMetasInput('${chaveM}','${campo}',this.value)">`
         :`${num>0?num:'—'}`}</td>`;
     }).join('');
     return`<tr>
-      <td style="color:#00e87a;font-weight:900;font-size:13px;text-align:left;padding:6px 8px;background:#04070d;position:sticky;left:0;white-space:nowrap">${esc(maq)}</td>
-      <td style="color:#3d9eff;font-size:11px;background:#04070d;padding:6px 4px">${meta||'—'}</td>
-      <td style="color:#ffb300;font-size:10px;background:#04070d;padding:6px 4px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cod)||'—'}</td>
+      <td style="color:#00e87a;font-weight:900;font-size:13px;text-align:left;padding:6px 8px;background:#04070d;position:sticky;left:0;white-space:nowrap">${podeEditar
+        ?`<input type="text" value="${esc(nomeM)}" placeholder="#" style="width:52px;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:2px" onchange="mapaSetNomeMaquina('${chaveM}',this.value)">`
+        :esc(nomeM)||'—'}</td>
+      <td style="color:#3d9eff;font-size:11px;background:#04070d;padding:6px 4px">${podeEditar?`<input class="meta-inp" type="number" min="0" value="${meta||''}" placeholder="—" style="width:36px" onchange="mapaUpdateMetasCell('${chaveM}','meta',this.value)">`:meta||'—'}</td>
+      <td style="color:#ffb300;font-size:10px;background:#04070d;padding:6px 4px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${podeEditar?`<input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" style="width:50px;font-size:10px" onchange="mapaUpdateMetasCell('${chaveM}','cod',this.value)">`:esc(cod)||'—'}</td>
       ${horasCells}
       <td style="color:${subColor};font-weight:800;font-size:13px;padding:6px 4px">${subRow>0?subRow:'—'}</td>
     </tr>`;
@@ -6229,37 +6232,33 @@ function mapaSidebarClick(item){
 
 let mapaTelaAtual = 'Mapa';
 
-const MAQUINAS_SOLDA_TOPO = ['241','242','243','247','224','227','245','228'];
+const MAPA_LINHAS_TODAS = 50;
+const MAPA_LINHAS_TOPO  = 8;
+
+// Chaves fixas (como robôs 600-611 na Metas Diária)
+function mapaChaveLinhas(aba){
+  const n = aba==='solda_topo' ? MAPA_LINHAS_TOPO : MAPA_LINHAS_TODAS;
+  const pref = aba==='solda_topo' ? 's_' : 't_';
+  return Array.from({length:n}, (_,i)=>pref+i);
+}
 
 function mapaListaTodasMaquinas(){
-  // Usa lista customizada se existir (estrutura {todas:[], solda_topo:[]})
-  const lm = mapaDados.lista_maquinas;
-  if(lm && lm.todas && lm.todas.length>0){
-    return lm.todas; // inclui slots vazios pra manter posições
-  }
-  // Fallback: extrai das zonas excluindo Solda Topo
-  const codigos = [];
-  (mapaDados.zonas||[]).forEach(z=>{
-    (z.celulas||[]).forEach(cod=>{
-      if(cod && cod!=='G' && !codigos.includes(cod) && !MAQUINAS_SOLDA_TOPO.includes(cod)) codigos.push(cod);
-    });
-  });
-  return codigos;
+  return mapaChaveLinhas('todas');
 }
 
 function mapaListaMaquinasSoldaTopo(){
-  const lm = mapaDados.lista_maquinas;
-  if(lm && lm.solda_topo && lm.solda_topo.length>0){
-    return lm.solda_topo;
-  }
-  // Fallback: filtra das zonas
-  const todas = [];
-  (mapaDados.zonas||[]).forEach(z=>{
-    (z.celulas||[]).forEach(cod=>{
-      if(cod && cod!=='G') todas.push(cod);
-    });
-  });
-  return MAQUINAS_SOLDA_TOPO.filter(cod=>todas.includes(cod));
+  return mapaChaveLinhas('solda_topo');
+}
+
+// Rótulo visível da máquina (editável pelo usuário)
+function mapaGetNomeMaquina(chaveL){
+  return (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[chaveL]) || '';
+}
+
+function mapaSetNomeMaquina(chaveL, nome){
+  if(!mapaDados.nomes_maquinas) mapaDados.nomes_maquinas = {};
+  mapaDados.nomes_maquinas[chaveL] = nome.trim();
+  saveMapaDados();
 }
 
 function mapaAbrirEditarLista(){
@@ -6322,15 +6321,15 @@ function mapaCopiarDiaAnterior(){
   showToast(`Códigos e metas copiados de ${copiadas} máquina(s) ✓`);
 }
 
-function mapaUpdateMetasCell(maquina,campo,valor){
+function mapaUpdateMetasCell(chaveM,campo,valor){
   const ano=mapaDados.metas_ano||new Date().getFullYear();
   const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
   const dia=mapaDados.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   if(!mapaDados.metas_dias) mapaDados.metas_dias={};
   if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
-  if(!mapaDados.metas_dias[chave][maquina]) mapaDados.metas_dias[chave][maquina]={};
-  mapaDados.metas_dias[chave][maquina][campo]=valor;
+  if(!mapaDados.metas_dias[chave][chaveM]) mapaDados.metas_dias[chave][chaveM]={};
+  mapaDados.metas_dias[chave][chaveM][campo]=valor;
   saveMapaDados();
 }
 
@@ -6370,9 +6369,8 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   }).join('');
 
   // maquinas pode ser array de strings (incluindo strings vazias = slots vazios)
-  const linhas=maquinas.map((maq, idx)=>{
-    // Chave de dados: se máquina preenchida usa o código, senão usa __slot_idx (temporário)
-    const chaveM = maq || `__slot_${idx}`;
+  const linhas=maquinas.map((chaveM, idx)=>{
+    const nomeM = mapaGetNomeMaquina(chaveM); // rótulo visível (ex: "90", "241")
     const rd=(data[chaveM])||{};const meta=parseInt(rd.meta)||0;const cod=rd.cod||'';
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=(rd[campo])||'';const{num,tipo}=parseCelVal(rawVal);
@@ -6387,10 +6385,10 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal((data[chaveM]?.[campoH(h)])||'').num),0);
     const totalG=isNoite?([...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((data[chaveM]?.[campoH(h)])||'').num),0)):null;
-    // Campo editável do número da máquina
+    // Campo editável do número da máquina (só o rótulo, a chave de dados é fixa)
     const maqCell = podeEditar
-      ? `<td class="robo-label" style="padding:2px 4px"><input type="text" value="${esc(maq)}" placeholder="#" title="Número da máquina" style="width:100%;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:3px 2px" onchange="mapaSetMaquina(${idx},this.value)"></td>`
-      : `<td class="robo-label">${esc(maq)||'—'}</td>`;
+      ? `<td class="robo-label" style="padding:2px 4px"><input type="text" value="${esc(nomeM)}" placeholder="#" title="Número da máquina" style="width:100%;background:transparent;border:1px solid #2a3040;border-radius:4px;color:#00e87a;font-weight:900;font-size:12px;font-family:'Courier New',monospace;text-align:center;padding:3px 2px" onchange="mapaSetNomeMaquina('${chaveM}',this.value)"></td>`
+      : `<td class="robo-label">${esc(nomeM)||'—'}</td>`;
     return`<tr>
       ${maqCell}
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','meta',this.value)"></td>
