@@ -6393,7 +6393,7 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       : `<td class="robo-label">${esc(maq)||'—'}</td>`;
     return`<tr>
       ${maqCell}
-      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','meta',this.value);renderMapaProducaoTabela()"></td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','meta',this.value)"></td>
       <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${!podeEditar?'readonly':''} onchange="mapaUpdateMetasCell('${chaveM}','cod',this.value)"></td>
       ${horasCells}
       <td id="${subId}-${chaveM}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
@@ -6429,8 +6429,25 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
 }
 
 function mapaAtualizarTotaisProducao(){
-  // Atualiza só os números de totais sem re-renderizar a tabela inteira (evita perder foco do input)
-  renderMapaProducaoTabela();
+  // Atualiza os subtotais visíveis SEM reconstruir a tabela (evita perder foco do input)
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const data=(mapaDados.metas_dias&&mapaDados.metas_dias[chave])?mapaDados.metas_dias[chave]:{};
+  const maquinas = mapaProducaoSubTela==='solda_topo' ? mapaListaMaquinasSoldaTopo() : mapaListaTodasMaquinas();
+
+  // Atualiza subtotais por linha (dia e noite)
+  maquinas.forEach((maq,idx)=>{
+    const chaveM = maq || `__slot_${idx}`;
+    const rd = data[chaveM]||{};
+    const subDia = MAPA_HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+    const elDia = document.getElementById(`mapa-sub-dia-${chaveM}`);
+    const elNoite = document.getElementById(`mapa-sub-noite-${chaveM}`);
+    if(elDia){ elDia.textContent=subDia>0?subDia:'—'; elDia.style.color=subDia>0?'#00e87a':'#4a5568'; }
+    if(elNoite){ elNoite.textContent=subNoite>0?subNoite:'—'; elNoite.style.color=subNoite>0?'#a78bfa':'#4a5568'; }
+  });
 }
 
 let mapaProducaoSubTela = 'todas'; // 'todas' | 'solda_topo'
