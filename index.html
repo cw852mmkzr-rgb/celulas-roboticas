@@ -8943,6 +8943,11 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     </div>
     <div id="introBarTxt" style="font-size:10px;color:#2a3040;letter-spacing:0.2em;text-transform:uppercase;margin-top:6px;text-align:center">Inicializando...</div>
   </div>
+
+  <!-- Botão de som -->
+  <button id="introBtnSom" onclick="introAtivarSom()" style="background:#ff6a0020;border:1px solid #ff6a0050;color:#ff6a00;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;padding:8px 20px;border-radius:99px;cursor:pointer;text-transform:uppercase;opacity:0;transition:opacity 0.5s">
+    🔊 Ativar Som
+  </button>
 </div>
 
 <style>
@@ -8985,7 +8990,80 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
   }
   drawPts();
 
-  // ── Sequência de animação ──
+  // ── Botão de som ──
+  setTimeout(()=>{
+    const btnSom = document.getElementById("introBtnSom");
+    if(btnSom) btnSom.style.opacity="1";
+  }, 2400);
+
+  window.introAtivarSom = function(){
+    const btn = document.getElementById("introBtnSom");
+    if(btn){ btn.style.opacity="0"; btn.disabled=true; }
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Beeps eletrônicos de boot
+    const beepFreqs = [220, 330, 440, 550, 660, 880];
+    beepFreqs.forEach((freq, i) => {
+      setTimeout(() => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, ac.currentTime);
+        gain.gain.setValueAtTime(0.08, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+        osc.start(ac.currentTime);
+        osc.stop(ac.currentTime + 0.15);
+      }, i * 120);
+    });
+
+    // Som de "energizando" / hum industrial
+    setTimeout(() => {
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(60, ac.currentTime);
+      osc.frequency.linearRampToValueAtTime(120, ac.currentTime + 0.8);
+      gain.gain.setValueAtTime(0.05, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.9);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime + 0.9);
+    }, 800);
+
+    // Voz: "Bem-vindo de volta"
+    setTimeout(() => {
+      if('speechSynthesis' in window){
+        const msg = new SpeechSynthesisUtterance("Bem-vindo de volta");
+        msg.lang = "pt-BR";
+        msg.rate = 0.85;
+        msg.pitch = 0.7;
+        msg.volume = 0.9;
+        // Tenta pegar voz em português
+        const vozes = window.speechSynthesis.getVoices();
+        const vozPT = vozes.find(v => v.lang.startsWith("pt")) || vozes[0];
+        if(vozPT) msg.voice = vozPT;
+        window.speechSynthesis.speak(msg);
+      }
+    }, 1000);
+
+    // Beep final de confirmação
+    setTimeout(() => {
+      [440, 660, 880].forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = ac.createOscillator();
+          const gain = ac.createGain();
+          osc.connect(gain); gain.connect(ac.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, ac.currentTime);
+          gain.gain.setValueAtTime(0.1, ac.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
+          osc.start(ac.currentTime);
+          osc.stop(ac.currentTime + 0.2);
+        }, i * 150);
+      });
+    }, 2800);
+  };
   const robo = document.getElementById("introRobo");
   const sub = document.getElementById("introSub");
   const titleEl = document.getElementById("introTitleText");
