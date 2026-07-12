@@ -124,6 +124,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.ok { background: #00e87a; color: #000; }
 .toast.error { background: #ff4d4d; color: #fff; }
 @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes jarvisPulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── DASHBOARD TV ── */
@@ -5068,9 +5069,11 @@ function startApp(){
   document.getElementById("appScreen").style.display="block";
   if(isAdmin){
     document.getElementById("iaBtnFlutuante").style.display="flex";
+    document.getElementById("jarvisBtnFlutuante").style.display="flex";
     loadBaseConhecimento();
   } else {
     document.getElementById("iaBtnFlutuante").style.display="none";
+    document.getElementById("jarvisBtnFlutuante").style.display="none";
   }
 
   if(isAdmin){
@@ -5139,6 +5142,7 @@ function doLogout(){
   document.getElementById("appScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   document.getElementById("iaBtnFlutuante").style.display="none";
+  var _jbf=document.getElementById("jarvisBtnFlutuante"); if(_jbf) _jbf.style.display="none";
   document.getElementById("painelIA").style.display="none";
   document.getElementById("pwInput").value="";
   document.getElementById("mainPanel").innerHTML="";
@@ -7112,6 +7116,166 @@ async function iaChamar(tipo, pergunta){
   return data.resposta;
 }
 
+// ===== JARVIS - ASSISTENTE DE VOZ =====
+let jarvisRecognition = null;
+let jarvisEscutando = false;
+let jarvisProcessando = false;
+
+function jarvisAbrir(){
+  document.getElementById("jarvisScreen").style.display = "flex";
+  document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar";
+  document.getElementById("jarvisTranscricao").textContent = "";
+  document.getElementById("jarvisResposta").textContent = "";
+}
+function jarvisFechar(){
+  jarvisPararEscuta();
+  jarvisParar();
+  document.getElementById("jarvisScreen").style.display = "none";
+}
+function jarvisSetOrb(estado){
+  const orb = document.getElementById("jarvisOrb");
+  if(!orb) return;
+  if(estado === "escutando"){
+    orb.style.animation = "jarvisPulse 1.2s ease-in-out infinite";
+    orb.style.background = "radial-gradient(circle at 50% 40%,#ff6a00,#ff3d3d 60%,#aa0000)";
+    orb.style.boxShadow = "0 0 60px #ff6a0080,0 0 120px #ff3d3d40";
+  } else if(estado === "processando"){
+    orb.style.animation = "jarvisPulse 0.6s ease-in-out infinite";
+    orb.style.background = "radial-gradient(circle at 50% 40%,#a78bfa,#7c5cff 60%,#4422aa)";
+    orb.style.boxShadow = "0 0 60px #a78bfa80,0 0 120px #7c5cff40";
+  } else if(estado === "falando"){
+    orb.style.animation = "jarvisPulse 0.8s ease-in-out infinite";
+    orb.style.background = "radial-gradient(circle at 50% 40%,#00e87a,#00b35c 60%,#007a3d)";
+    orb.style.boxShadow = "0 0 60px #00e87a80,0 0 120px #00b35c40";
+  } else {
+    orb.style.animation = "none";
+    orb.style.background = "radial-gradient(circle at 50% 40%,#00e0c6,#00b3ff 60%,#0066aa)";
+    orb.style.boxShadow = "0 0 60px #00e0c680,0 0 120px #00b3ff40";
+  }
+}
+
+function jarvisToggleEscuta(){
+  if(jarvisProcessando) return;
+  if(jarvisEscutando){ jarvisPararEscuta(); return; }
+  jarvisIniciarEscuta();
+}
+
+function jarvisIniciarEscuta(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    document.getElementById("jarvisStatus").textContent = "⚠ Seu navegador não suporta reconhecimento de voz (use o Chrome)";
+    return;
+  }
+  jarvisParar(); // para qualquer fala em andamento
+  jarvisRecognition = new SR();
+  jarvisRecognition.lang = "pt-BR";
+  jarvisRecognition.continuous = false;
+  jarvisRecognition.interimResults = true;
+
+  jarvisEscutando = true;
+  jarvisSetOrb("escutando");
+  document.getElementById("jarvisStatus").textContent = "🔴 Ouvindo... pode falar";
+  document.getElementById("jarvisTranscricao").textContent = "";
+  document.getElementById("jarvisBtnFalar").textContent = "⏸ Parar de ouvir";
+
+  let textoFinal = "";
+  jarvisRecognition.onresult = (ev)=>{
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t = ev.results[i][0].transcript;
+      if(ev.results[i].isFinal) textoFinal += t;
+      else interim += t;
+    }
+    document.getElementById("jarvisTranscricao").textContent = textoFinal || interim;
+  };
+  jarvisRecognition.onerror = (ev)=>{
+    jarvisEscutando = false;
+    jarvisSetOrb("idle");
+    document.getElementById("jarvisBtnFalar").textContent = "🎤 Falar";
+    if(ev.error === "not-allowed" || ev.error === "service-not-allowed"){
+      document.getElementById("jarvisStatus").textContent = "⚠ Permita o acesso ao microfone";
+    } else if(ev.error === "no-speech"){
+      document.getElementById("jarvisStatus").textContent = "Não ouvi nada. Toque para tentar de novo";
+    } else {
+      document.getElementById("jarvisStatus").textContent = "Erro: " + ev.error;
+    }
+  };
+  jarvisRecognition.onend = ()=>{
+    jarvisEscutando = false;
+    document.getElementById("jarvisBtnFalar").textContent = "🎤 Falar";
+    const pergunta = (textoFinal || document.getElementById("jarvisTranscricao").textContent || "").trim();
+    if(pergunta){
+      jarvisProcessar(pergunta);
+    } else {
+      jarvisSetOrb("idle");
+      document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar";
+    }
+  };
+  try{ jarvisRecognition.start(); }
+  catch(e){ /* já rodando */ }
+}
+
+function jarvisPararEscuta(){
+  if(jarvisRecognition){
+    try{ jarvisRecognition.stop(); }catch(e){}
+  }
+  jarvisEscutando = false;
+}
+
+async function jarvisProcessar(pergunta){
+  jarvisProcessando = true;
+  jarvisSetOrb("processando");
+  document.getElementById("jarvisStatus").textContent = "🧠 Pensando...";
+  document.getElementById("jarvisResposta").textContent = "";
+  try{
+    const resposta = await iaChamar("chat", pergunta);
+    document.getElementById("jarvisResposta").textContent = resposta;
+    jarvisFalar(resposta);
+  }catch(e){
+    const erro = "Desculpe, não consegui processar sua pergunta agora.";
+    document.getElementById("jarvisResposta").textContent = erro;
+    jarvisFalar(erro);
+  }
+  jarvisProcessando = false;
+}
+
+function jarvisFalar(texto){
+  if(!("speechSynthesis" in window)){
+    jarvisSetOrb("idle");
+    document.getElementById("jarvisStatus").textContent = "Resposta pronta (sem áudio neste navegador)";
+    return;
+  }
+  window.speechSynthesis.cancel();
+  // Limpa markdown/emojis para leitura fluida
+  const limpo = texto.replace(/[*_#`~]/g,"").replace(/\n+/g," ").trim();
+  const u = new SpeechSynthesisUtterance(limpo);
+  u.lang = "pt-BR";
+  u.rate = 1.05;
+  u.pitch = 1.0;
+  // Tenta usar uma voz PT-BR
+  const vozes = window.speechSynthesis.getVoices();
+  const vozPt = vozes.find(v=>/pt.?BR/i.test(v.lang)) || vozes.find(v=>/pt/i.test(v.lang));
+  if(vozPt) u.voice = vozPt;
+  u.onstart = ()=>{
+    jarvisSetOrb("falando");
+    document.getElementById("jarvisStatus").textContent = "🔊 Respondendo...";
+  };
+  u.onend = ()=>{
+    jarvisSetOrb("idle");
+    document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar de novo";
+  };
+  window.speechSynthesis.speak(u);
+}
+
+function jarvisParar(){
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+  jarvisSetOrb("idle");
+}
+// Pré-carrega vozes (alguns navegadores carregam async)
+if("speechSynthesis" in window){
+  window.speechSynthesis.onvoiceschanged = ()=>{ window.speechSynthesis.getVoices(); };
+}
+
 function iaAddMsgChat(texto, deQuemEhUsuario){
   const box = document.getElementById("iaChatMsgs");
   const bolha = document.createElement("div");
@@ -8869,6 +9033,34 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
 <!-- ===== ASSISTENTE IA ===== -->
 <button id="iaBtnFlutuante" onclick="abrirPainelIA()" title="MR.ROBOT" style="display:none;position:fixed;bottom:20px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#3d9eff,#a78bfa);border:none;box-shadow:0 4px 16px #00000060;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🤖</button>
+
+<!-- ===== JARVIS - ASSISTENTE DE VOZ ===== -->
+<button id="jarvisBtnFlutuante" onclick="jarvisAbrir()" title="Assistente de Voz" style="display:none;position:fixed;bottom:84px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#00e0c6,#00b3ff);border:none;box-shadow:0 4px 16px #00000060;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🎙️</button>
+
+<div id="jarvisScreen" style="display:none;position:fixed;inset:0;background:radial-gradient(circle at 50% 40%,#0a1420,#04070d 70%);z-index:9800;flex-direction:column;align-items:center;justify-content:center">
+  <button onclick="jarvisFechar()" style="position:absolute;top:18px;right:18px;background:#1e2530;border:1px solid #2a3040;color:#9ca3af;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;z-index:2">✕ Fechar</button>
+
+  <div style="text-align:center;margin-bottom:10px">
+    <div style="font-size:11px;letter-spacing:0.4em;color:#00e0c6;text-transform:uppercase;font-family:'Courier New',monospace;opacity:0.7">TREMPS ROBOTICS</div>
+    <div style="font-size:clamp(20px,4vw,34px);font-weight:900;color:#fff;letter-spacing:0.1em;font-family:'Montserrat',sans-serif;margin-top:4px">ASSISTENTE DE VOZ</div>
+  </div>
+
+  <!-- Orb animado -->
+  <div id="jarvisOrb" style="width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#00e0c6,#00b3ff 60%,#0066aa);box-shadow:0 0 60px #00e0c680,0 0 120px #00b3ff40;display:flex;align-items:center;justify-content:center;font-size:60px;margin:24px 0;transition:all 0.3s;cursor:pointer" onclick="jarvisToggleEscuta()">🎙️</div>
+
+  <div id="jarvisStatus" style="font-size:14px;color:#00e0c6;font-family:'Courier New',monospace;letter-spacing:0.1em;text-align:center;min-height:22px;margin-bottom:8px">Toque no microfone para falar</div>
+
+  <div id="jarvisTranscricao" style="font-size:15px;color:#d8dde6;font-family:'Courier New',monospace;text-align:center;max-width:600px;padding:0 20px;min-height:24px;margin-bottom:8px"></div>
+
+  <div id="jarvisResposta" style="font-size:14px;color:#9ca3af;font-family:'Courier New',monospace;text-align:center;max-width:640px;padding:16px 24px;min-height:24px;line-height:1.6;max-height:200px;overflow-y:auto"></div>
+
+  <div style="display:flex;gap:10px;margin-top:16px">
+    <button id="jarvisBtnFalar" onclick="jarvisToggleEscuta()" style="background:#00e0c620;border:1px solid #00e0c640;color:#00e0c6;border-radius:99px;padding:12px 28px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🎤 Falar</button>
+    <button onclick="jarvisParar()" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:99px;padding:12px 20px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace">⏹ Parar voz</button>
+  </div>
+
+  <div style="margin-top:20px;font-size:10px;color:#2a3040;font-family:'Courier New',monospace;text-align:center;max-width:400px;line-height:1.5">💡 Fale naturalmente. Ex: "Quantas peças o robô 600 produziu hoje?" ou "Quem é o gerente da produção?"</div>
+</div>
 
 <div id="painelIA" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:8500;align-items:flex-end;justify-content:flex-end" onclick="fecharPainelIA()">
   <div style="background:#0a0d12;border:1px solid #1e2530;border-radius:16px 16px 0 0;width:100%;max-width:420px;height:78vh;max-height:680px;display:flex;flex-direction:column;box-shadow:-4px 0 24px #0008" onclick="event.stopPropagation()">
