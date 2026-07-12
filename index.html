@@ -6838,8 +6838,9 @@ function mapaSalvarMaquina(){
 
 // ===== ASSISTENTE IA =====
 const IA_FUNCTION_URL = SUPABASE_URL + "/functions/v1/ia-fabrica";
-let baseConhecimentoIA = { geral:"", por_celula:{}, erros:[] };
+let baseConhecimentoIA = { geral:"", por_celula:{}, erros:[], infos:[] };
 let bcCelulaAtualSelecionada = '600';
+let bcBuscaInfo = '';
 let iaVozAtiva = localStorage.getItem('iaVozAtiva') === 'true';
 let iaRecognition = null;
 let iaEscutando = false;
@@ -7170,7 +7171,8 @@ async function loadBaseConhecimento(){
     const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=base_conhecimento",{headers:HEADERS_SB});
     const d = await r.json();
     if(d && d[0] && d[0].base_conhecimento){
-      baseConhecimentoIA = Object.assign({geral:"",por_celula:{},erros:[]}, d[0].base_conhecimento);
+      baseConhecimentoIA = Object.assign({geral:"",por_celula:{},erros:[],infos:[]}, d[0].base_conhecimento);
+      if(!Array.isArray(baseConhecimentoIA.infos)) baseConhecimentoIA.infos = [];
     }
   }catch(e){ /* mantém o que já estiver em memória */ }
 }
@@ -7188,7 +7190,104 @@ function abrirBaseConhecimento(){
   bcCelulaAtualSelecionada = document.getElementById("bcSelectCelula").value || '600';
   document.getElementById("bcCelulaTexto").value = (baseConhecimentoIA.por_celula||{})[bcCelulaAtualSelecionada] || "";
   bcRenderErros();
+  bcRenderInfos();
   document.getElementById("baseConhecimentoScreen").style.display="flex";
+}
+
+// ===== HISTÓRICO DE INFORMAÇÕES =====
+function bcAdicionarInfo(){
+  const inp = document.getElementById("bcNovaInfo");
+  const txt = (inp.value||"").trim();
+  if(!txt){ showToast("Digite uma informação primeiro",true); return; }
+  if(!Array.isArray(baseConhecimentoIA.infos)) baseConhecimentoIA.infos = [];
+  baseConhecimentoIA.infos.unshift({
+    texto: txt,
+    data: new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'})
+  });
+  inp.value = "";
+  bcRenderInfos();
+  saveBaseConhecimentoNoServidor().then(ok=>{
+    showToast(ok ? "Informação adicionada ✓" : "Erro ao salvar",!ok);
+  });
+}
+function bcRemoverInfo(i){
+  if(!confirm("Remover esta informação?")) return;
+  baseConhecimentoIA.infos.splice(i,1);
+  bcRenderInfos();
+  saveBaseConhecimentoNoServidor().then(ok=>{
+    showToast(ok ? "Informação removida ✓" : "Erro ao salvar",!ok);
+  });
+}
+function bcBuscarInfo(v){
+  bcBuscaInfo = (v||"").toLowerCase();
+  bcRenderInfos();
+}
+function bcRenderInfos(){
+  const cont = document.getElementById("bcListaInfos");
+  if(!cont) return;
+  const lista = baseConhecimentoIA.infos || [];
+  const filtro = bcBuscaInfo;
+  const filtrada = lista.map((it,idx)=>({it,idx})).filter(({it})=>
+    !filtro || (it.texto||"").toLowerCase().includes(filtro)
+  );
+  const cnt = document.getElementById("bcContadorInfos");
+  if(cnt) cnt.textContent = lista.length + (lista.length===1?" informação":" informações");
+  if(!filtrada.length){
+    cont.innerHTML = `<div style="text-align:center;color:#2a3040;font-size:12px;padding:24px">${filtro?'Nenhuma informação encontrada na busca.':'Nenhuma informação adicionada ainda.'}</div>`;
+    return;
+  }
+  cont.innerHTML = filtrada.map(({it,idx})=>`
+    <div style="background:#0a0d12;border:1px solid #1e2530;border-left:3px solid #00e0c6;border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="color:#d8dde6;font-size:13px;line-height:1.5;font-family:'Courier New',monospace;white-space:pre-wrap;flex:1;word-break:break-word">${esc(it.texto||'')}</div>
+        <button onclick="bcRemoverInfo(${idx})" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;width:26px;height:26px;cursor:pointer;flex-shrink:0;font-size:12px" title="Remover">✕</button>
+      </div>
+      <div style="font-size:10px;color:#3a4250;font-family:'Courier New',monospace">🕐 ${esc(it.data||'')}</div>
+    </div>
+  `).join('');
+}
+
+// ===== BACKUP / RESTAURAR BASE DE CONHECIMENTO =====
+function bcBaixarBackup(){
+  const json = JSON.stringify(baseConhecimentoIA, null, 2);
+  const blob = new Blob([json], { type:'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const now  = new Date().toLocaleString('pt-BR').replace(/[/:, ]/g,'_');
+  a.download = `backup_base_conhecimento_${now}.json`;
+  a.href = url; a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup baixado ✓");
+}
+function bcRestaurarBackup(event){
+  const file = event.target.files[0];
+  event.target.value = "";
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    try{
+      const dados = JSON.parse(e.target.result);
+      const resumo = [
+        dados.geral ? "Notas gerais" : null,
+        dados.por_celula && Object.keys(dados.por_celula).length ? Object.keys(dados.por_celula).length+" célula(s)" : null,
+        Array.isArray(dados.erros) && dados.erros.length ? dados.erros.length+" erro(s)" : null,
+        Array.isArray(dados.infos) && dados.infos.length ? dados.infos.length+" informação(ões)" : null
+      ].filter(Boolean).join(", ");
+      if(!confirm(`Restaurar backup?\n\nConteúdo: ${resumo||"vazio"}\n\nIsso vai SOBRESCREVER toda a base de conhecimento atual.`)) return;
+      baseConhecimentoIA = Object.assign({geral:"",por_celula:{},erros:[],infos:[]}, dados);
+      if(!Array.isArray(baseConhecimentoIA.infos)) baseConhecimentoIA.infos = [];
+      if(!Array.isArray(baseConhecimentoIA.erros)) baseConhecimentoIA.erros = [];
+      document.getElementById("bcGeral").value = baseConhecimentoIA.geral || "";
+      document.getElementById("bcCelulaTexto").value = (baseConhecimentoIA.por_celula||{})[bcCelulaAtualSelecionada] || "";
+      bcRenderErros();
+      bcRenderInfos();
+      const ok = await saveBaseConhecimentoNoServidor();
+      showToast(ok ? "Backup restaurado ✓" : "Restaurado localmente, erro ao salvar",!ok);
+    }catch(err){
+      showToast("Erro ao ler o arquivo de backup",true);
+    }
+  };
+  reader.readAsText(file);
 }
 function fecharBaseConhecimento(){
   document.getElementById("baseConhecimentoScreen").style.display="none";
@@ -8812,21 +8911,45 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
 <!-- ===== BASE DE CONHECIMENTO DA IA (oculta, só Host) ===== -->
 <div id="baseConhecimentoScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9700;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #1e2530;background:linear-gradient(180deg,#0a0e15,#080b0f);flex-shrink:0;flex-wrap:wrap;gap:8px">
     <div style="font-size:16px;font-weight:900;color:#fff;display:flex;align-items:center;gap:8px">🧠 Base de Conhecimento da IA
       <span style="font-size:10px;color:#a78bfa;background:#a78bfa20;border:1px solid #a78bfa40;padding:2px 7px;border-radius:5px;font-weight:700">OCULTA NO SISTEMA</span>
     </div>
-    <div style="display:flex;gap:8px">
-      <button onclick="document.getElementById('bcFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📷 Aprender com Foto</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button onclick="document.getElementById('bcFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📷 Foto</button>
       <input type="file" id="bcFotoInput" accept="image/*" capture="environment" style="display:none" onchange="bcLerFoto(event)">
-      <button onclick="salvarBaseConhecimento()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">💾 Salvar</button>
-      <button onclick="fecharBaseConhecimento()" style="background:#1e2530;border:1px solid #2a3040;color:#9ca3af;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
+      <button onclick="bcBaixarBackup()" style="background:#00b3ff20;border:1px solid #00b3ff40;color:#00b3ff;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
+      <button onclick="document.getElementById('bcRestoreInput').click()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📂 Restaurar</button>
+      <input type="file" id="bcRestoreInput" accept=".json" style="display:none" onchange="bcRestaurarBackup(event)">
+      <button onclick="salvarBaseConhecimento()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">💾 Salvar</button>
+      <button onclick="fecharBaseConhecimento()" style="background:#1e2530;border:1px solid #2a3040;color:#9ca3af;border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
     </div>
   </div>
   <!-- Status da leitura de foto -->
   <div id="bcFotoStatus" style="display:none;padding:10px 18px;background:#a78bfa10;border-bottom:1px solid #a78bfa30;font-size:12px;color:#a78bfa;font-family:'Courier New',monospace"></div>
-  <div style="flex:1;overflow-y:auto;padding:18px;max-width:640px;width:100%;margin:0 auto;box-sizing:border-box">
-    <div style="font-size:11px;color:#4a5568;margin-bottom:20px;line-height:1.5">Esse conteúdo nunca aparece em nenhuma tela normal do sistema — só é enviado para a IA por trás dos panos, pra ela responder com mais contexto.</div>
+  <div style="flex:1;overflow-y:auto;padding:18px;max-width:680px;width:100%;margin:0 auto;box-sizing:border-box">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:20px;line-height:1.5;background:#0a0d12;border:1px solid #141a22;border-radius:8px;padding:10px 12px">💡 Esse conteúdo nunca aparece nas telas normais do sistema — é enviado só para a IA por trás dos panos, pra ela responder com mais contexto no WhatsApp.</div>
+
+    <!-- ===== INFORMAÇÕES RÁPIDAS (novo) ===== -->
+    <div style="margin-bottom:26px;background:#070a0e;border:1px solid #142028;border-radius:12px;padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:6px">
+        <label style="font-size:12px;color:#00e0c6;text-transform:uppercase;letter-spacing:0.08em;font-weight:800;display:flex;align-items:center;gap:6px">➕ Adicionar Informação</label>
+        <span id="bcContadorInfos" style="font-size:10px;color:#3a4250;font-family:'Courier New',monospace">0 informações</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap">
+        <textarea id="bcNovaInfo" rows="2" placeholder="Ex: O gerente da produção é o Paulo Roberto, conhecido como Paulinho."
+          style="flex:1;min-width:200px;background:#0a0d12;border:1px solid #1e2530;color:#d8dde6;padding:11px;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;box-sizing:border-box;resize:vertical;outline:none"
+          onkeydown="if(event.ctrlKey&&event.key==='Enter')bcAdicionarInfo()"></textarea>
+        <button onclick="bcAdicionarInfo()" style="background:#00e0c6;border:none;color:#04070d;border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;font-weight:800;white-space:nowrap;height:fit-content">+ Adicionar</button>
+      </div>
+      <!-- Busca -->
+      <div style="position:relative;margin-bottom:12px">
+        <input id="bcBuscaInfoInput" oninput="bcBuscarInfo(this.value)" placeholder="🔍 Buscar nas informações salvas..."
+          style="width:100%;background:#0a0d12;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-size:12px;font-family:'Courier New',monospace;box-sizing:border-box;outline:none">
+      </div>
+      <!-- Histórico -->
+      <div id="bcListaInfos" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
+    </div>
 
     <div style="margin-bottom:24px">
       <label style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;font-weight:800;display:block;margin-bottom:8px">📋 Notas Gerais do Setor</label>
@@ -8855,7 +8978,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
         oninput="bcSalvarCelulaAtual()"></textarea>
     </div>
 
-    <div>
+    <div style="margin-bottom:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <label style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;font-weight:800">⚠ Erros e Soluções</label>
         <button onclick="bcAdicionarErro()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">+ Adicionar</button>
