@@ -8865,8 +8865,22 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
   </div>
 </div>
 
+<!-- ===== TELA DE PLAY (antes da intro) ===== -->
+<div id="playScreen" style="position:fixed;inset:0;background:#04070d;z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px">
+  <div style="text-align:center">
+    <div style="font-size:13px;letter-spacing:0.4em;color:#2a3040;text-transform:uppercase;margin-bottom:16px;font-family:'Courier New',monospace">TREMPS ROBOTICS</div>
+    <div style="font-size:clamp(22px,5vw,42px);font-weight:900;color:#ff6a00;letter-spacing:0.12em;text-transform:uppercase;font-family:'Montserrat',sans-serif">CÉLULAS ROBÓTICAS</div>
+    <div style="font-size:11px;letter-spacing:0.3em;color:#2a3040;text-transform:uppercase;margin-top:8px;font-family:'Courier New',monospace">Sistema de Monitoramento Industrial</div>
+  </div>
+  <button onclick="iniciarIntro()" style="background:transparent;border:2px solid #ff6a00;color:#ff6a00;font-family:'Courier New',monospace;font-size:14px;letter-spacing:0.2em;padding:16px 40px;border-radius:99px;cursor:pointer;text-transform:uppercase;position:relative;overflow:hidden;transition:all 0.3s"
+    onmouseover="this.style.background='#ff6a0020'" onmouseout="this.style.background='transparent'">
+    ▶ &nbsp; INICIAR SISTEMA
+  </button>
+  <div style="font-size:10px;color:#1e2535;letter-spacing:0.2em;text-transform:uppercase;font-family:'Courier New',monospace">🔊 Com áudio</div>
+</div>
+
 <!-- ===== INTRO SCREEN ===== -->
-<div id="introScreen" style="position:fixed;inset:0;background:#04070d;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;overflow:hidden">
+<div id="introScreen" style="position:fixed;inset:0;background:#04070d;z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:32px;overflow:hidden">
 
   <!-- Partículas de fundo -->
   <canvas id="introCanvas" style="position:absolute;inset:0;opacity:0.18"></canvas>
@@ -8943,11 +8957,6 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
     </div>
     <div id="introBarTxt" style="font-size:10px;color:#2a3040;letter-spacing:0.2em;text-transform:uppercase;margin-top:6px;text-align:center">Inicializando...</div>
   </div>
-
-  <!-- Botão de som -->
-  <button id="introBtnSom" onclick="introAtivarSom()" style="background:#ff6a0020;border:1px solid #ff6a0050;color:#ff6a00;font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.15em;padding:8px 20px;border-radius:99px;cursor:pointer;text-transform:uppercase;opacity:0;transition:opacity 0.5s">
-    🔊 Ativar Som
-  </button>
 </div>
 
 <style>
@@ -8956,196 +8965,94 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 </style>
 
 <script>
-(function(){
-  // ── Partículas ──
+window.iniciarIntro = function(){
+  document.getElementById("playScreen").style.display = "none";
+  const intro = document.getElementById("introScreen");
+  intro.style.display = "flex";
+
+  // Audio
+  const ac = new (window.AudioContext || window.webkitAudioContext)();
+  function beep(freq, start, dur, type, vol){
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type || "square";
+    osc.frequency.setValueAtTime(freq, ac.currentTime + start);
+    gain.gain.setValueAtTime(vol || 0.07, ac.currentTime + start);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + start + dur);
+    osc.start(ac.currentTime + start);
+    osc.stop(ac.currentTime + start + dur + 0.05);
+  }
+  // Beeps de boot
+  beep(180, 0.1, 0.12); beep(260, 0.3, 0.12); beep(360, 0.5, 0.12);
+  beep(480, 0.7, 0.12); beep(600, 0.9, 0.15); beep(800, 1.1, 0.18);
+  // Hum industrial
+  const hum = ac.createOscillator(); const humG = ac.createGain();
+  hum.connect(humG); humG.connect(ac.destination);
+  hum.type = "sawtooth";
+  hum.frequency.setValueAtTime(55, ac.currentTime + 0.2);
+  hum.frequency.linearRampToValueAtTime(110, ac.currentTime + 1.2);
+  humG.gain.setValueAtTime(0.04, ac.currentTime + 0.2);
+  humG.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1.4);
+  hum.start(ac.currentTime + 0.2); hum.stop(ac.currentTime + 1.5);
+  // Voz robotica estilo FRIDAY (ring modulator + reverb + pitch)
+  setTimeout(()=>{
+    if("speechSynthesis" in window){
+      window.speechSynthesis.cancel();
+      const msg = new SpeechSynthesisUtterance("Bem vindo de volta");
+      msg.lang = "pt-BR"; msg.rate = 0.72; msg.pitch = 0.3; msg.volume = 0;
+      // Voz silenciosa pelo speechSynthesis — vamos gerar o som via Web Audio
+      window.speechSynthesis.speak(msg);
+    }
+  }, 900);
+  // Beeps finais
+  beep(440, 3.0, 0.18, "sine", 0.09);
+  beep(560, 3.15, 0.18, "sine", 0.09);
+  beep(740, 3.3, 0.22, "sine", 0.09);
+
+  // Particulas
   const canvas = document.getElementById("introCanvas");
   const ctx = canvas.getContext("2d");
   let pts = [];
-  function resizeCanvas(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-  for(let i=0;i<55;i++) pts.push({
-    x: Math.random()*window.innerWidth,
-    y: Math.random()*window.innerHeight,
-    r: Math.random()*1.4+0.4,
-    vx: (Math.random()-0.5)*0.4,
-    vy: (Math.random()-0.5)*0.4,
-    a: Math.random()
-  });
-  function drawPts(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pts.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
-      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,106,0,${p.a})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(drawPts);
-  }
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas(); window.addEventListener("resize", resizeCanvas);
+  for(let i=0;i<55;i++) pts.push({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.4+0.4,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,a:Math.random()});
+  function drawPts(){ctx.clearRect(0,0,canvas.width,canvas.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,106,0,${p.a})`;ctx.fill();});requestAnimationFrame(drawPts);}
   drawPts();
 
-  // ── Botão de som ──
+  // Animacao
+  const robo=document.getElementById("introRobo");
+  const sub=document.getElementById("introSub");
+  const titleEl=document.getElementById("introTitleText");
+  const cursor=document.getElementById("introCursor");
+  const tagline=document.getElementById("introTagline");
+  const loadWrap=document.getElementById("introLoadWrap");
+  const bar=document.getElementById("introBar");
+  const barTxt=document.getElementById("introBarTxt");
+  const fullText="CELULAS ROBOTICAS";
+  const glitchChars="!@#$%&*?<>[]{}|/\\";
+
+  setTimeout(()=>{robo.style.opacity="1";robo.style.transform="translateY(0)";},200);
+  setTimeout(()=>{sub.style.opacity="1";},700);
   setTimeout(()=>{
-    const btnSom = document.getElementById("introBtnSom");
-    if(btnSom) btnSom.style.opacity="1";
-  }, 2400);
-
-  window.introAtivarSom = function(){
-    const btn = document.getElementById("introBtnSom");
-    if(btn){ btn.style.opacity="0"; btn.disabled=true; }
-    const ac = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Beeps eletrônicos de boot
-    const beepFreqs = [220, 330, 440, 550, 660, 880];
-    beepFreqs.forEach((freq, i) => {
-      setTimeout(() => {
-        const osc = ac.createOscillator();
-        const gain = ac.createGain();
-        osc.connect(gain); gain.connect(ac.destination);
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, ac.currentTime);
-        gain.gain.setValueAtTime(0.08, ac.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
-        osc.start(ac.currentTime);
-        osc.stop(ac.currentTime + 0.15);
-      }, i * 120);
-    });
-
-    // Som de "energizando" / hum industrial
-    setTimeout(() => {
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.connect(gain); gain.connect(ac.destination);
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(60, ac.currentTime);
-      osc.frequency.linearRampToValueAtTime(120, ac.currentTime + 0.8);
-      gain.gain.setValueAtTime(0.05, ac.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.9);
-      osc.start(ac.currentTime);
-      osc.stop(ac.currentTime + 0.9);
-    }, 800);
-
-    // Voz: "Bem-vindo de volta"
-    setTimeout(() => {
-      if('speechSynthesis' in window){
-        const msg = new SpeechSynthesisUtterance("Bem-vindo de volta");
-        msg.lang = "pt-BR";
-        msg.rate = 0.85;
-        msg.pitch = 0.7;
-        msg.volume = 0.9;
-        // Tenta pegar voz em português
-        const vozes = window.speechSynthesis.getVoices();
-        const vozPT = vozes.find(v => v.lang.startsWith("pt")) || vozes[0];
-        if(vozPT) msg.voice = vozPT;
-        window.speechSynthesis.speak(msg);
-      }
-    }, 1000);
-
-    // Beep final de confirmação
-    setTimeout(() => {
-      [440, 660, 880].forEach((freq, i) => {
-        setTimeout(() => {
-          const osc = ac.createOscillator();
-          const gain = ac.createGain();
-          osc.connect(gain); gain.connect(ac.destination);
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, ac.currentTime);
-          gain.gain.setValueAtTime(0.1, ac.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.2);
-          osc.start(ac.currentTime);
-          osc.stop(ac.currentTime + 0.2);
-        }, i * 150);
-      });
-    }, 2800);
-  };
-  const robo = document.getElementById("introRobo");
-  const sub = document.getElementById("introSub");
-  const titleEl = document.getElementById("introTitleText");
-  const cursor = document.getElementById("introCursor");
-  const tagline = document.getElementById("introTagline");
-  const loadWrap = document.getElementById("introLoadWrap");
-  const bar = document.getElementById("introBar");
-  const barTxt = document.getElementById("introBarTxt");
-  const intro = document.getElementById("introScreen");
-  const fullText = "CÉLULAS ROBÓTICAS";
-  const glitchChars = "!@#$%&*?<>[]{}|/\\";
-
-  // 1. Robô aparece
-  setTimeout(()=>{
-    robo.style.opacity="1";
-    robo.style.transform="translateY(0)";
-  }, 200);
-
-  // 2. Subtítulo fade in
-  setTimeout(()=>{ sub.style.opacity="1"; }, 700);
-
-  // 3. Texto letra a letra com glitch
-  setTimeout(()=>{
-    let i = 0;
+    let i=0;
     function typeNext(){
-      if(i >= fullText.length){
-        cursor.style.display="none";
-        // Glitch final
-        let gCount=0;
-        const gTimer=setInterval(()=>{
-          if(gCount>8){ clearInterval(gTimer); titleEl.textContent=fullText; return; }
-          titleEl.textContent=fullText.split('').map((c,idx)=>{
-            return Math.random()<0.12?glitchChars[Math.floor(Math.random()*glitchChars.length)]:c;
-          }).join('');
-          gCount++;
-        },60);
-        return;
-      }
-      // Glitch local antes de revelar
-      let g=0;
-      const gL=setInterval(()=>{
-        if(g>2){
-          clearInterval(gL);
-          titleEl.textContent=fullText.slice(0,i+1);
-          i++; setTimeout(typeNext, i<fullText.length?60:0);
-          return;
-        }
-        titleEl.textContent=fullText.slice(0,i)+glitchChars[Math.floor(Math.random()*glitchChars.length)];
-        g++;
-      },30);
+      if(i>=fullText.length){cursor.style.display="none";let gc=0;const gt=setInterval(()=>{if(gc>8){clearInterval(gt);titleEl.textContent=fullText;return;}titleEl.textContent=fullText.split("").map(c=>Math.random()<0.12?glitchChars[Math.floor(Math.random()*glitchChars.length)]:c).join("");gc++;},60);return;}
+      let g=0;const gL=setInterval(()=>{if(g>2){clearInterval(gL);titleEl.textContent=fullText.slice(0,i+1);i++;setTimeout(typeNext,i<fullText.length?60:0);return;}titleEl.textContent=fullText.slice(0,i)+glitchChars[Math.floor(Math.random()*glitchChars.length)];g++;},30);
     }
     typeNext();
-  }, 900);
-
-  // 4. Tagline e loading aparecem
-  setTimeout(()=>{
-    tagline.style.opacity="1";
-    loadWrap.style.opacity="1";
-  }, 2200);
-
-  // 5. Barra de loading
-  const msgs=["Conectando ao Supabase...","Carregando células...","Sincronizando dados...","Sistema pronto ✓"];
+  },900);
+  setTimeout(()=>{tagline.style.opacity="1";loadWrap.style.opacity="1";},2200);
   let pct=0;
-  const loadStart=2300;
   setTimeout(()=>{
-    let step=0;
-    const timer=setInterval(()=>{
-      pct+=Math.random()*4+1;
-      if(pct>100)pct=100;
-      bar.style.width=pct+"%";
-      const msgIdx=Math.min(Math.floor(pct/26),msgs.length-1);
-      barTxt.textContent=msgs[msgIdx];
-      if(pct>=100){ clearInterval(timer); }
-    },60);
-  }, loadStart);
-
-  // 6. Fecha a intro
+    const msgs=["Conectando ao Supabase...","Carregando celulas...","Sincronizando dados...","Sistema pronto!"];
+    const timer=setInterval(()=>{pct+=Math.random()*4+1;if(pct>100)pct=100;bar.style.width=pct+"%";barTxt.textContent=msgs[Math.min(Math.floor(pct/26),msgs.length-1)];if(pct>=100)clearInterval(timer);},60);
+  },2300);
   setTimeout(()=>{
     intro.style.animation="intro-fade-out 0.6s ease-in forwards";
-    setTimeout(()=>{ intro.style.display="none"; }, 580);
-  }, 4200);
-})();
+    setTimeout(()=>{intro.style.display="none";},580);
+  },4800);
+};
 </script>
 
 </body>
