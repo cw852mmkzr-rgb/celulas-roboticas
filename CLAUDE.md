@@ -33,4 +33,4 @@ Armazenada no Supabase, tabela `dados`, campo `base_conhecimento` com a estrutur
 
 ## Acesso
 
-- Senha de admin: `3102`
+- Senha de admin configurada diretamente no sistema
