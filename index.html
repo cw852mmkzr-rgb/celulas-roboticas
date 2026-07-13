@@ -2788,6 +2788,10 @@ function calcRitmo(mh,tp){
 async function loadFromAPI(){
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
+  const modalManuAberto = document.getElementById('modalManu')&&document.getElementById('modalManu').style.display==='flex';
+  const modalConcAberto = document.getElementById('modalConcluirManu')&&document.getElementById('modalConcluirManu').style.display==='flex';
+  const modalEditAberto = document.getElementById('modalEditManu')&&document.getElementById('modalEditManu').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
