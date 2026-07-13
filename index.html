@@ -7792,36 +7792,98 @@ function renderManutencao(){
   const robosComManu = ROBOS.filter(r=>itens[r]&&itens[r].length>0);
   const totalPendentes = robosComManu.reduce((s,r)=>s+(itens[r]||[]).filter(m=>!m.concluido).length,0);
 
+  const totalConcluidas = robosComManu.reduce((s,r)=>s+(itens[r]||[]).filter(m=>m.concluido).length,0);
+  const totalRegistros = totalPendentes + totalConcluidas;
+  const taxaConclusao = totalRegistros > 0 ? Math.round((totalConcluidas / totalRegistros) * 100) : 100;
+  const taxaCor = taxaConclusao >= 80 ? '#00e87a' : taxaConclusao >= 50 ? '#ffb300' : '#ff4d4d';
+
   document.getElementById("mainPanel").innerHTML=`
   <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🔩 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:2px">${totalPendentes>0?`<span style="color:#ffb300;font-weight:700">${totalPendentes} pendente(s)</span>`:'Nenhuma manutenção pendente'}</div>
+        <div style="font-size:clamp(22px,4vw,28px);font-weight:900;color:#fff;letter-spacing:0.04em">🔩 ${esc(c.nome)}</div>
+        <div style="font-size:12px;color:#4a5568;margin-top:4px">Gestão de manutenção preventiva e corretiva</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:10px">
+    <!-- Dashboard de resumo -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,#ffb30015,#ffb30005);border:1px solid #ffb30030;border-radius:14px;padding:18px 16px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:#ffb300;line-height:1">${totalPendentes}</div>
+        <div style="font-size:11px;color:#ffb300;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Pendentes</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#00e87a15,#00e87a05);border:1px solid #00e87a30;border-radius:14px;padding:18px 16px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:#00e87a;line-height:1">${totalConcluidas}</div>
+        <div style="font-size:11px;color:#00e87a;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Concluídas</div>
+      </div>
+      <div style="background:linear-gradient(135deg,${taxaCor}15,${taxaCor}05);border:1px solid ${taxaCor}30;border-radius:14px;padding:18px 16px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:${taxaCor};line-height:1">${taxaConclusao}%</div>
+        <div style="font-size:11px;color:${taxaCor};font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Taxa Conclusão</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#3d9eff15,#3d9eff05);border:1px solid #3d9eff30;border-radius:14px;padding:18px 16px;text-align:center">
+        <div style="font-size:32px;font-weight:900;color:#3d9eff;line-height:1">${totalRegistros}</div>
+        <div style="font-size:11px;color:#3d9eff;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Total Registros</div>
+      </div>
+    </div>
+
+    <!-- Barra de progresso geral -->
+    <div style="background:#0a0d12;border:1px solid #1e2530;border-radius:12px;padding:16px 20px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em">Progresso Geral</span>
+        <span style="font-size:13px;font-weight:800;color:${taxaCor}">${totalConcluidas}/${totalRegistros}</span>
+      </div>
+      <div style="background:#1e2530;border-radius:8px;height:10px;overflow:hidden">
+        <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,#00e87a,#00e87acc);width:${taxaConclusao}%;transition:width 0.5s ease"></div>
+      </div>
+    </div>
+
+    <!-- Separador -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span style="font-size:13px;font-weight:800;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em">Robôs</span>
+      <div style="flex:1;height:1px;background:#1e2530"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
       ${ROBOS.map(robo=>{
         const lista = (itens[robo]||[]);
         const pendentes = lista.filter(m=>!m.concluido);
         const concluidas = lista.filter(m=>m.concluido);
         const temPendente = pendentes.length>0;
-        const cor = temPendente?'#ffb300':'#1e2530';
-        const bg  = temPendente?'#ffb30010':'#0a0d12';
-        return`<div onclick="abrirCardManu(${robo})" style="background:${bg};border:1px solid ${cor}40;border-radius:12px;padding:18px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:all 0.15s">
-          <div style="display:flex;align-items:center;gap:16px">
-            <span style="font-size:32px">⚙</span>
-            <div>
-              <div style="font-size:22px;font-weight:900;color:#fff">Robô ${robo} <span style="font-size:15px;font-weight:600;color:${robo<=604?'#ffb300':'#00e87a'}">${robo<=604?'Fanuc':'Kuka'}</span></div>
-              <div style="font-size:14px;font-weight:700;color:${temPendente?'#ffb300':'#4a5568'};margin-top:3px">${temPendente?`⚠ ${pendentes.length} manutenção pendente`:concluidas.length>0?`✓ ${concluidas.length} concluída(s)`:'Sem registros'}</div>
+        const total = lista.length;
+        const conclPct = total > 0 ? Math.round((concluidas.length / total) * 100) : 0;
+        const isFanuc = robo <= 604;
+        const marcaCor = isFanuc ? '#ffb300' : '#00e87a';
+        const statusCor = temPendente ? '#ffb300' : concluidas.length > 0 ? '#00e87a' : '#1e2530';
+        const statusBg = temPendente ? '#ffb30008' : '#0a0d12';
+        return`<div onclick="abrirCardManu(${robo})" style="background:${statusBg};border:1px solid ${statusCor}40;border-radius:14px;padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px ${statusCor}15'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${marcaCor},${marcaCor}80)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;border-radius:12px;background:${marcaCor}15;border:1px solid ${marcaCor}30;display:flex;align-items:center;justify-content:center;font-size:22px">${isFanuc?'🟡':'🟢'}</div>
+              <div>
+                <div style="font-size:20px;font-weight:900;color:#fff">Robô ${robo}</div>
+                <div style="font-size:12px;font-weight:700;color:${marcaCor};text-transform:uppercase;letter-spacing:0.1em">${isFanuc?'Fanuc':'Kuka'}</div>
+              </div>
+            </div>
+            <span style="color:#4a5568;font-size:20px;transition:transform 0.2s">›</span>
+          </div>
+          ${total > 0 ? `
+          <div style="display:flex;gap:16px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:5px">
+              <div style="width:8px;height:8px;border-radius:50%;background:${temPendente?'#ffb300':'#1e2530'}"></div>
+              <span style="font-size:12px;color:${temPendente?'#ffb300':'#4a5568'};font-weight:700">${pendentes.length} pendente${pendentes.length!==1?'s':''}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#00e87a"></div>
+              <span style="font-size:12px;color:#00e87a;font-weight:700">${concluidas.length} concluída${concluidas.length!==1?'s':''}</span>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Adicionar</button>`:''}
-            <span style="color:#4a5568;font-size:18px">›</span>
+          <div style="background:#1e2530;border-radius:6px;height:6px;overflow:hidden">
+            <div style="height:100%;border-radius:6px;background:#00e87a;width:${conclPct}%;transition:width 0.4s"></div>
           </div>
+          ` : `<div style="font-size:13px;color:#2a3040;font-weight:600">Sem registros de manutenção</div>`}
+          ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30015;border:1px solid #ffb30030;color:#ffb300;border-radius:8px;padding:8px 0;font-size:13px;cursor:pointer;font-weight:700;width:100%;margin-top:14px;transition:background 0.2s" onmouseenter="this.style.background='#ffb30025'" onmouseleave="this.style.background='#ffb30015'">+ Nova Manutenção</button>`:''}
         </div>`;
       }).join('')}
     </div>
@@ -7835,9 +7897,28 @@ function renderManutencao(){
     <div id="modalManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px">
         <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">🔩 Nova Manutenção — Robô <span id="manuRoboLabel"></span></div>
-        <textarea id="manu_descricao" placeholder="Descrição da manutenção *" rows="3"
-          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
-        <input id="manu_responsavel" placeholder="Responsável (opcional)"
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Tipo de manutenção</div>
+        <select id="manu_tipo" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+          <option value="Corretiva">🔧 Corretiva</option>
+          <option value="Preventiva">🛡 Preventiva</option>
+          <option value="Preditiva">📊 Preditiva</option>
+          <option value="Melhoria">⬆ Melhoria</option>
+        </select>
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Prioridade</div>
+        <select id="manu_prioridade" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+          <option value="Baixa">🟢 Baixa</option>
+          <option value="Média" selected>🟡 Média</option>
+          <option value="Alta">🟠 Alta</option>
+          <option value="Urgente">🔴 Urgente</option>
+        </select>
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Descrição do problema *</div>
+        <textarea id="manu_descricao" placeholder="Descreva o problema encontrado..." rows="3"
+          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Peça / Componente afetado</div>
+        <input id="manu_peca" placeholder="Ex: Tocha MIG, Servo motor eixo 1, Sensor..."
+          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Responsável pela abertura</div>
+        <input id="manu_responsavel" placeholder="Nome de quem identificou o problema"
           style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn btn-gray" style="padding:6px 16px" onclick="fecharModalManu()">Cancelar</button>
@@ -7906,8 +7987,15 @@ function abrirCardManu(robo){
     ? `<div style="font-size:18px;color:#2a3040;padding:20px 0;text-align:center">Nenhuma manutenção pendente</div>`
     : pendentes.map((m)=>{
         const idxReal = lista.indexOf(m);
+        const prioIcon = {'Urgente':'🔴','Alta':'🟠','Média':'🟡','Baixa':'🟢'}[m.prioridade]||'🟡';
+        const tipoIcon = {'Corretiva':'🔧','Preventiva':'🛡','Preditiva':'📊','Melhoria':'⬆'}[m.tipo]||'🔧';
         return `<div style="background:#080b0f;border:1.5px solid #ffb30050;border-radius:12px;padding:18px 20px">
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            ${m.tipo?`<span style="background:#ffffff08;border:1px solid #ffffff15;border-radius:6px;padding:3px 10px;font-size:11px;color:#9ca3af;font-weight:700">${tipoIcon} ${esc(m.tipo)}</span>`:''}
+            ${m.prioridade?`<span style="background:#ffffff08;border:1px solid #ffffff15;border-radius:6px;padding:3px 10px;font-size:11px;color:#9ca3af;font-weight:700">${prioIcon} ${esc(m.prioridade)}</span>`:''}
+          </div>
           <div style="font-size:20px;font-weight:900;color:#fff;line-height:1.3">${esc(m.descricao)}</div>
+          ${m.peca?`<div style="font-size:14px;color:#3d9eff;margin-top:6px">🔩 ${esc(m.peca)}</div>`:''}
           <div style="font-size:15px;color:#4a5568;margin-top:8px">📅 ${esc(m.data||'—')}</div>
           ${m.responsavel?`<div style="font-size:15px;color:#ffb300;font-weight:700;margin-top:4px">👤 ${esc(m.responsavel)}</div>`:''}
           ${isAdmin?`<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
@@ -7921,10 +8009,16 @@ function abrirCardManu(robo){
   const concluidasHTML = concluidas.length===0 ? ''
     : concluidas.map((m)=>{
         const idxReal = lista.indexOf(m);
+        const cTipoIcon = {'Corretiva':'🔧','Preventiva':'🛡','Preditiva':'📊','Melhoria':'⬆'}[m.tipo]||'';
         return `<div style="background:#080b0f;border:1px solid #00e87a20;border-radius:12px;padding:16px 20px;opacity:0.8">
+          ${m.tipo?`<span style="background:#ffffff08;border:1px solid #ffffff15;border-radius:6px;padding:2px 8px;font-size:11px;color:#4a5568;font-weight:700;margin-bottom:6px;display:inline-block">${cTipoIcon} ${esc(m.tipo)}</span>`:''}
           <div style="font-size:18px;font-weight:700;color:#4a5568;text-decoration:line-through">${esc(m.descricao)}</div>
+          ${m.peca?`<div style="font-size:13px;color:#3d9eff80;margin-top:4px">🔩 ${esc(m.peca)}</div>`:''}
           <div style="font-size:14px;color:#4a5568;margin-top:6px">📅 Aberta: ${esc(m.data||'—')}${m.responsavel?` · 👤 <b style="color:#9ca3af">${esc(m.responsavel)}</b>`:''}</div>
           <div style="font-size:14px;color:#00e87a;margin-top:4px">✓ Concluído: ${esc(m.data_conclusao||'—')}${m.realizado_por?` · 👷 <b style="color:#fff">${esc(m.realizado_por)}</b>`:''}</div>
+          ${m.como_foi?`<div style="font-size:13px;color:#9ca3af;margin-top:6px;padding:8px 12px;background:#ffffff05;border-radius:8px;border-left:3px solid #00e87a40"><b style="color:#00e87a">Como foi feita:</b> ${esc(m.como_foi)}</div>`:''}
+          ${m.pecas_trocadas?`<div style="font-size:13px;color:#9ca3af;margin-top:4px">🔩 Peças trocadas: <b style="color:#d8dde6">${esc(m.pecas_trocadas)}</b></div>`:''}
+          ${m.tempo_parada?`<div style="font-size:13px;color:#9ca3af;margin-top:4px">⏱ Tempo de parada: <b style="color:#ffb300">${esc(m.tempo_parada)} min</b></div>`:''}
           ${isAdmin?`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
             <button onclick="editarConclusaoManu('${selected}',${robo},${idxReal})" style="background:#3d9eff10;border:1px solid #3d9eff30;color:#3d9eff;border-radius:7px;padding:6px 14px;font-size:13px;cursor:pointer">✏ Editar conclusão</button>
             <button onclick="excluirManu('${selected}',${robo},${idxReal})" style="background:#ff4d4d10;border:1px solid #ff4d4d30;color:#ff4d4d;border-radius:7px;padding:6px 12px;font-size:13px;cursor:pointer">🗑</button>
@@ -7966,7 +8060,10 @@ function toggleManuRobo(robo){}
 function abrirModalManu(robo){
   _manuRoboAtual = robo;
   document.getElementById("manuRoboLabel").textContent = robo;
+  document.getElementById("manu_tipo").value = 'Corretiva';
+  document.getElementById("manu_prioridade").value = 'Média';
   document.getElementById("manu_descricao").value = '';
+  document.getElementById("manu_peca").value = '';
   document.getElementById("manu_responsavel").value = '';
   document.getElementById("modalManu").style.display = 'flex';
 }
@@ -7979,10 +8076,13 @@ function salvarManu(){
   const desc = document.getElementById("manu_descricao").value.trim();
   if(!desc){ showToast("Informe a descrição!", true); return; }
   const resp = document.getElementById("manu_responsavel").value.trim();
+  const tipo = document.getElementById("manu_tipo").value;
+  const prioridade = document.getElementById("manu_prioridade").value;
+  const peca = document.getElementById("manu_peca").value.trim();
   const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   if(!celulas[selected].manutencoes) celulas[selected].manutencoes = {};
   if(!celulas[selected].manutencoes[_manuRoboAtual]) celulas[selected].manutencoes[_manuRoboAtual] = [];
-  celulas[selected].manutencoes[_manuRoboAtual].push({descricao:desc, responsavel:resp, data:now, concluido:false});
+  celulas[selected].manutencoes[_manuRoboAtual].push({descricao:desc, responsavel:resp, data:now, concluido:false, tipo:tipo, prioridade:prioridade, peca:peca});
   saveToAPI(celulas);
   fecharModalManu();
   renderManutencao();
@@ -7996,16 +8096,26 @@ function concluirManu(key,robo,idx){
   const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   document.getElementById("concManuData").value = now;
   document.getElementById("concManuRealizado").value = '';
+  document.getElementById("concManuComoFoi").value = '';
+  document.getElementById("concManuPecas").value = '';
+  document.getElementById("concManuTempo").value = '';
   document.getElementById("modalConcluirManu").style.display = 'flex';
 }
 
 function salvarConclusaoManu(){
   const realizado = document.getElementById("concManuRealizado").value.trim();
   const data = document.getElementById("concManuData").value.trim();
+  const comoFoi = document.getElementById("concManuComoFoi").value.trim();
+  const pecasTrocadas = document.getElementById("concManuPecas").value.trim();
+  const tempoParada = document.getElementById("concManuTempo").value.trim();
   if(!data){ showToast("Informe a data de conclusão!", true); return; }
+  if(!comoFoi){ showToast("Descreva como foi feita a manutenção!", true); return; }
   celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].concluido = true;
   celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].data_conclusao = data;
   celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].realizado_por = realizado||'—';
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].como_foi = comoFoi;
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].pecas_trocadas = pecasTrocadas;
+  celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual].tempo_parada = tempoParada;
   saveToAPI(celulas);
   document.getElementById("modalConcluirManu").style.display = 'none';
   renderManutencao();
@@ -9021,11 +9131,20 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 <div id="modalConcluirManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #00e87a40;border-radius:16px;padding:24px;width:90%;max-width:420px">
     <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">✓ Concluir Manutenção</div>
-    <div style="font-size:11px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Data e hora de conclusão</div>
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Data e hora de conclusão</div>
     <input id="concManuData" placeholder="ex: 23/06/2026, 14:30"
-      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:12px;box-sizing:border-box;outline:none">
-    <div style="font-size:11px;color:#4a5568;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.08em">Quem realizou a manutenção</div>
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Quem realizou a manutenção</div>
     <input id="concManuRealizado" placeholder="Nome do responsável"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Como foi feita a manutenção *</div>
+    <textarea id="concManuComoFoi" placeholder="Descreva o que foi feito para resolver o problema..." rows="3"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Peças trocadas / materiais usados</div>
+    <input id="concManuPecas" placeholder="Ex: Bico de contato, Bocal, Rolamento..."
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Tempo de parada (em minutos)</div>
+    <input id="concManuTempo" type="number" placeholder="Ex: 45"
       style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-gray" style="padding:6px 16px" onclick="document.getElementById('modalConcluirManu').style.display='none'">Cancelar</button>
