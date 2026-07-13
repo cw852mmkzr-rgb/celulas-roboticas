@@ -7120,14 +7120,16 @@ async function iaChamar(tipo, pergunta){
 let jarvisRecognition = null;
 let jarvisEscutando = false;
 let jarvisProcessando = false;
+let jarvisModoContinuo = false;  // conversa sem parar
 
 function jarvisAbrir(){
   document.getElementById("jarvisScreen").style.display = "flex";
-  document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar";
+  document.getElementById("jarvisStatus").textContent = "Toque no microfone ou inicie a conversa contínua";
   document.getElementById("jarvisTranscricao").textContent = "";
   document.getElementById("jarvisResposta").textContent = "";
 }
 function jarvisFechar(){
+  jarvisModoContinuo = false;
   jarvisPararEscuta();
   jarvisParar();
   document.getElementById("jarvisScreen").style.display = "none";
@@ -7154,9 +7156,38 @@ function jarvisSetOrb(estado){
   }
 }
 
+// ===== MODO CONVERSA CONTÍNUA =====
+function jarvisToggleContinuo(){
+  if(jarvisModoContinuo){
+    jarvisPararContinuo();
+  } else {
+    jarvisIniciarContinuo();
+  }
+}
+function jarvisIniciarContinuo(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    document.getElementById("jarvisStatus").textContent = "⚠ Use o Chrome para a conversa por voz";
+    return;
+  }
+  jarvisModoContinuo = true;
+  const btn = document.getElementById("jarvisBtnContinuo");
+  if(btn){ btn.textContent = "⏹ Encerrar conversa"; btn.style.background="#ff4d4d15"; btn.style.borderColor="#ff4d4d40"; btn.style.color="#ff4d4d"; }
+  document.getElementById("jarvisResposta").textContent = "";
+  jarvisIniciarEscuta();
+}
+function jarvisPararContinuo(){
+  jarvisModoContinuo = false;
+  const btn = document.getElementById("jarvisBtnContinuo");
+  if(btn){ btn.textContent = "🔄 Conversa contínua"; btn.style.background="#a78bfa20"; btn.style.borderColor="#a78bfa40"; btn.style.color="#a78bfa"; }
+  jarvisPararEscuta();
+  jarvisParar();
+  document.getElementById("jarvisStatus").textContent = "Conversa encerrada";
+}
+
 function jarvisToggleEscuta(){
   if(jarvisProcessando) return;
-  if(jarvisEscutando){ jarvisPararEscuta(); return; }
+  if(jarvisEscutando){ jarvisPararEscuta(); jarvisSetOrb("idle"); document.getElementById("jarvisStatus").textContent="Toque no microfone para falar"; document.getElementById("jarvisBtnFalar").textContent="🎤 Falar"; return; }
   jarvisIniciarEscuta();
 }
 
@@ -7190,13 +7221,22 @@ function jarvisIniciarEscuta(){
   };
   jarvisRecognition.onerror = (ev)=>{
     jarvisEscutando = false;
-    jarvisSetOrb("idle");
     document.getElementById("jarvisBtnFalar").textContent = "🎤 Falar";
     if(ev.error === "not-allowed" || ev.error === "service-not-allowed"){
+      jarvisModoContinuo = false;
+      jarvisSetOrb("idle");
       document.getElementById("jarvisStatus").textContent = "⚠ Permita o acesso ao microfone";
     } else if(ev.error === "no-speech"){
-      document.getElementById("jarvisStatus").textContent = "Não ouvi nada. Toque para tentar de novo";
+      // No modo contínuo, se não ouviu nada, volta a ouvir
+      if(jarvisModoContinuo){
+        document.getElementById("jarvisStatus").textContent = "Não ouvi... continuo ouvindo";
+        setTimeout(()=>{ if(jarvisModoContinuo && !jarvisProcessando) jarvisIniciarEscuta(); }, 300);
+      } else {
+        jarvisSetOrb("idle");
+        document.getElementById("jarvisStatus").textContent = "Não ouvi nada. Toque para tentar de novo";
+      }
     } else {
+      jarvisSetOrb("idle");
       document.getElementById("jarvisStatus").textContent = "Erro: " + ev.error;
     }
   };
@@ -7206,6 +7246,9 @@ function jarvisIniciarEscuta(){
     const pergunta = (textoFinal || document.getElementById("jarvisTranscricao").textContent || "").trim();
     if(pergunta){
       jarvisProcessar(pergunta);
+    } else if(jarvisModoContinuo){
+      // silêncio no modo contínuo: volta a ouvir
+      setTimeout(()=>{ if(jarvisModoContinuo && !jarvisProcessando) jarvisIniciarEscuta(); }, 200);
     } else {
       jarvisSetOrb("idle");
       document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar";
@@ -7230,19 +7273,22 @@ async function jarvisProcessar(pergunta){
   try{
     const resposta = await iaChamar("chat", pergunta);
     document.getElementById("jarvisResposta").textContent = resposta;
+    jarvisProcessando = false;
     jarvisFalar(resposta);
   }catch(e){
     const erro = "Desculpe, não consegui processar sua pergunta agora.";
     document.getElementById("jarvisResposta").textContent = erro;
+    jarvisProcessando = false;
     jarvisFalar(erro);
   }
-  jarvisProcessando = false;
 }
 
 function jarvisFalar(texto){
   if(!("speechSynthesis" in window)){
     jarvisSetOrb("idle");
     document.getElementById("jarvisStatus").textContent = "Resposta pronta (sem áudio neste navegador)";
+    // No modo contínuo sem áudio, volta a ouvir
+    if(jarvisModoContinuo){ setTimeout(()=>{ if(jarvisModoContinuo) jarvisIniciarEscuta(); }, 500); }
     return;
   }
   window.speechSynthesis.cancel();
@@ -7261,15 +7307,22 @@ function jarvisFalar(texto){
     document.getElementById("jarvisStatus").textContent = "🔊 Respondendo...";
   };
   u.onend = ()=>{
-    jarvisSetOrb("idle");
-    document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar de novo";
+    // Terminou de falar: no modo contínuo, volta a ouvir automaticamente
+    if(jarvisModoContinuo){
+      jarvisSetOrb("escutando");
+      document.getElementById("jarvisStatus").textContent = "🔴 Pode falar...";
+      setTimeout(()=>{ if(jarvisModoContinuo && !jarvisProcessando) jarvisIniciarEscuta(); }, 250);
+    } else {
+      jarvisSetOrb("idle");
+      document.getElementById("jarvisStatus").textContent = "Toque no microfone para falar de novo";
+    }
   };
   window.speechSynthesis.speak(u);
 }
 
 function jarvisParar(){
   if("speechSynthesis" in window) window.speechSynthesis.cancel();
-  jarvisSetOrb("idle");
+  if(!jarvisModoContinuo) jarvisSetOrb("idle");
 }
 // Pré-carrega vozes (alguns navegadores carregam async)
 if("speechSynthesis" in window){
@@ -9054,12 +9107,13 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 
   <div id="jarvisResposta" style="font-size:14px;color:#9ca3af;font-family:'Courier New',monospace;text-align:center;max-width:640px;padding:16px 24px;min-height:24px;line-height:1.6;max-height:200px;overflow-y:auto"></div>
 
-  <div style="display:flex;gap:10px;margin-top:16px">
-    <button id="jarvisBtnFalar" onclick="jarvisToggleEscuta()" style="background:#00e0c620;border:1px solid #00e0c640;color:#00e0c6;border-radius:99px;padding:12px 28px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🎤 Falar</button>
+  <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center">
+    <button id="jarvisBtnContinuo" onclick="jarvisToggleContinuo()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:99px;padding:12px 28px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🔄 Conversa contínua</button>
+    <button id="jarvisBtnFalar" onclick="jarvisToggleEscuta()" style="background:#00e0c620;border:1px solid #00e0c640;color:#00e0c6;border-radius:99px;padding:12px 24px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🎤 Falar 1x</button>
     <button onclick="jarvisParar()" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:99px;padding:12px 20px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace">⏹ Parar voz</button>
   </div>
 
-  <div style="margin-top:20px;font-size:10px;color:#2a3040;font-family:'Courier New',monospace;text-align:center;max-width:400px;line-height:1.5">💡 Fale naturalmente. Ex: "Quantas peças o robô 600 produziu hoje?" ou "Quem é o gerente da produção?"</div>
+  <div style="margin-top:20px;font-size:10px;color:#2a3040;font-family:'Courier New',monospace;text-align:center;max-width:420px;line-height:1.5">💡 Na <b style="color:#a78bfa">Conversa contínua</b> você fala, ele responde e volta a ouvir sozinho — sem apertar nada. Clique em "Encerrar" para parar.</div>
 </div>
 
 <div id="painelIA" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:8500;align-items:flex-end;justify-content:flex-end" onclick="fecharPainelIA()">
