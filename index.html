@@ -125,6 +125,31 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .toast.error { background: #ff4d4d; color: #fff; }
 @keyframes pisca { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes jarvisPulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
+/* Animações do núcleo J.A.R.V.I.S */
+@keyframes jvSpin { to { transform:rotate(360deg); } }
+@keyframes jvSpinRev { to { transform:rotate(-360deg); } }
+@keyframes jvCorePulse { 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.06); opacity:0.92; } }
+@keyframes jvGlowPulse { 0%,100%{ opacity:0.5; transform:scale(1); } 50%{ opacity:0.85; transform:scale(1.1); } }
+#jarvisOrb .jv-ring-outer { animation: jvSpin 18s linear infinite; }
+#jarvisOrb .jv-ring-mid   { animation: jvSpinRev 26s linear infinite; }
+#jarvisOrb .jv-ring-inner { animation: jvSpin 22s linear infinite; }
+#jarvisOrb .jv-core       { animation: jvCorePulse 3s ease-in-out infinite; transform-origin:150px 150px; }
+#jarvisOrb .jv-core-blur  { animation: jvCorePulse 3s ease-in-out infinite; transform-origin:150px 150px; }
+#jarvisOrb .jv-glow       { animation: jvGlowPulse 3s ease-in-out infinite; transform-origin:150px 150px; }
+#jarvisOrb .jv-shine      { opacity:0.35; }
+/* Estado: escutando (mais rápido, verde) */
+#jarvisOrb.jv-escutando .jv-core, #jarvisOrb.jv-escutando .jv-core-blur { animation-duration:0.9s; }
+#jarvisOrb.jv-escutando .jv-glow { animation-duration:0.9s; }
+#jarvisOrb.jv-escutando .jv-ring-outer { animation-duration:6s; }
+#jarvisOrb.jv-escutando .jv-ring-inner { animation-duration:7s; }
+/* Estado: processando (giro acelerado) */
+#jarvisOrb.jv-processando .jv-ring-outer { animation-duration:2s; }
+#jarvisOrb.jv-processando .jv-ring-mid   { animation-duration:3s; }
+#jarvisOrb.jv-processando .jv-ring-inner { animation-duration:2.5s; }
+#jarvisOrb.jv-processando .jv-core, #jarvisOrb.jv-processando .jv-core-blur { animation-duration:1.4s; }
+/* Estado: falando (pulso médio) */
+#jarvisOrb.jv-falando .jv-core, #jarvisOrb.jv-falando .jv-core-blur { animation-duration:0.5s; }
+#jarvisOrb.jv-falando .jv-glow { animation-duration:0.5s; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── DASHBOARD TV ── */
@@ -7127,7 +7152,7 @@ let jarvisModoContinuo = false;  // conversa sem parar
 
 function jarvisAbrir(){
   document.getElementById("jarvisScreen").style.display = "flex";
-  document.getElementById("jarvisStatus").textContent = "Toque no microfone ou inicie a conversa contínua";
+  document.getElementById("jarvisStatus").textContent = "Toque no núcleo ou inicie a conversa contínua";
   document.getElementById("jarvisTranscricao").textContent = "";
   document.getElementById("jarvisResposta").textContent = "";
 }
@@ -7140,23 +7165,10 @@ function jarvisFechar(){
 function jarvisSetOrb(estado){
   const orb = document.getElementById("jarvisOrb");
   if(!orb) return;
-  if(estado === "escutando"){
-    orb.style.animation = "jarvisPulse 1.2s ease-in-out infinite";
-    orb.style.background = "radial-gradient(circle at 50% 40%,#ff6a00,#ff3d3d 60%,#aa0000)";
-    orb.style.boxShadow = "0 0 60px #ff6a0080,0 0 120px #ff3d3d40";
-  } else if(estado === "processando"){
-    orb.style.animation = "jarvisPulse 0.6s ease-in-out infinite";
-    orb.style.background = "radial-gradient(circle at 50% 40%,#a78bfa,#7c5cff 60%,#4422aa)";
-    orb.style.boxShadow = "0 0 60px #a78bfa80,0 0 120px #7c5cff40";
-  } else if(estado === "falando"){
-    orb.style.animation = "jarvisPulse 0.8s ease-in-out infinite";
-    orb.style.background = "radial-gradient(circle at 50% 40%,#00e87a,#00b35c 60%,#007a3d)";
-    orb.style.boxShadow = "0 0 60px #00e87a80,0 0 120px #00b35c40";
-  } else {
-    orb.style.animation = "none";
-    orb.style.background = "radial-gradient(circle at 50% 40%,#00e0c6,#00b3ff 60%,#0066aa)";
-    orb.style.boxShadow = "0 0 60px #00e0c680,0 0 120px #00b3ff40";
-  }
+  orb.classList.remove("jv-escutando","jv-processando","jv-falando");
+  if(estado === "escutando") orb.classList.add("jv-escutando");
+  else if(estado === "processando") orb.classList.add("jv-processando");
+  else if(estado === "falando") orb.classList.add("jv-falando");
 }
 
 // ===== MODO CONVERSA CONTÍNUA =====
@@ -9141,32 +9153,79 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
 <button id="iaBtnFlutuante" onclick="abrirPainelIA()" title="MR.ROBOT" style="display:none;position:fixed;bottom:20px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#3d9eff,#a78bfa);border:none;box-shadow:0 4px 16px #00000060;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🤖</button>
 
 <!-- ===== JARVIS - ASSISTENTE DE VOZ ===== -->
-<button id="jarvisBtnFlutuante" onclick="jarvisAbrir()" title="Assistente de Voz" style="display:none;position:fixed;bottom:84px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#00e0c6,#00b3ff);border:none;box-shadow:0 4px 16px #00000060;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🎙️</button>
+<button id="jarvisBtnFlutuante" onclick="jarvisAbrir()" title="Assistente de Voz" style="display:none;position:fixed;bottom:84px;right:20px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#22e88a);border:none;box-shadow:0 4px 20px #a855f770;cursor:pointer;font-size:24px;z-index:8000;align-items:center;justify-content:center">🔮</button>
 
-<div id="jarvisScreen" style="display:none;position:fixed;inset:0;background:radial-gradient(circle at 50% 40%,#0a1420,#04070d 70%);z-index:9800;flex-direction:column;align-items:center;justify-content:center">
-  <button onclick="jarvisFechar()" style="position:absolute;top:18px;right:18px;background:#1e2530;border:1px solid #2a3040;color:#9ca3af;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;z-index:2">✕ Fechar</button>
+<div id="jarvisScreen" style="display:none;position:fixed;inset:0;background:radial-gradient(ellipse at 50% 45%,#12082a 0%,#0a0518 40%,#040209 100%);z-index:9800;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+  <!-- Grid de fundo futurista -->
+  <div style="position:absolute;inset:0;background-image:linear-gradient(#a855f710 1px,transparent 1px),linear-gradient(90deg,#a855f710 1px,transparent 1px);background-size:44px 44px;opacity:0.4;pointer-events:none;mask-image:radial-gradient(ellipse at 50% 45%,#000 20%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse at 50% 45%,#000 20%,transparent 75%)"></div>
 
-  <div style="text-align:center;margin-bottom:10px">
-    <div style="font-size:11px;letter-spacing:0.4em;color:#00e0c6;text-transform:uppercase;font-family:'Courier New',monospace;opacity:0.7">TREMPS ROBOTICS</div>
-    <div style="font-size:clamp(20px,4vw,34px);font-weight:900;color:#fff;letter-spacing:0.1em;font-family:'Montserrat',sans-serif;margin-top:4px">ASSISTENTE DE VOZ</div>
+  <button onclick="jarvisFechar()" style="position:absolute;top:20px;right:20px;background:#ffffff08;border:1px solid #a855f740;color:#c9b8ff;border-radius:10px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace;z-index:3;backdrop-filter:blur(8px)">✕ Fechar</button>
+
+  <div style="text-align:center;margin-bottom:6px;z-index:2">
+    <div style="font-size:11px;letter-spacing:0.5em;color:#22e88a;text-transform:uppercase;font-family:'Courier New',monospace;opacity:0.8">◆ TREMPS ROBOTICS ◆</div>
+    <div style="font-size:clamp(22px,4.5vw,38px);font-weight:900;letter-spacing:0.14em;font-family:'Montserrat',sans-serif;margin-top:6px;background:linear-gradient(90deg,#c084fc,#22e88a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px #a855f760">J.A.R.V.I.S</div>
+    <div style="font-size:9px;letter-spacing:0.35em;color:#6d5a99;text-transform:uppercase;font-family:'Courier New',monospace;margin-top:4px">Assistente de Voz Industrial</div>
   </div>
 
-  <!-- Orb animado -->
-  <div id="jarvisOrb" style="width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#00e0c6,#00b3ff 60%,#0066aa);box-shadow:0 0 60px #00e0c680,0 0 120px #00b3ff40;display:flex;align-items:center;justify-content:center;font-size:60px;margin:24px 0;transition:all 0.3s;cursor:pointer" onclick="jarvisToggleEscuta()">🎙️</div>
+  <!-- NÚCLEO 3D animado (SVG) -->
+  <div id="jarvisOrb" onclick="jarvisToggleEscuta()" style="position:relative;width:300px;height:300px;margin:10px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">
+    <svg viewBox="0 0 300 300" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+      <defs>
+        <radialGradient id="jvCore" cx="50%" cy="42%" r="55%">
+          <stop offset="0%" stop-color="#e9d5ff"/>
+          <stop offset="35%" stop-color="#c084fc"/>
+          <stop offset="70%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#22e88a"/>
+        </radialGradient>
+        <radialGradient id="jvGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a855f7" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="jvRing" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#c084fc"/>
+          <stop offset="50%" stop-color="#22e88a"/>
+          <stop offset="100%" stop-color="#c084fc"/>
+        </linearGradient>
+        <filter id="jvBlur"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
 
-  <div id="jarvisStatus" style="font-size:14px;color:#00e0c6;font-family:'Courier New',monospace;letter-spacing:0.1em;text-align:center;min-height:22px;margin-bottom:8px">Toque no microfone para falar</div>
+      <!-- Halo de brilho -->
+      <circle cx="150" cy="150" r="140" fill="url(#jvGlow)" class="jv-glow"/>
 
-  <div id="jarvisTranscricao" style="font-size:15px;color:#d8dde6;font-family:'Courier New',monospace;text-align:center;max-width:600px;padding:0 20px;min-height:24px;margin-bottom:8px"></div>
+      <!-- Anéis orbitais -->
+      <g class="jv-ring-outer" style="transform-origin:150px 150px">
+        <ellipse cx="150" cy="150" rx="130" ry="52" fill="none" stroke="url(#jvRing)" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="280" cy="150" r="3.5" fill="#22e88a"/>
+      </g>
+      <g class="jv-ring-mid" style="transform-origin:150px 150px">
+        <ellipse cx="150" cy="150" rx="115" ry="115" fill="none" stroke="url(#jvRing)" stroke-width="1" opacity="0.35" stroke-dasharray="4 8"/>
+      </g>
+      <g class="jv-ring-inner" style="transform-origin:150px 150px">
+        <ellipse cx="150" cy="150" rx="52" ry="130" fill="none" stroke="url(#jvRing)" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="150" cy="20" r="3.5" fill="#c084fc"/>
+      </g>
 
-  <div id="jarvisResposta" style="font-size:14px;color:#9ca3af;font-family:'Courier New',monospace;text-align:center;max-width:640px;padding:16px 24px;min-height:24px;line-height:1.6;max-height:200px;overflow-y:auto"></div>
-
-  <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center">
-    <button id="jarvisBtnContinuo" onclick="jarvisToggleContinuo()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:99px;padding:12px 28px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🔄 Conversa contínua</button>
-    <button id="jarvisBtnFalar" onclick="jarvisToggleEscuta()" style="background:#00e0c620;border:1px solid #00e0c640;color:#00e0c6;border-radius:99px;padding:12px 24px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em">🎤 Falar 1x</button>
-    <button onclick="jarvisParar()" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:99px;padding:12px 20px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace">⏹ Parar voz</button>
+      <!-- Núcleo pulsante -->
+      <circle cx="150" cy="150" r="66" fill="url(#jvCore)" filter="url(#jvBlur)" class="jv-core-blur" opacity="0.85"/>
+      <circle cx="150" cy="150" r="58" fill="url(#jvCore)" class="jv-core"/>
+      <!-- Reflexo -->
+      <ellipse cx="132" cy="128" rx="22" ry="14" fill="#ffffff" opacity="0.35" class="jv-shine"/>
+    </svg>
   </div>
 
-  <div style="margin-top:20px;font-size:10px;color:#2a3040;font-family:'Courier New',monospace;text-align:center;max-width:420px;line-height:1.5">💡 Na <b style="color:#a78bfa">Conversa contínua</b> você fala, ele responde e volta a ouvir sozinho — sem apertar nada. Clique em "Encerrar" para parar.</div>
+  <div id="jarvisStatus" style="font-size:14px;color:#22e88a;font-family:'Courier New',monospace;letter-spacing:0.12em;text-align:center;min-height:22px;margin-bottom:10px;z-index:2;text-shadow:0 0 20px #22e88a60">Toque no núcleo para falar</div>
+
+  <div id="jarvisTranscricao" style="font-size:15px;color:#e9d5ff;font-family:'Courier New',monospace;text-align:center;max-width:620px;padding:0 20px;min-height:24px;margin-bottom:8px;z-index:2"></div>
+
+  <div id="jarvisResposta" style="font-size:14px;color:#a794c9;font-family:'Courier New',monospace;text-align:center;max-width:640px;padding:12px 24px;min-height:24px;line-height:1.6;max-height:180px;overflow-y:auto;z-index:2"></div>
+
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;justify-content:center;z-index:2">
+    <button id="jarvisBtnContinuo" onclick="jarvisToggleContinuo()" style="background:linear-gradient(135deg,#a855f730,#7c3aed20);border:1px solid #a855f760;color:#d8b4fe;border-radius:99px;padding:13px 30px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em;backdrop-filter:blur(8px);transition:all 0.2s">◈ Conversa contínua</button>
+    <button id="jarvisBtnFalar" onclick="jarvisToggleEscuta()" style="background:linear-gradient(135deg,#22e88a25,#16a34a20);border:1px solid #22e88a55;color:#6ee7b7;border-radius:99px;padding:13px 26px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;letter-spacing:0.05em;backdrop-filter:blur(8px);transition:all 0.2s">◉ Falar 1x</button>
+    <button onclick="jarvisParar()" style="background:#ff4d6d15;border:1px solid #ff4d6d40;color:#ff8fa3;border-radius:99px;padding:13px 22px;font-size:14px;cursor:pointer;font-family:'Courier New',monospace;backdrop-filter:blur(8px);transition:all 0.2s">◼ Parar voz</button>
+  </div>
+
+  <div style="margin-top:20px;font-size:10px;color:#5d4d80;font-family:'Courier New',monospace;text-align:center;max-width:440px;line-height:1.6;z-index:2">◈ Na <b style="color:#d8b4fe">Conversa contínua</b> você fala, ele responde e volta a ouvir sozinho — sem apertar nada.</div>
 </div>
 
 <div id="painelIA" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:8500;align-items:flex-end;justify-content:flex-end" onclick="fecharPainelIA()">
