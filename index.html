@@ -7171,6 +7171,37 @@ function jarvisSetOrb(estado){
   else if(estado === "falando") orb.classList.add("jv-falando");
 }
 
+(function(){
+  const cores = [
+    {core:['#bbf7d0','#4ade80','#16a34a','#22e88a'], glow:'#22c55e', ring:['#4ade80','#22e88a','#4ade80'], dot1:'#22e88a', dot2:'#4ade80'},
+    {core:['#bfdbfe','#60a5fa','#2563eb','#38bdf8'], glow:'#3b82f6', ring:['#60a5fa','#38bdf8','#60a5fa'], dot1:'#38bdf8', dot2:'#60a5fa'},
+    {core:['#e9d5ff','#c084fc','#7c3aed','#a855f7'], glow:'#a855f7', ring:['#c084fc','#a855f7','#c084fc'], dot1:'#a855f7', dot2:'#c084fc'},
+    {core:['#fed7aa','#fb923c','#ea580c','#f97316'], glow:'#f97316', ring:['#fb923c','#f97316','#fb923c'], dot1:'#f97316', dot2:'#fb923c'},
+    {core:['#fecdd3','#fb7185','#e11d48','#f43f5e'], glow:'#f43f5e', ring:['#fb7185','#f43f5e','#fb7185'], dot1:'#f43f5e', dot2:'#fb7185'},
+  ];
+  let idx = 0;
+  setInterval(function(){
+    idx = (idx + 1) % cores.length;
+    const c = cores[idx];
+    const stops = document.getElementById('jvCore');
+    if(!stops) return;
+    stops.children[0].setAttribute('stop-color', c.core[0]);
+    stops.children[1].setAttribute('stop-color', c.core[1]);
+    stops.children[2].setAttribute('stop-color', c.core[2]);
+    stops.children[3].setAttribute('stop-color', c.core[3]);
+    const glow = document.getElementById('jvGlow');
+    glow.children[0].setAttribute('stop-color', c.glow);
+    glow.children[1].setAttribute('stop-color', c.glow);
+    const ring = document.getElementById('jvRing');
+    ring.children[0].setAttribute('stop-color', c.ring[0]);
+    ring.children[1].setAttribute('stop-color', c.ring[1]);
+    ring.children[2].setAttribute('stop-color', c.ring[2]);
+    const dots = document.querySelectorAll('#jarvisOrb .jv-ring-outer circle, #jarvisOrb .jv-ring-inner circle');
+    if(dots[0]) dots[0].setAttribute('fill', c.dot1);
+    if(dots[1]) dots[1].setAttribute('fill', c.dot2);
+  }, 3000);
+})();
+
 // ===== MODO CONVERSA CONTÍNUA =====
 function jarvisToggleContinuo(){
   if(jarvisModoContinuo){
@@ -9168,7 +9199,7 @@ document.getElementById("gerenciarModalEl").addEventListener("click",closeGerenc
   </div>
 
   <!-- NÚCLEO 3D animado (SVG) -->
-  <div id="jarvisOrb" onclick="jarvisToggleEscuta()" style="position:relative;width:300px;height:300px;margin:10px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">
+  <div id="jarvisOrb" onclick="jarvisToggleEscuta()" style="position:relative;width:400px;height:400px;margin:10px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2">
     <svg viewBox="0 0 300 300" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
       <defs>
         <radialGradient id="jvCore" cx="50%" cy="42%" r="55%">
