@@ -9608,18 +9608,22 @@ function scheduleSaveComp(){ clearTimeout(_compSaveTimer); _compSaveTimer=setTim
 
 // ── Acesso ──
 function abrirControleComponentes(){
-  loadCompDados().then(()=>{
-    if(isAdmin){ compNivel='admin'; _entrarComp(); }
-    else {
-      const m=document.getElementById('modalCompLogin'); m.style.display='flex';
-      document.getElementById('compPwInput').value='';
-      document.getElementById('compLoginErr').style.display='none';
-      setTimeout(()=>document.getElementById('compPwInput').focus(),50);
-    }
-  });
+  // Abre instantaneamente; os dados carregam em segundo plano
+  if(isAdmin){
+    compNivel='admin';
+    _entrarComp();
+    loadCompDados().then(()=>{ if(compNivel==='admin') renderComp(); });
+  } else {
+    const m=document.getElementById('modalCompLogin'); m.style.display='flex';
+    document.getElementById('compPwInput').value='';
+    document.getElementById('compLoginErr').style.display='none';
+    setTimeout(()=>document.getElementById('compPwInput').focus(),50);
+    loadCompDados();  // garante host_senha atualizada até o usuário digitar
+  }
 }
-function confirmarCompLogin(){
+async function confirmarCompLogin(){
   const pw=document.getElementById('compPwInput').value;
+  await loadCompDados();  // garante a senha do host mais recente antes de validar
   if(pw===ADMIN_PW){ compNivel='admin'; }
   else if(pw===((componentesEstoque.config&&componentesEstoque.config.host_senha)||'1234')){ compNivel='host'; }
   else { document.getElementById('compLoginErr').style.display='block'; return; }
