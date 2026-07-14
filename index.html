@@ -6355,14 +6355,27 @@ function mapaListaMaquinasSoldaTopo(){
   return mapaChaveLinhas('solda_topo');
 }
 
-// Rótulo visível da máquina (editável pelo usuário)
+// Rótulo visível da máquina (editável pelo usuário) — armazenado POR DIA.
+// Cai no nome global antigo só como base para dias ainda não personalizados.
 function mapaGetNomeMaquina(chaveL){
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const rd=(mapaDados.metas_dias&&mapaDados.metas_dias[chave]&&mapaDados.metas_dias[chave][chaveL])||null;
+  if(rd && rd.nome!==undefined) return rd.nome;
   return (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[chaveL]) || '';
 }
 
 function mapaSetNomeMaquina(chaveL, nome){
-  if(!mapaDados.nomes_maquinas) mapaDados.nomes_maquinas = {};
-  mapaDados.nomes_maquinas[chaveL] = nome.trim();
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  if(!mapaDados.metas_dias) mapaDados.metas_dias={};
+  if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
+  if(!mapaDados.metas_dias[chave][chaveL]) mapaDados.metas_dias[chave][chaveL]={};
+  mapaDados.metas_dias[chave][chaveL].nome=nome.trim();
   saveMapaDados();
 }
 
@@ -6409,21 +6422,22 @@ function mapaCopiarDiaAnterior(){
   if(!mapaDados.metas_dias) mapaDados.metas_dias={};
   if(!mapaDados.metas_dias[chaveAtual]) mapaDados.metas_dias[chaveAtual]={};
 
-  // Copia apenas cod e meta das máquinas (não as horas)
+  // Copia número da máquina, cod e meta (não as horas)
   const todasMaq = [...mapaListaTodasMaquinas(), ...mapaListaMaquinasSoldaTopo()];
   let copiadas = 0;
   todasMaq.forEach(maq=>{
     const ant = dadosAnt[maq]||{};
-    if(ant.cod || ant.meta){
+    if(ant.cod || ant.meta || ant.nome!==undefined){
       if(!mapaDados.metas_dias[chaveAtual][maq]) mapaDados.metas_dias[chaveAtual][maq]={};
       if(ant.cod) mapaDados.metas_dias[chaveAtual][maq].cod = ant.cod;
       if(ant.meta) mapaDados.metas_dias[chaveAtual][maq].meta = ant.meta;
+      if(ant.nome!==undefined) mapaDados.metas_dias[chaveAtual][maq].nome = ant.nome;
       copiadas++;
     }
   });
   saveMapaDados();
   renderMapaProducaoTabela();
-  showToast(`Códigos e metas copiados de ${copiadas} máquina(s) ✓`);
+  showToast(`Máquinas, códigos e metas copiados de ${copiadas} máquina(s) ✓`);
 }
 
 function mapaUpdateMetasCell(chaveM,campo,valor){
