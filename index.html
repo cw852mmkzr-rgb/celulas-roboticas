@@ -152,6 +152,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 #jarvisOrb.jv-falando .jv-glow { animation-duration:0.5s; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Scrollbar da aba Produção (Mapa) ── */
+#mapaProducaoScroll::-webkit-scrollbar { width: 20px; }
+#mapaProducaoScroll::-webkit-scrollbar-track { background: #080b0f; border-radius: 99px; }
+#mapaProducaoScroll::-webkit-scrollbar-thumb { background: #2a3a55; border-radius: 99px; border: 3px solid #080b0f; }
+#mapaProducaoScroll::-webkit-scrollbar-thumb:hover { background: #3d9eff; }
+
 /* ── Mapa dos Robôs ── */
 .mr-chao {
   position:relative; border-radius:16px; border:1px solid #1e2530; overflow:hidden;
@@ -6599,7 +6605,7 @@ function renderMapaProducaoTabela(){
   const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : (window._mapaProdScrollSalvo || 0);
   window._mapaProdScrollSalvo = 0; // limpa após consumir
   wrap.innerHTML = `
-  <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch" id="mapaProducaoScroll">
+  <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch;outline:none;scrollbar-width:thick" id="mapaProducaoScroll" tabindex="0">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
       <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📋 ${totalMaquinasGeral}</button>
@@ -6658,9 +6664,11 @@ function renderMapaProducaoTabela(){
     </div>
   </div>`;
   const scrollNovo = document.getElementById('mapaProducaoScroll');
-  if(scrollNovo && scrollTopSalvo > 0){
-    requestAnimationFrame(()=>{ scrollNovo.scrollTop = scrollTopSalvo; });
-  }
+  requestAnimationFrame(()=>{
+    if(!scrollNovo) return;
+    if(scrollTopSalvo > 0) scrollNovo.scrollTop = scrollTopSalvo;
+    scrollNovo.focus({preventScroll:true});
+  });
 }
 
 function mapaZoomIn(){ mapaZoomAtual=Math.min(160,mapaZoomAtual+10); aplicarMapaZoom(); }
