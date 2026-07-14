@@ -6467,7 +6467,7 @@ function mapaHandleMetasInput(maquina,campo,valor){
 function mapaUpdateData(campo,valor){
   mapaDados[campo]=valor;
   saveMapaDados();
-  renderMapaProducaoTabela();
+  renderMapaProducaoTabela(true);
 }
 
 function mapaBuildTurnoTableProducao(turno,chave,maquinas){
@@ -6575,15 +6575,19 @@ function mapaTrocarSubTelaProducao(sub){
   renderMapaProducaoTabela();
 }
 
-function renderMapaProducaoTabela(){
-  // Não re-renderiza se o usuário estiver com um input ativo na tabela
-  const focado = document.activeElement;
-  if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && focado.closest('#mapaCanvasWrap')){
-    return;
-  }
-  // Também não re-renderiza por 4s após qualquer save (evita polling destruir edição recente)
-  if(Date.now() - _mapaLastSave < 4000){
-    return;
+function renderMapaProducaoTabela(force){
+  // force=true: render imediato de ações de navegação (troca de dia/mês/ano),
+  // ignorando os guardas anti-polling abaixo.
+  if(!force){
+    // Não re-renderiza se o usuário estiver com um input ativo na tabela
+    const focado = document.activeElement;
+    if(focado && ['INPUT','SELECT','TEXTAREA'].includes(focado.tagName) && focado.closest('#mapaCanvasWrap')){
+      return;
+    }
+    // Também não re-renderiza por 4s após qualquer save (evita polling destruir edição recente)
+    if(Date.now() - _mapaLastSave < 4000){
+      return;
+    }
   }
   const maquinasSlots = mapaGetMaquinasAtivas(); // chaves fixas: t_0..t_49 ou s_0..s_7
   const podeEditar = isMapaAdmin;
