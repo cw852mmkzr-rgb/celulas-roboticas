@@ -6276,6 +6276,21 @@ function mapaSeedPadrao(){
 
 let _mapaLastSave = 0;
 
+// Dia/mês/ano em visualização — LOCAL por dispositivo. Não sincroniza entre
+// celular e PC: cada tela escolhe seu dia sem afetar as outras. Os DADOS em si
+// (metas_dias, keyed por dia) continuam sincronizando normalmente.
+let mapaViewAno, mapaViewMes, mapaViewDia;
+function mapaAplicarView(){
+  if(!mapaDados) return;
+  const hoje=new Date();
+  if(mapaViewAno===undefined) mapaViewAno = mapaDados.metas_ano || hoje.getFullYear();
+  if(mapaViewMes===undefined) mapaViewMes = mapaDados.metas_mes!==undefined ? mapaDados.metas_mes : hoje.getMonth();
+  if(mapaViewDia===undefined) mapaViewDia = mapaDados.metas_dia || hoje.getDate();
+  mapaDados.metas_ano = mapaViewAno;
+  mapaDados.metas_mes = mapaViewMes;
+  mapaDados.metas_dia = mapaViewDia;
+}
+
 async function loadMapaDados(){
   // Não recarrega do servidor se acabou de salvar (evita sobrescrever edições em andamento)
   if(Date.now() - _mapaLastSave < 5000) return;
@@ -6292,6 +6307,8 @@ async function loadMapaDados(){
     if(!mapaDados) mapaDados = mapaSeedPadrao();
     showToast("Erro ao carregar — usando dados locais",true);
   }
+  // Restaura o dia local deste dispositivo (o servidor não manda mais esse ponteiro)
+  mapaAplicarView();
 }
 
 async function saveMapaDados(){
@@ -6300,7 +6317,10 @@ async function saveMapaDados(){
   const ind = document.getElementById('mapaSaveIndicator');
   if(ind){ ind.style.opacity='1'; clearTimeout(window._mapaSaveTimer); window._mapaSaveTimer=setTimeout(()=>{ind.style.opacity='0';},2000); }
   try{
-    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:mapaDados})});
+    // Envia tudo MENOS o dia em visualização (esse é local por dispositivo)
+    const payload = Object.assign({}, mapaDados);
+    delete payload.metas_ano; delete payload.metas_mes; delete payload.metas_dia;
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:payload})});
   }catch(e){ showToast("Erro ao salvar mapa",true); }
 }
 
@@ -6483,8 +6503,12 @@ function mapaHandleMetasInput(maquina,campo,valor){
 }
 
 function mapaUpdateData(campo,valor){
-  mapaDados[campo]=valor;
-  saveMapaDados();
+  // Troca de dia/mês/ano é LOCAL deste dispositivo — não salva no servidor,
+  // então não muda o dia visto no celular/PC de outra pessoa.
+  if(campo==='metas_ano') mapaViewAno=valor;
+  else if(campo==='metas_mes') mapaViewMes=valor;
+  else if(campo==='metas_dia') mapaViewDia=valor;
+  mapaAplicarView();
   renderMapaProducaoTabela(true);
 }
 
