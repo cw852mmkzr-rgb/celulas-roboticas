@@ -2855,9 +2855,12 @@ async function loadFromAPI(){
   const modalManuAberto = document.getElementById('modalManu')&&document.getElementById('modalManu').style.display==='flex';
   const modalConcAberto = document.getElementById('modalConcluirManu')&&document.getElementById('modalConcluirManu').style.display==='flex';
   const modalEditAberto = document.getElementById('modalEditManu')&&document.getElementById('modalEditManu').style.display==='flex';
-  const mrPainelAberto = document.getElementById('mrPainelOverlay')&&document.getElementById('mrPainelOverlay').style.display==='flex';
-  const modalMapaAberto = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto)return;
+  const mrPainelAberto    = document.getElementById('mrPainelOverlay')&&document.getElementById('mrPainelOverlay').style.display==='flex';
+  const modalMapaAberto   = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
+  const modalGabAberto    = document.getElementById('modalGabLogin')&&document.getElementById('modalGabLogin').style.display==='flex';
+  const modalPecaAberto   = document.getElementById('modalPeca')&&document.getElementById('modalPeca').style.display==='flex';
+  const modalMaqAberto    = document.getElementById('modalMapaMaquina')&&document.getElementById('modalMapaMaquina').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
