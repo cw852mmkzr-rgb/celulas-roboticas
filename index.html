@@ -6671,7 +6671,8 @@ function renderMapaProducaoTabela(){
   requestAnimationFrame(()=>{
     if(!scrollNovo) return;
     if(scrollTopSalvo > 0) scrollNovo.scrollTop = scrollTopSalvo;
-    scrollNovo.focus({preventScroll:true});
+    const modalAberto = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
+    if(!modalAberto) scrollNovo.focus({preventScroll:true});
   });
 }
 
