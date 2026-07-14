@@ -2856,7 +2856,8 @@ async function loadFromAPI(){
   const modalConcAberto = document.getElementById('modalConcluirManu')&&document.getElementById('modalConcluirManu').style.display==='flex';
   const modalEditAberto = document.getElementById('modalEditManu')&&document.getElementById('modalEditManu').style.display==='flex';
   const mrPainelAberto = document.getElementById('mrPainelOverlay')&&document.getElementById('mrPainelOverlay').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto)return;
+  const modalMapaAberto = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
