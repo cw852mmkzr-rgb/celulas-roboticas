@@ -6450,17 +6450,35 @@ function mapaUpdateMetasCell(chaveM,campo,valor){
   if(!mapaDados.metas_dias[chave][chaveM]) mapaDados.metas_dias[chave][chaveM]={};
   mapaDados.metas_dias[chave][chaveM][campo]=valor;
   saveMapaDados();
+  // Ao mudar a META, repinta as horas dessa máquina (verde/vermelho conforme a nova meta)
+  if(campo==='meta') mapaRecolorirLinha(chaveM);
+}
+
+// Recalcula a cor (verde/vermelho/ajuste) de todas as horas de uma máquina
+// conforme a meta atual, sem reconstruir a tabela.
+function mapaRecolorirLinha(chaveM){
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const rd=(mapaDados.metas_dias&&mapaDados.metas_dias[chave]&&mapaDados.metas_dias[chave][chaveM])||{};
+  const meta=parseInt(rd.meta)||0;
+  const cafeCampos=HORAS_CAFE.map(campoH);
+  [...MAPA_HORAS_DIA,...HORAS_NOITE].forEach(h=>{
+    const campo=campoH(h);
+    const inp=document.getElementById(`mapa-inp-${chaveM}-${campo}`);
+    if(!inp) return;
+    if(cafeCampos.includes(campo)) return; // célula de café mantém a cor amarela
+    const {num,tipo}=parseCelVal(rd[campo]||'');
+    inp.classList.remove('cell-ok','cell-fail','cell-adj');
+    if(tipo==='ajuste') inp.classList.add('cell-adj');
+    else if(num>0) inp.classList.add(meta>0 && num<meta ? 'cell-fail' : 'cell-ok');
+  });
 }
 
 function mapaHandleMetasInput(maquina,campo,valor){
   mapaUpdateMetasCell(maquina,campo,valor);
-  const inp=document.getElementById(`mapa-inp-${maquina}-${campo}`);
-  if(inp){
-    const {num,tipo}=parseCelVal(valor);
-    inp.classList.remove('cell-ok','cell-fail','cell-adj');
-    if(tipo==='ajuste') inp.classList.add('cell-adj');
-    else if(num>0) inp.classList.add('cell-ok');
-  }
+  mapaRecolorirLinha(maquina);
   mapaAtualizarTotaisProducao();
 }
 
