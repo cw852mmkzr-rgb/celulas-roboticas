@@ -1049,6 +1049,7 @@ let compBusca = "";
 let compHistFiltro = "todos";
 let compHistCompId = null;
 let _compSaveTimer = null;
+let _compSubQueue = Promise.resolve();  // serializa subtrações de produção; leitura espera por elas
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
@@ -9589,27 +9590,30 @@ function compSaveIndicatorShow(){
 
 // ── Helpers REST (anon key; policies "acesso publico" liberam as 3 tabelas) ──
 const _SB_REP = Object.assign({}, HEADERS_SB, { "Prefer":"return=representation" });
-async function _sbGet(path){ try{ const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:HEADERS_SB}); return r.ok? await r.json():[]; }catch(e){ return []; } }
+async function _sbGet(path){ try{ const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:HEADERS_SB}); return r.ok? await r.json():null; }catch(e){ return null; } }
 async function _sbPost(table,body){ const r=await fetch(SUPABASE_URL+"/rest/v1/"+table,{method:"POST",headers:_SB_REP,body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.message)||("POST "+table+" "+r.status)); return Array.isArray(j)?j[0]:j; }
 async function _sbPatch(table,filter,body){ const r=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?"+filter,{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify(body)}); if(!r.ok) throw new Error("PATCH "+table+" "+r.status); }
 async function _sbDelete(table,filter){ const r=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?"+filter,{method:"DELETE",headers:HEADERS_SB}); if(!r.ok) throw new Error("DELETE "+table+" "+r.status); }
 
-async function loadCompDados(){
+async function _loadCompRaw(){
   try{
     const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=componentes_estoque",{headers:HEADERS_SB});
     const d=await r.json();
     const ce=(d&&d[0]&&d[0].componentes_estoque)||{};
     componentesEstoque={ config:Object.assign({auto_producao_ativa:true,host_senha:"1234"},ce.config||{}), pecas_meta:ce.pecas_meta||{} };
-  }catch(e){ componentesEstoque={config:{auto_producao_ativa:true,host_senha:"1234"},pecas_meta:{}}; }
+  }catch(e){ if(!componentesEstoque||!componentesEstoque.config) componentesEstoque={config:{auto_producao_ativa:true,host_senha:"1234"},pecas_meta:{}}; }
   const [m,l,h]=await Promise.all([
     _sbGet("componentes?select=*"),
     _sbGet("componentes_pecas?select=*"),
     _sbGet("componentes_historico?select=*&order=criado_em.desc&limit=500")
   ]);
-  compMasters=Array.isArray(m)?m:[];
-  compLinks=Array.isArray(l)?l:[];
-  compHist=Array.isArray(h)?h:[];
+  // só substitui se a leitura veio ok (evita apagar dados em falha de rede transitória)
+  if(Array.isArray(m)) compMasters=m;
+  if(Array.isArray(l)) compLinks=l;
+  if(Array.isArray(h)) compHist=h;
 }
+// Espera as subtrações pendentes antes de ler, para nunca mostrar valor desatualizado logo após produzir
+async function loadCompDados(){ try{ await _compSubQueue; }catch(e){} return _loadCompRaw(); }
 
 // Salva apenas config + metadados de peça no jsonb (o estoque real vive nas 3 tabelas)
 async function saveCompConfig(silent){
@@ -10083,12 +10087,17 @@ function backupComp(){
 // ── Integração com Metas Diárias ──
 // Chamada por updateMetasCell com o delta da hora (aumento desconta; correção pra baixo devolve).
 // Consome de cada componente vinculado: quantidade_por_peca × qtdProduzida.
-async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
+// Enfileira (serializa) as subtrações; loadCompDados espera esta fila antes de ler.
+function subtrairComponentesProducao(codigoPeca, qtdProduzida){
+  _compSubQueue = _compSubQueue.then(()=>_subtrairImpl(codigoPeca, qtdProduzida)).catch(()=>{});
+  return _compSubQueue;
+}
+async function _subtrairImpl(codigoPeca, qtdProduzida){
   if(!componentesEstoque||!componentesEstoque.config) return;
   if(componentesEstoque.config.auto_producao_ativa===false) return;  // admin pausou
   if(!codigoPeca || !qtdProduzida) return;
   // Garante que os componentes/vínculos estão carregados (ex.: produção logo após o login)
-  if(!compMasters.length && !compLinks.length){ try{ await loadCompDados(); }catch(e){} }
+  if(!compMasters.length && !compLinks.length){ try{ await _loadCompRaw(); }catch(e){} }
   const links=compLinksDaPeca(codigoPeca);
   if(!links.length) return;  // peça sem componentes vinculados → não faz nada, não quebra o fluxo
   const alertas=[];
@@ -10097,7 +10106,7 @@ async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
     const consumo=(Number(l.quantidade_por_peca)||0)*qtdProduzida;  // >0 consome, <0 devolve
     if(consumo===0) continue;
     const novo=(Number(m.estoque_atual)||0)-consumo;
-    m.estoque_atual=novo;
+    m.estoque_atual=novo;  // atualização otimista imediata (painel mostra na hora)
     try{
       await _sbPatch('componentes','id=eq.'+m.id,{estoque_atual:novo,atualizado_em:new Date().toISOString()});
       await _sbPost('componentes_historico',{componente_id:m.id,tipo:'producao',quantidade:-consumo,descricao:'Produção automática — Peça '+codigoPeca,codigo_peca:codigoPeca});
@@ -10107,7 +10116,7 @@ async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
   // Sem toast de confirmação nas Metas (a pedido). Mantém só o alerta de estoque baixo.
   alertas.forEach((n,i)=>setTimeout(()=>showToast('⚠️ Componente '+n+' abaixo do estoque mínimo!',true),800+i*400));
   const cs=document.getElementById('compScreen');
-  if(cs&&cs.style.display==='flex'){ await loadCompDados(); renderComp(); }
+  if(cs&&cs.style.display==='flex'){ await _loadCompRaw(); renderComp(); }
 }
 
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin','modalCompPeca','modalCompComp','modalCompVincular','modalCompMov','modalCompHist','modalCompConfig'].forEach(id=>{ const m=document.getElementById(id); if(m&&m.style.display==='flex') m.style.display='none'; }); } });
