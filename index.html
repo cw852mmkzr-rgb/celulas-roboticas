@@ -9625,7 +9625,7 @@ async function confirmarCompLogin(){
   const pw=document.getElementById('compPwInput').value;
   await loadCompDados();  // garante a senha do host mais recente antes de validar
   if(pw===ADMIN_PW){ compNivel='admin'; }
-  else if(pw===((componentesEstoque.config&&componentesEstoque.config.host_senha)||'1234')){ compNivel='host'; }
+  else if(pw===((componentesEstoque.config&&componentesEstoque.config.host_senha)||'1234')){ compNivel='operador'; }
   else { document.getElementById('compLoginErr').style.display='block'; return; }
   document.getElementById('modalCompLogin').style.display='none';
   _entrarComp();
@@ -9645,13 +9645,14 @@ function fecharControleComponentes(){
 function renderComp(){
   const badge=document.getElementById('compBadge');
   if(compEhAdmin()){ badge.textContent='🔒 Admin'; badge.style.background='#a78bfa20'; badge.style.color='#a78bfa'; badge.style.border='1px solid #a78bfa40'; }
-  else { badge.textContent='👤 Host'; badge.style.background='#3d9eff20'; badge.style.color='#3d9eff'; badge.style.border='1px solid #3d9eff40'; }
+  else { badge.textContent='👤 Operador'; badge.style.background='#3d9eff20'; badge.style.color='#3d9eff'; badge.style.border='1px solid #3d9eff40'; }
   const ab=document.getElementById('compAdminBtns');
   ab.innerHTML = compEhAdmin()
     ? `<button onclick="abrirConfigComp()" class="comp-abtn" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa">⚙ Config</button>
        <button onclick="backupComp()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">⬇ Backup</button>
        <button onclick="document.getElementById('compRestoreInput').click()" class="comp-abtn" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00">📂 Restaurar</button>`
     : '';
+  const bnp=document.getElementById('compBtnNovaPeca'); if(bnp) bnp.style.display=compEhAdmin()?'block':'none';
   renderCompToggle();
   renderCompAlertBanner();
   renderCompListaPecas();
@@ -9737,9 +9738,9 @@ function renderCompDetalhe(){
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
         <button onclick="abrirModalMov('${c.id}','entrada')" class="comp-abtn" style="background:#00e87a15;border:1px solid #00e87a40;color:#00e87a">＋ Entrada</button>
-        <button onclick="abrirModalMov('${c.id}','saida')" class="comp-abtn" style="background:#ff8c0015;border:1px solid #ff8c0040;color:#ff8c00">－ Saída</button>
+        ${compEhAdmin()?`<button onclick="abrirModalMov('${c.id}','saida')" class="comp-abtn" style="background:#ff8c0015;border:1px solid #ff8c0040;color:#ff8c00">－ Saída</button>
         <button onclick="abrirModalComponente('${c.id}')" class="comp-abtn" style="background:#3d9eff15;border:1px solid #3d9eff40;color:#3d9eff">✏ Editar</button>
-        <button onclick="excluirComponente('${c.id}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑</button>
+        <button onclick="excluirComponente('${c.id}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑</button>`:''}
         <button onclick="abrirHistorico('${c.id}')" class="comp-abtn" style="background:#12161d;border:1px solid #2a3040;color:#8a94a6">📜 Histórico</button>
       </div>
     </div>`;
@@ -9752,9 +9753,9 @@ function renderCompDetalhe(){
         ${p.descricao?`<div style="font-size:12px;color:#6a7488;margin-top:3px">${esc(p.descricao)}</div>`:''}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="abrirModalComponente()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">+ Componente</button>
+        ${compEhAdmin()?`<button onclick="abrirModalComponente()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">+ Componente</button>
         <button onclick="abrirModalPecaComp('${esc(p.codigo)}')" class="comp-abtn" style="background:#12161d;border:1px solid #2a3040;color:#d8dde6">✏ Editar Peça</button>
-        <button onclick="excluirPecaComp('${esc(p.codigo)}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑 Excluir Peça</button>
+        <button onclick="excluirPecaComp('${esc(p.codigo)}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑 Excluir Peça</button>`:''}
       </div>
     </div>
     ${rows}`;
@@ -9762,6 +9763,7 @@ function renderCompDetalhe(){
 
 // ── CRUD Peça ──
 function abrirModalPecaComp(cod){
+  if(!compEhAdmin()){ showToast('Apenas o admin',true); return; }
   document.getElementById('modalCompPecaTitulo').textContent=cod?'Editar Peça':'Nova Peça';
   document.getElementById('compPecaEditCod').value=cod||'';
   const p=cod?componentesEstoque.pecas[cod]:null;
@@ -9773,6 +9775,7 @@ function abrirModalPecaComp(cod){
   document.getElementById('modalCompPeca').style.display='flex';
 }
 function salvarPecaComp(){
+  if(!compEhAdmin()) return;
   const edit=document.getElementById('compPecaEditCod').value;
   const cod=document.getElementById('compPecaCod').value.trim();
   const nome=document.getElementById('compPecaNome').value.trim();
@@ -9787,6 +9790,7 @@ function salvarPecaComp(){
   saveCompDados(false); renderComp();
 }
 function excluirPecaComp(cod){
+  if(!compEhAdmin()) return;
   if(!confirm('Excluir a peça '+cod+' e todos os seus componentes? Esta ação não pode ser desfeita.')) return;
   delete componentesEstoque.pecas[cod];
   if(compPecaSel===cod) compPecaSel=null;
@@ -9795,6 +9799,7 @@ function excluirPecaComp(cod){
 
 // ── CRUD Componente ──
 function abrirModalComponente(id){
+  if(!compEhAdmin()){ showToast('Apenas o admin',true); return; }
   if(!compPecaSel){ showToast('Selecione uma peça primeiro',true); return; }
   document.getElementById('modalCompCompTitulo').textContent=id?'Editar Componente':'Novo Componente';
   document.getElementById('compCompEditId').value=id||'';
@@ -9809,6 +9814,7 @@ function abrirModalComponente(id){
   document.getElementById('modalCompComp').style.display='flex';
 }
 function salvarComponente(){
+  if(!compEhAdmin()) return;
   const id=document.getElementById('compCompEditId').value;
   const cod=document.getElementById('compCompCod').value.trim();
   const nome=document.getElementById('compCompNome').value.trim();
@@ -9830,6 +9836,7 @@ function salvarComponente(){
   saveCompDados(false); renderComp();
 }
 function excluirComponente(id){
+  if(!compEhAdmin()) return;
   const peca=componentesEstoque.pecas[compPecaSel]; if(!peca) return;
   if(!confirm('Excluir este componente?')) return;
   delete peca.componentes[id];
@@ -9838,6 +9845,7 @@ function excluirComponente(id){
 
 // ── Movimentação ──
 function abrirModalMov(compId,tipo){
+  if(tipo==='saida' && !compEhAdmin()){ showToast('Apenas o admin registra saídas',true); return; }
   const peca=componentesEstoque.pecas[compPecaSel]; if(!peca) return;
   const c=peca.componentes[compId]; if(!c) return;
   document.getElementById('compMovCompId').value=compId;
@@ -10206,7 +10214,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <div style="padding:10px;border-bottom:1px solid #1e2530;flex-shrink:0">
         <input id="compBuscaInput" placeholder="🔍 Buscar por código ou nome" oninput="compFiltrar(this.value)"
           style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;box-sizing:border-box;outline:none;margin-bottom:8px">
-        <button onclick="abrirModalPecaComp()" style="width:100%;background:#00e87a15;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Nova Peça</button>
+        <button id="compBtnNovaPeca" onclick="abrirModalPecaComp()" style="width:100%;background:#00e87a15;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Nova Peça</button>
       </div>
       <div id="compListaPecas" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px"></div>
     </div>
@@ -10221,7 +10229,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 <div id="modalCompLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #ffb30040;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
     <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">📦 Controle de Componentes</div>
-    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Senha de admin ou de host</div>
+    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Senha de admin ou de operador</div>
     <input type="password" id="compPwInput" placeholder="Senha"
       style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
       onkeydown="if(event.key==='Enter')confirmarCompLogin()">
@@ -10317,9 +10325,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 <div id="modalCompConfig" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:12px">
     <div style="font-size:16px;font-weight:800;color:#fff">⚙ Configurações</div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Senha do Host</label>
+    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Senha do Operador</label>
       <input id="compConfigSenha" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-    <div style="font-size:11px;color:#4a5568">O host usa esta senha para acessar o Controle de Componentes com permissão total dentro desta tela, sem acessar outras áreas admin.</div>
+    <div style="font-size:11px;color:#4a5568">O operador usa esta senha para acessar o Controle de Componentes e apenas registrar entradas de estoque e ver o histórico. Não cria, edita nem exclui itens.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button onclick="document.getElementById('modalCompConfig').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
       <button onclick="salvarConfigComp()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Salvar</button>
