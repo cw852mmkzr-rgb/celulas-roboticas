@@ -9680,8 +9680,7 @@ function renderComp(){
   else { badge.textContent='👤 Operador'; badge.style.background='#3d9eff20'; badge.style.color='#3d9eff'; badge.style.border='1px solid #3d9eff40'; }
   const ab=document.getElementById('compAdminBtns');
   ab.innerHTML = compEhAdmin()
-    ? `<button onclick="sincronizarProducaoComponentes()" class="comp-abtn" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a">🔄 Sincronizar produção</button>
-       <button onclick="abrirConfigComp()" class="comp-abtn" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa">⚙ Config</button>
+    ? `<button onclick="abrirConfigComp()" class="comp-abtn" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa">⚙ Config</button>
        <button onclick="backupComp()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">⬇ Backup</button>`
     : '';
   const bnp=document.getElementById('compBtnNovaPeca'); if(bnp) bnp.style.display=compEhAdmin()?'block':'none';
@@ -10079,47 +10078,6 @@ function backupComp(){
   a.download='componentes_backup_'+new Date().toISOString().slice(0,10)+'.json';
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   showToast('Backup exportado ✓');
-}
-
-// ── Sincronização (aplica produção já registrada; idempotente) ──
-// Reconcilia: consumo esperado (produção total × qtd_por_peça) − já consumido no histórico.
-async function sincronizarProducaoComponentes(){
-  if(!compEhAdmin()){ showToast('Apenas o admin',true); return; }
-  if(!confirm('Sincronizar o estoque com toda a produção já registrada nas Metas Diárias?\n\nAplica de uma vez a produção que ainda não foi descontada. É seguro rodar quantas vezes quiser (não conta em dobro).')) return;
-  await loadCompDados();
-  // Produção total por código de peça (todos os dias/robôs das Metas)
-  const totalPorPeca={};
-  const mk=Object.keys(celulas||{}).find(k=>getCellTipo(k)==='metas');
-  if(mk && celulas[mk].metas_dias){
-    Object.values(celulas[mk].metas_dias).forEach(dia=>{
-      ROBOS.forEach(rb=>{
-        const rd=dia[rb]; if(!rd) return;
-        const cod=(rd.cod||'').trim(); if(!cod||cod==='—') return;
-        const tot=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]||'').num),0);
-        if(tot) totalPorPeca[cod]=(totalPorPeca[cod]||0)+tot;
-      });
-    });
-  }
-  let mudou=0;
-  for(const m of compMasters){
-    const links=compPecasDoComp(m.id);
-    let esperado=0;
-    links.forEach(l=>{ esperado += (totalPorPeca[l.codigo_peca]||0)*(Number(l.quantidade_por_peca)||0); });
-    // já consumido (líquido) pelo histórico de produção: quantidade é negativa quando consome
-    const jaConsumido = -compHist.filter(h=>h.componente_id===m.id && h.tipo==='producao').reduce((s,h)=>s+(Number(h.quantidade)||0),0);
-    const falta = esperado - jaConsumido;
-    if(falta!==0){
-      const novo=(Number(m.estoque_atual)||0)-falta;
-      m.estoque_atual=novo;
-      try{
-        await _sbPatch('componentes','id=eq.'+m.id,{estoque_atual:novo,atualizado_em:new Date().toISOString()});
-        await _sbPost('componentes_historico',{componente_id:m.id,tipo:'producao',quantidade:-falta,descricao:'Sincronização de produção acumulada',codigo_peca:null});
-        mudou++;
-      }catch(e){}
-    }
-  }
-  await loadCompDados(); renderComp();
-  showToast(mudou? ('🔄 Sincronizado — '+mudou+' componente(s) atualizado(s) ✓') : 'Estoque já estava sincronizado ✓');
 }
 
 // ── Integração com Metas Diárias ──
