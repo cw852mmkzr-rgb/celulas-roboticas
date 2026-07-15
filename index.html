@@ -10091,7 +10091,7 @@ async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
   if(!compMasters.length && !compLinks.length){ try{ await loadCompDados(); }catch(e){} }
   const links=compLinksDaPeca(codigoPeca);
   if(!links.length) return;  // peça sem componentes vinculados → não faz nada, não quebra o fluxo
-  const resumo=[], alertas=[];
+  const alertas=[];
   for(const l of links){
     const m=compMasterById(l.componente_id); if(!m) continue;
     const consumo=(Number(l.quantidade_por_peca)||0)*qtdProduzida;  // >0 consome, <0 devolve
@@ -10101,12 +10101,10 @@ async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
     try{
       await _sbPatch('componentes','id=eq.'+m.id,{estoque_atual:novo,atualizado_em:new Date().toISOString()});
       await _sbPost('componentes_historico',{componente_id:m.id,tipo:'producao',quantidade:-consumo,descricao:'Produção automática — Peça '+codigoPeca,codigo_peca:codigoPeca});
-      resumo.push((consumo>0?'−':'+')+Math.abs(consumo)+' '+(m.nome||''));
     }catch(e){}
     if(novo < (Number(m.estoque_minimo)||0)) alertas.push(m.nome||'');
   }
-  // atraso p/ o toast não ser engolido pelo "Salvo ✓" das metas
-  if(resumo.length) setTimeout(()=>showToast('📦 Peça '+codigoPeca+' → '+resumo.join(', ')),600);
+  // Sem toast de confirmação nas Metas (a pedido). Mantém só o alerta de estoque baixo.
   alertas.forEach((n,i)=>setTimeout(()=>showToast('⚠️ Componente '+n+' abaixo do estoque mínimo!',true),800+i*400));
   const cs=document.getElementById('compScreen');
   if(cs&&cs.style.display==='flex'){ await loadCompDados(); renderComp(); }
