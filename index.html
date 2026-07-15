@@ -1050,6 +1050,7 @@ let compHistFiltro = "todos";
 let compHistCompId = null;
 let _compSaveTimer = null;
 let _compSubQueue = Promise.resolve();  // serializa subtrações de produção; leitura espera por elas
+let _compPollTimer = null;              // atualização automática do painel enquanto aberto (multi-aba)
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
@@ -9671,10 +9672,28 @@ function _entrarComp(){
   compPecaSel=null; compBusca='';
   const bi=document.getElementById('compBuscaInput'); if(bi)bi.value='';
   renderComp();
+  _startCompPoll();
 }
 function fecharControleComponentes(){
   document.getElementById('compScreen').style.display='none';
   compNivel=null; compPecaSel=null;
+  clearInterval(_compPollTimer); _compPollTimer=null;
+}
+// Mantém o painel atualizado sozinho enquanto aberto (pega mudanças feitas em outra aba)
+function _startCompPoll(){
+  clearInterval(_compPollTimer);
+  _compPollTimer=setInterval(async ()=>{
+    const cs=document.getElementById('compScreen');
+    if(!cs || cs.style.display!=='flex'){ clearInterval(_compPollTimer); _compPollTimer=null; return; }
+    // não atualiza se algum modal do componente está aberto (evita fechar o que o usuário abriu)
+    const modais=['modalCompLogin','modalCompPeca','modalCompComp','modalCompVincular','modalCompMov','modalCompHist','modalCompConfig'];
+    if(modais.some(id=>{ const m=document.getElementById(id); return m && m.style.display==='flex'; })) return;
+    // não atualiza se o usuário está digitando/editando dentro do painel
+    const ae=document.activeElement;
+    if(ae && cs.contains(ae) && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT')) return;
+    await loadCompDados();
+    renderComp();
+  }, 2500);
 }
 
 // ── Render ──
