@@ -1051,6 +1051,7 @@ let compHistCompId = null;
 let _compSaveTimer = null;
 let _compSubQueue = Promise.resolve();  // serializa subtrações de produção; leitura espera por elas
 let _compPollTimer = null;              // atualização automática do painel enquanto aberto (multi-aba)
+let _compRenderSig = "";                // assinatura do que está renderizado (evita re-render/piscar sem mudança)
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
@@ -9692,7 +9693,7 @@ function _startCompPoll(){
     const ae=document.activeElement;
     if(ae && cs.contains(ae) && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT')) return;
     await loadCompDados();
-    renderComp();
+    if(_compSig()!==_compRenderSig) renderComp();  // só re-renderiza se algo mudou (não pisca à toa)
   }, 2500);
 }
 
@@ -9711,6 +9712,11 @@ function renderComp(){
   renderCompAlertBanner();
   renderCompListaPecas();
   renderCompDetalhe();
+  _compRenderSig = _compSig();
+}
+// Assinatura só do que afeta a exibição — usada para não re-renderizar (piscar) sem mudança
+function _compSig(){
+  return JSON.stringify(compMasters)+'|'+JSON.stringify(compLinks)+'|'+JSON.stringify(componentesEstoque.pecas_meta||{})+'|'+((componentesEstoque.config||{}).auto_producao_ativa)+'|'+compPecaSel+'|'+compNivel;
 }
 function renderCompToggle(){
   const w=document.getElementById('compToggleWrap');
