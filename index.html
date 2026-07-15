@@ -10105,8 +10105,9 @@ async function subtrairComponentesProducao(codigoPeca, qtdProduzida){
     }catch(e){}
     if(novo < (Number(m.estoque_minimo)||0)) alertas.push(m.nome||'');
   }
-  if(resumo.length) showToast('📦 Peça '+codigoPeca+' → '+resumo.join(', '));
-  alertas.forEach(n=>showToast('⚠️ Componente '+n+' abaixo do estoque mínimo!',true));
+  // atraso p/ o toast não ser engolido pelo "Salvo ✓" das metas
+  if(resumo.length) setTimeout(()=>showToast('📦 Peça '+codigoPeca+' → '+resumo.join(', ')),600);
+  alertas.forEach((n,i)=>setTimeout(()=>showToast('⚠️ Componente '+n+' abaixo do estoque mínimo!',true),800+i*400));
   const cs=document.getElementById('compScreen');
   if(cs&&cs.style.display==='flex'){ await loadCompDados(); renderComp(); }
 }
