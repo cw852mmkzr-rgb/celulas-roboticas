@@ -1052,6 +1052,7 @@ let _compSaveTimer = null;
 let _compSubQueue = Promise.resolve();  // serializa subtrações de produção; leitura espera por elas
 let _compPollTimer = null;              // atualização automática do painel enquanto aberto (multi-aba)
 let _compRenderSig = "";                // assinatura do que está renderizado (evita re-render/piscar sem mudança)
+let _compLastLoad = 0;                  // timestamp da última leitura dos dados de componentes (para revalidar antes de descontar)
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
@@ -9613,6 +9614,7 @@ async function _loadCompRaw(){
   if(Array.isArray(m)) compMasters=m;
   if(Array.isArray(l)) compLinks=l;
   if(Array.isArray(h)) compHist=h;
+  _compLastLoad = Date.now();
 }
 // Espera as subtrações pendentes antes de ler, para nunca mostrar valor desatualizado logo após produzir
 async function loadCompDados(){ try{ await _compSubQueue; }catch(e){} return _loadCompRaw(); }
@@ -10118,11 +10120,13 @@ function subtrairComponentesProducao(codigoPeca, qtdProduzida){
   return _compSubQueue;
 }
 async function _subtrairImpl(codigoPeca, qtdProduzida){
+  if(!codigoPeca || !qtdProduzida) return;
+  // Revalida os dados no banco se ainda não carregados OU se estão velhos (>8s).
+  // Assim, vínculo removido ou toggle de pausa em OUTRA aba passam a valer em segundos
+  // (evita continuar descontando um componente que já foi desvinculado).
+  if((Date.now()-_compLastLoad>8000) || (!compMasters.length && !compLinks.length)){ try{ await _loadCompRaw(); }catch(e){} }
   if(!componentesEstoque||!componentesEstoque.config) return;
   if(componentesEstoque.config.auto_producao_ativa===false) return;  // admin pausou
-  if(!codigoPeca || !qtdProduzida) return;
-  // Garante que os componentes/vínculos estão carregados (ex.: produção logo após o login)
-  if(!compMasters.length && !compLinks.length){ try{ await _loadCompRaw(); }catch(e){} }
   const links=compLinksDaPeca(codigoPeca);
   if(!links.length) return;  // peça sem componentes vinculados → não faz nada, não quebra o fluxo
   const alertas=[];
