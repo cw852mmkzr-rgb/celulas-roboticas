@@ -566,6 +566,28 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cc-list{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px; }
 .cc-detail{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; min-width:0; padding:16px 18px; }
 
+/* Modais e formulários */
+.cc-mbg{ display:none; position:fixed; inset:0; background:#000000e6; z-index:9600; align-items:center; justify-content:center; padding:16px; }
+.cc-modal{ background:var(--cc-panel); border:1px solid var(--cc-bd-hi); border-radius:16px; padding:22px; width:100%; max-width:520px; display:flex; flex-direction:column; gap:14px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; box-shadow:0 24px 70px #000b; }
+.cc-mtitle{ font-size:17px; font-weight:800; color:#fff; display:flex; align-items:center; gap:9px; }
+.cc-label{ font-size:10px; color:var(--cc-mut); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; font-weight:800; }
+.cc-input{ width:100%; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:11px 13px; border-radius:10px; font-family:'Courier New',monospace; font-size:14px; box-sizing:border-box; outline:none; transition:border-color var(--dur-fast) ease; }
+.cc-input:focus{ border-color:var(--cc-blue); }
+.cc-field{ flex:1; min-width:0; }
+.cc-frow{ display:flex; gap:11px; }
+.cc-note{ font-size:11px; color:var(--cc-faint); line-height:1.45; }
+.cc-hr{ border:0; border-top:1px solid var(--cc-bd); }
+.cc-msection{ font-size:11px; font-weight:800; color:var(--cc-mut); text-transform:uppercase; letter-spacing:.6px; display:flex; align-items:center; gap:7px; }
+.cc-vtable{ width:100%; border-collapse:collapse; }
+.cc-vtable th{ text-align:left; padding:5px 8px; font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--cc-faint); font-weight:800; }
+.cc-vtable td{ padding:8px; border-top:1px solid var(--cc-bd); vertical-align:middle; }
+.cc-vcode{ font-family:'Courier New',monospace; color:var(--cc-tx); font-size:13px; font-weight:700; }
+.cc-vqty{ width:66px; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:6px 8px; border-radius:8px; font-family:'Courier New',monospace; font-size:13px; outline:none; box-sizing:border-box; }
+.cc-hitem{ display:flex; align-items:center; gap:9px; padding:8px 2px; border-top:1px solid var(--cc-bd); }
+.cc-htag{ font-weight:800; font-size:10px; min-width:64px; letter-spacing:.4px; }
+.cc-hqty{ font-family:'Courier New',monospace; font-weight:800; font-size:13px; min-width:44px; }
+.cc-hmeta{ flex:1; min-width:0; color:var(--cc-mut); font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
 @media (max-width:760px){
   .cc-header{ padding:10px 12px; }
   .cc-title{ font-size:15px; }
@@ -575,6 +597,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .cc-detail{ padding:14px 12px; }
   .cc-actions .cc-btn{ flex:1 1 auto; }
   .cc-stock-n{ font-size:25px; }
+  .cc-modal{ padding:18px 16px; }
+  .cc-frow{ flex-wrap:wrap; }
+  .cc-frow .cc-field{ flex:1 1 42%; }
 }
 </style>
 </head>
@@ -9909,7 +9934,7 @@ function renderCompDetalhe(){
 // ── CRUD Peça ──
 function abrirModalPecaComp(cod){
   if(!compEhAdmin()){ showToast('Apenas o admin',true); return; }
-  document.getElementById('modalCompPecaTitulo').textContent=cod?'Editar Peça':'Nova Peça';
+  document.getElementById('modalCompPecaTitulo').textContent='🧩 '+(cod?'Editar Peça':'Nova Peça');
   document.getElementById('compPecaEditCod').value=cod||'';
   const inpCod=document.getElementById('compPecaCod');
   inpCod.value=cod||''; inpCod.disabled=!!cod;
@@ -9948,7 +9973,7 @@ function abrirModalComponente(id){
   if(!compEhAdmin()){ showToast('Apenas o admin',true); return; }
   const editing=!!id;
   if(!editing && !compPecaSel){ showToast('Selecione uma peça primeiro',true); return; }
-  document.getElementById('modalCompCompTitulo').textContent=editing?'Editar Componente':'Novo Componente';
+  document.getElementById('modalCompCompTitulo').textContent='📦 '+(editing?'Editar Componente':'Novo Componente');
   document.getElementById('compCompEditId').value=id||'';
   const m=editing?compMasterById(id):null;
   document.getElementById('compCompNome').value=m?(m.nome||''):'';
@@ -10011,20 +10036,19 @@ function renderCompVinculos(compId){
   const el=document.getElementById('compCompVinculos'); if(!el) return;
   const links=compPecasDoComp(compId);
   const rows=links.length?links.map(l=>`<tr>
-    <td style="padding:6px 8px;font-family:'Courier New',monospace;color:#d8dde6">${esc(l.codigo_peca)}</td>
-    <td style="padding:6px 8px"><input type="number" min="1" value="${Number(l.quantidade_por_peca)||1}" onchange="atualizarQtdVinculo('${l.id}',this.value)" style="width:64px;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:4px 6px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;outline:none"></td>
-    <td style="padding:6px 8px;text-align:right"><button onclick="removerVinculo('${l.id}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑</button></td>
-  </tr>`).join(''):`<tr><td colspan="3" style="padding:8px;color:#4a5568;font-size:12px">Nenhuma peça vinculada.</td></tr>`;
+    <td class="cc-vcode">${esc(l.codigo_peca)}</td>
+    <td><input class="cc-vqty" type="number" min="1" value="${Number(l.quantidade_por_peca)||1}" onchange="atualizarQtdVinculo('${l.id}',this.value)"></td>
+    <td style="text-align:right;width:1%"><button onclick="removerVinculo('${l.id}')" class="cc-btn d" style="padding:6px 10px">🗑</button></td>
+  </tr>`).join(''):`<tr><td colspan="3" style="padding:10px 8px;color:var(--cc-faint);font-size:12px;border-top:1px solid var(--cc-bd)">Nenhuma peça vinculada ainda.</td></tr>`;
   el.innerHTML=`
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="color:#4a5568;font-size:10px;text-transform:uppercase">
-        <th style="text-align:left;padding:4px 8px">Código da Peça</th><th style="text-align:left;padding:4px 8px">Qtd por Peça</th><th style="padding:4px 8px"></th>
-      </tr></thead><tbody>${rows}</tbody>
+    <table class="cc-vtable">
+      <thead><tr><th>Código da Peça</th><th>Qtd por Peça</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
     </table>
-    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-      <input id="compVincPeca" list="compPecasDatalist" placeholder="Código da peça" style="flex:1;min-width:120px;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:6px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;outline:none">
-      <input id="compVincQtd" type="number" min="1" value="1" title="Qtd por peça" style="width:80px;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:6px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;outline:none">
-      <button onclick="vincularPeca('${compId}')" class="comp-abtn" style="background:#00e87a15;border:1px solid #00e87a40;color:#00e87a">+ Vincular Peça</button>
+    <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;align-items:center">
+      <input id="compVincPeca" list="compPecasDatalist" placeholder="Código da peça" class="cc-input" style="flex:1;min-width:130px;padding:9px 12px;font-size:13px">
+      <input id="compVincQtd" type="number" min="1" value="1" title="Qtd por peça" class="cc-input" style="width:78px;padding:9px 10px;font-size:13px;text-align:center">
+      <button onclick="vincularPeca('${compId}')" class="cc-btn g">+ Vincular</button>
     </div>
     <datalist id="compPecasDatalist">${compTodosCodigosPeca().map(c=>`<option value="${esc(c)}"></option>`).join('')}</datalist>`;
 }
@@ -10120,15 +10144,14 @@ async function confirmarMovimento(){
 function renderCompHistRecent(compId){
   const el=document.getElementById('compCompHistRecent'); if(!el) return;
   const movs=compHist.filter(h=>h.componente_id===compId).slice(0,20);
-  if(!movs.length){ el.innerHTML=`<div style="color:#4a5568;font-size:11px;padding:6px">Nenhum movimento ainda.</div>`; return; }
-  const cor={entrada:'#00e87a',producao:'#3d9eff',ajuste:'#a78bfa'};
+  if(!movs.length){ el.innerHTML=`<div style="color:var(--cc-faint);font-size:12px;padding:10px 4px">Nenhum movimento ainda.</div>`; return; }
+  const cor={entrada:'var(--cc-green)',producao:'var(--cc-blue)',ajuste:'var(--cc-purple)'};
   el.innerHTML=movs.map(m=>{
-    const cc=cor[m.tipo]||'#8a94a6'; const q=Number(m.quantidade)||0;
-    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 6px;border-bottom:1px solid #141a24;font-size:11px">
-      <span style="color:${cc};font-weight:700;min-width:70px">${(m.tipo||'').toUpperCase()}</span>
-      <span style="color:${q<0?'#ff8c00':'#00e87a'};font-family:'Courier New',monospace">${q>0?'+':''}${q}</span>
-      <span style="flex:1;color:#6a7488;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.descricao||'')}${m.codigo_peca?(' · peça '+esc(m.codigo_peca)):''}</span>
-      <span style="color:#4a5568">${compFmtData(m.criado_em)}</span>
+    const cc=cor[m.tipo]||'var(--cc-mut)'; const q=Number(m.quantidade)||0;
+    return `<div class="cc-hitem">
+      <span class="cc-htag" style="color:${cc}">${(m.tipo||'').toUpperCase()}</span>
+      <span class="cc-hqty" style="color:${q<0?'var(--cc-orange)':'var(--cc-green)'}">${q>0?'+':''}${q}</span>
+      <span class="cc-hmeta">${m.codigo_peca?('peça '+esc(m.codigo_peca)+' · '):''}${compFmtData(m.criado_em)}</span>
     </div>`;
   }).join('');
 }
@@ -10456,120 +10479,119 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 </div>
 
 <!-- Modal login componentes -->
-<div id="modalCompLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #ffb30040;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
-    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">📦 Controle de Componentes</div>
-    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Senha de admin ou de operador</div>
-    <input type="password" id="compPwInput" placeholder="Senha"
-      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
+<div id="modalCompLogin" class="cc-mbg">
+  <div class="cc-modal" style="max-width:360px;text-align:center;gap:0">
+    <div style="font-size:34px;margin-bottom:6px">📦</div>
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Controle de Componentes</div>
+    <div style="font-size:12px;color:var(--cc-faint);margin-bottom:18px">Senha de admin ou de operador</div>
+    <input type="password" id="compPwInput" placeholder="Senha" class="cc-input" style="text-align:center;margin-bottom:8px"
       onkeydown="if(event.key==='Enter')confirmarCompLogin()">
-    <div id="compLoginErr" style="display:none;color:#ff4d4d;font-size:11px;margin-bottom:8px">Senha incorreta</div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-      <button onclick="document.getElementById('modalCompLogin').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="confirmarCompLogin()" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Entrar</button>
+    <div id="compLoginErr" style="display:none;color:var(--cc-red);font-size:11px;margin-bottom:8px">Senha incorreta</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+      <button onclick="document.getElementById('modalCompLogin').style.display='none'" class="cc-btn ghost">Cancelar</button>
+      <button onclick="confirmarCompLogin()" class="cc-btn a">Entrar</button>
     </div>
   </div>
 </div>
 
 <!-- Modal peça (nova/editar) -->
-<div id="modalCompPeca" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #00e87a40;border-radius:16px;padding:24px;width:90%;max-width:400px;display:flex;flex-direction:column;gap:12px">
-    <div id="modalCompPecaTitulo" style="font-size:16px;font-weight:800;color:#fff">Nova Peça</div>
+<div id="modalCompPeca" class="cc-mbg">
+  <div class="cc-modal" style="max-width:420px">
+    <div id="modalCompPecaTitulo" class="cc-mtitle">🧩 Nova Peça</div>
     <input type="hidden" id="compPecaEditCod">
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Código *</label>
-      <input id="compPecaCod" placeholder="Ex: 1083" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Nome *</label>
-      <input id="compPecaNome" placeholder="Ex: Suporte lateral" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Descrição</label>
-      <textarea id="compPecaDesc" rows="2" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none;resize:vertical"></textarea></div>
+    <div><label class="cc-label">Código *</label>
+      <input id="compPecaCod" class="cc-input" placeholder="Ex: 1083"></div>
+    <div><label class="cc-label">Nome *</label>
+      <input id="compPecaNome" class="cc-input" placeholder="Ex: Suporte lateral"></div>
+    <div><label class="cc-label">Descrição</label>
+      <textarea id="compPecaDesc" class="cc-input" rows="2" style="resize:vertical"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button onclick="document.getElementById('modalCompPeca').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="salvarPecaComp()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Salvar</button>
+      <button onclick="document.getElementById('modalCompPeca').style.display='none'" class="cc-btn ghost">Cancelar</button>
+      <button onclick="salvarPecaComp()" class="cc-btn g">Salvar</button>
     </div>
   </div>
 </div>
 
 <!-- Modal componente (novo/editar) -->
-<div id="modalCompComp" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:24px;width:92%;max-width:480px;display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow-y:auto">
-    <div id="modalCompCompTitulo" style="font-size:16px;font-weight:800;color:#fff">Novo Componente</div>
+<div id="modalCompComp" class="cc-mbg">
+  <div class="cc-modal">
+    <div id="modalCompCompTitulo" class="cc-mtitle">📦 Novo Componente</div>
     <input type="hidden" id="compCompEditId">
-    <!-- Seção 1: dados do componente -->
-    <div style="display:flex;gap:10px">
-      <div style="flex:2"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Nome *</label>
-        <input id="compCompNome" placeholder="Ex: Tela raiada" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-      <div style="flex:1"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Código</label>
-        <input id="compCompCod" placeholder="TR-1083" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
+    <div class="cc-frow">
+      <div class="cc-field" style="flex:2"><label class="cc-label">Nome *</label>
+        <input id="compCompNome" class="cc-input" placeholder="Ex: Tela raiada"></div>
+      <div class="cc-field"><label class="cc-label">Código</label>
+        <input id="compCompCod" class="cc-input" placeholder="TR-1083"></div>
     </div>
-    <div style="display:flex;gap:10px">
-      <div style="flex:1"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Estoque atual</label>
-        <input id="compCompEstoque" type="number" value="0" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-      <div style="flex:1"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Estoque mínimo</label>
-        <input id="compCompMin" type="number" value="50" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-      <div style="flex:1"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Unidade</label>
-        <input id="compCompUnidade" value="un" placeholder="un" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
+    <div class="cc-frow">
+      <div class="cc-field"><label class="cc-label">Estoque atual</label>
+        <input id="compCompEstoque" class="cc-input" type="number" value="0"></div>
+      <div class="cc-field"><label class="cc-label">Estoque mínimo</label>
+        <input id="compCompMin" class="cc-input" type="number" value="50"></div>
+      <div class="cc-field"><label class="cc-label">Unidade</label>
+        <input id="compCompUnidade" class="cc-input" value="un" placeholder="un"></div>
     </div>
-    <div style="font-size:10px;color:#4a5568;margin-top:-4px">Alterar o estoque atual aqui registra um movimento de <b style="color:#a78bfa">ajuste</b> no histórico.</div>
-    <div id="compCompQtdWrap" style="display:none"><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Quantidade usada por peça (nesta peça)</label>
-      <input id="compCompQtdPorPeca" type="number" min="1" value="1" style="width:100%;background:#080b0f;border:1px solid #00e87a30;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
+    <div class="cc-note">💡 Alterar o estoque atual aqui registra um movimento de <b style="color:var(--cc-purple)">ajuste</b> no histórico.</div>
+    <div id="compCompQtdWrap" style="display:none"><label class="cc-label">Quantidade usada por peça (nesta peça)</label>
+      <input id="compCompQtdPorPeca" class="cc-input" type="number" min="1" value="1" style="border-color:#00e87a45"></div>
     <!-- Seções 2 e 3 (só na edição) -->
     <div id="compCompSecoes" style="display:none">
-      <div style="border-top:1px solid #1e2530;margin:6px 0 10px"></div>
-      <div style="font-size:12px;font-weight:700;color:#d8dde6;margin-bottom:6px">🔗 Peças que usam este componente</div>
+      <hr class="cc-hr" style="margin:6px 0 14px">
+      <div class="cc-msection" style="margin-bottom:10px">🔗 Peças que usam este componente</div>
       <div id="compCompVinculos"></div>
-      <div style="border-top:1px solid #1e2530;margin:12px 0 10px"></div>
-      <div style="font-size:12px;font-weight:700;color:#d8dde6;margin-bottom:6px">📜 Histórico recente</div>
-      <div id="compCompHistRecent" style="max-height:180px;overflow-y:auto"></div>
+      <hr class="cc-hr" style="margin:18px 0 14px">
+      <div class="cc-msection" style="margin-bottom:8px">📜 Histórico recente</div>
+      <div id="compCompHistRecent" style="max-height:210px;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
     </div>
-    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:6px">
-      <button id="compCompExcluirBtn" onclick="excluirComponente()" style="display:none;background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;padding:8px 14px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-size:12px">🗑 Excluir componente</button>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:6px;flex-wrap:wrap">
+      <button id="compCompExcluirBtn" onclick="excluirComponente()" class="cc-btn d" style="display:none">🗑 Excluir componente</button>
       <div style="display:flex;gap:8px;margin-left:auto">
-        <button onclick="document.getElementById('modalCompComp').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-        <button onclick="salvarComponente()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Salvar</button>
+        <button onclick="document.getElementById('modalCompComp').style.display='none'" class="cc-btn ghost">Cancelar</button>
+        <button onclick="salvarComponente()" class="cc-btn b">Salvar</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Modal vincular componente existente à peça -->
-<div id="modalCompVincular" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #00e87a40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:12px">
-    <div id="modalCompVincularTitulo" style="font-size:16px;font-weight:800;color:#fff">🔗 Vincular componente</div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Componente existente</label>
+<div id="modalCompVincular" class="cc-mbg">
+  <div class="cc-modal" style="max-width:440px">
+    <div id="modalCompVincularTitulo" class="cc-mtitle">🔗 Vincular componente</div>
+    <div><label class="cc-label">Componente existente</label>
       <div id="compVincSelWrap"></div></div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Quantidade usada por peça</label>
-      <input id="compVincExistQtd" type="number" min="1" value="1" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
+    <div><label class="cc-label">Quantidade usada por peça</label>
+      <input id="compVincExistQtd" class="cc-input" type="number" min="1" value="1"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button onclick="document.getElementById('modalCompVincular').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button id="compVincConfirmBtn" onclick="confirmarVincularExistente()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Vincular</button>
+      <button onclick="document.getElementById('modalCompVincular').style.display='none'" class="cc-btn ghost">Cancelar</button>
+      <button id="compVincConfirmBtn" onclick="confirmarVincularExistente()" class="cc-btn g">Vincular</button>
     </div>
   </div>
 </div>
 
 <!-- Modal movimentação -->
-<div id="modalCompMov" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #ffb30040;border-radius:16px;padding:24px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:12px">
-    <div id="modalCompMovTitulo" style="font-size:16px;font-weight:800;color:#fff">Movimentação</div>
+<div id="modalCompMov" class="cc-mbg">
+  <div class="cc-modal" style="max-width:400px">
+    <div id="modalCompMovTitulo" class="cc-mtitle">Movimentação</div>
     <input type="hidden" id="compMovCompId"><input type="hidden" id="compMovTipo">
-    <div id="compMovInfo" style="font-size:12px;color:#4a5568"></div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Quantidade *</label>
-      <input id="compMovQtd" type="number" min="1" placeholder="0" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;box-sizing:border-box;outline:none"></div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Motivo (opcional)</label>
-      <input id="compMovMotivo" placeholder="Ex: Compra, ajuste de inventário" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-    <div id="compMovAviso" style="display:none;font-size:11px;color:#ff8c00">⚠ Esta saída deixará o estoque negativo.</div>
+    <div id="compMovInfo" style="font-size:13px;color:var(--cc-mut);background:var(--cc-card);border:1px solid var(--cc-bd);border-radius:10px;padding:11px 13px"></div>
+    <div><label class="cc-label">Quantidade *</label>
+      <input id="compMovQtd" class="cc-input" type="number" min="1" placeholder="0" style="font-size:16px"></div>
+    <div><label class="cc-label">Motivo (opcional)</label>
+      <input id="compMovMotivo" class="cc-input" placeholder="Ex: Compra NF 1234"></div>
+    <div id="compMovAviso" style="display:none;font-size:12px;color:var(--cc-orange)">⚠ Esta saída deixará o estoque negativo.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button onclick="document.getElementById('modalCompMov').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="confirmarMovimento()" id="compMovBtn" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Confirmar</button>
+      <button onclick="document.getElementById('modalCompMov').style.display='none'" class="cc-btn ghost">Cancelar</button>
+      <button onclick="confirmarMovimento()" id="compMovBtn" class="cc-btn g">Confirmar</button>
     </div>
   </div>
 </div>
 
 <!-- Modal histórico -->
-<div id="modalCompHist" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:20px;width:94%;max-width:640px;display:flex;flex-direction:column;gap:12px;max-height:88vh">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div id="modalCompHistTitulo" style="font-size:15px;font-weight:800;color:#fff">📜 Histórico</div>
-      <button onclick="document.getElementById('modalCompHist').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">✕</button>
+<div id="modalCompHist" class="cc-mbg">
+  <div class="cc-modal" style="max-width:660px;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div id="modalCompHistTitulo" class="cc-mtitle" style="min-width:0">📜 Histórico</div>
+      <button onclick="document.getElementById('modalCompHist').style.display='none'" class="cc-btn ghost" style="flex-shrink:0">✕</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap" id="compHistFiltros"></div>
     <div id="compHistLista" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
@@ -10577,15 +10599,15 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 </div>
 
 <!-- Modal configurações (só admin) -->
-<div id="modalCompConfig" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:380px;display:flex;flex-direction:column;gap:12px">
-    <div style="font-size:16px;font-weight:800;color:#fff">⚙ Configurações</div>
-    <div><label style="font-size:11px;color:#4a5568;display:block;margin-bottom:4px">Senha do Operador</label>
-      <input id="compConfigSenha" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:9px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"></div>
-    <div style="font-size:11px;color:#4a5568">O operador usa esta senha para acessar o Controle de Componentes e apenas registrar entradas de estoque e ver o histórico. Não cria, edita nem exclui itens.</div>
+<div id="modalCompConfig" class="cc-mbg">
+  <div class="cc-modal" style="max-width:400px">
+    <div class="cc-mtitle">⚙ Configurações</div>
+    <div><label class="cc-label">Senha do Operador</label>
+      <input id="compConfigSenha" class="cc-input"></div>
+    <div class="cc-note">O operador usa esta senha para acessar o Controle de Componentes e apenas registrar entradas de estoque e ver o histórico. Não cria, edita nem exclui itens.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button onclick="document.getElementById('modalCompConfig').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="salvarConfigComp()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">Salvar</button>
+      <button onclick="document.getElementById('modalCompConfig').style.display='none'" class="cc-btn ghost">Cancelar</button>
+      <button onclick="salvarConfigComp()" class="cc-btn p">Salvar</button>
     </div>
   </div>
 </div>
