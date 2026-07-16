@@ -510,7 +510,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cc-tools{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
 
 /* Botões de ação */
-.cc-btn{ display:inline-flex; align-items:center; justify-content:center; gap:5px; border-radius:9px; padding:8px 13px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Courier New',monospace; border:1px solid var(--cc-bd-hi); background:var(--cc-card-hi); color:var(--cc-tx); transition:filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); white-space:nowrap; }
+.cc-btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:9px; padding:9px 15px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Courier New',monospace; border:1px solid var(--cc-bd-hi); background:var(--cc-card-hi); color:var(--cc-tx); transition:filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); white-space:nowrap; }
 .cc-btn:active{ transform:scale(.95); }
 .cc-btn.g{ background:#00e87a18; border-color:#00e87a50; color:var(--cc-green); }
 .cc-btn.b{ background:#3d9eff18; border-color:#3d9eff50; color:var(--cc-blue); }
@@ -568,30 +568,31 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* Modais e formulários */
 .cc-mbg{ display:none; position:fixed; inset:0; background:#000000e6; z-index:9600; align-items:center; justify-content:center; padding:16px; }
-.cc-modal{ background:var(--cc-panel); border:1px solid var(--cc-bd-hi); border-radius:16px; padding:22px; width:100%; max-width:520px; display:flex; flex-direction:column; gap:14px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; box-shadow:0 24px 70px #000b; }
-.cc-mtitle{ font-size:17px; font-weight:800; color:#fff; display:flex; align-items:center; gap:9px; }
-.cc-label{ font-size:10px; color:var(--cc-mut); display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; font-weight:800; }
-.cc-input{ width:100%; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:11px 13px; border-radius:10px; font-family:'Courier New',monospace; font-size:14px; box-sizing:border-box; outline:none; transition:border-color var(--dur-fast) ease; }
+.cc-modal{ background:var(--cc-panel); border:1px solid var(--cc-bd-hi); border-radius:16px; padding:24px; width:100%; max-width:540px; display:flex; flex-direction:column; gap:18px; max-height:92vh; overflow-y:auto; -webkit-overflow-scrolling:touch; box-shadow:0 24px 70px #000b; }
+.cc-mtitle{ font-size:20px; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px; }
+.cc-label{ font-size:12.5px; color:var(--cc-mut); display:block; margin-bottom:8px; letter-spacing:.3px; font-weight:700; }
+.cc-input{ width:100%; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:15px 16px; border-radius:11px; font-family:'Courier New',monospace; font-size:16px; box-sizing:border-box; outline:none; transition:border-color var(--dur-fast) ease; }
 .cc-input:focus{ border-color:var(--cc-blue); }
+.cc-input::placeholder{ color:#4a5568; }
 .cc-field{ flex:1; min-width:0; }
-.cc-frow{ display:flex; gap:11px; }
-.cc-note{ font-size:11px; color:var(--cc-faint); line-height:1.45; }
+.cc-frow{ display:flex; gap:12px; }
+.cc-note{ font-size:13px; color:var(--cc-faint); line-height:1.55; }
 .cc-hr{ border:0; border-top:1px solid var(--cc-bd); }
-.cc-msection{ font-size:11px; font-weight:800; color:var(--cc-mut); text-transform:uppercase; letter-spacing:.6px; display:flex; align-items:center; gap:7px; }
+.cc-msection{ font-size:13.5px; font-weight:800; color:var(--cc-tx); letter-spacing:.3px; display:flex; align-items:center; gap:8px; }
 .cc-vtable{ width:100%; border-collapse:collapse; }
-.cc-vtable th{ text-align:left; padding:5px 8px; font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--cc-faint); font-weight:800; }
-.cc-vtable td{ padding:8px; border-top:1px solid var(--cc-bd); vertical-align:middle; }
-.cc-vcode{ font-family:'Courier New',monospace; color:var(--cc-tx); font-size:13px; font-weight:700; }
-.cc-vqty{ width:66px; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:6px 8px; border-radius:8px; font-family:'Courier New',monospace; font-size:13px; outline:none; box-sizing:border-box; }
-.cc-hitem{ display:flex; align-items:center; gap:9px; padding:8px 2px; border-top:1px solid var(--cc-bd); }
-.cc-htag{ font-weight:800; font-size:10px; min-width:64px; letter-spacing:.4px; }
-.cc-hqty{ font-family:'Courier New',monospace; font-weight:800; font-size:13px; min-width:44px; }
-.cc-hmeta{ flex:1; min-width:0; color:var(--cc-mut); font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cc-vtable th{ text-align:left; padding:6px 8px; font-size:12px; letter-spacing:.2px; color:var(--cc-faint); font-weight:700; }
+.cc-vtable td{ padding:11px 8px; border-top:1px solid var(--cc-bd); vertical-align:middle; }
+.cc-vcode{ font-family:'Courier New',monospace; color:var(--cc-tx); font-size:16px; font-weight:700; }
+.cc-vqty{ width:82px; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:10px 10px; border-radius:9px; font-family:'Courier New',monospace; font-size:16px; outline:none; box-sizing:border-box; text-align:center; }
+.cc-hitem{ display:flex; align-items:center; gap:11px; padding:11px 3px; border-top:1px solid var(--cc-bd); }
+.cc-htag{ font-weight:800; font-size:12.5px; min-width:88px; letter-spacing:.2px; }
+.cc-hqty{ font-family:'Courier New',monospace; font-weight:800; font-size:16px; min-width:56px; }
+.cc-hmeta{ flex:1; min-width:0; color:var(--cc-mut); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 @media (max-width:760px){
   .cc-header{ padding:10px 12px; }
   .cc-title{ font-size:15px; }
-  .cc-btn{ padding:9px 13px; }
+  .cc-btn{ padding:11px 15px; font-size:13.5px; }
   .cc-body{ flex-direction:column; }
   .cc-side{ width:100%; border-right:none; border-bottom:1px solid var(--cc-bd); max-height:35vh; }
   .cc-detail{ padding:14px 12px; }
