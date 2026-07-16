@@ -487,18 +487,94 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .mapa-canvas-wrap { padding:14px; }
 }
 
-/* ── Controle de Componentes ── */
-@keyframes comp-pulse-kf { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.82)} }
-.comp-pulse { animation: comp-pulse-kf 1.2s ease-in-out infinite; }
-.comp-abtn { border-radius:6px; padding:5px 10px; font-size:11px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; transition: filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
-.comp-abtn:active { transform: scale(0.96); }
-@media (hover: hover) and (pointer: fine) {
-  .comp-abtn:hover { filter: brightness(1.25); }
-  .comp-peca-item:hover { border-color:#ffb30040 !important; }
+/* ══ Controle de Componentes ══ */
+:root{
+  --cc-bg:#05080e; --cc-panel:#0a0e15; --cc-card:#0e131b; --cc-card-hi:#141b26;
+  --cc-bd:#1c2431; --cc-bd-hi:#2a3444;
+  --cc-tx:#eaf0f8; --cc-mut:#8792a6; --cc-faint:#525d70;
+  --cc-green:#00e87a; --cc-amber:#ffb300; --cc-blue:#3d9eff; --cc-purple:#a78bfa; --cc-red:#ff5b6a; --cc-orange:#ff8c00;
 }
-@media (max-width: 720px) {
-  #compScreen > div:nth-child(3) { flex-direction: column !important; }
-  #compScreen > div:nth-child(3) > div:first-child { width:100% !important; max-height:38vh; border-right:none !important; border-bottom:1px solid #1e2530; }
+@keyframes comp-pulse-kf { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+.comp-pulse { animation: comp-pulse-kf 1.2s ease-in-out infinite; }
+/* botão legado (usado em modais) */
+.comp-abtn { border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; transition: filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); }
+.comp-abtn:active { transform: scale(0.96); }
+@media (hover: hover) and (pointer: fine){ .comp-abtn:hover { filter: brightness(1.2); } }
+
+/* Header */
+.cc-header{ background:linear-gradient(180deg,#0b1119,#080c12); border-bottom:1px solid var(--cc-bd); flex-shrink:0; padding:12px 16px; }
+.cc-hrow{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.cc-title{ font-size:16px; font-weight:900; color:#fff; font-family:'Montserrat',sans-serif; letter-spacing:.2px; line-height:1.1; }
+.cc-sub{ font-size:11px; color:var(--cc-faint); margin-top:2px; }
+.cc-badge{ font-size:11px; font-weight:800; padding:4px 11px; border-radius:20px; font-family:'Courier New',monospace; white-space:nowrap; }
+.cc-tools{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+
+/* Botões de ação */
+.cc-btn{ display:inline-flex; align-items:center; justify-content:center; gap:5px; border-radius:9px; padding:8px 13px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Courier New',monospace; border:1px solid var(--cc-bd-hi); background:var(--cc-card-hi); color:var(--cc-tx); transition:filter var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out); white-space:nowrap; }
+.cc-btn:active{ transform:scale(.95); }
+.cc-btn.g{ background:#00e87a18; border-color:#00e87a50; color:var(--cc-green); }
+.cc-btn.b{ background:#3d9eff18; border-color:#3d9eff50; color:var(--cc-blue); }
+.cc-btn.p{ background:#a78bfa18; border-color:#a78bfa50; color:var(--cc-purple); }
+.cc-btn.a{ background:#ffb30018; border-color:#ffb30050; color:var(--cc-amber); }
+.cc-btn.o{ background:#ff8c0018; border-color:#ff8c0050; color:var(--cc-orange); }
+.cc-btn.d{ background:#ff5b6a18; border-color:#ff5b6a50; color:var(--cc-red); }
+.cc-btn.ghost{ background:transparent; border-color:var(--cc-bd); color:var(--cc-mut); }
+@media (hover:hover) and (pointer:fine){ .cc-btn:hover{ filter:brightness(1.2); } }
+
+/* Busca */
+.cc-search{ width:100%; background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:10px 12px; border-radius:10px; font-family:'Courier New',monospace; font-size:13px; box-sizing:border-box; outline:none; }
+.cc-search:focus{ border-color:var(--cc-bd-hi); }
+
+/* Lista de peças */
+.cc-peca{ cursor:pointer; background:var(--cc-card); border:1px solid var(--cc-bd); border-radius:10px; padding:11px 12px; margin-bottom:7px; transition:background var(--dur-fast) ease,border-color var(--dur-fast) ease,transform var(--dur-fast) var(--ease-out); animation:cardIn 280ms var(--ease-out) both; }
+.cc-peca:active{ transform:scale(.98); }
+.cc-peca.sel{ background:#ffb3000f; border-color:#ffb30070; box-shadow:inset 3px 0 0 var(--cc-amber); }
+.cc-peca-code{ font-size:14px; font-weight:800; color:var(--cc-tx); font-family:'Courier New',monospace; }
+.cc-peca.sel .cc-peca-code{ color:var(--cc-amber); }
+.cc-peca-name{ font-size:12px; color:var(--cc-mut); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cc-peca-count{ font-size:10px; color:var(--cc-faint); margin-top:4px; letter-spacing:.3px; }
+@media (hover:hover) and (pointer:fine){ .cc-peca:hover{ border-color:#ffb30050; background:var(--cc-card-hi); } }
+
+/* Card de componente */
+.cc-comp{ position:relative; background:var(--cc-card); border:1px solid var(--cc-bd); border-radius:12px; padding:14px 14px 12px 17px; margin-bottom:10px; overflow:hidden; animation:cardIn 280ms var(--ease-out) both; }
+.cc-comp::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--st,#00e87a); }
+.cc-comp-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.cc-comp-code{ font-size:11px; color:var(--cc-faint); font-family:'Courier New',monospace; letter-spacing:.4px; }
+.cc-comp-name{ font-size:15.5px; font-weight:800; color:#f3f7fc; margin-top:1px; line-height:1.2; }
+.cc-stock{ text-align:right; flex-shrink:0; line-height:1; }
+.cc-stock-n{ font-size:27px; font-weight:900; color:var(--st,#00e87a); font-family:'Courier New',monospace; letter-spacing:-.5px; }
+.cc-stock-u{ font-size:12px; color:var(--cc-faint); font-weight:600; }
+.cc-stock-min{ font-size:10px; color:var(--cc-faint); margin-top:3px; }
+.cc-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.cc-chip{ font-size:10.5px; color:var(--cc-mut); background:#ffffff08; border:1px solid var(--cc-bd); border-radius:20px; padding:3px 9px; font-family:'Courier New',monospace; }
+.cc-meter{ height:5px; border-radius:99px; background:#ffffff0d; margin-top:11px; overflow:hidden; }
+.cc-meter-fill{ height:100%; border-radius:99px; background:var(--st,#00e87a); transform-origin:left; transition:transform 400ms var(--ease-out); }
+.cc-actions{ display:flex; gap:7px; flex-wrap:wrap; margin-top:12px; }
+
+/* Cabeçalho do detalhe */
+.cc-det-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid var(--cc-bd); }
+.cc-det-code{ font-size:22px; font-weight:900; color:var(--cc-amber); font-family:'Courier New',monospace; line-height:1; }
+.cc-det-name{ font-size:14px; color:var(--cc-tx); font-weight:600; margin-top:5px; }
+.cc-det-desc{ font-size:12px; color:var(--cc-mut); margin-top:4px; }
+.cc-empty{ color:var(--cc-faint); font-size:13px; text-align:center; padding:40px 20px; line-height:1.5; }
+.cc-section{ font-size:11px; font-weight:800; color:var(--cc-mut); text-transform:uppercase; letter-spacing:.6px; margin:0 0 4px; }
+
+/* Layout */
+.cc-body{ flex:1; display:flex; min-height:0; overflow:hidden; }
+.cc-side{ width:310px; flex-shrink:0; border-right:1px solid var(--cc-bd); display:flex; flex-direction:column; min-height:0; background:var(--cc-panel); }
+.cc-side-top{ padding:12px; border-bottom:1px solid var(--cc-bd); flex-shrink:0; display:flex; flex-direction:column; gap:9px; }
+.cc-list{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px; }
+.cc-detail{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; min-width:0; padding:16px 18px; }
+
+@media (max-width:760px){
+  .cc-header{ padding:10px 12px; }
+  .cc-title{ font-size:15px; }
+  .cc-btn{ padding:9px 13px; }
+  .cc-body{ flex-direction:column; }
+  .cc-side{ width:100%; border-right:none; border-bottom:1px solid var(--cc-bd); max-height:35vh; }
+  .cc-detail{ padding:14px 12px; }
+  .cc-actions .cc-btn{ flex:1 1 auto; }
+  .cc-stock-n{ font-size:25px; }
 }
 </style>
 </head>
@@ -9706,8 +9782,8 @@ function renderComp(){
   else { badge.textContent='👤 Operador'; badge.style.background='#3d9eff20'; badge.style.color='#3d9eff'; badge.style.border='1px solid #3d9eff40'; }
   const ab=document.getElementById('compAdminBtns');
   ab.innerHTML = compEhAdmin()
-    ? `<button onclick="abrirConfigComp()" class="comp-abtn" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa">⚙ Config</button>
-       <button onclick="backupComp()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">⬇ Backup</button>`
+    ? `<button onclick="abrirConfigComp()" class="cc-btn p">⚙ Config</button>
+       <button onclick="backupComp()" class="cc-btn b">⬇ Backup</button>`
     : '';
   const bnp=document.getElementById('compBtnNovaPeca'); if(bnp) bnp.style.display=compEhAdmin()?'block':'none';
   renderCompToggle();
@@ -9745,10 +9821,10 @@ function renderCompAlertBanner(){
   const b=document.getElementById('compAlertBanner');
   const n=compContarAbaixoMinimo();
   b.innerHTML = n>0
-    ? `<div style="background:#ff4d4d18;border-bottom:1px solid #ff4d4d40;color:#ff6a6a;padding:8px 14px;font-size:12px;font-weight:700;font-family:'Courier New',monospace"><span class="comp-pulse" style="display:inline-block">⚠</span> ${n} componente${n>1?'s':''} abaixo do estoque mínimo</div>`
+    ? `<div style="background:linear-gradient(90deg,#ff5b6a20,#ff5b6a10);border-bottom:1px solid #ff5b6a45;color:#ff8a95;padding:9px 16px;font-size:12.5px;font-weight:700;font-family:'Courier New',monospace;display:flex;align-items:center;gap:8px"><span class="comp-pulse" style="display:inline-block;font-size:14px">⚠</span> ${n} componente${n>1?'s':''} abaixo do estoque mínimo</div>`
     : '';
 }
-function _compCor(q,m){ q=Number(q)||0; m=Number(m)||0; if(m>0&&q<m) return {c:'#ff4d4d',pulse:true}; if(m>0&&q<=m*1.5) return {c:'#ff8c00',pulse:false}; return {c:'#00e87a',pulse:false}; }
+function _compCor(q,m){ q=Number(q)||0; m=Number(m)||0; if(m>0&&q<m) return {c:'#ff5b6a',pulse:true}; if(m>0&&q<=m*1.5) return {c:'#ff8c00',pulse:false}; return {c:'#00e87a',pulse:false}; }
 
 function renderCompListaPecas(){
   const el=document.getElementById('compListaPecas');
@@ -9756,18 +9832,18 @@ function renderCompListaPecas(){
   const termo=(compBusca||'').toLowerCase();
   let filtradas=codigos.filter(cod=>!termo||cod.toLowerCase().includes(termo)||(compGetPecaNome(cod)||'').toLowerCase().includes(termo));
   filtradas.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-  if(!filtradas.length){ el.innerHTML=`<div style="color:#4a5568;font-size:12px;text-align:center;padding:20px">${codigos.length?'Nenhuma peça encontrada':'Nenhuma peça cadastrada ainda'}</div>`; return; }
+  if(!filtradas.length){ el.innerHTML=`<div class="cc-empty">${codigos.length?'Nenhuma peça encontrada':'Nenhuma peça cadastrada ainda'}</div>`; return; }
   el.innerHTML=filtradas.map((cod,i)=>{
     const links=compLinksDaPeca(cod);
     const critico=links.some(l=>{ const m=compMasterById(l.componente_id); return m&&(Number(m.estoque_atual)||0)<(Number(m.estoque_minimo)||0); });
     const sel=compPecaSel===cod;
-    return `<div onclick="selecionarPecaComp('${esc(cod)}')" class="comp-peca-item" style="cursor:pointer;background:${sel?'#ffb30015':'#0b0f16'};border:1px solid ${sel?'#ffb30050':'#1e2530'};border-radius:8px;padding:9px 11px;margin-bottom:6px;transition:background var(--dur-fast,.14s) ease,border-color var(--dur-fast,.14s) ease;animation:cardIn 280ms var(--ease-out) both;animation-delay:${i*25}ms">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-        <span style="font-size:13px;font-weight:800;color:${sel?'#ffb300':'#d8dde6'};font-family:'Courier New',monospace">${esc(cod)}</span>
-        ${critico?`<span class="comp-pulse" style="width:9px;height:9px;border-radius:50%;background:#ff4d4d;flex-shrink:0;display:inline-block" title="Abaixo do mínimo"></span>`:''}
+    return `<div onclick="selecionarPecaComp('${esc(cod)}')" class="cc-peca${sel?' sel':''}" style="animation-delay:${i*22}ms">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span class="cc-peca-code">${esc(cod)}</span>
+        ${critico?`<span class="comp-pulse" style="width:9px;height:9px;border-radius:50%;background:var(--cc-red);flex-shrink:0;display:inline-block" title="Abaixo do mínimo"></span>`:''}
       </div>
-      <div style="font-size:11px;color:#8a94a6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(compGetPecaNome(cod)||'—')}</div>
-      <div style="font-size:10px;color:#4a5568;margin-top:3px">${links.length} componente${links.length!==1?'s':''}</div>
+      <div class="cc-peca-name">${esc(compGetPecaNome(cod)||'—')}</div>
+      <div class="cc-peca-count">${links.length} componente${links.length!==1?'s':''}</div>
     </div>`;
   }).join('');
 }
@@ -9777,7 +9853,7 @@ function selecionarPecaComp(cod){ compPecaSel=cod; renderCompListaPecas(); rende
 function renderCompDetalhe(){
   const el=document.getElementById('compDetalhe');
   const codigos=compListaPecasCodigos();
-  if(!compPecaSel||codigos.indexOf(compPecaSel)<0){ compPecaSel=null; el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#4a5568;font-size:13px;text-align:center;padding:20px">← Selecione uma peça à esquerda</div>`; return; }
+  if(!compPecaSel||codigos.indexOf(compPecaSel)<0){ compPecaSel=null; el.innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center"><div class="cc-empty"><div style="font-size:34px;opacity:.5;margin-bottom:8px">📦</div>Selecione uma peça na lista<br>para ver seus componentes</div></div>`; return; }
   const cod=compPecaSel;
   const links=compLinksDaPeca(cod);
   const rows=links.length?links.map((l,i)=>{
@@ -9785,43 +9861,48 @@ function renderCompDetalhe(){
     const cor=_compCor(c.estoque_atual,c.estoque_minimo);
     const nPecas=compPecasDoComp(c.id).length;
     const un=c.unidade||'un';
-    return `<div style="background:#0b0f16;border:1px solid #1e2530;border-radius:10px;padding:12px;margin-bottom:8px;animation:cardIn 280ms var(--ease-out) both;animation-delay:${i*30}ms">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    const est=Number(c.estoque_atual)||0, min=Number(c.estoque_minimo)||0;
+    const fill= min>0 ? Math.max(0.03,Math.min(est/(min*2),1)) : (est>0?1:0.03);
+    return `<div class="cc-comp" style="--st:${cor.c};animation-delay:${i*30}ms">
+      <div class="cc-comp-top">
         <div style="min-width:0;flex:1">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:11px;color:#4a5568;font-family:'Courier New',monospace">${esc(c.codigo||'—')}</span>
-            <span class="${cor.pulse?'comp-pulse':''}" style="width:8px;height:8px;border-radius:50%;background:${cor.c};display:inline-block"></span>
-          </div>
-          <div style="font-size:14px;font-weight:700;color:#fff;margin-top:2px">${esc(c.nome||'—')}</div>
-          <div style="font-size:11px;color:#6a7488;margin-top:4px">🔧 ${Number(l.quantidade_por_peca)||0} ${esc(un)}/peça${nPecas>1?`  ·  🔗 usado em ${nPecas} peças`:''}</div>
+          <div class="cc-comp-code">${esc(c.codigo||'—')}</div>
+          <div class="cc-comp-name">${esc(c.nome||'—')}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:22px;font-weight:900;color:${cor.c};font-family:'Courier New',monospace">${Number(c.estoque_atual)||0}<span style="font-size:11px;color:#4a5568;font-weight:400"> ${esc(un)}</span></div>
-          <div style="font-size:10px;color:#4a5568">mín: ${Number(c.estoque_minimo)||0}</div>
+        <div class="cc-stock">
+          <div class="cc-stock-n">${est}<span class="cc-stock-u"> ${esc(un)}</span></div>
+          <div class="cc-stock-min">mín ${min}</div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
-        <button onclick="abrirModalMov('${c.id}','entrada')" class="comp-abtn" style="background:#00e87a15;border:1px solid #00e87a40;color:#00e87a">＋ Entrada</button>
-        ${compEhAdmin()?`<button onclick="abrirModalComponente('${c.id}')" class="comp-abtn" style="background:#3d9eff15;border:1px solid #3d9eff40;color:#3d9eff">✏ Editar</button>
-        <button onclick="desvincularComp('${l.id}')" class="comp-abtn" style="background:#ff8c0015;border:1px solid #ff8c0040;color:#ff8c00">🔗 Desvincular</button>`:''}
-        <button onclick="abrirHistorico('${c.id}')" class="comp-abtn" style="background:#12161d;border:1px solid #2a3040;color:#8a94a6">📜 Histórico</button>
+      <div class="cc-meter"><div class="cc-meter-fill" style="transform:scaleX(${fill})"></div></div>
+      <div class="cc-chips">
+        <span class="cc-chip">🔧 ${Number(l.quantidade_por_peca)||0} por peça</span>
+        ${nPecas>1?`<span class="cc-chip">🔗 usado em ${nPecas} peças</span>`:''}
+        ${cor.pulse?`<span class="cc-chip comp-pulse" style="color:var(--cc-red);border-color:#ff5b6a55;background:#ff5b6a12">⚠ abaixo do mínimo</span>`:''}
+      </div>
+      <div class="cc-actions">
+        <button onclick="abrirModalMov('${c.id}','entrada')" class="cc-btn g">＋ Entrada</button>
+        ${compEhAdmin()?`<button onclick="abrirModalComponente('${c.id}')" class="cc-btn b">✏ Editar</button>
+        <button onclick="desvincularComp('${l.id}')" class="cc-btn o">🔗 Desvincular</button>`:''}
+        <button onclick="abrirHistorico('${c.id}')" class="cc-btn ghost">📜 Histórico</button>
       </div>
     </div>`;
-  }).join(''):`<div style="color:#4a5568;font-size:12px;padding:16px;text-align:center">Nenhum componente vinculado a esta peça.${compEhAdmin()?' Clique em "+ Componente" ou "🔗 Vincular".':''}</div>`;
+  }).join(''):`<div class="cc-empty">Nenhum componente vinculado a esta peça.${compEhAdmin()?'<br>Use "＋ Componente" para criar um novo ou "🔗 Vincular" para reutilizar um existente.':''}</div>`;
   el.innerHTML=`
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <div class="cc-det-head">
       <div style="min-width:0">
-        <div style="font-size:18px;font-weight:900;color:#ffb300;font-family:'Courier New',monospace">${esc(cod)}</div>
-        <div style="font-size:14px;color:#d8dde6;font-weight:600">${esc(compGetPecaNome(cod)||'—')}</div>
-        ${compGetPecaDesc(cod)?`<div style="font-size:12px;color:#6a7488;margin-top:3px">${esc(compGetPecaDesc(cod))}</div>`:''}
+        <div class="cc-det-code">${esc(cod)}</div>
+        <div class="cc-det-name">${esc(compGetPecaNome(cod)||'—')}</div>
+        ${compGetPecaDesc(cod)?`<div class="cc-det-desc">${esc(compGetPecaDesc(cod))}</div>`:''}
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${compEhAdmin()?`<button onclick="abrirModalComponente()" class="comp-abtn" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff">+ Componente</button>
-        <button onclick="abrirModalVincular()" class="comp-abtn" style="background:#00e87a15;border:1px solid #00e87a40;color:#00e87a">🔗 Vincular</button>
-        <button onclick="abrirModalPecaComp('${esc(cod)}')" class="comp-abtn" style="background:#12161d;border:1px solid #2a3040;color:#d8dde6">✏ Editar Peça</button>
-        <button onclick="excluirPecaComp('${esc(cod)}')" class="comp-abtn" style="background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d">🗑 Excluir Peça</button>`:''}
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${compEhAdmin()?`<button onclick="abrirModalComponente()" class="cc-btn b">＋ Componente</button>
+        <button onclick="abrirModalVincular()" class="cc-btn g">🔗 Vincular</button>
+        <button onclick="abrirModalPecaComp('${esc(cod)}')" class="cc-btn ghost">✏ Editar Peça</button>
+        <button onclick="excluirPecaComp('${esc(cod)}')" class="cc-btn d">🗑 Excluir</button>`:''}
       </div>
     </div>
+    ${links.length?`<div class="cc-section">Componentes desta peça · ${links.length}</div>`:''}
     ${rows}`;
 }
 
@@ -10338,41 +10419,38 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 </div>
 
 <!-- ===== CONTROLE DE COMPONENTES ===== -->
-<div id="compScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
+<div id="compScreen" style="display:none;position:fixed;inset:0;background:var(--cc-bg);z-index:9000;flex-direction:column">
   <!-- Header -->
-  <div style="background:#080b0f;border-bottom:1px solid #1e2530;flex-shrink:0;padding:10px 14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="font-size:24px">📦</div>
-        <div>
-          <div style="font-size:15px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">Controle de Componentes</div>
-          <div style="font-size:11px;color:#4a5568">Estoque de peças e seus componentes</div>
+  <div class="cc-header">
+    <div class="cc-hrow">
+      <div style="display:flex;align-items:center;gap:11px;min-width:0">
+        <div style="font-size:26px;line-height:1">📦</div>
+        <div style="min-width:0">
+          <div class="cc-title">Controle de Componentes</div>
+          <div class="cc-sub">Estoque de peças e seus componentes</div>
         </div>
-        <span id="compBadge" style="margin-left:6px;font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;font-family:'Courier New',monospace"></span>
+        <span id="compBadge" class="cc-badge" style="margin-left:4px"></span>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <div id="compAdminBtns" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
-        <button onclick="fecharControleComponentes()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✕ Voltar</button>
+      <div class="cc-tools">
+        <div id="compAdminBtns" style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end"></div>
+        <button onclick="fecharControleComponentes()" class="cc-btn d">✕ Voltar</button>
       </div>
     </div>
     <!-- Toggle automação (só admin) -->
-    <div id="compToggleWrap" style="margin-top:10px;display:none"></div>
+    <div id="compToggleWrap" style="margin-top:11px;display:none"></div>
   </div>
   <!-- Banner de alerta -->
   <div id="compAlertBanner" style="flex-shrink:0"></div>
   <!-- Corpo: duas colunas -->
-  <div style="flex:1;display:flex;min-height:0;overflow:hidden">
-    <!-- Coluna esquerda: lista de peças -->
-    <div style="width:300px;flex-shrink:0;border-right:1px solid #1e2530;display:flex;flex-direction:column;min-height:0;background:#06090e">
-      <div style="padding:10px;border-bottom:1px solid #1e2530;flex-shrink:0">
-        <input id="compBuscaInput" placeholder="🔍 Buscar por código ou nome" oninput="compFiltrar(this.value)"
-          style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:12px;box-sizing:border-box;outline:none;margin-bottom:8px">
-        <button id="compBtnNovaPeca" onclick="abrirModalPecaComp()" style="width:100%;background:#00e87a15;border:1px solid #00e87a40;color:#00e87a;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Nova Peça</button>
+  <div class="cc-body">
+    <div class="cc-side">
+      <div class="cc-side-top">
+        <input id="compBuscaInput" class="cc-search" placeholder="🔍  Buscar por código ou nome" oninput="compFiltrar(this.value)">
+        <button id="compBtnNovaPeca" onclick="abrirModalPecaComp()" class="cc-btn g" style="width:100%">+ Nova Peça</button>
       </div>
-      <div id="compListaPecas" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px"></div>
+      <div id="compListaPecas" class="cc-list"></div>
     </div>
-    <!-- Coluna direita: componentes da peça -->
-    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-width:0;padding:14px" id="compDetalhe"></div>
+    <div class="cc-detail" id="compDetalhe"></div>
   </div>
   <div id="compSaveIndicator" style="position:fixed;bottom:18px;right:18px;background:#00e87a;color:#000;font-size:12px;font-weight:800;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity var(--dur-ui,.2s) var(--ease-out,ease);pointer-events:none;z-index:9100;font-family:'Courier New',monospace;letter-spacing:0.08em">✓ Salvo</div>
 </div>
