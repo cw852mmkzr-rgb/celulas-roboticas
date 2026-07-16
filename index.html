@@ -9950,7 +9950,7 @@ function salvarPecaComp(){
   const nome=document.getElementById('compPecaNome').value.trim();
   const desc=document.getElementById('compPecaDesc').value.trim();
   if(!cod){ showToast('Código é obrigatório',true); return; }
-  if(!nome){ showToast('Nome é obrigatório',true); return; }
+  if(!nome){ showToast('Cliente é obrigatório',true); return; }
   if(!componentesEstoque.pecas_meta) componentesEstoque.pecas_meta={};
   if(!edit && compListaPecasCodigos().indexOf(cod)>=0){ showToast('Já existe peça com este código',true); return; }
   componentesEstoque.pecas_meta[edit||cod]={nome:nome,descricao:desc};
@@ -10501,8 +10501,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
     <input type="hidden" id="compPecaEditCod">
     <div><label class="cc-label">Código *</label>
       <input id="compPecaCod" class="cc-input" placeholder="Ex: 1083"></div>
-    <div><label class="cc-label">Nome *</label>
-      <input id="compPecaNome" class="cc-input" placeholder="Ex: Suporte lateral"></div>
+    <div><label class="cc-label">Cliente *</label>
+      <input id="compPecaNome" class="cc-input" placeholder="Ex: Mueller"></div>
     <div><label class="cc-label">Descrição</label>
       <textarea id="compPecaDesc" class="cc-input" rows="2" style="resize:vertical"></textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
