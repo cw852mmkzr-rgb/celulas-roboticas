@@ -9164,6 +9164,8 @@ function updateGabProg(cod, val){
 
 let _gabFotoBase64 = null;
 let _gabFotoMime = 'image/jpeg';
+let _gabFotoLinhas = null;   // [{codigo, quantidade, realizado}] lidas da foto
+let _gabFotoDiaConfirm = null; // dia digitado, congelado no momento da análise
 
 let _mapaFotoBase64 = null;
 let _mapaFotoMime = 'image/jpeg';
@@ -9333,9 +9335,18 @@ function gabLerFoto(event){
       const preview = document.getElementById("gabFotoPreview");
       preview.src = dataUrl;
       preview.style.display = "block";
-      document.getElementById("gabFotoStatus").textContent = `Foto carregada (${w}×${h}px). Defina o dia e clique em Analisar.`;
+      document.getElementById("gabFotoStatus").textContent = `Foto carregada (${w}×${h}px). Digite o dia e clique em Analisar.`;
       document.getElementById("gabFotoStatus").style.color = "#00e87a";
       document.getElementById("gabFotoDia").value = "";
+      // reseta estado de preview de uma análise anterior
+      _gabFotoLinhas = null;
+      _gabFotoDiaConfirm = null;
+      document.getElementById("gabFotoPreviewWrap").style.display = "none";
+      document.getElementById("gabFotoBtnConfirmar").style.display = "none";
+      const btnAn = document.getElementById("gabFotoBtnAnalisar");
+      btnAn.style.display = "";
+      btnAn.disabled = false;
+      btnAn.textContent = "🤖 Analisar Foto";
       document.getElementById("modalGabFoto").style.display = "flex";
     };
     img.src = e.target.result;
@@ -9343,14 +9354,26 @@ function gabLerFoto(event){
   reader.readAsDataURL(file);
 }
 
+// Normaliza código para comparação (ignora caixa e espaços)
+function _gabNormCod(c){ return String(c==null?"":c).trim().toUpperCase().replace(/\s+/g,""); }
+
+function gabFecharModalFoto(){
+  document.getElementById("modalGabFoto").style.display = "none";
+  _gabFotoLinhas = null;
+  _gabFotoDiaConfirm = null;
+}
+
 async function gabAnalisarFoto(){
   if(!_gabFotoBase64){ showToast("Nenhuma foto carregada",true); return; }
   const diaInput = parseInt(document.getElementById("gabFotoDia").value);
-  if(!diaInput || diaInput<1 || diaInput>31){ showToast("Informe um dia válido (1-31)",true); return; }
+  if(!diaInput || diaInput<1 || diaInput>31){ showToast("Digite um dia válido (1-31)",true); return; }
 
   const btn = document.getElementById("gabFotoBtnAnalisar");
+  const btnConf = document.getElementById("gabFotoBtnConfirmar");
   const status = document.getElementById("gabFotoStatus");
   btn.disabled = true;
+  btnConf.style.display = "none";
+  document.getElementById("gabFotoPreviewWrap").style.display = "none";
   status.style.color = "#ffb300";
 
   let ultimoErro = null;
@@ -9360,7 +9383,7 @@ async function gabAnalisarFoto(){
   for(let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++){
     try{
       status.textContent = tentativa === 1
-        ? "Enviando foto para o Gemini..."
+        ? "Lendo a planilha linha por linha..."
         : `Tentativa ${tentativa}/${MAX_TENTATIVAS} — aguardando ${ESPERA_MS/1000}s...`;
       btn.textContent = tentativa === 1 ? "⏳ Analisando..." : `🔄 Tentativa ${tentativa}...`;
 
@@ -9383,43 +9406,28 @@ async function gabAnalisarFoto(){
           continue;
         }
         if(errText.includes("OCR_PARSE_ERROR")){
-          throw new Error("O Gemini leu a foto mas não reconheceu o formato. Tente tirar a foto mais de frente, com boa iluminação e o texto bem visível.");
+          throw new Error("A IA leu a foto mas não reconheceu o formato. Tire a foto mais de frente, com boa iluminação e as 3 colunas bem visíveis.");
         }
         throw new Error(errText);
       }
 
-      const pares = data.pares;
-      if(!pares || !Object.keys(pares).length){
-        status.style.color = "#ff4d4d";
-        status.textContent = "Nenhum par código=valor encontrado na foto.";
-        btn.textContent = "🤖 Analisar e Preencher";
+      const linhas = data.linhas;
+      if(!Array.isArray(linhas) || !linhas.length){
+        status.style.color = "#ff5b6a";
+        status.textContent = "Nenhuma linha legível encontrada na foto.";
+        btn.textContent = "🤖 Analisar Foto";
         btn.disabled = false;
         return;
       }
 
-      const now = new Date();
-      const chave = `${parseInt(document.getElementById("gabAno").value)||now.getFullYear()}_${parseInt(document.getElementById("gabMes").value)||now.getMonth()}`;
-      const dia = String(diaInput);
-      let preenchidos = 0;
-      if(!gabDados[chave]) gabDados[chave] = { codigos: [] };
-
-      Object.entries(pares).forEach(([cod, val])=>{
-        const n = parseInt(val);
-        if(!cod || isNaN(n) || n<=0) return;
-        if(!gabDados[chave][cod]) gabDados[chave][cod] = {};
-        gabDados[chave][cod][dia] = n;
-        if(!gabDados[chave].codigos.includes(cod)) gabDados[chave].codigos.push(cod);
-        preenchidos++;
-      });
-
-      await saveGabDados();
-      renderGabaritagem();
+      // Guarda o resultado e o dia congelado, monta o preview
+      _gabFotoLinhas = linhas;
+      _gabFotoDiaConfirm = diaInput;
+      gabMontarPreviewFoto();
 
       status.style.color = "#00e87a";
-      status.textContent = `✓ ${preenchidos} código(s) preenchidos no dia ${diaInput}:\n`
-        + Object.entries(pares).map(([c,v])=>`  ${c} = ${v}`).join('\n');
-      btn.textContent = "✓ Concluído";
-      showToast(`${preenchidos} código(s) preenchidos no dia ${diaInput} ✓`);
+      status.textContent = "Leitura concluída. Revise a tabela abaixo e clique em Confirmar.";
+      btn.textContent = "🔄 Analisar de novo";
       btn.disabled = false;
       return;
 
@@ -9430,11 +9438,86 @@ async function gabAnalisarFoto(){
   }
 
   // Todas as tentativas falharam
-  status.style.color = "#ff4d4d";
+  status.style.color = "#ff5b6a";
   status.textContent = "Erro após "+MAX_TENTATIVAS+" tentativas: " + ultimoErro;
-  btn.textContent = "🤖 Analisar e Preencher";
+  btn.textContent = "🤖 Analisar Foto";
   btn.disabled = false;
-  showToast("Servidor sobrecarregado. Tente novamente em alguns minutos.", true);
+  showToast("Não foi possível ler a foto. Tente novamente.", true);
+}
+
+// Monta a tabela de revisão a partir de _gabFotoLinhas
+function gabMontarPreviewFoto(){
+  const chave = getGabChave();
+  const existentes = (gabDados[chave] && gabDados[chave].codigos) || [];
+  const mapa = {};
+  existentes.forEach(c=>{ mapa[_gabNormCod(c)] = c; });
+
+  const body = document.getElementById("gabFotoPreviewBody");
+  let encontrados = 0;
+  const naoEnc = [];
+  body.innerHTML = _gabFotoLinhas.map(l=>{
+    const alvo = mapa[_gabNormCod(l.codigo)];
+    const achou = !!alvo;
+    if(achou) encontrados++; else naoEnc.push(l.codigo);
+    const cor = achou ? "#00e87a" : "#ff5b6a";
+    const st  = achou ? "✓ ok" : "✕ não existe";
+    const prog = l.quantidade!=null ? l.quantidade : "—";
+    const real = l.realizado!=null ? l.realizado : "—";
+    return `<tr style="border-top:1px solid #1c2431${achou?"":";opacity:.55"}">
+      <td style="padding:8px;color:#eaf0f8;font-weight:700">${esc(l.codigo)}</td>
+      <td style="padding:8px;text-align:center;color:#a78bfa;font-weight:700">${prog}</td>
+      <td style="padding:8px;text-align:center;color:#3d9eff;font-weight:700">${real}</td>
+      <td style="padding:8px;text-align:center;color:${cor};font-size:12px">${st}</td>
+    </tr>`;
+  }).join("");
+
+  const resumo = document.getElementById("gabFotoResumo");
+  let txt = `${encontrados} de ${_gabFotoLinhas.length} código(s) serão preenchidos no dia ${_gabFotoDiaConfirm}.`;
+  if(naoEnc.length) txt += `\n⚠️ Não encontrados no mês (serão ignorados): ${naoEnc.join(", ")}`;
+  resumo.textContent = txt;
+
+  document.getElementById("gabFotoPreviewWrap").style.display = "flex";
+  const btnConf = document.getElementById("gabFotoBtnConfirmar");
+  btnConf.style.display = encontrados>0 ? "" : "none";
+  btnConf.disabled = false;
+  btnConf.textContent = "✓ Confirmar e Salvar";
+}
+
+// Aplica a leitura revisada: prog mês + realizado no dia, só para códigos existentes
+async function gabConfirmarFoto(){
+  if(!_gabFotoLinhas || !_gabFotoLinhas.length){ showToast("Nada para salvar",true); return; }
+  const diaInput = _gabFotoDiaConfirm;
+  if(!diaInput){ showToast("Dia inválido",true); return; }
+
+  const chave = getGabChave();
+  if(!gabDados[chave]) gabDados[chave] = { codigos: [] };
+  if(!gabDados[chave].codigos) gabDados[chave].codigos = [];
+  const mapa = {};
+  gabDados[chave].codigos.forEach(c=>{ mapa[_gabNormCod(c)] = c; });
+  const dia = String(diaInput);
+
+  let aplicados = 0;
+  const naoEnc = [];
+  _gabFotoLinhas.forEach(l=>{
+    const alvo = mapa[_gabNormCod(l.codigo)];
+    if(!alvo){ naoEnc.push(l.codigo); return; }
+    if(!gabDados[chave][alvo]) gabDados[chave][alvo] = {};
+    if(l.quantidade!=null) gabDados[chave][alvo]._prog = l.quantidade;
+    if(l.realizado!=null) gabDados[chave][alvo][dia] = l.realizado;
+    aplicados++;
+  });
+
+  const btnConf = document.getElementById("gabFotoBtnConfirmar");
+  btnConf.disabled = true;
+  btnConf.textContent = "⏳ Salvando...";
+
+  await saveGabDados();
+  renderGabaritagem();
+
+  gabFecharModalFoto();
+  let msg = `${aplicados} código(s) preenchidos no dia ${diaInput} ✓`;
+  showToast(msg);
+  if(naoEnc.length) setTimeout(()=>showToast(`${naoEnc.length} código(s) não encontrados: ${naoEnc.join(", ")}`, true), 900);
 }
 
 async function backupGabaritagem(){
@@ -10418,17 +10501,38 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   </div>
 </div>
 
-<div id="modalGabFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:24px;width:90%;max-width:400px;display:flex;flex-direction:column;gap:14px">
-    <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher via Foto</div>
-    <img id="gabFotoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
-    <div style="font-size:12px;color:#4a5568">Qual dia da foto deve ser preenchido?</div>
-    <input type="number" id="gabFotoDia" min="1" max="31" placeholder="Dia (ex: 23)"
-      style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-    <div id="gabFotoStatus" style="font-size:12px;color:#4a5568;min-height:16px;white-space:pre-wrap"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button onclick="document.getElementById('modalGabFoto').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="gabAnalisarFoto()" id="gabFotoBtnAnalisar" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">🤖 Analisar e Preencher</button>
+<div id="modalGabFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:24px;width:100%;max-width:560px;max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:16px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher via Foto</div>
+    <img id="gabFotoPreview" style="display:none;width:100%;max-height:200px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
+    <div>
+      <div style="font-size:13px;color:#8792a6;font-weight:700;margin-bottom:6px">Data que a foto representa</div>
+      <input type="number" id="gabFotoDia" min="1" max="31" placeholder="Digite o dia (ex: 23)"
+        style="background:#080b0f;border:1px solid #1e2530;color:#eaf0f8;padding:13px 15px;border-radius:10px;font-family:'Courier New',monospace;font-size:16px;outline:none;width:100%;box-sizing:border-box">
+      <div style="font-size:11.5px;color:#525d70;margin-top:5px">O mês/ano vem do seletor da tela. Confira antes de analisar.</div>
+    </div>
+    <div id="gabFotoStatus" style="font-size:12.5px;color:#8792a6;min-height:16px;white-space:pre-wrap"></div>
+    <div id="gabFotoPreviewWrap" style="display:none;flex-direction:column;gap:8px">
+      <div style="font-size:13px;color:#3d9eff;font-weight:700">📋 Revise a leitura antes de salvar</div>
+      <div style="max-height:300px;overflow:auto;border:1px solid #1c2431;border-radius:10px">
+        <table style="width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:13.5px">
+          <thead>
+            <tr style="background:#141b26;color:#8792a6">
+              <th style="padding:9px 8px;text-align:left;font-weight:700;position:sticky;top:0;background:#141b26">Código</th>
+              <th style="padding:9px 8px;text-align:center;font-weight:700;position:sticky;top:0;background:#141b26">Prog mês</th>
+              <th style="padding:9px 8px;text-align:center;font-weight:700;position:sticky;top:0;background:#141b26">Realizado</th>
+              <th style="padding:9px 8px;text-align:center;font-weight:700;position:sticky;top:0;background:#141b26">Status</th>
+            </tr>
+          </thead>
+          <tbody id="gabFotoPreviewBody"></tbody>
+        </table>
+      </div>
+      <div id="gabFotoResumo" style="font-size:12.5px;color:#8792a6;white-space:pre-wrap"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;flex-wrap:wrap">
+      <button onclick="gabFecharModalFoto()" style="background:#1e2530;border:none;color:#8792a6;padding:11px 18px;border-radius:9px;cursor:pointer;font-family:'Courier New',monospace;font-size:13.5px">Cancelar</button>
+      <button onclick="gabAnalisarFoto()" id="gabFotoBtnAnalisar" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:11px 20px;border-radius:9px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;font-size:13.5px">🤖 Analisar Foto</button>
+      <button onclick="gabConfirmarFoto()" id="gabFotoBtnConfirmar" style="display:none;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:11px 20px;border-radius:9px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700;font-size:13.5px">✓ Confirmar e Salvar</button>
     </div>
   </div>
 </div>
