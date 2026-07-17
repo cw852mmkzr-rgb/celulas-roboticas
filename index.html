@@ -8860,6 +8860,7 @@ function renderGabBtns(){
     ? `<button onclick="document.getElementById('gabRestoreInput').click()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">↑ Restaurar Backup</button>
        <button onclick="document.getElementById('gabFotoInput').click()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📷 Ler Foto</button>
        <button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
+       <button onclick="copiarCodsMesAnterior()" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📋 Copiar mês anterior</button>
        <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
        <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
     : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
@@ -9653,6 +9654,30 @@ function excluirCodGab(cod){
   delete gabDados[chave][cod];
   saveGabDados();
   renderGabaritagem();
+}
+
+function copiarCodsMesAnterior(){
+  const mes = parseInt(document.getElementById("gabMes")?.value||0);
+  const ano = parseInt(document.getElementById("gabAno")?.value||2026);
+  const mesAnt = mes === 0 ? 11 : mes - 1;
+  const anoAnt = mes === 0 ? ano - 1 : ano;
+  const chaveAnt = `${anoAnt}_${mesAnt}`;
+  const codsMesAnt = gabDados[chaveAnt]?.codigos||[];
+  if(!codsMesAnt.length){ showToast("Mês anterior sem códigos cadastrados",true); return; }
+  const chaveAtual = getGabChave();
+  if(!gabDados[chaveAtual]) gabDados[chaveAtual]={codigos:[]};
+  if(!gabDados[chaveAtual].codigos) gabDados[chaveAtual].codigos=[];
+  let adicionados = 0;
+  codsMesAnt.forEach(cod=>{
+    if(!gabDados[chaveAtual].codigos.includes(cod)){
+      gabDados[chaveAtual].codigos.push(cod);
+      adicionados++;
+    }
+  });
+  if(!adicionados){ showToast("Todos os códigos já existem no mês atual",true); return; }
+  saveGabDados();
+  renderGabaritagem();
+  showToast(`${adicionados} código(s) copiado(s) do mês anterior ✓`);
 }
 // ===== FIM GABARITAGEM =====
 
