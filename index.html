@@ -9453,17 +9453,18 @@ function gabMontarPreviewFoto(){
   existentes.forEach(c=>{ mapa[_gabNormCod(c)] = c; });
 
   const body = document.getElementById("gabFotoPreviewBody");
-  let encontrados = 0;
-  const naoEnc = [];
+  let vaoEntrar = 0, novosPrb = 0;
+  const ignorados = [];
   body.innerHTML = _gabFotoLinhas.map(l=>{
     const alvo = mapa[_gabNormCod(l.codigo)];
-    const achou = !!alvo;
-    if(achou) encontrados++; else naoEnc.push(l.codigo);
-    const cor = achou ? "#00e87a" : "#ff5b6a";
-    const st  = achou ? "✓ ok" : "✕ não existe";
+    const ehPrb = _gabNormCod(l.codigo).startsWith("PRB");
+    let cor, st, ativo;
+    if(alvo){ cor="#00e87a"; st="✓ ok"; ativo=true; vaoEntrar++; }
+    else if(ehPrb){ cor="#ffb300"; st="+ novo (PRB)"; ativo=true; vaoEntrar++; novosPrb++; }
+    else { cor="#ff5b6a"; st="✕ não existe"; ativo=false; ignorados.push(l.codigo); }
     const prog = l.quantidade!=null ? l.quantidade : "—";
     const real = l.realizado!=null ? l.realizado : "—";
-    return `<tr style="border-top:1px solid #1c2431${achou?"":";opacity:.55"}">
+    return `<tr style="border-top:1px solid #1c2431${ativo?"":";opacity:.55"}">
       <td style="padding:8px;color:#eaf0f8;font-weight:700">${esc(l.codigo)}</td>
       <td style="padding:8px;text-align:center;color:#a78bfa;font-weight:700">${prog}</td>
       <td style="padding:8px;text-align:center;color:#3d9eff;font-weight:700">${real}</td>
@@ -9472,13 +9473,14 @@ function gabMontarPreviewFoto(){
   }).join("");
 
   const resumo = document.getElementById("gabFotoResumo");
-  let txt = `${encontrados} de ${_gabFotoLinhas.length} código(s) serão preenchidos no dia ${_gabFotoDiaConfirm}.`;
-  if(naoEnc.length) txt += `\n⚠️ Não encontrados no mês (serão ignorados): ${naoEnc.join(", ")}`;
+  let txt = `${vaoEntrar} de ${_gabFotoLinhas.length} código(s) serão preenchidos no dia ${_gabFotoDiaConfirm}.`;
+  if(novosPrb) txt += `\n➕ ${novosPrb} código(s) PRB serão criados na planilha.`;
+  if(ignorados.length) txt += `\n⚠️ Não encontrados no mês (serão ignorados): ${ignorados.join(", ")}`;
   resumo.textContent = txt;
 
   document.getElementById("gabFotoPreviewWrap").style.display = "flex";
   const btnConf = document.getElementById("gabFotoBtnConfirmar");
-  btnConf.style.display = encontrados>0 ? "" : "none";
+  btnConf.style.display = vaoEntrar>0 ? "" : "none";
   btnConf.disabled = false;
   btnConf.textContent = "✓ Confirmar e Salvar";
 }
@@ -9496,10 +9498,17 @@ async function gabConfirmarFoto(){
   gabDados[chave].codigos.forEach(c=>{ mapa[_gabNormCod(c)] = c; });
   const dia = String(diaInput);
 
-  let aplicados = 0;
+  let aplicados = 0, criados = 0;
   const naoEnc = [];
   _gabFotoLinhas.forEach(l=>{
-    const alvo = mapa[_gabNormCod(l.codigo)];
+    let alvo = mapa[_gabNormCod(l.codigo)];
+    // Código PRB inexistente: cria automaticamente na planilha
+    if(!alvo && _gabNormCod(l.codigo).startsWith("PRB")){
+      alvo = String(l.codigo).trim().toUpperCase();
+      gabDados[chave].codigos.push(alvo);
+      mapa[_gabNormCod(alvo)] = alvo;
+      criados++;
+    }
     if(!alvo){ naoEnc.push(l.codigo); return; }
     if(!gabDados[chave][alvo]) gabDados[chave][alvo] = {};
     if(l.quantidade!=null) gabDados[chave][alvo]._prog = l.quantidade;
@@ -9516,6 +9525,7 @@ async function gabConfirmarFoto(){
 
   gabFecharModalFoto();
   let msg = `${aplicados} código(s) preenchidos no dia ${diaInput} ✓`;
+  if(criados) msg += ` (${criados} PRB criado(s))`;
   showToast(msg);
   if(naoEnc.length) setTimeout(()=>showToast(`${naoEnc.length} código(s) não encontrados: ${naoEnc.join(", ")}`, true), 900);
 }
