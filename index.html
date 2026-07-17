@@ -8981,7 +8981,7 @@ function renderGabaritagem(){
       </th>`;
     }).join('')}
     <th style="padding:10px 10px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
-    ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:36px"></th>`:''}
+    ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:76px;font-size:10px;color:#4a5568;text-align:center">AÇÕES</th>`:''}
   </tr>`;
 
   // Monta tbody
@@ -8993,7 +8993,16 @@ function renderGabaritagem(){
     const corPct=pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
     const bg=ri%2===0?'#0a0d12':'#080b0f';
     return`<tr data-cod="${esc(cod)}" style="background:${bg};border-bottom:1px solid #0a0d12">
-      <td style="padding:8px 14px;font-size:16px;font-weight:900;color:#00e87a;text-align:center;border-right:2px solid #1e2530;position:sticky;left:0;background:${bg}">${esc(cod)}</td>
+      <td style="padding:8px 10px;border-right:2px solid #1e2530;position:sticky;left:0;background:${bg}">
+        ${isGabAdmin
+          ?`<input type="text" value="${esc(cod)}"
+             style="width:104px;background:transparent;border:1px solid #00e87a30;border-radius:5px;outline:none;color:#00e87a;font-family:'Courier New',monospace;font-size:15px;font-weight:900;text-align:center;padding:5px 2px"
+             onchange="renomearCodGab('${esc(cod)}',this.value)"
+             onfocus="this.style.borderColor='#00e87a80';this.style.background='#00e87a10'"
+             onblur="this.style.borderColor='#00e87a30';this.style.background='transparent'">`
+          :`<div style="font-size:16px;font-weight:900;color:#00e87a;text-align:center">${esc(cod)}</div>`
+        }
+      </td>
       <td style="padding:4px 8px;text-align:center;border-right:1px solid #1e2530">
         ${isGabAdmin
           ?`<input type="number" min="0" value="${prog||''}" placeholder="—"
@@ -9032,7 +9041,11 @@ function renderGabaritagem(){
         const media2 = diasComVal2.length>0?Math.round(totais[cod]/diasComVal2.length):0;
         return`<td style="padding:8px 10px;font-size:14px;font-weight:900;color:#3d9eff;text-align:center;border-left:2px solid #3d9eff30">${media2>0?media2.toLocaleString('pt-BR'):'—'}</td>`;
       })()}
-      ${isGabAdmin?`<td style="padding:4px;text-align:center"><button onclick="excluirCodGab('${esc(cod)}')" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:4px">🗑</button></td>`:''}
+      ${isGabAdmin?`<td style="padding:4px;text-align:center;white-space:nowrap">
+        <button onclick="moverCodGab('${esc(cod)}',-1)" ${ri===0?'disabled':''} title="Subir" style="background:none;border:none;color:${ri===0?'#2a3040':'#3d9eff'};cursor:${ri===0?'default':'pointer'};font-size:15px;padding:2px 3px">▲</button>
+        <button onclick="moverCodGab('${esc(cod)}',1)" ${ri===codigos.length-1?'disabled':''} title="Descer" style="background:none;border:none;color:${ri===codigos.length-1?'#2a3040':'#3d9eff'};cursor:${ri===codigos.length-1?'default':'pointer'};font-size:15px;padding:2px 3px">▼</button>
+        <button onclick="excluirCodGab('${esc(cod)}')" title="Excluir" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:2px 3px">🗑</button>
+      </td>`:''}
     </tr>`;
   }).join('');
 
@@ -9745,6 +9758,44 @@ function excluirCodGab(cod){
   const chave = getGabChave();
   gabDados[chave].codigos = gabDados[chave].codigos.filter(c=>c!==cod);
   delete gabDados[chave][cod];
+  saveGabDados();
+  renderGabaritagem();
+}
+
+function renomearCodGab(codAntigo, codNovoRaw){
+  const codNovo = String(codNovoRaw||"").trim().toUpperCase();
+  const chave = getGabChave();
+  if(!gabDados[chave]) return;
+  if(!codNovo){ showToast("Código não pode ficar vazio",true); renderGabaritagem(); return; }
+  if(codNovo===codAntigo) return; // nada mudou
+  // Já existe outro com esse nome?
+  if(gabDados[chave].codigos.some(c=>c!==codAntigo && c.toUpperCase()===codNovo)){
+    showToast("Já existe um código com esse nome",true);
+    renderGabaritagem();
+    return;
+  }
+  // Renomeia mantendo a posição no array
+  const idx = gabDados[chave].codigos.indexOf(codAntigo);
+  if(idx===-1) return;
+  gabDados[chave].codigos[idx] = codNovo;
+  // Move os dados (dias + _prog) para a nova chave
+  if(gabDados[chave][codAntigo]!==undefined){
+    gabDados[chave][codNovo] = gabDados[chave][codAntigo];
+    delete gabDados[chave][codAntigo];
+  }
+  saveGabDados();
+  renderGabaritagem();
+  showToast(`Código renomeado para ${codNovo} ✓`);
+}
+
+function moverCodGab(cod, dir){
+  const chave = getGabChave();
+  if(!gabDados[chave]) return;
+  const arr = gabDados[chave].codigos;
+  const i = arr.indexOf(cod);
+  const j = i + dir;
+  if(i===-1 || j<0 || j>=arr.length) return;
+  [arr[i], arr[j]] = [arr[j], arr[i]];
   saveGabDados();
   renderGabaritagem();
 }
