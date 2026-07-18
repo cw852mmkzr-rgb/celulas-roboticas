@@ -3303,7 +3303,7 @@ function renderProducaoDiaria(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">📅 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Produção total por dia do mês</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Produção total por dia do mês</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
@@ -3547,11 +3547,11 @@ function renderMetasDiaria(){
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;text-align:right">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 16px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">☀ Turno Dia</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">☀ Turno Dia</div>
           <div style="font-size:24px;font-weight:800;color:#00e87a">${totalDia.toLocaleString("pt-BR")}</div>
         </div>
         <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:8px;padding:8px 16px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">🌙 Turno Noite</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">🌙 Turno Noite</div>
           <div style="font-size:24px;font-weight:800;color:#a78bfa">${totalNoite.toLocaleString("pt-BR")}</div>
         </div>
       </div>
@@ -3660,7 +3660,7 @@ function renderProducaoPorPecaResultado(){
     const robosOrdenados=Object.entries(robos).sort((a,b)=>b[1]-a[1]);
     const robosHTML=robosOrdenados.length>1
       ?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2530">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:700">Produção por robô</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:700">Produção por robô</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px">
             ${robosOrdenados.map(([robo,qtd])=>{
               const pctR=Math.round(qtd/total*100);
@@ -3685,22 +3685,22 @@ function renderProducaoPorPecaResultado(){
     return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div style="min-width:100px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Código</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Código</div>
           <div style="font-size:20px;font-weight:900;color:#ffb300">${esc(cod)}</div>
         </div>
         <div style="flex:1;min-width:200px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${sparkLabel}</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${sparkLabel}</div>
           <div style="display:flex;align-items:flex-end;gap:2px;height:26px">${sparkBars}</div>
         </div>
         <div style="min-width:140px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
           <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
             <div style="height:100%;width:100%;background:${verAno?'#3d9eff':'#00e87a'};border-radius:99px;transform-origin:left;transform:scaleX(${pct/100});transition:transform 360ms var(--ease-out)"></div>
           </div>
           <div style="font-size:10px;color:#4a5568;margin-top:3px">${pct}% do maior</div>
         </div>
         <div style="text-align:right;min-width:90px">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total ${verAno?'no ano':''}</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total ${verAno?'no ano':''}</div>
           <div style="font-size:26px;font-weight:900;color:${verAno?'#3d9eff':'#00e87a'}">${total.toLocaleString("pt-BR")}</div>
         </div>
       </div>
@@ -3735,7 +3735,7 @@ function renderProducaoPorPeca(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Leitura automática da célula Metas${verAno?` — <b style="color:#3d9eff">exibindo o ano ${anoSel} inteiro</b>`:''}</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Leitura automática da célula Metas${verAno?` — <b style="color:#3d9eff">exibindo o ano ${anoSel} inteiro</b>`:''}</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
@@ -3808,7 +3808,7 @@ function renderArmario(){
           </div>
         </div>
         <div id="gab-${i}" class="arm-gabarito">
-          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
+          <label style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.14em;display:block;margin-bottom:4px">Gabarito</label>
           <input value="${esc(e.gabarito||'')}" ${ro} placeholder="Digite o gabarito..."
             onchange="updateEspaco('${selected}',${i},'gabarito',this.value)"
             style="background:transparent;border:1px solid #1e2530;border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:16px;color:#00e87a;font-weight:700;width:100%;outline:none"
@@ -3822,7 +3822,7 @@ function renderArmario(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:0.04em">🗄 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">👤 ${esc(c.operador||'—')} · ⏰ ${esc(c.turno||'—')}</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">👤 ${esc(c.operador||'—')} · ⏰ ${esc(c.turno||'—')}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
@@ -4020,7 +4020,7 @@ function _renderDetailInner(){
           <div class="field"><label>Tempo por peça</label><input id="tempoPecaInput" value="${esc(c.tempo_peca)}" ${ro} onchange="updateAndRefreshRitmo('${selected}','tempo_peca',this.value)"></div>
         </div>
         <div style="flex-shrink:0">
-          <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Imagem da Peça</div>
+          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Imagem da Peça</div>
           <div style="width:140px;height:140px;border-radius:10px;overflow:hidden;border:2px dashed #1e2530;background:#080b0f;cursor:${isAdmin?'pointer':'default'}" onclick="${isAdmin?'triggerImgUpload()':''}">${imgBlock}</div>
           ${isAdmin?`<div style="display:flex;gap:6px;margin-top:8px">
             <button onclick="triggerImgUpload()" style="flex:1;background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:5px 0;font-size:10px;cursor:pointer;font-family:'Courier New',monospace">🖼 Galeria</button>
@@ -4052,7 +4052,7 @@ function _renderDetailInner(){
         </div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Trocas (${(c.historico_eletrodo||[]).length})</div>
         <div style="max-height:180px;overflow-y:auto">
           ${(c.historico_eletrodo&&c.historico_eletrodo.length>0)
             ?[...c.historico_eletrodo].reverse().map((h,i)=>`
@@ -4073,7 +4073,7 @@ function _renderDetailInner(){
         <div class="field"><label>Realizado por</label><input readonly value="${esc((c.historico_limpeza&&c.historico_limpeza.length?c.historico_limpeza[c.historico_limpeza.length-1].responsavel:'')||'—')}" style="color:#d8dde6;cursor:default"></div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Limpezas (${(c.historico_limpeza||[]).length})</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e2530">📋 Histórico de Limpezas (${(c.historico_limpeza||[]).length})</div>
         <div style="max-height:180px;overflow-y:auto">
           ${(c.historico_limpeza&&c.historico_limpeza.length>0)
             ?[...c.historico_limpeza].reverse().map((h,i)=>`
@@ -4226,17 +4226,17 @@ function renderHistoricoRobo(key) {
     <!-- Cards de resumo -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
       <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Total acumulado</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Total acumulado</div>
         <div style="font-size:24px;font-weight:800;color:#00e87a">${totalAcumulado.toLocaleString("pt-BR")}</div>
       </div>
       <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Média diária</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Média diária</div>
         <div style="font-size:24px;font-weight:800;color:#3d9eff">${mediaDiaria.toLocaleString("pt-BR")}</div>
       </div>
       <div style="background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:12px 14px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Melhor dia</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Melhor dia</div>
         <div style="font-size:24px;font-weight:800;color:#ffb300">${melhorDia.totalGeral.toLocaleString("pt-BR")}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">${String(melhorDia.dia).padStart(2,'0')}/${String(melhorDia.mes+1).padStart(2,'0')}/${melhorDia.ano}</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">${String(melhorDia.dia).padStart(2,'0')}/${String(melhorDia.mes+1).padStart(2,'0')}/${melhorDia.ano}</div>
       </div>
     </div>
 
@@ -4245,8 +4245,8 @@ function renderHistoricoRobo(key) {
       <table style="border-collapse:collapse;width:100%;min-width:440px;font-family:'Courier New',monospace">
         <thead>
           <tr style="background:#0a0d11">
-            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Data</th>
-            <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Cód. Peça</th>
+            <th style="padding:9px 10px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Data</th>
+            <th style="padding:9px 10px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Cód. Peça</th>
             <th style="padding:9px 10px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">☀ Dia</th>
             <th style="padding:9px 10px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700">🌙 Noite</th>
             <th style="padding:9px 10px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700">Total Geral</th>
@@ -4338,7 +4338,7 @@ function renderRelatorioAnual(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📈 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Análise consolidada do ano inteiro — mês a mês</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Análise consolidada do ano inteiro — mês a mês</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
     </div>
@@ -4358,30 +4358,30 @@ function renderRelatorioAnual(){
     <!-- Cards resumo do ano -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
       <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Ano</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Ano</div>
         <div style="font-size:26px;font-weight:900;color:#00e87a">${totalAno.toLocaleString("pt-BR")}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças produzidas</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">peças produzidas</div>
       </div>
       <div style="background:#3d9eff15;border:1px solid #3d9eff30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Mensal</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Mensal</div>
         <div style="font-size:26px;font-weight:900;color:#3d9eff">${mediaMes.toLocaleString("pt-BR")}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças/mês</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">peças/mês</div>
       </div>
       <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Mês</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Mês</div>
         <div style="font-size:26px;font-weight:900;color:#ffb300">${melhorMes!==undefined?mesData[melhorMes].totalGeral.toLocaleString("pt-BR"):'—'}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">${melhorMes!==undefined?MESES[melhorMes]:''}</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">${melhorMes!==undefined?MESES[melhorMes]:''}</div>
       </div>
       <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
         <div style="font-size:26px;font-weight:900;color:#a78bfa">${roboAno.length}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">de ${ROBOS.length} robôs no ano</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">de ${ROBOS.length} robôs no ano</div>
       </div>
     </div>
 
     <!-- Gráfico de produção mensal -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção mensal do ano</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção mensal do ano</div>
       <div style="display:flex;align-items:flex-end;gap:8px;height:110px">
         ${MESES.map((nome,m)=>{
           const val = mesData[m]?mesData[m].totalGeral:0;
@@ -4399,7 +4399,7 @@ function renderRelatorioAnual(){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
       <!-- Produção por robô no ano -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Produção por Robô no Ano</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">⚙ Produção por Robô no Ano</div>
         ${roboAno.length>0?roboAno.map(r=>{
           const pct=Math.round(r.total/maxRobo*100);
           return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -4415,7 +4415,7 @@ function renderRelatorioAnual(){
 
       <!-- Top peças do ano -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Ano</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Ano</div>
         ${topPecas.length>0?topPecas.map(([cod,total],i)=>{
           const medalhas=['🥇','🥈','🥉','4º','5º'];
           const pct=Math.round(total/maxPeca*100);
@@ -4433,19 +4433,19 @@ function renderRelatorioAnual(){
 
     <!-- Tabela detalhada por mês -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
+      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
         Detalhe por Mês — todos os robôs
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table style="border-collapse:collapse;width:100%;min-width:560px;font-family:'Courier New',monospace">
           <thead>
             <tr style="background:#0a0d11">
-              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Mês</th>
-              <th style="padding:9px 12px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
-              <th style="padding:9px 12px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
-              <th style="padding:9px 12px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
-              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Dias Trab.</th>
-              <th style="padding:9px 12px;font-size:10px;color:#3d9eff;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Média/Dia</th>
+              <th style="padding:9px 12px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Mês</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
+              <th style="padding:9px 12px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Dias Trab.</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#3d9eff;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Média/Dia</th>
             </tr>
           </thead>
           <tbody>
@@ -4561,7 +4561,7 @@ function renderRelatorio(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📊 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Análise consolidada do período</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Análise consolidada do período</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
     </div>
@@ -4583,30 +4583,30 @@ function renderRelatorio(){
     <!-- Cards resumo do mês -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
       <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
         <div style="font-size:26px;font-weight:900;color:#00e87a">${totalMes.toLocaleString("pt-BR")}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças produzidas</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">peças produzidas</div>
       </div>
       <div style="background:#3d9eff15;border:1px solid #3d9eff30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
         <div style="font-size:26px;font-weight:900;color:#3d9eff">${mediaDia.toLocaleString("pt-BR")}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">peças/dia</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">peças/dia</div>
       </div>
       <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
         <div style="font-size:26px;font-weight:900;color:#ffb300">${melhorDia?diasDoMes[melhorDia].totalGeral.toLocaleString("pt-BR"):'—'}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">${melhorDia?`dia ${melhorDia}`:''}</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">${melhorDia?`dia ${melhorDia}`:''}</div>
       </div>
       <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:12px;padding:14px 16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Robôs Ativos</div>
         <div style="font-size:26px;font-weight:900;color:#a78bfa">${eficienciaRobo.length}</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">de ${ROBOS.length} robôs</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">de ${ROBOS.length} robôs</div>
       </div>
     </div>
 
     <!-- Produção diária mini gráfico -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção diária do mês</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Produção diária do mês</div>
       <div style="display:flex;align-items:flex-end;gap:3px;height:60px">
         ${Array.from({length:31},(_,i)=>i+1).map(d=>{
           const val = diasDoMes[d]?diasDoMes[d].totalGeral:0;
@@ -4625,7 +4625,7 @@ function renderRelatorio(){
 
       <!-- Heatmap de Produção -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🗓 Heatmap de Produção</div>
         <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
           ${(()=>{
             const diasNoMes=new Date(anoSel,mesIdx+1,0).getDate();
@@ -4659,7 +4659,7 @@ function renderRelatorio(){
 
       <!-- Top peças -->
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Mês</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">🏆 Top Peças do Mês</div>
         ${topPecas.length>0?topPecas.map(([cod,total],i)=>{
           const medalhas=['🥇','🥈','🥉','4º','5º'];
           const pct=Math.round(total/maxPeca*100);
@@ -4677,18 +4677,18 @@ function renderRelatorio(){
 
     <!-- Tabela detalhada por dia -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden">
-      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
+      <div style="padding:12px 16px;border-bottom:1px solid #1e2530;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">
         Detalhe por Dia — todos os robôs
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table style="border-collapse:collapse;width:100%;min-width:500px;font-family:'Courier New',monospace">
           <thead>
             <tr style="background:#0a0d11">
-              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Dia</th>
-              <th style="padding:9px 12px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
-              <th style="padding:9px 12px;font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
-              <th style="padding:9px 12px;font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
-              <th style="padding:9px 12px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Robôs</th>
+              <th style="padding:9px 12px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Dia</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">☀ Dia</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">🌙 Noite</th>
+              <th style="padding:10px 12px;font-size:11.5px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:left;font-weight:700;border-bottom:1px solid #1e2530">Total Geral</th>
+              <th style="padding:9px 12px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700;border-bottom:1px solid #1e2530">Robôs</th>
             </tr>
           </thead>
           <tbody>
@@ -4730,7 +4730,7 @@ function renderRelatorio(){
     <!-- Evolução Diária -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">📈 Evolução Diária</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">📈 Evolução Diária</div>
         <button id="btnAnimarGraf" onclick="animarGrafico()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">▶ Animar</button>
       </div>
       ${(()=>{
@@ -4780,7 +4780,7 @@ function renderRelatorio(){
 
     <!-- Metas Atingidas por Robô -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🎯 Metas Atingidas por Robô no Mês</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">🎯 Metas Atingidas por Robô no Mês</div>
       ${(()=>{
         const metasKey2 = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
         if(!metasKey2) return '<div style="font-size:12px;color:#2a3040">Sem dados.</div>';
@@ -4822,11 +4822,11 @@ function renderRelatorio(){
             <div style="display:flex;gap:8px;margin-bottom:8px">
               <div style="flex:1;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px;text-align:center">
                 <div style="font-size:22px;font-weight:900;color:#00e87a">${r.atingiu}x</div>
-                <div style="font-size:10px;color:#4a5568;margin-top:2px">✅ Atingiu a meta</div>
+                <div style="font-size:11.5px;color:#6b7788;margin-top:3px">✅ Atingiu a meta</div>
               </div>
               <div style="flex:1;background:#ff4d4d15;border:1px solid #ff4d4d30;border-radius:8px;padding:8px;text-align:center">
                 <div style="font-size:22px;font-weight:900;color:#ff4d4d">${r.naoAtingiu}x</div>
-                <div style="font-size:10px;color:#4a5568;margin-top:2px">❌ Não atingiu</div>
+                <div style="font-size:11.5px;color:#6b7788;margin-top:3px">❌ Não atingiu</div>
               </div>
             </div>
             <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
@@ -4839,7 +4839,7 @@ function renderRelatorio(){
 
     <!-- Melhor e Pior Desempenho -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">⚙ Eficiência por Robô no Mês</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">⚙ Eficiência por Robô no Mês</div>
       ${(()=>{
         const robosComMeta = eficienciaRobo.filter(r=>r.mediaMetaHora>0&&r.diasAtivo>0);
         if(!robosComMeta.length) return `<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>`;
@@ -4865,7 +4865,7 @@ function renderRelatorio(){
           </div>
         </div>
         <!-- Ranking completo -->
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:10px">Ranking completo</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:10px">Ranking completo</div>
         ${robosComMeta.sort((a,b)=>b.efic-a.efic).map((r,i)=>{
           const cor=r.efic>=100?'#00e87a':r.efic>=70?'#ffb300':'#ff4d4d';
           const medalha=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}º`;
@@ -5349,9 +5349,9 @@ function _dashRenderGeral(){
     <table style="width:100%;border-collapse:collapse;background:#0a0d12;border-radius:12px;overflow:hidden">
       <thead style="background:#080b0f">
         <tr>
-          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Robô</th>
-          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Peça</th>
-          <th style="padding:9px 10px;font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530">Meta/h</th>
+          <th style="padding:9px 10px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Robô</th>
+          <th style="padding:9px 10px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left;border-bottom:1px solid #1e2530">Peça</th>
+          <th style="padding:9px 10px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530">Meta/h</th>
           ${hHeaders}
           <th style="padding:9px 14px;font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30">Total</th>
         </tr>
@@ -5776,7 +5776,7 @@ function renderCadastroPecas(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🔧 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">Cadastre peças para preenchimento automático nos robôs</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Cadastre peças para preenchimento automático nos robôs</div>
       </div>
       ${isAdmin?`<div style="display:flex;gap:8px">
         <button class="btn btn-gray" style="padding:5px 12px;font-size:11px;background:#00e87a20;border:1px solid #00e87a40;color:#00e87a" onclick="abrirModalNovaPeca()">+ Nova Peça</button>
@@ -6975,7 +6975,7 @@ function renderMapaProducaoTabela(force){
     <div style="background:#ffb30015;border:2px solid #ffb30050;border-radius:12px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div>
         <div style="font-size:10px;color:#ffb300;text-transform:uppercase;letter-spacing:.1em;font-weight:700">⚑ Total do Dia</div>
-        <div style="font-size:10px;color:#4a5568;margin-top:2px">${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano} · ${maquinas.length} máq.</div>
+        <div style="font-size:11.5px;color:#6b7788;margin-top:3px">${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano} · ${maquinas.length} máq.</div>
       </div>
       <div style="font-size:34px;font-weight:900;color:#ffb300">${totalG.toLocaleString("pt-BR")}</div>
     </div>
@@ -7227,7 +7227,7 @@ function mapaAbrirMaquina(cod){
       <textarea class="modal-input" id="mapaMaqObs" rows="3" ${podeEditar?'':'readonly'} placeholder="—">${esc(m.obs||'')}</textarea>
     </div>
     <div style="margin-top:10px">
-      <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">Histórico</label>
+      <label style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">Histórico</label>
       <div style="max-height:140px;overflow-y:auto;margin-top:6px">${historicoHTML}</div>
     </div>
     <div class="modal-actions" style="margin-top:18px">
@@ -8388,7 +8388,7 @@ function abrirPainelRobo(robo, silencioso){
       <div style="font-size:11px;color:#ff4d4d;text-transform:uppercase;letter-spacing:0.12em;font-weight:800;margin:18px 0 8px">⚠ Manutenções pendentes (${manuPend.length})</div>
       ${manuPend.map(m=>`<div style="background:#ff4d4d0d;border:1px solid #ff4d4d30;border-radius:10px;padding:10px 14px;margin-bottom:8px">
         <div style="font-size:13px;font-weight:700;color:#fff">${esc(m.descricao)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">📅 ${esc(m.data||'—')}${m.responsavel?' · 👤 '+esc(m.responsavel):''}</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">📅 ${esc(m.data||'—')}${m.responsavel?' · 👤 '+esc(m.responsavel):''}</div>
       </div>`).join('')}`:''}
 
       <button onclick="fecharPainelRobo();selectCell('${robo}')" style="width:100%;margin-top:18px;background:${marcaCor}15;border:1px solid ${marcaCor}45;color:${marcaCor};border-radius:10px;padding:12px 0;font-size:13px;font-weight:800;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.08em">⚙ ABRIR CÉLULA COMPLETA →</button>
@@ -8795,13 +8795,13 @@ async function openGerenciar(){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <div>
-          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Nome</label>
+          <label style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Nome</label>
           <input id="edit-nome-${k}" value="${esc(c.nome)}"
             style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#d8dde6;outline:none"
             onfocus="this.style.borderColor='#00e87a'" onblur="this.style.borderColor='#1e2530'">
         </div>
         <div>
-          <label style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Número/ID</label>
+          <label style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:4px">Número/ID</label>
           <input id="edit-num-${k}" value="${k}" maxlength="4"
             style="width:100%;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:7px 10px;font-family:'Courier New',monospace;font-size:13px;color:#ffb300;outline:none"
             onfocus="this.style.borderColor='#ffb300'" onblur="this.style.borderColor='#1e2530'">
@@ -9701,30 +9701,30 @@ function renderGabDesempenho(){
     <!-- KPIs -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
       <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
         <div style="font-size:28px;font-weight:900;color:#00e87a">${totalGeral.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">peças produzidas</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">peças produzidas</div>
       </div>
       <div style="background:#0f1318;border:1px solid #ffb30030;border-radius:12px;padding:16px;text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média Diária</div>
         <div style="font-size:28px;font-weight:900;color:#ffb300">${mediaGeral.toLocaleString("pt-BR")}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">${diasComDados.length} dia(s) registrado(s)</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">${diasComDados.length} dia(s) registrado(s)</div>
       </div>
       <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Melhor Dia</div>
         <div style="font-size:28px;font-weight:900;color:#00e87a">${melhorDia?String(melhorDia).padStart(2,'0')+'/'+String(mes+1).padStart(2,'0'):'—'}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">${melhorDia?totalPorDia[melhorDia].toLocaleString("pt-BR")+' peças':'—'}</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">${melhorDia?totalPorDia[melhorDia].toLocaleString("pt-BR")+' peças':'—'}</div>
       </div>
       <div style="background:#0f1318;border:1px solid #3d9eff30;border-radius:12px;padding:16px;text-align:center">
-        <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Códigos Ativos</div>
+        <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Códigos Ativos</div>
         <div style="font-size:28px;font-weight:900;color:#3d9eff">${codigos.length}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:4px">no período</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">no período</div>
       </div>
     </div>
 
     <!-- Gráfico evolução diária -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px">📈 Evolução Diária</div>
       ${diasComDados.length>0?`
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <svg viewBox="0 0 900 110" style="width:100%;min-width:400px;height:130px" preserveAspectRatio="none">
@@ -9761,7 +9761,7 @@ function renderGabDesempenho(){
 
     <!-- Ranking de Melhor Produção -->
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
-      <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🏆 Ranking de Produção por Código</div>
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:14px">🏆 Ranking de Produção por Código</div>
       ${(()=>{
         const ranking = [...codigos].sort((a,b)=>totaisCod[b]-totaisCod[a]);
         const maxVal = Math.max(...ranking.map(c=>totaisCod[c]),1);
