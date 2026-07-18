@@ -3507,7 +3507,7 @@ function renderMetasDiaria(){
       <div class="date-sel"><label>Mês</label><select onchange="updateMetasData('${selected}','metas_mes',+this.value)">${mesesOpts}</select></div>
       <div class="date-sel"><label>Ano</label><select onchange="updateMetasData('${selected}','metas_ano',+this.value)">${anosOpts}</select></div>
       <div style="margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:4px 10px;font-size:11px;color:#00e87a;font-weight:700">☀ ${totalDia.toLocaleString("pt-BR")}</div>
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:4px 10px;font-size:12.5px;color:#00e87a;font-weight:700">☀ ${totalDia.toLocaleString("pt-BR")}</div>
         <div style="background:#a78bfa15;border:1px solid #a78bfa30;border-radius:6px;padding:4px 10px;font-size:11px;color:#a78bfa;font-weight:700">🌙 ${totalNoite.toLocaleString("pt-BR")}</div>
         <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:4px 10px;font-size:11px;color:#ffb300;font-weight:700">∑ ${totalG.toLocaleString("pt-BR")}</div>
       </div>
@@ -3665,22 +3665,22 @@ function renderProducaoPorPecaResultado(){
             ${robosOrdenados.map(([robo,qtd])=>{
               const pctR=Math.round(qtd/total*100);
               return`<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;min-width:100px;flex:1">
-                <div style="font-size:11px;color:#00e87a;font-weight:700;margin-bottom:4px">⚙ Robô ${robo}</div>
+                <div style="font-size:12.5px;color:#00e87a;font-weight:700;margin-bottom:4px">⚙ Robô ${robo}</div>
                 <div style="font-size:18px;font-weight:800;color:#d8dde6">${qtd.toLocaleString("pt-BR")}</div>
                 <div style="margin-top:4px;background:#1e2530;border-radius:99px;height:4px;overflow:hidden">
                   <div style="height:100%;width:${pctR}%;background:#00e87a;border-radius:99px"></div>
                 </div>
-                <div style="font-size:10px;color:#4a5568;margin-top:3px">${pctR}% do total</div>
+                <div style="font-size:11.5px;color:#6b7788;margin-top:4px">${pctR}% do total</div>
               </div>`;
             }).join('')}
           </div>
           <div style="margin-top:8px;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${robosOrdenados.length} robô(s) · Total combinado</span>
+            <span style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">${robosOrdenados.length} robô(s) · Total combinado</span>
             <span style="font-size:20px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</span>
           </div>
         </div>`
       :robosOrdenados.length===1
-        ?`<div style="margin-top:8px;font-size:11px;color:#4a5568">⚙ Produzido pelo Robô <b style="color:#00e87a">${robosOrdenados[0][0]}</b></div>`
+        ?`<div style="margin-top:8px;font-size:12px;color:#6b7788">⚙ Produzido pelo Robô <b style="color:#00e87a">${robosOrdenados[0][0]}</b></div>`
         :'';
     return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -3697,7 +3697,7 @@ function renderProducaoPorPecaResultado(){
           <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
             <div style="height:100%;width:100%;background:${verAno?'#3d9eff':'#00e87a'};border-radius:99px;transform-origin:left;transform:scaleX(${pct/100});transition:transform 360ms var(--ease-out)"></div>
           </div>
-          <div style="font-size:10px;color:#4a5568;margin-top:3px">${pct}% do maior</div>
+          <div style="font-size:11.5px;color:#6b7788;margin-top:4px">${pct}% do maior</div>
         </div>
         <div style="text-align:right;min-width:90px">
           <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total ${verAno?'no ano':''}</div>
@@ -3804,7 +3804,7 @@ function renderArmario(){
               <option ${e.status==='Ocupado'?'selected':''}>Ocupado</option>
               <option ${e.status==='Manutenção'?'selected':''}>Manutenção</option>
             </select>
-            <span style="font-size:11px;color:#4a5568">▼</span>
+            <span style="font-size:12px;color:#6b7788">▼</span>
           </div>
         </div>
         <div id="gab-${i}" class="arm-gabarito">
@@ -3825,7 +3825,7 @@ function renderArmario(){
         <div style="font-size:12.5px;color:#7a8698;margin-top:5px">👤 ${esc(c.operador||'—')} · ⏰ ${esc(c.turno||'—')}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:11px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
+        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:6px 14px;font-size:12.5px;color:#00e87a;font-weight:700;letter-spacing:0.08em">
           ${Object.values(espacos).filter(e=>e.status==='Ocupado').length} / 18 ocupados
         </div>
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
@@ -4037,7 +4037,7 @@ function _renderDetailInner(){
         <div class="field"><label>🔩 Desgaste do eletrodo atual</label>
           <div style="background:#080b0f;border:1px solid #1e2530;border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
             <span style="font-size:20px;font-weight:900;color:${calcDesgaste(selected)>=(c.limite_eletrodo||500)?'#ff4d4d':calcDesgaste(selected)>=(c.limite_eletrodo_aviso||300)?'#ffb300':'#00e87a'}">${calcDesgaste(selected).toLocaleString("pt-BR")}</span>
-            <span style="font-size:11px;color:#4a5568">peças desde<br>última troca</span>
+            <span style="font-size:12px;color:#6b7788">peças desde<br>última troca</span>
           </div>
           ${isAdmin?`<div style="display:flex;gap:8px;margin-top:6px;align-items:center">
             <div style="flex:1">
@@ -4346,7 +4346,7 @@ function renderRelatorioAnual(){
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <span style="font-size:16px">📅</span>
       <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;font-size:11px;color:#4a5568">${mesesComDados.length} mês(es) com dados · ${totalDiasTrabalhados} dia(s) trabalhados</div>
+      <div style="margin-left:auto;font-size:12px;color:#6b7788">${mesesComDados.length} mês(es) com dados · ${totalDiasTrabalhados} dia(s) trabalhados</div>
     </div>
 
     ${mesesComDados.length===0?`
@@ -4571,7 +4571,7 @@ function renderRelatorio(){
       <span style="font-size:16px">📅</span>
       <div class="date-sel"><label>Mês</label><select onchange="updateRelFiltro('${selected}','rel_mes',+this.value)">${mesesOpts}</select></div>
       <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
-      <div style="margin-left:auto;font-size:11px;color:#4a5568">${diasComDados.length} dia(s) com dados</div>
+      <div style="margin-left:auto;font-size:12px;color:#6b7788">${diasComDados.length} dia(s) com dados</div>
     </div>
 
     ${diasComDados.length===0?`
@@ -4852,16 +4852,16 @@ function renderRelatorio(){
             <div style="font-size:10px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">🥇 Melhor Desempenho</div>
             <div style="font-size:32px;font-weight:900;color:#00e87a">Robô ${melhor.robo}</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${melhor.efic}%</div>
-            <div style="font-size:11px;color:#4a5568">${melhor.totalProd.toLocaleString("pt-BR")} peças · ${melhor.diasAtivo} dia(s)</div>
-            <div style="font-size:11px;color:#4a5568">Meta média: ${melhor.mediaMetaHora}/h</div>
+            <div style="font-size:12px;color:#6b7788">${melhor.totalProd.toLocaleString("pt-BR")} peças · ${melhor.diasAtivo} dia(s)</div>
+            <div style="font-size:12px;color:#6b7788">Meta média: ${melhor.mediaMetaHora}/h</div>
           </div>
           <!-- Pior -->
           <div style="background:#ff4d4d10;border:1px solid #ff4d4d30;border-radius:10px;padding:14px 16px;text-align:center">
             <div style="font-size:10px;color:#ff4d4d;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:6px">📉 Menor Desempenho</div>
             <div style="font-size:32px;font-weight:900;color:#ff4d4d">Robô ${pior.robo}</div>
             <div style="font-size:28px;font-weight:900;color:#fff;margin:4px 0">${pior.efic}%</div>
-            <div style="font-size:11px;color:#4a5568">${pior.totalProd.toLocaleString("pt-BR")} peças · ${pior.diasAtivo} dia(s)</div>
-            <div style="font-size:11px;color:#4a5568">Meta média: ${pior.mediaMetaHora}/h</div>
+            <div style="font-size:12px;color:#6b7788">${pior.totalProd.toLocaleString("pt-BR")} peças · ${pior.diasAtivo} dia(s)</div>
+            <div style="font-size:12px;color:#6b7788">Meta média: ${pior.mediaMetaHora}/h</div>
           </div>
         </div>
         <!-- Ranking completo -->
@@ -5796,10 +5796,10 @@ function renderCadastroPecas(){
             <div style="font-size:11px;color:#4a5568;margin-top:2px">${esc(p.cliente||'—')}</div>
           </div>
           <div style="display:flex;gap:16px;flex-wrap:wrap">
-            ${p.tempo_peca?`<div style="font-size:11px;color:#4a5568">⏱ <b style="color:#d8dde6">${esc(p.tempo_peca)}</b></div>`:''}
-            ${p.meta_hora?`<div style="font-size:11px;color:#4a5568">🎯 <b style="color:#00e87a">${p.meta_hora}/h</b></div>`:''}
-            ${p.corrente?`<div style="font-size:11px;color:#4a5568">⚡ <b style="color:#d8dde6">${esc(p.corrente)}</b></div>`:''}
-            ${p.pontos_solda?`<div style="font-size:11px;color:#4a5568">● <b style="color:#d8dde6">${esc(p.pontos_solda)}</b></div>`:''}
+            ${p.tempo_peca?`<div style="font-size:12px;color:#6b7788">⏱ <b style="color:#d8dde6">${esc(p.tempo_peca)}</b></div>`:''}
+            ${p.meta_hora?`<div style="font-size:12px;color:#6b7788">🎯 <b style="color:#00e87a">${p.meta_hora}/h</b></div>`:''}
+            ${p.corrente?`<div style="font-size:12px;color:#6b7788">⚡ <b style="color:#d8dde6">${esc(p.corrente)}</b></div>`:''}
+            ${p.pontos_solda?`<div style="font-size:12px;color:#6b7788">● <b style="color:#d8dde6">${esc(p.pontos_solda)}</b></div>`:''}
           </div>
           ${isAdmin?`<div style="display:flex;gap:6px;margin-left:auto">
             <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
@@ -8432,7 +8432,7 @@ function renderManutencao(){
       </div>
       <div style="background:linear-gradient(135deg,#00e87a15,#00e87a05);border:1px solid #00e87a30;border-radius:14px;padding:18px 16px;text-align:center">
         <div style="font-size:32px;font-weight:900;color:#00e87a;line-height:1">${totalConcluidas}</div>
-        <div style="font-size:11px;color:#00e87a;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Concluídas</div>
+        <div style="font-size:12.5px;color:#00e87a;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Concluídas</div>
       </div>
       <div style="background:linear-gradient(135deg,${taxaCor}15,${taxaCor}05);border:1px solid ${taxaCor}30;border-radius:14px;padding:18px 16px;text-align:center">
         <div style="font-size:32px;font-weight:900;color:${taxaCor};line-height:1">${taxaConclusao}%</div>
@@ -8790,7 +8790,7 @@ async function openGerenciar(){
     return `<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:12px 14px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <span style="font-size:16px">${ic}</span>
-        <span style="font-size:11px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em">${t}</span>
+        <span style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">${t}</span>
         <span style="font-size:10px;color:#2a3040;margin-left:auto">ID atual: <b style="color:#00e87a">${k}</b></span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -9780,10 +9780,10 @@ function renderGabDesempenho(){
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
                 <span style="font-size:16px;font-weight:900;color:#00e87a">${esc(cod)}</span>
                 <div style="display:flex;align-items:center;gap:10px">
-                  <span style="font-size:11px;color:#4a5568">Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b></span>
+                  <span style="font-size:12px;color:#6b7788">Média: <b style="color:#d8dde6">${mediaCod.toLocaleString('pt-BR')}/dia</b></span>
                   ${pct!==null?`<span style="font-size:13px;font-weight:900;color:${cor}">${pct}%</span>`:''}
                   <span style="font-size:18px;font-weight:900;color:#fff">${v.toLocaleString('pt-BR')}</span>
-                  ${prog>0?`<span style="font-size:11px;color:#4a5568">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
+                  ${prog>0?`<span style="font-size:12px;color:#6b7788">/ ${prog.toLocaleString('pt-BR')}</span>`:''}
                 </div>
               </div>
               <div style="background:#1e2530;border-radius:99px;height:10px;overflow:hidden">
