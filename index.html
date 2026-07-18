@@ -9072,9 +9072,9 @@ function renderGabaritagem(){
         return`<td style="padding:8px 10px;font-size:14px;font-weight:900;color:#3d9eff;text-align:center;border-left:2px solid #3d9eff30">${media2>0?media2.toLocaleString('pt-BR'):'—'}</td>`;
       })()}
       ${isGabAdmin?`<td style="padding:4px;text-align:center;white-space:nowrap">
-        <button onclick="moverCodGab('${esc(cod)}',-1)" ${ri===0?'disabled':''} title="Subir" style="background:none;border:none;color:${ri===0?'#2a3040':'#3d9eff'};cursor:${ri===0?'default':'pointer'};font-size:15px;padding:2px 3px">▲</button>
-        <button onclick="moverCodGab('${esc(cod)}',1)" ${ri===codigos.length-1?'disabled':''} title="Descer" style="background:none;border:none;color:${ri===codigos.length-1?'#2a3040':'#3d9eff'};cursor:${ri===codigos.length-1?'default':'pointer'};font-size:15px;padding:2px 3px">▼</button>
-        <button onclick="excluirCodGab('${esc(cod)}')" title="Excluir" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:2px 3px">🗑</button>
+        <button class="gb-rowbtn" onclick="moverCodGab('${esc(cod)}',-1)" ${ri===0?'disabled':''} title="Subir" style="background:none;border:none;color:${ri===0?'#2a3040':'#3d9eff'};cursor:${ri===0?'default':'pointer'};font-size:15px;padding:2px 3px">▲</button>
+        <button class="gb-rowbtn" onclick="moverCodGab('${esc(cod)}',1)" ${ri===codigos.length-1?'disabled':''} title="Descer" style="background:none;border:none;color:${ri===codigos.length-1?'#2a3040':'#3d9eff'};cursor:${ri===codigos.length-1?'default':'pointer'};font-size:15px;padding:2px 3px">▼</button>
+        <button class="gb-rowbtn" onclick="excluirCodGab('${esc(cod)}')" title="Excluir" style="background:none;border:none;color:#ff4d4d;cursor:pointer;font-size:14px;padding:2px 3px">🗑</button>
       </td>`:''}
     </tr>`;
   }).join('');
@@ -9658,7 +9658,7 @@ function renderGabDesempenho(){
   <div style="display:flex;flex-direction:column;gap:16px">
 
     <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
       <div style="background:#0f1318;border:1px solid #00e87a30;border-radius:12px;padding:16px;text-align:center">
         <div style="font-size:10px;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Total do Mês</div>
         <div style="font-size:28px;font-weight:900;color:#00e87a">${totalGeral.toLocaleString("pt-BR")}</div>
@@ -10572,6 +10572,30 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .gb-btn.tint-mut:hover{ background:#141b26; color:var(--gb-tx); border-color:var(--gb-bd2); }
 .gb-editing{ display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; color:var(--gb-amber); background:#ffb30010; border:1px solid #ffb30030; padding:9px 13px; border-radius:10px; font-family:'Montserrat',sans-serif; }
 .gb-editing::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--gb-amber); box-shadow:0 0 9px var(--gb-amber); animation:gb-pulse 1.6s infinite; }
+.gb-rowbtn{ min-width:34px; min-height:34px; border-radius:8px; }
+.gb-rowbtn:not(:disabled):hover{ background:#ffffff0d !important; }
+.gb-rowbtn:not(:disabled):active{ transform:scale(0.9); }
+/* ===== Mobile ===== */
+@media (max-width:640px){
+  .gb-head-top{ padding:11px 12px 9px; }
+  .gb-title{ font-size:17px; }
+  .gb-sub{ font-size:10.5px; }
+  .gb-logo{ width:40px; height:40px; }
+  .gb-tabsrow{ flex-direction:column; align-items:stretch; gap:9px; padding:0 12px 11px; }
+  .gb-seg-wrap{ width:100%; }
+  .gb-seg{ flex:1; justify-content:center; padding:11px 10px; font-size:13.5px; }
+  .gb-sels{ display:flex; width:100%; }
+  .gb-sel{ flex:1; font-size:15px; padding:11px 12px; text-align:center; }
+  .gb-actions{ padding:10px 12px; gap:7px; }
+  .gb-btn{ flex:1 1 calc(50% - 4px); justify-content:center; padding:13px 10px; font-size:13px; }
+  .gb-btn.primary{ flex-basis:100%; }
+  .gb-btn.tint-red{ margin-left:0 !important; flex-basis:100%; }
+  .gb-editing{ flex-basis:100%; justify-content:center; }
+  /* Evita o zoom automático do iOS ao focar campos (<16px) e amplia o toque */
+  #gabScreen #gabBusca{ font-size:16px !important; max-width:none; }
+  #gabScreen #gabTbody input{ font-size:16px !important; padding-top:10px !important; padding-bottom:10px !important; }
+  #gabScreen .gb-rowbtn{ font-size:20px; min-width:40px; min-height:40px; }
+}
 </style>
 <div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
   <!-- Header -->
