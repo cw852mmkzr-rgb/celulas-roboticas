@@ -8839,12 +8839,15 @@ const GAB_PW = "1711";
 let isGabAdmin = false;
 let gabDados = {}; // {ano_mes: {cod: {dia: valor}}}
 
+let gabTabAtiva = 'planilha';
+
 function abrirGabaritagem(){
   document.getElementById("gabScreen").style.display="flex";
   const now = new Date();
   document.getElementById("gabMes").value = now.getMonth();
   document.getElementById("gabAno").value = now.getFullYear();
-  loadGabDados().then(()=>renderGabaritagem());
+  gabTabAtiva = 'planilha';
+  loadGabDados().then(()=>gabSwitchTab('planilha'));
 }
 
 function fecharGabaritagem(){
@@ -8853,17 +8856,39 @@ function fecharGabaritagem(){
   renderGabBtns();
 }
 
+// Alterna entre as abas Planilha / Desempenho (mesma tela, dados iguais)
+function gabSwitchTab(tab){
+  gabTabAtiva = tab;
+  const pl = document.getElementById("gabTabPlanilha");
+  const de = document.getElementById("gabTabDesempenho");
+  if(pl) pl.style.display = tab==='planilha' ? 'block' : 'none';
+  if(de) de.style.display = tab==='desempenho' ? 'block' : 'none';
+  document.querySelectorAll('#gabScreen .gb-seg').forEach(el=>el.classList.toggle('on', el.dataset.tab===tab));
+  // a barra de ações (editar, ler foto, etc) só faz sentido na Planilha
+  const act = document.getElementById("gabActions");
+  if(act) act.style.display = tab==='planilha' ? 'flex' : 'none';
+  gabRerender();
+}
+
+// Re-renderiza a aba atualmente ativa (usado pelos seletores de mês/ano)
+function gabRerender(){
+  if(gabTabAtiva==='desempenho') renderGabDesempenho();
+  else renderGabaritagem();
+}
+
 function renderGabBtns(){
   const el = document.getElementById("gabBtns");
   if(!el) return;
   el.innerHTML = isGabAdmin
-    ? `<button onclick="document.getElementById('gabRestoreInput').click()" style="background:#ff6a0020;border:1px solid #ff6a0040;color:#ff6a00;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">↑ Restaurar Backup</button>
-       <button onclick="document.getElementById('gabFotoInput').click()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📷 Ler Foto</button>
-       <button onclick="abrirModalNovaCodGab()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">+ Código</button>
-       <button onclick="copiarCodsMesAnterior()" style="background:#ffb30020;border:1px solid #ffb30040;color:#ffb300;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📋 Copiar mês anterior</button>
-       <button onclick="sairModoEdicaoGab()" style="background:#1e2530;border:1px solid #2a3040;color:#4a5568;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Sair edição</button>
-       <span style="font-size:11px;color:#a78bfa;padding:0 4px">✓ Editando</span>`
-    : `<button onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'" style="background:#1e2530;border:1px solid #2a3040;color:#d8dde6;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✏ Editar</button>`;
+    ? `<button class="gb-btn primary" onclick="document.getElementById('gabFotoInput').click()">📷 Ler Foto</button>
+       <button class="gb-btn tint-purple" onclick="abrirModalNovaCodGab()">＋ Código</button>
+       <button class="gb-btn tint-orange" onclick="copiarCodsMesAnterior()">📋 Copiar mês anterior</button>
+       <button class="gb-btn tint-blue" onclick="backupGabaritagem()">⬇ Backup</button>
+       <button class="gb-btn tint-mut" onclick="document.getElementById('gabRestoreInput').click()">↑ Restaurar</button>
+       <span class="gb-editing">Editando</span>
+       <button class="gb-btn tint-red" onclick="sairModoEdicaoGab()" style="margin-left:auto">✕ Sair da edição</button>`
+    : `<button class="gb-btn primary" onclick="document.getElementById('modalGabLogin').style.display='flex';document.getElementById('gabPwInput').value='';document.getElementById('gabLoginErr').style.display='none'">✏ Ativar edição</button>
+       <button class="gb-btn tint-blue" onclick="backupGabaritagem()">⬇ Backup</button>`;
 }
 
 function sairModoEdicaoGab(){
@@ -8948,9 +8973,14 @@ function renderGabaritagem(){
 
   if(codigos.length===0){
     document.getElementById("gabPanel").innerHTML=`
-      <div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">
-        Nenhum código cadastrado.<br>
-        ${isGabAdmin?`<button onclick="abrirModalNovaCodGab()" style="margin-top:16px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Courier New',monospace">+ Adicionar Código</button>`:''}
+      <div style="max-width:420px;margin:48px auto;text-align:center;background:linear-gradient(180deg,#0c111a,#090d14);border:1px solid #1b2330;border-radius:18px;padding:44px 32px">
+        <div style="font-size:44px;margin-bottom:8px;opacity:.9">🔨</div>
+        <div style="font-size:16px;font-weight:800;color:#eaf0f8;font-family:'Montserrat',sans-serif">Nenhum código este mês</div>
+        <div style="font-size:13px;color:#7a8698;margin-top:8px;line-height:1.5">${isGabAdmin?'Adicione um código manualmente, copie os do mês anterior ou leia uma foto da planilha.':'Ative a edição para adicionar códigos e lançar produção.'}</div>
+        ${isGabAdmin?`<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:22px">
+          <button class="gb-btn primary" onclick="abrirModalNovaCodGab()">＋ Adicionar código</button>
+          <button class="gb-btn tint-orange" onclick="copiarCodsMesAnterior()">📋 Copiar mês anterior</button>
+        </div>`:''}
       </div>`;
     return;
   }
@@ -9070,15 +9100,18 @@ function renderGabaritagem(){
   document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${mediaReal.toLocaleString('pt-BR')}</span> peças/dia <span style="color:#4a5568;font-size:11px">(${diasComRegistro.length} dia(s) registrado(s))</span>`;
 
   document.getElementById("gabPanel").innerHTML=`
-  <!-- Busca -->
-  <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
-    <input id="gabBusca" placeholder="🔍 Buscar código..." value="${dados._busca||''}"
-      style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;width:250px;outline:none"
+  <!-- Busca + resumo -->
+  <div style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <input id="gabBusca" placeholder="🔍  Buscar código..." value="${dados._busca||''}"
+      style="background:#0a0e15;border:1px solid #1b2330;color:#eaf0f8;padding:11px 15px;border-radius:11px;font-family:'Courier New',monospace;font-size:14px;flex:1;min-width:200px;max-width:320px;outline:none;transition:border-color .18s"
       oninput="filtrarGab(this.value)"
-      onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
-    <span id="gabBuscaCount" style="font-size:11px;color:#4a5568">${codigos.length} código(s)</span>
+      onfocus="this.style.borderColor='#ffb30060'" onblur="this.style.borderColor='#1b2330'">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto">
+      <span id="gabBuscaCount" style="font-size:12px;font-weight:700;color:#7a8698;background:#0e131b;border:1px solid #1b2330;padding:8px 13px;border-radius:9px">${codigos.length} código(s)</span>
+      <span style="font-size:12px;font-weight:700;color:#00e87a;background:#00e87a10;border:1px solid #00e87a30;padding:8px 13px;border-radius:9px">Σ ${totalGeral.toLocaleString('pt-BR')} peças</span>
+    </div>
   </div>
-  <div class="gab-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
+  <div class="gab-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;border-radius:14px;border:1px solid #1b2330;box-shadow:0 8px 30px -12px #000000a0">
     <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
       <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
       <tbody id="gabTbody">${tbody}${tfooter}</tbody>
@@ -9586,8 +9619,7 @@ async function restaurarBackupGabaritagem(event){
 }
 
 function abrirGabDesempenho(){
-  document.getElementById("gabDesempenhoScreen").style.display="flex";
-  renderGabDesempenho();
+  gabSwitchTab('desempenho');
 }
 
 function renderGabDesempenho(){
@@ -9600,10 +9632,11 @@ function renderGabDesempenho(){
   const dias = getDiasUteis(ano, mes);
   const diasNomes = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
-  document.getElementById("gabDesSubtitle").textContent = `${meses[mes]} ${ano}`;
+  const _gabSub = document.getElementById("gabSubtitle");
+  if(_gabSub) _gabSub.textContent = `${meses[mes]} ${ano} · desempenho mensal`;
 
   if(!codigos.length){
-    document.getElementById("gabDesPanel").innerHTML=`<div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">Nenhum dado cadastrado.</div>`;
+    document.getElementById("gabDesPanel").innerHTML=`<div style="text-align:center;color:#2a3040;padding:60px;font-size:14px">Nenhum dado cadastrado neste mês.</div>`;
     return;
   }
 
@@ -10500,51 +10533,96 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   </div>
 </div>
 <!-- Tela Gabaritagem -->
+<style>
+#gabScreen{ --gb-amber:#ffb300; --gb-amber-d:#ff8c00; --gb-bd:#1b2330; --gb-bd2:#2b3543; --gb-tx:#eaf0f8; --gb-mut:#7a8698; }
+@keyframes gab-hit{0%{transform:rotate(-55deg)}65%{transform:rotate(20deg)}70%{transform:rotate(15deg)}100%{transform:rotate(-55deg)}}
+@keyframes gab-flash{0%,63%{opacity:0}66%{opacity:1}80%{opacity:0}100%{opacity:0}}
+@keyframes gb-pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.gb-head{ background:linear-gradient(180deg,#0a0e15,#07090e); border-bottom:1px solid var(--gb-bd); flex-shrink:0; }
+.gb-head-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px 11px; }
+.gb-logo{ width:44px; height:44px; border-radius:13px; background:radial-gradient(130% 130% at 30% 15%, #ffb3002e, #ffb30006); border:1px solid #ffb30033; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:inset 0 1px 0 #ffffff10; }
+.gb-title{ font-size:19px; font-weight:900; color:#fff; font-family:'Montserrat',sans-serif; letter-spacing:-0.015em; line-height:1.05; }
+.gb-sub{ font-size:11.5px; color:var(--gb-mut); margin-top:3px; font-family:'Courier New',monospace; }
+.gb-back{ background:transparent; border:1px solid #ff5b6a45; color:#ff8593; border-radius:10px; padding:9px 15px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition:all .18s cubic-bezier(0.23,1,0.32,1); flex-shrink:0; }
+.gb-back:hover{ background:#ff5b6a16; border-color:#ff5b6a80; }
+.gb-back:active{ transform:scale(0.96); }
+.gb-tabsrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px 13px; flex-wrap:wrap; }
+.gb-seg-wrap{ display:inline-flex; background:#07090f; border:1px solid var(--gb-bd); border-radius:13px; padding:4px; gap:3px; }
+.gb-seg{ display:inline-flex; align-items:center; gap:7px; background:transparent; border:none; color:var(--gb-mut); font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; padding:9px 20px; border-radius:10px; cursor:pointer; transition:all .2s cubic-bezier(0.23,1,0.32,1); white-space:nowrap; }
+.gb-seg:hover{ color:var(--gb-tx); }
+.gb-seg.on{ background:linear-gradient(180deg,var(--gb-amber),var(--gb-amber-d)); color:#231704; box-shadow:0 5px 16px -6px #ffb30090, inset 0 1px 0 #ffffff55; }
+.gb-sels{ display:inline-flex; gap:8px; }
+.gb-sel{ background:#07090f; border:1px solid var(--gb-bd); color:var(--gb-tx); padding:9px 13px; border-radius:11px; font-family:'Montserrat',sans-serif; font-size:13px; font-weight:600; cursor:pointer; outline:none; transition:border-color .18s; }
+.gb-sel:hover{ border-color:var(--gb-bd2); }
+.gb-sel:focus{ border-color:var(--gb-amber); }
+.gb-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:11px 16px; border-top:1px solid #10151e; background:#070a0f; }
+.gb-btn{ display:inline-flex; align-items:center; gap:7px; border-radius:11px; padding:10px 15px; font-size:12.5px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; transition:all .18s cubic-bezier(0.23,1,0.32,1); border:1px solid; white-space:nowrap; }
+.gb-btn:active{ transform:scale(0.96); }
+.gb-btn.primary{ background:linear-gradient(180deg,var(--gb-amber),var(--gb-amber-d)); color:#231704; border-color:#ffb30060; box-shadow:0 5px 16px -6px #ffb30095, inset 0 1px 0 #ffffff55; }
+.gb-btn.primary:hover{ filter:brightness(1.07); }
+.gb-btn.tint-blue{ background:#3d9eff15; color:#8cc4ff; border-color:#3d9eff3d; }
+.gb-btn.tint-blue:hover{ background:#3d9eff26; border-color:#3d9eff66; }
+.gb-btn.tint-purple{ background:#a78bfa15; color:#c4b2fd; border-color:#a78bfa3d; }
+.gb-btn.tint-purple:hover{ background:#a78bfa26; border-color:#a78bfa66; }
+.gb-btn.tint-orange{ background:#ff8c0015; color:#ffb066; border-color:#ff8c003d; }
+.gb-btn.tint-orange:hover{ background:#ff8c0026; border-color:#ff8c0066; }
+.gb-btn.tint-red{ background:#ff5b6a12; color:#ff8593; border-color:#ff5b6a3d; }
+.gb-btn.tint-red:hover{ background:#ff5b6a22; border-color:#ff5b6a66; }
+.gb-btn.tint-mut{ background:#0e131b; color:var(--gb-mut); border-color:var(--gb-bd); }
+.gb-btn.tint-mut:hover{ background:#141b26; color:var(--gb-tx); border-color:var(--gb-bd2); }
+.gb-editing{ display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; color:var(--gb-amber); background:#ffb30010; border:1px solid #ffb30030; padding:9px 13px; border-radius:10px; font-family:'Montserrat',sans-serif; }
+.gb-editing::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--gb-amber); box-shadow:0 0 9px var(--gb-amber); animation:gb-pulse 1.6s infinite; }
+</style>
 <div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
   <!-- Header -->
-  <div style="background:#080b0f;border-bottom:1px solid #1e2530;flex-shrink:0;padding:10px 14px">
-    <!-- Linha 1: título + voltar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px">
-        <svg viewBox="0 0 70 75" width="36" height="38" style="flex-shrink:0;overflow:visible">
-          <style>
-            @keyframes gab-hit{0%{transform:rotate(-55deg)}65%{transform:rotate(20deg)}70%{transform:rotate(15deg)}100%{transform:rotate(-55deg)}}
-            @keyframes gab-flash{0%,63%{opacity:0}66%{opacity:1}80%{opacity:0}100%{opacity:0}}
-          </style>
-          <g style="transform-origin:35px 57px;animation:gab-hit 0.55s cubic-bezier(0.25,0.1,0.25,1) infinite">
-            <rect x="17" y="8" width="36" height="13" rx="3" fill="#ffb300"/>
-            <rect x="17" y="8" width="11" height="13" rx="3" fill="#ff6a00"/>
-            <rect x="32" y="21" width="6" height="36" rx="3" fill="#d8dde6"/>
-          </g>
-          <circle cx="46" cy="59" r="3.5" fill="#ffb300" style="animation:gab-flash 0.55s infinite"/>
-        </svg>
-        <div>
-          <div style="font-size:15px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">🔨 Gabaritagem</div>
-          <div style="font-size:11px;color:#4a5568" id="gabSubtitle">—</div>
+  <div class="gb-head">
+    <div class="gb-head-top">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0">
+        <div class="gb-logo">
+          <svg viewBox="0 0 70 75" width="30" height="32" style="flex-shrink:0;overflow:visible">
+            <g style="transform-origin:35px 57px;animation:gab-hit 0.55s cubic-bezier(0.25,0.1,0.25,1) infinite">
+              <rect x="17" y="8" width="36" height="13" rx="3" fill="#ffb300"/>
+              <rect x="17" y="8" width="11" height="13" rx="3" fill="#ff6a00"/>
+              <rect x="32" y="21" width="6" height="36" rx="3" fill="#d8dde6"/>
+            </g>
+            <circle cx="46" cy="59" r="3.5" fill="#ffb300" style="animation:gab-flash 0.55s infinite"/>
+          </svg>
+        </div>
+        <div style="min-width:0">
+          <div class="gb-title">Gabaritagem</div>
+          <div class="gb-sub" id="gabSubtitle">—</div>
         </div>
       </div>
-      <button onclick="fecharGabaritagem()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">✕ Voltar</button>
+      <button class="gb-back" onclick="fecharGabaritagem()">✕ Voltar</button>
     </div>
-    <!-- Linha 2: botões e seletores -->
-    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-      <button onclick="backupGabaritagem()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">⬇ Backup</button>
-      <button onclick="abrirGabDesempenho()" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">📊 Desempenho</button>
-      <select id="gabMes" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
-        <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
-        <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
-        <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
-        <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
-      </select>
-      <select id="gabAno" onchange="renderGabaritagem()" style="background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:5px 8px;border-radius:6px;font-family:'Courier New',monospace;font-size:11px">
-        <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
-      </select>
-      <div id="gabBtns" style="display:flex;gap:6px;align-items:center"></div>
-      <input type="file" id="gabRestoreInput" accept=".json" style="display:none" onchange="restaurarBackupGabaritagem(event)">
-      <input type="file" id="gabFotoInput" accept="image/*" capture="environment" style="display:none" onchange="gabLerFoto(event)">
+    <!-- Abas + seletores -->
+    <div class="gb-tabsrow">
+      <div class="gb-seg-wrap" role="tablist">
+        <button class="gb-seg on" data-tab="planilha" onclick="gabSwitchTab('planilha')">📋 Planilha</button>
+        <button class="gb-seg" data-tab="desempenho" onclick="gabSwitchTab('desempenho')">📊 Desempenho</button>
+      </div>
+      <div class="gb-sels">
+        <select id="gabMes" class="gb-sel" onchange="gabRerender()">
+          <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+          <option value="3">Abril</option><option value="4">Maio</option><option value="5" selected>Junho</option>
+          <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+          <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+        </select>
+        <select id="gabAno" class="gb-sel" onchange="gabRerender()">
+          <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+        </select>
+      </div>
     </div>
+    <!-- Barra de ações -->
+    <div class="gb-actions" id="gabActions">
+      <div id="gabBtns" style="display:contents"></div>
+    </div>
+    <input type="file" id="gabRestoreInput" accept=".json" style="display:none" onchange="restaurarBackupGabaritagem(event)">
+    <input type="file" id="gabFotoInput" accept="image/*" capture="environment" style="display:none" onchange="gabLerFoto(event)">
   </div>
-  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:10px" id="gabScrollWrap">
-    <div id="gabPanel"></div>
+  <div style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px" id="gabScrollWrap">
+    <div id="gabTabPlanilha"><div id="gabPanel"></div></div>
+    <div id="gabTabDesempenho" style="display:none"><div id="gabDesPanel"></div></div>
   </div>
 </div>
 
@@ -10614,16 +10692,6 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 </div>
 
 <!-- Tela Desempenho Gabaritagem -->
-<div id="gabDesempenhoScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9500;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #1e2530;background:#080b0f;flex-shrink:0">
-    <div>
-      <div style="font-size:18px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif">📊 Desempenho Mensal — Gabaritagem</div>
-      <div style="font-size:12px;color:#4a5568;margin-top:2px" id="gabDesSubtitle">—</div>
-    </div>
-    <button onclick="document.getElementById('gabDesempenhoScreen').style.display='none'" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff4d4d;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace">✕ Fechar</button>
-  </div>
-  <div style="flex:1;overflow-y:auto;padding:20px" id="gabDesPanel"></div>
-</div>
 
 <!-- ===== MAPA DA PRODUÇÃO ===== -->
 <div id="mapaScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
