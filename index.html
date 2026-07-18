@@ -142,19 +142,27 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .lightbox.open img { transform: scale(1); }
 .lightbox-close { position: absolute; top: 18px; right: 22px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; opacity: 0.7; }
 
-.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.login-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 36px 30px; width: 100%; max-width: 360px; text-align: center; }
+.login-wrap { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 24px 18px; }
+.login-box { background: linear-gradient(180deg,#11161f,#0c111a); border: 1px solid #1b2330; border-radius: 18px; padding: 24px 22px; width: 100%; max-width: 340px; text-align: center; display: flex; flex-direction: column; box-shadow: 0 20px 54px -28px #000000; }
 .login-icon { font-size: 38px; margin-bottom: 8px; }
-.login-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.08em; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; }
-.login-sub { font-size: 10px; color: #4a5568; letter-spacing: 0.15em; margin-bottom: 28px; }
-.login-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 8px; padding: 11px 14px; font-family: 'Courier New', monospace; font-size: 14px; color: #d8dde6; text-align: center; letter-spacing: 0.15em; margin-bottom: 10px; outline: none; transition: all 0.2s; }
+.login-art { height: 122px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; border-radius: 13px; overflow: hidden; background: #070a10; border: 1px solid #141b26; }
+.login-art svg { height: 114px; width: auto; max-width: 100%; display: block; }
+.login-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.04em; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; line-height: 1.15; min-height: 42px; display: flex; align-items: center; justify-content: center; }
+.login-sub { font-size: 11px; color: #6b7788; letter-spacing: 0.1em; margin-bottom: 20px; text-transform: uppercase; }
+.lgn-actions { margin-top: auto; display: flex; flex-direction: column; gap: 9px; }
+.login-input { width: 100%; background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 13px 14px; font-family: 'Courier New', monospace; font-size: 14px; color: #eaf0f8; text-align: center; letter-spacing: 0.12em; outline: none; transition: border-color 0.18s; }
 .login-input:focus { border-color: #00e87a; color: #fff; }
 .login-input.err { border-color: #ff4d4d60; color: #ff8888; }
-.login-err { color: #ff6b6b; font-size: 12px; margin-bottom: 8px; }
-.login-btn-main { width: 100%; background: #00e87a; color: #000; border: none; border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; cursor: pointer; margin-bottom: 8px; text-transform: uppercase; transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) ease; }
+.login-err { color: #ff6b6b; font-size: 12.5px; margin: -2px 0 2px; }
+.lgn-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 14px; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 13.5px; font-weight: 700; letter-spacing: 0.03em; cursor: pointer; border: 1px solid transparent; transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) ease, background var(--dur-fast) ease, border-color var(--dur-fast) ease; }
+.lgn-btn:active { transform: scale(0.97); }
+.lgn-btn.primary { background: #fff; color: #0a0e14; border-color: #fff; font-weight: 800; }
+.lgn-btn.ghost { background: #0e131b; color: #8792a6; border-color: #26303f; }
+@media (hover:hover) and (pointer:fine){ .lgn-btn.primary:hover { filter: brightness(0.93); } .lgn-btn.ghost:hover { background: #141b26; color: #dfe6ef; border-color: #36445a; } .lgn-btn.tint:hover { filter: brightness(1.18); } }
+.login-btn-main { width: 100%; background: #00e87a; color: #000; border: none; border-radius: 10px; padding: 13px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; cursor: pointer; text-transform: uppercase; transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) ease; }
 .login-btn-main:active { transform: scale(0.97); filter: brightness(0.9); }
-.login-btn-sec { width: 100%; background: transparent; color: #4a5568; border: 1px solid #1e2530; border-radius: 8px; padding: 10px; font-family: 'Courier New', monospace; font-size: 11px; cursor: pointer; letter-spacing: 0.06em; }
-.login-hint { margin-top: 20px; font-size: 10px; color: #2a3040; }
+.login-btn-sec { width: 100%; background: transparent; color: #8792a6; border: 1px solid #26303f; border-radius: 10px; padding: 12px; font-family: 'Courier New', monospace; font-size: 13px; cursor: pointer; letter-spacing: 0.04em; }
+.login-hint { margin-top: 16px; font-size: 10.5px; color: #3a4453; }
 
 .overlay { position: fixed; inset: 0; background: #000000bb; display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity var(--dur-ui) var(--ease-out); }
 .overlay.open { opacity: 1; pointer-events: all; }
@@ -638,11 +646,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 </head>
 <body>
 <div class="login-wrap" id="loginScreen">
-  <div style="display:flex;gap:20px;align-items:stretch;flex-wrap:wrap;justify-content:center;width:100%;max-width:780px;padding:20px">
+  <div style="display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;justify-content:center;width:100%;max-width:1060px;padding:20px">
 
     <!-- Card principal: login -->
-    <div class="login-box" style="flex:0 0 auto">
-      <div class="login-icon" style="display:flex;justify-content:center;margin-bottom:8px">
+    <div class="login-box" style="flex:1 1 300px">
+      <div class="login-art">
         <svg width="200" height="130" viewBox="0 0 680 420" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px;overflow:hidden">
           <defs><style>
             @keyframes lsh{0%,100%{transform:rotate(0deg)}35%{transform:rotate(-14deg)}70%{transform:rotate(9deg)}}
@@ -789,18 +797,19 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
         </svg>
       </div>
       <div class="login-title">CÉLULAS ROBÓTICAS</div>
-      <div class="login-sub">MONITOR INDUSTRIAL</div>
-      <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')autoLogin()">
-      <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
-      <button class="login-btn-sec" style="margin-bottom:6px;color:#000;background:#fff;border-color:#fff" onclick="startViewer()">Entrar como Visualizador →</button>
-      <button class="login-btn-sec" style="color:#00e87a;border-color:#00e87a30" onclick="startDashboard()">📺 Modo Dashboard TV</button>
-      <div class="login-hint"></div>
+      <div class="login-sub">Monitor Industrial</div>
+      <div class="lgn-actions">
+        <input class="login-input" type="password" id="pwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')autoLogin()">
+        <div class="login-err" id="loginErr" style="display:none">Senha incorreta</div>
+        <button class="lgn-btn primary" onclick="startViewer()">Entrar como Visualizador →</button>
+        <button class="lgn-btn ghost" onclick="startDashboard()">📺 Modo Dashboard TV</button>
+      </div>
     </div>
 
     <!-- Card secundário: Produção e Gabaritagem -->
-    <div class="login-box" style="flex:0 0 auto">
+    <div class="login-box" style="flex:1 1 300px">
       <!-- Fábrica animada -->
-      <div style="display:flex;justify-content:center;margin-bottom:12px">
+      <div class="login-art">
         <svg viewBox="0 0 680 420" width="200" height="124" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;overflow:hidden">
           <defs>
             <style>
@@ -858,19 +867,17 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
           <ellipse cx="302" cy="299" rx="26" ry="18" fill="url(#pglow2)"/><ellipse cx="432" cy="299" rx="26" ry="18" fill="url(#pglow1)"/><ellipse cx="145" cy="316" rx="22" ry="15" fill="url(#pglow2)"/>
         </svg>
       </div>
-      <div class="login-title" style="font-size:18px;margin-bottom:4px">PRODUÇÃO &amp; GABARITAGEM</div>
-      <div class="login-sub" style="margin-bottom:20px">Acesso direto às planilhas</div>
-      <button class="login-btn-sec" style="margin-bottom:12px;color:#a78bfa;border-color:#a78bfa40;padding:14px;font-size:14px" onclick="abrirGabaritagem()">
-        🔨 Controle de Gabaritagem
-      </button>
-      <button class="login-btn-sec" style="color:#3d9eff;border-color:#3d9eff40;padding:14px;font-size:14px" onclick="abrirMapaProducao()">
-        🏭 Mapa da Produção
-      </button>
+      <div class="login-title">PRODUÇÃO &amp; GABARITAGEM</div>
+      <div class="login-sub">Acesso direto às planilhas</div>
+      <div class="lgn-actions">
+        <button class="lgn-btn tint" style="color:#c4b2fd;border-color:#a78bfa45;background:#a78bfa14" onclick="abrirGabaritagem()">🔨 Controle de Gabaritagem</button>
+        <button class="lgn-btn tint" style="color:#8cc4ff;border-color:#3d9eff45;background:#3d9eff14" onclick="abrirMapaProducao()">🏭 Mapa da Produção</button>
+      </div>
     </div>
 
     <!-- Card terciário: Controle de Componentes -->
-    <div class="login-box" style="flex:0 0 auto">
-      <div style="display:flex;justify-content:center;margin-bottom:12px">
+    <div class="login-box" style="flex:1 1 300px">
+      <div class="login-art">
         <svg viewBox="0 0 200 124" width="200" height="124" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;overflow:hidden">
           <defs>
             <style>
@@ -890,11 +897,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
           <rect x="83" y="62" width="34" height="30" rx="3" fill="#2e3850" class="cbx3"/><rect x="83" y="62" width="34" height="9" rx="2" fill="#4a5878" class="cbx3"/><rect x="96" y="62" width="8" height="30" fill="#00e87a30" class="cbx3"/>
         </svg>
       </div>
-      <div class="login-title" style="font-size:18px;margin-bottom:4px">CONTROLE DE COMPONENTES</div>
-      <div class="login-sub" style="margin-bottom:20px">Estoque de peças e componentes</div>
-      <button class="login-btn-sec" style="color:#ffb300;border-color:#ffb30040;padding:14px;font-size:14px" onclick="abrirControleComponentes()">
-        📦 Controle de Componentes
-      </button>
+      <div class="login-title">CONTROLE DE COMPONENTES</div>
+      <div class="login-sub">Estoque de peças e componentes</div>
+      <div class="lgn-actions">
+        <button class="lgn-btn tint" style="color:#ffc861;border-color:#ffb30045;background:#ffb30014" onclick="abrirControleComponentes()">📦 Controle de Componentes</button>
+      </div>
     </div>
 
   </div>
