@@ -6595,8 +6595,10 @@ function fecharMapaProducao(){
   clearInterval(mapaPollTimer);
   mapaPollTimer = null;
   isMapaAdmin = false;
+  const ov=document.getElementById('apOverlay'); if(ov) ov.classList.remove('open');
   document.getElementById("mapaScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
+  mapaUpdateApontarFab();
 }
 
 function toggleMapaSidebar(){
@@ -6607,6 +6609,7 @@ function mapaSidebarClick(item){
   if(item==='Mapa' || item==='Produção'){
     mapaTelaAtual = item;
     renderMapaProducao();
+    mapaUpdateApontarFab();
     return;
   }
   showToast(`🚧 "${item}" ainda não foi construído — próxima etapa`);
@@ -6757,6 +6760,98 @@ function mapaHandleMetasInput(maquina,campo,valor){
   mapaUpdateMetasCell(maquina,campo,valor);
   mapaRecolorirLinha(maquina);
   mapaAtualizarTotaisProducao();
+}
+
+// ===== Apontamento de Produção por Hora (apenas mobile) =====
+let _apHora = null;   // hora travada durante a sessão do modal
+let _apLog = [];      // registros enviados na sessão atual [{maquina,qtd,hora}]
+
+// Acha a chave posicional (t_ / s_) cujo número visível bate com o digitado (dia atual)
+function mapaFindChaveByNumero(numero){
+  const alvo = String(numero==null?'':numero).trim().toUpperCase();
+  if(!alvo) return null;
+  const chaves = [...mapaChaveLinhas('todas'), ...mapaChaveLinhas('solda_topo')];
+  for(const c of chaves){
+    if(String(mapaGetNomeMaquina(c)).trim().toUpperCase() === alvo) return c;
+  }
+  return null;
+}
+// Acha a máquina; se não existir, cria no primeiro slot livre de "Todas"
+function mapaFindOrCreateChave(numero){
+  let c = mapaFindChaveByNumero(numero);
+  if(c) return c;
+  const alvo = String(numero).trim();
+  for(const k of mapaChaveLinhas('todas')){
+    if(!String(mapaGetNomeMaquina(k)).trim()){ mapaSetNomeMaquina(k, alvo); return k; }
+  }
+  return null;
+}
+// Mostra/esconde o botão flutuante (só na aba Produção e com o Mapa aberto; CSS esconde no desktop)
+function mapaUpdateApontarFab(){
+  const fab = document.getElementById('apFab');
+  if(!fab) return;
+  const ms = document.getElementById('mapaScreen');
+  const aberto = ms && ms.style.display!=='none';
+  fab.style.display = (aberto && mapaTelaAtual==='Produção') ? 'flex' : 'none';
+}
+function mapaAbrirApontar(){
+  _apHora = null;
+  _apLog = [];
+  const horas = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const now = new Date();
+  const hhmm = String(now.getHours()).padStart(2,'0')+':00';
+  const sugestao = horas.includes(hhmm) ? hhmm : horas[0];
+  document.getElementById('apHoraSel').innerHTML =
+    horas.map(h=>`<option value="${h}" ${h===sugestao?'selected':''}>${h}${HORAS_CAFE.includes(h)?'  ☕':''}</option>`).join('');
+  document.getElementById('apStep1').style.display='';
+  document.getElementById('apStep2').style.display='none';
+  document.getElementById('apHeadSub').textContent='Escolha a hora do apontamento';
+  document.getElementById('apLogWrap').style.display='none';
+  document.getElementById('apLogList').innerHTML='';
+  document.getElementById('apLogCount').textContent='0';
+  document.getElementById('apOverlay').classList.add('open');
+}
+function mapaFecharApontar(){
+  document.getElementById('apOverlay').classList.remove('open');
+  // reflete os apontamentos na tabela ao fechar
+  if(mapaTelaAtual==='Produção'){ try{ renderMapaProducaoTabela(true); }catch(e){} }
+}
+function _apReanima(el){ el.classList.remove('ap-step'); void el.offsetWidth; el.classList.add('ap-step'); }
+function mapaApontarConfirmarHora(){
+  _apHora = document.getElementById('apHoraSel').value;
+  document.getElementById('apHoraLabel').textContent = _apHora;
+  document.getElementById('apStep1').style.display='none';
+  const s2=document.getElementById('apStep2'); s2.style.display=''; _apReanima(s2);
+  document.getElementById('apHeadSub').textContent='Máquina e quantidade — '+_apHora;
+  setTimeout(()=>{ const m=document.getElementById('apMaquina'); if(m) m.focus(); },90);
+}
+function mapaApontarTrocarHora(){
+  document.getElementById('apStep2').style.display='none';
+  const s1=document.getElementById('apStep1'); s1.style.display=''; _apReanima(s1);
+  document.getElementById('apHeadSub').textContent='Escolha a hora do apontamento';
+}
+function mapaApontarEnviar(){
+  const maqEl=document.getElementById('apMaquina');
+  const qtdEl=document.getElementById('apQtd');
+  const numero=maqEl.value.trim();
+  const qtdRaw=qtdEl.value.trim();
+  if(!numero){ showToast('Informe o número da máquina',true); maqEl.focus(); return; }
+  if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
+  if(!_apHora){ showToast('Escolha a hora primeiro',true); return; }
+  const qtd=parseInt(qtdRaw);
+  const chaveL=mapaFindOrCreateChave(numero);
+  if(!chaveL){ showToast('Sem slot livre para nova máquina',true); return; }
+  mapaUpdateMetasCell(chaveL, campoH(_apHora), String(qtd));  // grava + salva na planilha
+  _apLog.unshift({maquina:numero, qtd:qtd, hora:_apHora});
+  const wrap=document.getElementById('apLogWrap');
+  wrap.style.display='';
+  document.getElementById('apLogCount').textContent=_apLog.length;
+  document.getElementById('apLogList').innerHTML=_apLog.map(r=>
+    `<div class="ap-log-item"><span class="ap-log-maq">🏭 Máq ${esc(String(r.maquina))} · ${r.hora}</span><span class="ap-log-qtd">${r.qtd} pç</span></div>`
+  ).join('');
+  showToast(`Máq ${numero}: ${qtd} peças às ${_apHora} ✓`);
+  maqEl.value=''; qtdEl.value='';
+  maqEl.focus();
 }
 
 function mapaUpdateData(campo,valor){
@@ -7063,6 +7158,7 @@ function renderMapaZonaHTML(zona){
 }
 
 function renderMapaProducao(){
+  mapaUpdateApontarFab();
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
@@ -10767,7 +10863,77 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   <div id="mapaConteudo" style="flex:1;display:flex;flex-direction:column;min-height:0"></div>
   <!-- Indicador de salvo -->
   <div id="mapaSaveIndicator" style="position:fixed;bottom:18px;right:18px;background:#00e87a;color:#000;font-size:12px;font-weight:800;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9100;font-family:'Courier New',monospace;letter-spacing:0.08em">✓ Salvo</div>
+
+  <!-- ===== Apontamento de Produção por Hora (mobile) ===== -->
+  <button id="apFab" onclick="mapaAbrirApontar()" style="display:none"><span style="font-size:16px">📊</span> Apontar Produção</button>
+  <div id="apOverlay" onclick="if(event.target===this)mapaFecharApontar()">
+    <div class="ap-sheet" onclick="event.stopPropagation()">
+      <div class="ap-grip"></div>
+      <div class="ap-head">
+        <div style="min-width:0">
+          <div class="ap-title">📊 Apontar Produção</div>
+          <div class="ap-sub" id="apHeadSub">Escolha a hora do apontamento</div>
+        </div>
+        <button class="ap-x" onclick="mapaFecharApontar()">✕</button>
+      </div>
+      <!-- Passo 1: escolher a hora -->
+      <div id="apStep1" class="ap-step">
+        <div class="ap-label">Hora do apontamento</div>
+        <select id="apHoraSel" class="ap-select"></select>
+        <button class="ap-btn primary" style="margin-top:16px" onclick="mapaApontarConfirmarHora()">Começar apontamento →</button>
+        <div style="font-size:11.5px;color:#5a6678;text-align:center;margin-top:12px">A hora fica travada até você fechar. Ao reabrir, escolha outra.</div>
+      </div>
+      <!-- Passo 2: loop máquina + quantidade -->
+      <div id="apStep2" class="ap-step" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px">
+          <span class="ap-hora-chip">🕐 <span id="apHoraLabel"></span></span>
+          <button class="ap-trocar" onclick="mapaApontarTrocarHora()">trocar hora</button>
+        </div>
+        <div class="ap-label">Número da máquina</div>
+        <input id="apMaquina" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 244" autocomplete="off" onkeydown="if(event.key==='Enter'){document.getElementById('apQtd').focus();}">
+        <div class="ap-label" style="margin-top:15px">Quantidade de peças</div>
+        <input id="apQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
+        <button class="ap-btn primary" style="margin-top:18px" onclick="mapaApontarEnviar()">✓ Enviar</button>
+        <div class="ap-log" id="apLogWrap" style="display:none">
+          <div class="ap-log-title">Enviados nesta sessão (<span id="apLogCount">0</span>)</div>
+          <div id="apLogList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<style>
+#apFab{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9150; align-items:center; gap:9px; background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:99px; padding:14px 22px; font-family:'Courier New',monospace; font-size:14px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 12px 30px -8px #00e87a90, 0 2px 10px #0009, inset 0 1px 0 #ffffff55; transition:transform .18s var(--ease-out), filter .18s ease; }
+#apFab:active{ transform:translateX(-50%) scale(0.95); }
+@media (min-width:701px){ #apFab{ display:none !important; } }
+#apOverlay{ position:fixed; inset:0; z-index:9200; background:#00000088; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .26s var(--ease-out); display:flex; align-items:flex-end; justify-content:center; }
+#apOverlay.open{ opacity:1; pointer-events:auto; }
+.ap-sheet{ width:100%; max-width:520px; background:linear-gradient(180deg,#0d1219,#0a0e14); border:1px solid #1b2330; border-bottom:none; border-radius:22px 22px 0 0; padding:16px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow:0 -18px 55px -20px #000000; transform:translateY(103%); transition:transform .36s var(--ease-drawer); max-height:92vh; overflow-y:auto; }
+#apOverlay.open .ap-sheet{ transform:translateY(0); }
+.ap-grip{ width:42px; height:4px; border-radius:99px; background:#2a3444; margin:2px auto 14px; }
+.ap-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:18px; }
+.ap-title{ font-size:17px; font-weight:900; color:#fff; font-family:'Montserrat',sans-serif; }
+.ap-sub{ font-size:11.5px; color:#7a8698; margin-top:3px; }
+.ap-x{ background:#141b26; border:1px solid #26303f; color:#8792a6; width:38px; height:38px; border-radius:11px; font-size:16px; cursor:pointer; flex-shrink:0; transition:transform .16s var(--ease-out), background .16s ease; }
+.ap-x:active{ transform:scale(0.9); background:#1a2231; }
+.ap-label{ font-size:12px; color:#8a95a8; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px; }
+.ap-input, .ap-select{ width:100%; background:#080b0f; border:1px solid #1e2530; border-radius:12px; padding:15px 16px; font-family:'Courier New',monospace; font-size:17px; color:#eaf0f8; outline:none; box-sizing:border-box; transition:border-color .16s ease; }
+.ap-input:focus, .ap-select:focus{ border-color:#00e87a; }
+.ap-btn{ width:100%; border:none; border-radius:12px; padding:15px; font-family:'Courier New',monospace; font-size:15px; font-weight:800; letter-spacing:0.04em; cursor:pointer; transition:transform .16s var(--ease-out), filter .16s ease; }
+.ap-btn:active{ transform:scale(0.97); }
+.ap-btn.primary{ background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; box-shadow:0 6px 18px -6px #00e87a95, inset 0 1px 0 #ffffff55; }
+.ap-btn.primary:active{ filter:brightness(0.96); }
+.ap-hora-chip{ display:inline-flex; align-items:center; gap:8px; background:#00e87a15; border:1px solid #00e87a38; color:#00e87a; font-weight:800; font-size:15px; padding:9px 15px; border-radius:11px; font-family:'Courier New',monospace; }
+.ap-trocar{ background:none; border:none; color:#8792a6; font-size:12.5px; cursor:pointer; text-decoration:underline; font-family:'Courier New',monospace; flex-shrink:0; }
+.ap-log{ margin-top:20px; border-top:1px solid #141b26; padding-top:14px; }
+.ap-log-title{ font-size:11px; color:#5a6678; text-transform:uppercase; letter-spacing:0.1em; font-weight:800; margin-bottom:9px; }
+.ap-log-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:#0e131b; border:1px solid #1b2330; border-radius:11px; padding:11px 14px; margin-bottom:7px; animation:apLogIn .34s var(--ease-out) backwards; }
+@keyframes apLogIn{ from{ opacity:0; transform:translateY(-9px) scale(.98); } to{ opacity:1; transform:none; } }
+.ap-log-maq{ font-size:14.5px; font-weight:800; color:#eaf0f8; font-family:'Courier New',monospace; }
+.ap-log-qtd{ font-size:15px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; flex-shrink:0; }
+.ap-step{ animation:apStepIn .3s var(--ease-out); }
+@keyframes apStepIn{ from{ opacity:0; transform:translateX(12px); } to{ opacity:1; transform:none; } }
+</style>
 
 <!-- ===== CONTROLE DE COMPONENTES ===== -->
 <div id="compScreen" style="display:none;position:fixed;inset:0;background:var(--cc-bg);z-index:9000;flex-direction:column">
