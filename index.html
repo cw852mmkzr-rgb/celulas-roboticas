@@ -6809,15 +6809,13 @@ function mapaAbrirApontar(){
   document.getElementById('apLogWrap').style.display='none';
   document.getElementById('apLogList').innerHTML='';
   document.getElementById('apLogCount').textContent='0';
-  const ov = document.getElementById('apOverlay');
-  ov.classList.add('open');
-  // fechar só quando clicar/tocar diretamente no fundo do overlay (não no sheet)
-  ov._closeHandler = function(e){ if(e.target === ov) mapaFecharApontar(); };
-  ov.addEventListener('pointerdown', ov._closeHandler);
+  document.getElementById('apOverlay').classList.add('open');
 }
+let _apBlockClose = false;
+let _apBlockTimer = null;
+function _apSetBlockClose(){ clearTimeout(_apBlockTimer); _apBlockClose=true; _apBlockTimer=setTimeout(()=>{ _apBlockClose=false; },500); }
 function mapaFecharApontar(){
-  const ov = document.getElementById('apOverlay');
-  if(ov && ov._closeHandler){ ov.removeEventListener('pointerdown', ov._closeHandler); ov._closeHandler=null; }
+  if(_apBlockClose) return;
   document.getElementById('apOverlay').classList.remove('open');
   // reflete os apontamentos na tabela ao fechar
   if(mapaTelaAtual==='Produção'){ try{ renderMapaProducaoTabela(true); }catch(e){} }
@@ -10872,7 +10870,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   <!-- ===== Apontamento de Produção por Hora (mobile) ===== -->
   <button id="apFab" onclick="mapaAbrirApontar()" style="display:none"><span style="font-size:16px">📊</span> Apontar Produção</button>
   <div id="apOverlay">
-    <div class="ap-sheet" onclick="event.stopPropagation()" onpointerdown="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">
+    <button id="apBackdrop" onclick="mapaFecharApontar()" aria-label="Fechar" style="position:absolute;inset:0;background:transparent;border:none;cursor:default;width:100%;height:100%;"></button>
+    <div class="ap-sheet" style="position:relative;z-index:1">
       <div class="ap-grip"></div>
       <div class="ap-head">
         <div style="min-width:0">
@@ -10884,7 +10883,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <!-- Passo 1: escolher a hora -->
       <div id="apStep1" class="ap-step">
         <div class="ap-label">Hora do apontamento</div>
-        <select id="apHoraSel" class="ap-select"></select>
+        <select id="apHoraSel" class="ap-select" onchange="_apSetBlockClose()" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()"></select>
         <button class="ap-btn primary" style="margin-top:16px" onclick="mapaApontarConfirmarHora()">Começar apontamento →</button>
         <div style="font-size:11.5px;color:#5a6678;text-align:center;margin-top:12px">A hora fica travada até você fechar. Ao reabrir, escolha outra.</div>
       </div>
@@ -10895,9 +10894,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
           <button class="ap-trocar" onclick="mapaApontarTrocarHora()">trocar hora</button>
         </div>
         <div class="ap-label">Número da máquina</div>
-        <input id="apMaquina" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 244" autocomplete="off" onkeydown="if(event.key==='Enter'){document.getElementById('apQtd').focus();}">
+        <input id="apMaquina" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 244" autocomplete="off" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter'){document.getElementById('apQtd').focus();}">
         <div class="ap-label" style="margin-top:15px">Quantidade de peças</div>
-        <input id="apQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
+        <input id="apQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
         <button class="ap-btn primary" style="margin-top:18px" onclick="mapaApontarEnviar()">✓ Enviar</button>
         <div class="ap-log" id="apLogWrap" style="display:none">
           <div class="ap-log-title">Enviados nesta sessão (<span id="apLogCount">0</span>)</div>
