@@ -6809,9 +6809,15 @@ function mapaAbrirApontar(){
   document.getElementById('apLogWrap').style.display='none';
   document.getElementById('apLogList').innerHTML='';
   document.getElementById('apLogCount').textContent='0';
-  document.getElementById('apOverlay').classList.add('open');
+  const ov = document.getElementById('apOverlay');
+  ov.classList.add('open');
+  // fechar só quando clicar/tocar diretamente no fundo do overlay (não no sheet)
+  ov._closeHandler = function(e){ if(e.target === ov) mapaFecharApontar(); };
+  ov.addEventListener('pointerdown', ov._closeHandler);
 }
 function mapaFecharApontar(){
+  const ov = document.getElementById('apOverlay');
+  if(ov && ov._closeHandler){ ov.removeEventListener('pointerdown', ov._closeHandler); ov._closeHandler=null; }
   document.getElementById('apOverlay').classList.remove('open');
   // reflete os apontamentos na tabela ao fechar
   if(mapaTelaAtual==='Produção'){ try{ renderMapaProducaoTabela(true); }catch(e){} }
@@ -6823,7 +6829,6 @@ function mapaApontarConfirmarHora(){
   document.getElementById('apStep1').style.display='none';
   const s2=document.getElementById('apStep2'); s2.style.display=''; _apReanima(s2);
   document.getElementById('apHeadSub').textContent='Máquina e quantidade — '+_apHora;
-  setTimeout(()=>{ const m=document.getElementById('apMaquina'); if(m) m.focus(); },90);
 }
 function mapaApontarTrocarHora(){
   document.getElementById('apStep2').style.display='none';
@@ -10866,8 +10871,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 
   <!-- ===== Apontamento de Produção por Hora (mobile) ===== -->
   <button id="apFab" onclick="mapaAbrirApontar()" style="display:none"><span style="font-size:16px">📊</span> Apontar Produção</button>
-  <div id="apOverlay" onclick="if(event.target===this)mapaFecharApontar()">
-    <div class="ap-sheet" onclick="event.stopPropagation()">
+  <div id="apOverlay">
+    <div class="ap-sheet" onclick="event.stopPropagation()" onpointerdown="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">
       <div class="ap-grip"></div>
       <div class="ap-head">
         <div style="min-width:0">
