@@ -913,15 +913,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
       <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
       <div class="dash-date" id="dashDate"></div>
     </div>
-    <div style="display:flex;gap:28px;align-items:center">
-      <div style="text-align:center">
-        <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
-        <div class="dash-clock" id="dashClock">--:--:--</div>
-      </div>
-      <div style="text-align:center">
-        <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora cheia</div>
-        <div class="dash-clock" style="color:#ffb300;font-size:clamp(40px,12vw,80px)" id="dashHoraCheia">--:--</div>
-      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0">
+      <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
+      <div class="dash-clock" id="dashClock" style="font-size:clamp(60px,19vw,150px);line-height:1">--:--:--</div>
     </div>
     <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
   </div>
@@ -5081,10 +5075,8 @@ function _dashGetHoraCheia(){
 function _dashTickClock(){
   const now=new Date();
   const ce=document.getElementById("dashClock");
-  const he=document.getElementById("dashHoraCheia");
   const de=document.getElementById("dashDate");
   if(ce) ce.textContent=now.toLocaleTimeString("pt-BR");
-  if(he) he.textContent=_dashGetHoraCheia();
   if(de) de.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 
