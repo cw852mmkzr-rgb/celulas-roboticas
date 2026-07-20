@@ -6887,7 +6887,7 @@ function metaApUpdateFab(){
 function metaApAbrir(){
   const key=metaApKey();
   if(!key){ showToast('Aba de Metas não encontrada',true); return; }
-  _metaApHora=null; _metaApLog=[]; _metaApEditIdx=null; _metaApEquipeSel=null;
+  _metaApHora=null; _metaApLog=[]; _metaApEditIdx=null; _metaApEquipeSel=null; _metaApMembrosSel=[];
   const horas=[...HORAS_DIA,...HORAS_NOITE];
   const agora=new Date();
   const hh=String(agora.getHours()).padStart(2,'0')+':00';
@@ -6954,7 +6954,7 @@ function metaApEnviar(){
   // snapshot da equipe (se vínculo ativo e uma equipe selecionada) — gravado
   // junto do robô+hora; congela os membros no momento do apontamento
   if(equipesData.vincular_metas && _metaApEquipeSel){
-    rd['eqp_'+campo] = _metaApEquipeSel;
+    rd['eqp_'+campo] = Object.assign({}, _metaApEquipeSel, { presentes:_metaApMembrosSel.slice() });
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
@@ -7184,7 +7184,8 @@ function eqExcluir(id){
 }
 
 // ---- Integração com o apontamento de Metas (chips de equipe) ----
-let _metaApEquipeSel = null; // snapshot {id,cor,nome,membros} ou null
+let _metaApEquipeSel = null;   // snapshot {id,cor,nome,membros} ou null
+let _metaApMembrosSel = [];    // nomes das pessoas marcadas como presentes na hora
 function metaApRenderEquipes(){
   const box=document.getElementById('metaApEquipeBox');
   if(!box) return;
@@ -7194,14 +7195,31 @@ function metaApRenderEquipes(){
     const sel=_metaApEquipeSel && _metaApEquipeSel.id===eq.id;
     return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="background:${eq.cor}${sel?';box-shadow:0 0 0 3px #0d1219,0 0 0 6px '+eq.cor:''}" onclick="metaApSelEquipe('${eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
   }).join('');
-  const nomes = _metaApEquipeSel
-    ? `<div class="metaap-eqnomes">${_metaApEquipeSel.nome?'<b>'+esc(_metaApEquipeSel.nome)+':</b> ':''}${(_metaApEquipeSel.membros||[]).map(esc).join(', ')||'sem membros'}</div>`
-    : `<div class="metaap-eqnomes" style="color:#5a6678">Toque numa cor (opcional)</div>`;
-  box.innerHTML=`<div class="ap-label">Quem estava no robô nesta hora?</div><div class="metaap-eqchips">${chips}</div>${nomes}`;
+  let membrosHTML='';
+  if(_metaApEquipeSel){
+    const membros=_metaApEquipeSel.membros||[];
+    if(membros.length){
+      const pessoas=membros.map(m=>{
+        const on=_metaApMembrosSel.includes(m);
+        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaApEquipeSel.cor+';border-color:'+_metaApEquipeSel.cor+';color:'+_eqTextColor(_metaApEquipeSel.cor):''}" onclick="metaApToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
+      }).join('');
+      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque nos nomes)</div><div class="metaap-pessoas">${pessoas}</div>`;
+    } else {
+      membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:10px">Esta equipe não tem membros cadastrados.</div>`;
+    }
+  } else {
+    membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678">Toque numa cor (opcional)</div>`;
+  }
+  box.innerHTML=`<div class="ap-label">Quem estava no robô nesta hora?</div><div class="metaap-eqchips">${chips}</div>${membrosHTML}`;
 }
 function metaApSelEquipe(id){
-  if(_metaApEquipeSel && _metaApEquipeSel.id===id){ _metaApEquipeSel=null; }
-  else { const eq=equipesData.lista.find(e=>e.id===id); if(eq){ _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() }; } }
+  if(_metaApEquipeSel && _metaApEquipeSel.id===id){ _metaApEquipeSel=null; _metaApMembrosSel=[]; }
+  else { const eq=equipesData.lista.find(e=>e.id===id); if(eq){ _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() }; _metaApMembrosSel=[]; } }
+  metaApRenderEquipes();
+}
+function metaApToggleMembro(nome){
+  const i=_metaApMembrosSel.indexOf(nome);
+  if(i>=0) _metaApMembrosSel.splice(i,1); else _metaApMembrosSel.push(nome);
   metaApRenderEquipes();
 }
 
@@ -11421,6 +11439,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .metaap-eqchip:active{ transform:scale(0.9); }
 .metaap-eqchip.sel{ transform:scale(1.05); }
 .metaap-eqnomes{ font-size:13px; color:#cdd6e3; margin-top:10px; line-height:1.5; }
+.metaap-pessoas{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.metaap-pessoa{ background:#0e131b; border:1px solid #26303f; color:#cdd6e3; font-size:13.5px; font-weight:700; padding:9px 14px; border-radius:99px; cursor:pointer; font-family:'Courier New',monospace; transition:transform .14s var(--ease-out), background .16s ease, border-color .16s ease; }
+.metaap-pessoa:active{ transform:scale(0.94); }
 @media (max-width:560px){ .eq-grid{ grid-template-columns:1fr; } }
 </style>
 
