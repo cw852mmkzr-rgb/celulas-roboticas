@@ -303,16 +303,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
 .dash-exit { background:#ff4d4d15; border:1px solid #ff4d4d60; color:#ff4d4d; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; }
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
-.dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:32px; padding:16px; position:relative; overflow:hidden; flex-wrap:wrap; }
+.dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:clamp(12px,3vw,32px); padding:clamp(8px,1.5vh,16px); position:relative; overflow-y:auto; flex-wrap:wrap; }
 .dash-robo-svg { flex-shrink:0; }
-.dash-robo-svg svg { width:clamp(120px,19vw,270px); height:auto; }
+.dash-robo-svg svg { width:clamp(100px,19vw,270px); height:auto; max-height:58vh; }
 .dash-info { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; min-width:240px; max-width:1000px; }
 .dash-rn { font-size:clamp(18px,3vw,32px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
-.dash-nome { font-size:clamp(30px,5vw,58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
-.dash-cod { font-size:clamp(20px,3.4vw,36px); color:#ffb300; font-weight:700; }
-.dash-box { background:#080b0f; border:4px solid #1e2530; border-radius:28px; padding:clamp(14px,2vw,26px) clamp(24px,5vw,90px); text-align:center; width:100%; box-sizing:border-box; }
-.dash-prod-h { font-size:clamp(18px,2.6vw,30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
-.dash-prod-n { font-size:clamp(80px,15vw,170px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
+.dash-nome { font-size:clamp(26px,min(5vw,6vh),58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
+.dash-cod { font-size:clamp(18px,min(3.4vw,4vh),36px); color:#ffb300; font-weight:700; }
+.dash-box { background:#080b0f; border:4px solid #1e2530; border-radius:28px; padding:clamp(10px,min(2vw,2vh),26px) clamp(24px,5vw,90px); text-align:center; width:100%; box-sizing:border-box; }
+.dash-prod-h { font-size:clamp(16px,min(2.6vw,3vh),30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
+.dash-prod-n { font-size:clamp(56px,min(15vw,20vh),170px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
 .dash-meta-txt { font-size:clamp(18px,2.8vw,30px); color:#4a5568; margin-top:8px; }
 .dash-badge { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; text-align:center; }
 .dash-faltou { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
@@ -915,7 +915,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
     </div>
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0">
       <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
-      <div class="dash-clock" id="dashClock" style="font-size:clamp(60px,19vw,150px);line-height:1">--:--:--</div>
+      <div class="dash-clock" id="dashClock" style="font-size:clamp(44px,min(15vw,15vh),150px);line-height:1">--:--:--</div>
     </div>
     <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
   </div>
@@ -5274,8 +5274,8 @@ function _dashRenderRobo(k){
       <!-- Eficiência em % -->
       ${meta>0&&prod>0?`
       <div style="text-align:center">
-        <div style="font-size:clamp(72px,14vw,130px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
-        <div style="font-size:clamp(20px,3vw,30px);color:#4a5568;margin-top:6px">eficiência da hora</div>
+        <div style="font-size:clamp(48px,min(14vw,16vh),130px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
+        <div style="font-size:clamp(16px,min(3vw,3vh),30px);color:#4a5568;margin-top:6px">eficiência da hora</div>
         <!-- Barra de progresso -->
         <div style="width:100%;max-width:520px;margin:14px auto 0;background:#1e2530;border-radius:99px;height:16px;overflow:hidden">
           <div style="height:100%;width:100%;background:${cor};border-radius:99px;transform-origin:left;transform:scaleX(${Math.min(pct,100)/100});transition:transform 400ms var(--ease-out)"></div>
