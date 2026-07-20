@@ -288,9 +288,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
 .dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; flex-wrap:wrap; gap:8px; }
-.dash-title { font-size:22px; font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
+.dash-title { font-size:clamp(28px,3vw,42px); font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
 .dash-clock { font-size:clamp(60px,16vw,100px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
-.dash-date { font-size:14px; color:#4a5568; text-align:right; margin-top:2px; }
+.dash-date { font-size:clamp(15px,1.5vw,22px); color:#7a8698; text-align:left; margin-top:5px; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
 .dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
 .dash-horas { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
