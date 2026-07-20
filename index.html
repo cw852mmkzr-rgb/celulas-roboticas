@@ -4131,6 +4131,7 @@ function _renderDetailInner(){
         <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
       </div>
     </div>
+    ${renderEquipesRobo(selected)}
     <div class="section"><div class="sec-title">◈ Meta por Hora</div>
       <div class="grid2">
         <div class="field"><label>🎯 Meta por hora (peças)</label><input type="number" id="metaHoraInput" value="${c.meta_hora||0}" ${ro} onchange="updateAndRefreshRitmo('${selected}','meta_hora',+this.value)"></div>
@@ -4899,6 +4900,39 @@ function renderRelatorio(){
       })()}
     </div>`}
   </div>`;
+}
+
+// Equipes apontadas para este robô no dia ativo das Metas (auto-vinculado do apontamento)
+function renderEquipesRobo(key){
+  if(!(isAdmin||isAdminMetas)) return '';                 // só host/metas
+  if(!equipesData || !equipesData.vincular_metas) return ''; // só com vínculo ativo
+  const nomeCell=(celulas[key].nome||'').toLowerCase();
+  const m=nomeCell.match(/\d{3}/);
+  const roboNum=m?parseInt(m[0]):null;
+  if(!roboNum || !ROBOS.includes(roboNum)) return '';
+  const metasKey=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!metasKey) return '';
+  const chave=getMetasChave(metasKey);
+  const rd=(celulas[metasKey].metas_dias&&celulas[metasKey].metas_dias[chave]&&celulas[metasKey].metas_dias[chave][roboNum])||{};
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  const hNow=String(new Date().getHours()).padStart(2,'0')+':00';
+  const horaAtual=horas.includes(hNow)?hNow:null;
+  const linhas=horas.map(h=>{
+    const eq=rd['eqp_'+campoH(h)];
+    if(!eq) return '';
+    const txt=_eqTextColor(eq.cor);
+    const presentes=(eq.presentes&&eq.presentes.length)?eq.presentes:(eq.membros||[]);
+    const nomeEq=eq.nome||eq.cor;
+    const isNow=h===horaAtual;
+    return `<div class="robo-eq-row${isNow?' now':''}">
+      <span class="robo-eq-hora">${h}${isNow?' •':''}</span>
+      <span class="robo-eq-badge" style="background:${eq.cor};color:${txt}">${esc(nomeEq)}</span>
+      <span class="robo-eq-nomes">${presentes.map(esc).join(', ')||'—'}</span>
+    </div>`;
+  }).filter(Boolean).join('');
+  const body = linhas || `<div style="font-size:12px;color:#2a3040;padding:6px 0">Nenhuma equipe apontada hoje para este robô. Use "📊 Apontar Produção" nas Metas.</div>`;
+  return `<div class="section"><div class="sec-title">👥 Equipes de Hoje — Robô ${roboNum}</div>
+    <div class="robo-eq-list">${body}</div></div>`;
 }
 
 function gerarQR(key) {
@@ -11442,6 +11476,14 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .metaap-pessoas{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
 .metaap-pessoa{ background:#0e131b; border:1px solid #26303f; color:#cdd6e3; font-size:13.5px; font-weight:700; padding:9px 14px; border-radius:99px; cursor:pointer; font-family:'Courier New',monospace; transition:transform .14s var(--ease-out), background .16s ease, border-color .16s ease; }
 .metaap-pessoa:active{ transform:scale(0.94); }
+/* Equipes de hoje na aba do robô */
+.robo-eq-list{ display:flex; flex-direction:column; gap:7px; }
+.robo-eq-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:#0e131b; border:1px solid #1b2330; border-radius:10px; padding:9px 13px; }
+.robo-eq-row.now{ border-color:#00e87a55; background:#00e87a0c; }
+.robo-eq-hora{ font-size:13px; font-weight:800; color:#8a95a8; font-family:'Courier New',monospace; min-width:60px; }
+.robo-eq-row.now .robo-eq-hora{ color:#00e87a; }
+.robo-eq-badge{ font-size:12.5px; font-weight:800; padding:3px 11px; border-radius:99px; font-family:'Montserrat',sans-serif; }
+.robo-eq-nomes{ font-size:13px; color:#cdd6e3; font-weight:600; }
 @media (max-width:560px){ .eq-grid{ grid-template-columns:1fr; } }
 </style>
 
