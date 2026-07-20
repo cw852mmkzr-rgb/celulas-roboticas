@@ -3087,7 +3087,8 @@ async function loadFromAPI(){
   const modalPecaAberto   = document.getElementById('modalPeca')&&document.getElementById('modalPeca').style.display==='flex';
   const modalMaqAberto    = document.getElementById('modalMapaMaquina')&&document.getElementById('modalMapaMaquina').style.display==='flex';
   const metaApAberto      = document.getElementById('metaApOverlay')&&document.getElementById('metaApOverlay').classList.contains('open');
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto)return;
+  const eqModalAberto     = document.getElementById('eqModal')&&document.getElementById('eqModal').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
@@ -3209,6 +3210,17 @@ function renderSidebar(){
   </div>`;
   if(paineis.length>0){
     html+=paineis.map(itemHTML).join('');
+  }
+  // Aba Equipes — só para host/metas (visualizador não vê)
+  if(isAdmin || isAdminMetas){
+    html+=`<div class="cell-item ${selected==='__equipes'?'active':''}" onclick="selectCell('__equipes')">
+      <div class="cell-num" style="font-size:15px">👥</div>
+      <div class="cell-info">
+        <div class="cell-name">Equipes</div>
+        <div class="cell-peca">Equipes e membros</div>
+      </div>
+      <div class="dot dot-green"></div>
+    </div>`;
   }
   if(robos.length>0){
     html+=`<div class="sidebar-group-label" style="border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
@@ -3955,6 +3967,10 @@ function renderDetail(){
 
 function _renderDetailInner(){
   if(typeof metaApUpdateFab==='function') metaApUpdateFab();
+  if(selected==='__equipes'){
+    if(!(isAdmin||isAdminMetas)){ selected='__maparobos'; renderMapaRobos(); return; }
+    renderEquipes(); return;
+  }
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(!selected||!celulas[selected])return;
   const tipo=getCellTipo(selected);
@@ -5460,6 +5476,7 @@ function startApp(){
   celulas = {};
 
   loadCompDados();  // carrega estoque de componentes p/ integração automática de produção
+  if(isAdmin || isAdminMetas) loadEquipes();  // carrega equipes (só host/metas)
 
   loadFromAPI().then(() => {
     // Seleciona primeira célula automaticamente
@@ -6869,7 +6886,7 @@ function metaApUpdateFab(){
 function metaApAbrir(){
   const key=metaApKey();
   if(!key){ showToast('Aba de Metas não encontrada',true); return; }
-  _metaApHora=null; _metaApLog=[]; _metaApEditIdx=null;
+  _metaApHora=null; _metaApLog=[]; _metaApEditIdx=null; _metaApEquipeSel=null;
   const horas=[...HORAS_DIA,...HORAS_NOITE];
   const agora=new Date();
   const hh=String(agora.getHours()).padStart(2,'0')+':00';
@@ -6899,6 +6916,7 @@ function metaApConfirmarHora(){
   document.getElementById('metaApStep1').style.display='none';
   const s2=document.getElementById('metaApStep2'); s2.style.display=''; _metaApReanima(s2);
   document.getElementById('metaApHeadSub').textContent='Robô e quantidade — '+_metaApHora;
+  metaApRenderEquipes();
 }
 function metaApTrocarHora(){
   document.getElementById('metaApStep2').style.display='none';
@@ -6932,6 +6950,11 @@ function metaApEnviar(){
   // soma com o que já existe nesse robô+hora (não sobrescreve)
   const existente=parseCelVal(rd[campo]||'').num;
   const somado=existente+novasPecas;
+  // snapshot da equipe (se vínculo ativo e uma equipe selecionada) — gravado
+  // junto do robô+hora; congela os membros no momento do apontamento
+  if(equipesData.vincular_metas && _metaApEquipeSel){
+    rd['eqp_'+campo] = _metaApEquipeSel;
+  }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
   _metaApEditIdx=null;
@@ -7005,6 +7028,180 @@ function metaApSalvarEdicao(i){
   _metaApEditIdx=null;
   _metaApRenderLog();
   showToast(`Corrigido: Robô ${entry.robo} ${entry.hora} → ${novasPecas} pç`);
+}
+
+// ===================================================================
+// ===== EQUIPES =====================================================
+// ===================================================================
+let equipesData = { vincular_metas:false, lista:[] };
+let _eqModalMembros = [];   // membros em edição no modal
+let _eqEditId = null;       // id da equipe sendo editada (null = nova)
+
+function _eqCanAccess(){ return isAdmin || isAdminMetas; }
+function _eqUUID(){ return 'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function _hslToHex(h,s,l){
+  s/=100; l/=100;
+  const a=s*Math.min(l,1-l);
+  const k=n=>(n+h/30)%12;
+  const f=n=>{ const c=l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))); return Math.round(255*c).toString(16).padStart(2,'0'); };
+  return '#'+f(0)+f(8)+f(4);
+}
+function _eqRandomColor(){
+  const h=Math.floor(Math.random()*360);
+  const s=60+Math.floor(Math.random()*25);  // 60-85% saturação
+  const l=45+Math.floor(Math.random()*12);  // 45-57% luminosidade
+  return _hslToHex(h,s,l);
+}
+function _eqNome(eq){ return (eq.nome&&eq.nome.trim())?eq.nome.trim():eq.cor; }
+function _eqTextColor(hex){
+  const c=(hex||'').replace('#',''); if(c.length<6) return '#fff';
+  const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  return lum>0.62?'#101418':'#ffffff';
+}
+async function loadEquipes(){
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=equipes",{headers:HEADERS_SB});
+    const d=await r.json();
+    const e=d&&d[0]&&d[0].equipes;
+    if(e){ equipesData={ vincular_metas:!!e.vincular_metas, lista:Array.isArray(e.lista)?e.lista:[] }; }
+  }catch(err){}
+}
+async function saveEquipes(silent){
+  try{
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({equipes:equipesData})});
+    if(!silent) showToast("Salvo ✓");
+    return true;
+  }catch(e){ if(!silent) showToast("Erro ao salvar equipes",true); return false; }
+}
+
+function renderEquipes(){
+  if(!_eqCanAccess()){ selected=null; document.getElementById("mainPanel").innerHTML='<div class="empty">🔒 Acesso restrito às equipes.</div>'; return; }
+  const vinc = equipesData.vincular_metas;
+  const cards = equipesData.lista.map(eq=>{
+    const txt=_eqTextColor(eq.cor);
+    const membros=(eq.membros||[]);
+    const membrosHTML = membros.length
+      ? membros.map(m=>`<span class="eq-membro" style="border-color:${txt}44;color:${txt}">${esc(m)}</span>`).join('')
+      : `<span class="eq-membro-vazio" style="color:${txt}99">Sem membros</span>`;
+    return `<div class="eq-card" style="background:${eq.cor};color:${txt}">
+      <div class="eq-card-top">
+        <div class="eq-card-nome">${esc(_eqNome(eq))}</div>
+        <div class="eq-card-acts">
+          <button class="eq-card-btn" style="color:${txt}" onclick="eqAbrirModal('${eq.id}')" title="Editar">✏️</button>
+          <button class="eq-card-btn" style="color:${txt}" onclick="eqExcluir('${eq.id}')" title="Excluir">🗑</button>
+        </div>
+      </div>
+      <div class="eq-card-cor" style="color:${txt}bb">${esc(eq.cor)}</div>
+      <div class="eq-membros">${membrosHTML}</div>
+    </div>`;
+  }).join('');
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">👥 Equipes</div>
+      <button class="eq-nova-btn" onclick="eqAbrirModal(null)">➕ Nova Equipe</button>
+    </div>
+    <div class="eq-toggle-row">
+      <div style="min-width:0">
+        <div class="eq-toggle-title">Vincular equipes às Metas Diárias</div>
+        <div class="eq-toggle-sub">Ligado: o apontamento de Metas pede a equipe. Desligado: funciona normalmente sem pedir.</div>
+      </div>
+      <button id="eqToggle" class="eq-switch ${vinc?'on':''}" role="switch" aria-checked="${vinc}" onclick="eqToggleVincular()"><span class="eq-switch-knob"></span></button>
+    </div>
+    <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>
+  </div>`;
+}
+function eqToggleVincular(){
+  equipesData.vincular_metas = !equipesData.vincular_metas;
+  const btn=document.getElementById('eqToggle');
+  if(btn){ btn.classList.toggle('on',equipesData.vincular_metas); btn.setAttribute('aria-checked',equipesData.vincular_metas); }
+  saveEquipes(true);
+  showToast(equipesData.vincular_metas?'Vínculo com Metas ligado ✓':'Vínculo com Metas desligado');
+}
+
+// ---- Modal nova/editar equipe ----
+function eqAbrirModal(id){
+  if(!_eqCanAccess()) return;
+  _eqEditId = id;
+  const eq = id ? equipesData.lista.find(e=>e.id===id) : null;
+  document.getElementById('eqModalTitle').textContent = eq ? 'Editar Equipe' : 'Nova Equipe';
+  document.getElementById('eqNomeInput').value = eq ? (eq.nome||'') : '';
+  document.getElementById('eqCorInput').value = eq ? eq.cor : _eqRandomColor();
+  _eqModalMembros = eq ? (eq.membros||[]).slice() : [];
+  _eqRenderMembros();
+  document.getElementById('eqMembroInput').value='';
+  document.getElementById('eqModal').style.display='flex';
+  eqSyncCorPreview();
+}
+function eqFecharModal(){ document.getElementById('eqModal').style.display='none'; _eqEditId=null; _eqModalMembros=[]; }
+function eqSyncCorPreview(){
+  const cor=document.getElementById('eqCorInput').value;
+  const prev=document.getElementById('eqCorPreview');
+  if(prev){ prev.style.background=cor; prev.textContent=cor; prev.style.color=_eqTextColor(cor); }
+}
+function _eqRenderMembros(){
+  const wrap=document.getElementById('eqMembrosList');
+  if(!wrap) return;
+  wrap.innerHTML = _eqModalMembros.length
+    ? _eqModalMembros.map((m,i)=>`<span class="eq-chip-membro">${esc(m)}<button onclick="eqRemoverMembro(${i})" title="Remover">✕</button></span>`).join('')
+    : `<span style="font-size:12.5px;color:#5a6678">Nenhum membro adicionado.</span>`;
+}
+function eqAddMembro(){
+  const inp=document.getElementById('eqMembroInput');
+  const v=(inp.value||'').trim();
+  if(!v) return;
+  _eqModalMembros.push(v);
+  inp.value='';
+  _eqRenderMembros();
+  inp.focus();
+}
+function eqRemoverMembro(i){ _eqModalMembros.splice(i,1); _eqRenderMembros(); }
+function eqSalvarModal(){
+  const nome=(document.getElementById('eqNomeInput').value||'').trim();
+  const cor=document.getElementById('eqCorInput').value || _eqRandomColor();
+  const membros=_eqModalMembros.slice();
+  if(_eqEditId){
+    const eq=equipesData.lista.find(e=>e.id===_eqEditId);
+    if(eq){ eq.nome=nome; eq.cor=cor; eq.membros=membros; }
+  } else {
+    equipesData.lista.push({ id:_eqUUID(), nome, cor, membros });
+  }
+  saveEquipes(true);
+  eqFecharModal();
+  if(selected==='__equipes') renderEquipes();
+  showToast('Equipe salva ✓');
+}
+function eqExcluir(id){
+  const eq=equipesData.lista.find(e=>e.id===id);
+  if(!eq) return;
+  if(!confirm(`Excluir a equipe "${_eqNome(eq)}"?`)) return;
+  equipesData.lista = equipesData.lista.filter(e=>e.id!==id);
+  saveEquipes(true);
+  if(selected==='__equipes') renderEquipes();
+  showToast('Equipe excluída');
+}
+
+// ---- Integração com o apontamento de Metas (chips de equipe) ----
+let _metaApEquipeSel = null; // snapshot {id,cor,nome,membros} ou null
+function metaApRenderEquipes(){
+  const box=document.getElementById('metaApEquipeBox');
+  if(!box) return;
+  if(!equipesData.vincular_metas || !equipesData.lista.length){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='';
+  const chips=equipesData.lista.map(eq=>{
+    const sel=_metaApEquipeSel && _metaApEquipeSel.id===eq.id;
+    return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="background:${eq.cor}${sel?';box-shadow:0 0 0 3px #0d1219,0 0 0 6px '+eq.cor:''}" onclick="metaApSelEquipe('${eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
+  }).join('');
+  const nomes = _metaApEquipeSel
+    ? `<div class="metaap-eqnomes">${_metaApEquipeSel.nome?'<b>'+esc(_metaApEquipeSel.nome)+':</b> ':''}${(_metaApEquipeSel.membros||[]).map(esc).join(', ')||'sem membros'}</div>`
+    : `<div class="metaap-eqnomes" style="color:#5a6678">Toque numa cor (opcional)</div>`;
+  box.innerHTML=`<div class="ap-label">Quem estava no robô nesta hora?</div><div class="metaap-eqchips">${chips}</div>${nomes}`;
+}
+function metaApSelEquipe(id){
+  if(_metaApEquipeSel && _metaApEquipeSel.id===id){ _metaApEquipeSel=null; }
+  else { const eq=equipesData.lista.find(e=>e.id===id); if(eq){ _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() }; } }
+  metaApRenderEquipes();
 }
 
 function mapaUpdateData(campo,valor){
@@ -11094,11 +11291,45 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <div class="ap-label" style="margin-top:15px">Quantidade total produzida</div>
       <input id="metaApQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
       <div style="font-size:11px;color:#5a6678;margin-top:6px">Se o robô tiver pontos de solda cadastrados, o valor é dividido automaticamente.</div>
+      <div id="metaApEquipeBox" style="display:none;margin-top:16px"></div>
       <button class="ap-btn primary" style="margin-top:18px" onclick="metaApEnviar()">✓ Enviar</button>
       <div class="ap-log" id="metaApLogWrap" style="display:none">
         <div class="ap-log-title">Enviados nesta sessão (<span id="metaApLogCount">0</span>)</div>
         <div id="metaApLogList"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal Nova/Editar Equipe ===== -->
+<div id="eqModal" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9300;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)eqFecharModal()">
+  <div class="eq-modal-card" onclick="event.stopPropagation()">
+    <div class="eq-modal-head">
+      <div class="eq-modal-title" id="eqModalTitle">Nova Equipe</div>
+      <button class="ap-x" onclick="eqFecharModal()">✕</button>
+    </div>
+    <div class="eq-field">
+      <label class="ap-label">Nome <span style="text-transform:none;color:#5a6678;font-weight:400">(opcional — se vazio, usa a cor)</span></label>
+      <input id="eqNomeInput" class="ap-input" type="text" placeholder="Ex: Equipe A" autocomplete="off">
+    </div>
+    <div class="eq-field">
+      <label class="ap-label">Cor da equipe</label>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input id="eqCorInput" type="color" class="eq-color-input" oninput="eqSyncCorPreview()">
+        <div id="eqCorPreview" class="eq-cor-preview">#000000</div>
+      </div>
+    </div>
+    <div class="eq-field">
+      <label class="ap-label">Membros</label>
+      <div style="display:flex;gap:8px">
+        <input id="eqMembroInput" class="ap-input" type="text" placeholder="Nome do membro" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();eqAddMembro();}">
+        <button class="eq-add-membro" onclick="eqAddMembro()" title="Adicionar membro">＋</button>
+      </div>
+      <div id="eqMembrosList" class="eq-membros-list"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqFecharModal()">Cancelar</button>
+      <button class="ap-btn primary" onclick="eqSalvarModal()">✓ Salvar</button>
     </div>
   </div>
 </div>
@@ -11141,6 +11372,53 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .ap-log-edit:active{ transform:scale(0.9); background:#1b2330; }
 .ap-step{ animation:apStepIn .3s var(--ease-out); }
 @keyframes apStepIn{ from{ opacity:0; transform:translateX(12px); } to{ opacity:1; transform:none; } }
+
+/* ===== Equipes ===== */
+.eq-nova-btn{ background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:10px; padding:10px 18px; font-family:'Courier New',monospace; font-size:13.5px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 6px 16px -8px #00e87a95, inset 0 1px 0 #ffffff55; transition:transform .16s var(--ease-out), filter .16s ease; }
+.eq-nova-btn:active{ transform:scale(0.97); filter:brightness(0.96); }
+.eq-toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; background:#0f1318; border:1px solid #1e2530; border-radius:12px; padding:14px 18px; margin-bottom:18px; flex-wrap:wrap; }
+.eq-toggle-title{ font-size:15px; font-weight:800; color:#eaf0f8; }
+.eq-toggle-sub{ font-size:12px; color:#7a8698; margin-top:3px; max-width:520px; }
+.eq-switch{ position:relative; width:56px; height:31px; border-radius:99px; border:1px solid #26303f; background:#141b26; cursor:pointer; flex-shrink:0; transition:background .22s var(--ease-out), border-color .22s ease; padding:0; }
+.eq-switch-knob{ position:absolute; top:3px; left:3px; width:23px; height:23px; border-radius:50%; background:#8792a6; transition:transform .26s var(--ease-drawer), background .22s ease; }
+.eq-switch.on{ background:#00e87a25; border-color:#00e87a70; }
+.eq-switch.on .eq-switch-knob{ transform:translateX(25px); background:#00e87a; }
+.eq-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.eq-empty{ grid-column:1/-1; text-align:center; color:#4a5568; padding:40px 20px; font-size:14px; border:1px dashed #1e2530; border-radius:14px; }
+.eq-card{ border-radius:16px; padding:16px 18px; box-shadow:0 8px 22px -12px #000000c0; }
+/* animação só na navegação (nunca no poll de 3s — evita flicker) */
+#mainPanel.nav-enter .eq-card{ animation:eqCardIn .34s var(--ease-out) backwards; }
+@keyframes eqCardIn{ from{ opacity:0; transform:translateY(10px) scale(.98); } to{ opacity:1; transform:none; } }
+.eq-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.eq-card-nome{ font-size:19px; font-weight:900; font-family:'Montserrat',sans-serif; word-break:break-word; }
+.eq-card-acts{ display:flex; gap:6px; flex-shrink:0; }
+.eq-card-btn{ background:#00000022; border:1px solid #ffffff33; border-radius:8px; width:32px; height:32px; font-size:13px; cursor:pointer; transition:transform .16s var(--ease-out), background .16s ease; }
+.eq-card-btn:active{ transform:scale(0.9); background:#00000040; }
+.eq-card-cor{ font-size:12px; font-family:'Courier New',monospace; opacity:0.85; margin-top:2px; }
+.eq-membros{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+.eq-membro{ font-size:12.5px; font-weight:700; padding:4px 10px; border-radius:99px; border:1px solid; background:#00000018; }
+.eq-membro-vazio{ font-size:12.5px; font-style:italic; }
+/* Modal equipe */
+.eq-modal-card{ background:linear-gradient(180deg,#0f1420,#0b0f16); border:1px solid #1e2530; border-radius:18px; padding:22px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px -20px #000; animation:eqModalIn .28s var(--ease-out); }
+@keyframes eqModalIn{ from{ opacity:0; transform:translateY(14px) scale(.97); } to{ opacity:1; transform:none; } }
+.eq-modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.eq-modal-title{ font-size:19px; font-weight:900; color:#fff; font-family:'Montserrat',sans-serif; }
+.eq-field{ margin-bottom:16px; }
+.eq-color-input{ width:60px; height:48px; border:1px solid #1e2530; border-radius:12px; background:#080b0f; cursor:pointer; padding:4px; flex-shrink:0; }
+.eq-cor-preview{ flex:1; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Courier New',monospace; font-size:15px; font-weight:800; border:1px solid #26303f; }
+.eq-add-membro{ background:#00e87a15; border:1px solid #00e87a40; color:#00e87a; border-radius:12px; width:52px; flex-shrink:0; font-size:22px; font-weight:700; cursor:pointer; transition:transform .16s var(--ease-out), background .16s ease; }
+.eq-add-membro:active{ transform:scale(0.92); background:#00e87a25; }
+.eq-membros-list{ display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.eq-chip-membro{ display:inline-flex; align-items:center; gap:7px; background:#141b26; border:1px solid #26303f; color:#eaf0f8; font-size:13px; font-weight:600; padding:6px 8px 6px 12px; border-radius:99px; }
+.eq-chip-membro button{ background:#ff4d4d20; border:none; color:#ff6a6a; width:20px; height:20px; border-radius:50%; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.eq-chip-membro button:active{ background:#ff4d4d40; }
+/* Chips de equipe no apontamento de metas */
+.metaap-eqchips{ display:flex; flex-wrap:wrap; gap:12px; margin-top:4px; }
+.metaap-eqchip{ width:38px; height:38px; border-radius:50%; border:2px solid #ffffff22; cursor:pointer; transition:transform .16s var(--ease-out); padding:0; }
+.metaap-eqchip:active{ transform:scale(0.9); }
+.metaap-eqchip.sel{ transform:scale(1.05); }
+.metaap-eqnomes{ font-size:13px; color:#cdd6e3; margin-top:10px; line-height:1.5; }
+@media (max-width:560px){ .eq-grid{ grid-template-columns:1fr; } }
 </style>
 
 <!-- ===== CONTROLE DE COMPONENTES ===== -->
