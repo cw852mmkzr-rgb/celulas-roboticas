@@ -4123,14 +4123,6 @@ function _renderDetailInner(){
         <div class="field" style="grid-column:span 2"><label>Turno</label><input value="${esc(c.turno)}" ${ro} onchange="update('${selected}','turno',this.value)"></div>
       </div>
     </div>
-    <div class="section"><div class="sec-title">◈ Membros da Equipe</div>
-      <div class="grid2">
-        <div class="field"><label>👷 Membro 1</label><input value="${esc(c.membro1||'—')}" ${ro} onchange="update('${selected}','membro1',this.value)"></div>
-        <div class="field"><label>👷 Membro 2</label><input value="${esc(c.membro2||'—')}" ${ro} onchange="update('${selected}','membro2',this.value)"></div>
-        <div class="field"><label>👷 Membro 3</label><input value="${esc(c.membro3||'—')}" ${ro} onchange="update('${selected}','membro3',this.value)"></div>
-        <div class="field"><label>👷 Membro 4</label><input value="${esc(c.membro4||'—')}" ${ro} onchange="update('${selected}','membro4',this.value)"></div>
-      </div>
-    </div>
     ${renderEquipesRobo(selected)}
     <div class="section"><div class="sec-title">◈ Meta por Hora</div>
       <div class="grid2">
