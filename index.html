@@ -6862,6 +6862,7 @@ function mapaApontarEnviar(){
 // ===== Apontamento de Produção por Hora — Metas Diárias (mobile) =====
 let _metaApHora = null;
 let _metaApLog = [];
+let _metaApEditIdx = null;
 let _metaApBlockClose = false, _metaApBlockTimer = null;
 function _metaApSetBlockClose(){ clearTimeout(_metaApBlockTimer); _metaApBlockClose=true; _metaApBlockTimer=setTimeout(()=>{ _metaApBlockClose=false; },500); }
 function metaApKey(){ return Object.keys(celulas).find(k=>getCellTipo(k)==='metas'); }
@@ -6876,7 +6877,7 @@ function metaApUpdateFab(){
 function metaApAbrir(){
   const key=metaApKey();
   if(!key){ showToast('Aba de Metas não encontrada',true); return; }
-  _metaApHora=null; _metaApLog=[];
+  _metaApHora=null; _metaApLog=[]; _metaApEditIdx=null;
   const horas=[...HORAS_DIA,...HORAS_NOITE];
   const agora=new Date();
   const hh=String(agora.getHours()).padStart(2,'0')+':00';
@@ -6941,16 +6942,77 @@ function metaApEnviar(){
   const somado=existente+novasPecas;
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
-  _metaApLog.unshift({robo, hora:_metaApHora, add:novasPecas, total:somado, dividiu});
-  const wrap=document.getElementById('metaApLogWrap');
-  wrap.style.display='';
-  document.getElementById('metaApLogCount').textContent=_metaApLog.length;
-  document.getElementById('metaApLogList').innerHTML=_metaApLog.map(r=>
-    `<div class="ap-log-item"><span class="ap-log-maq">🤖 Robô ${r.robo} · ${r.hora}</span><span class="ap-log-qtd">+${r.add}${r.dividiu?' ÷':''} → ${r.total}</span></div>`
-  ).join('');
+  _metaApEditIdx=null;
+  _metaApLog.unshift({robo, hora:_metaApHora, campo, totalDigitado, pontos, pecas:novasPecas, dividiu});
+  _metaApRenderLog();
   showToast(`Robô ${robo}: +${novasPecas} peça${novasPecas!==1?'s':''} às ${_metaApHora} ✓`);
   qtdEl.value='';
   qtdEl.focus();
+}
+// Renderiza a lista "Enviados nesta sessão" com a conta e o botão de editar
+function _metaApRenderLog(){
+  const wrap=document.getElementById('metaApLogWrap');
+  const list=document.getElementById('metaApLogList');
+  if(!wrap||!list) return;
+  document.getElementById('metaApLogCount').textContent=_metaApLog.length;
+  if(_metaApLog.length===0){ wrap.style.display='none'; list.innerHTML=''; return; }
+  wrap.style.display='';
+  list.innerHTML=_metaApLog.map((r,i)=>{
+    if(i===_metaApEditIdx){
+      return `<div class="ap-log-item" style="flex-wrap:wrap;gap:8px">
+        <span class="ap-log-maq">🤖 Robô ${r.robo} · ${r.hora}</span>
+        <div style="display:flex;gap:6px;align-items:center;width:100%;margin-top:4px">
+          <input id="metaApEditInput" class="ap-input" type="number" inputmode="numeric" min="0" value="${r.totalDigitado}" style="flex:1;margin:0" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApSalvarEdicao(${i})">
+          <button class="ap-x" style="width:40px;height:40px;color:#00e87a;border-color:#00e87a40" onclick="metaApSalvarEdicao(${i})" title="Salvar">✓</button>
+          <button class="ap-x" style="width:40px;height:40px" onclick="metaApCancelarEdicao()" title="Cancelar">✕</button>
+        </div>
+      </div>`;
+    }
+    const conta = r.dividiu ? `${r.totalDigitado} ÷ ${r.pontos} = ${r.pecas} pç` : `${r.pecas} pç`;
+    return `<div class="ap-log-item">
+      <span class="ap-log-maq">🤖 Robô ${r.robo} · ${r.hora}</span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span class="ap-log-qtd">${conta}</span>
+        <button class="ap-log-edit" onclick="metaApEditar(${i})" title="Corrigir">✏️</button>
+      </span>
+    </div>`;
+  }).join('');
+}
+function metaApEditar(i){
+  _metaApEditIdx=i; _metaApRenderLog();
+  const el=document.getElementById('metaApEditInput');
+  if(el){ el.focus(); try{ el.select(); }catch(e){} }
+}
+function metaApCancelarEdicao(){ _metaApEditIdx=null; _metaApRenderLog(); }
+function metaApSalvarEdicao(i){
+  const entry=_metaApLog[i];
+  if(!entry) return;
+  const el=document.getElementById('metaApEditInput');
+  const novoTotal=parseInt(((el&&el.value)||'').trim());
+  if(isNaN(novoTotal)||novoTotal<0){ showToast('Valor inválido',true); return; }
+  const key=metaApKey();
+  if(!key){ showToast('Aba de Metas não encontrada',true); return; }
+  const chave=getMetasChave(key);
+  const pontos=entry.pontos;
+  // recalcula peças com a MESMA lógica de divisão
+  let novasPecas=novoTotal, dividiu=false;
+  if(pontos>1 && novoTotal>0){
+    const dividido=Math.round(novoTotal/pontos);
+    if(dividido>=1 && dividido<=999 && dividido!==novoTotal){ novasPecas=dividido; dividiu=true; }
+  }
+  const delta=novasPecas - entry.pecas;
+  // aplica o delta na célula (não zera as outras contribuições da mesma hora)
+  const rd=(celulas[key].metas_dias&&celulas[key].metas_dias[chave]&&celulas[key].metas_dias[chave][entry.robo])||{};
+  const atual=parseCelVal(rd[entry.campo]||'').num;
+  const novoCel=Math.max(0, atual+delta);
+  updateMetasCell(key, entry.robo, entry.campo, String(novoCel));
+  // atualiza o registro do log
+  entry.totalDigitado=novoTotal;
+  entry.pecas=novasPecas;
+  entry.dividiu=dividiu;
+  _metaApEditIdx=null;
+  _metaApRenderLog();
+  showToast(`Corrigido: Robô ${entry.robo} ${entry.hora} → ${novasPecas} pç`);
 }
 
 function mapaUpdateData(campo,valor){
@@ -11083,6 +11145,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 @keyframes apLogIn{ from{ opacity:0; transform:translateY(-9px) scale(.98); } to{ opacity:1; transform:none; } }
 .ap-log-maq{ font-size:14.5px; font-weight:800; color:#eaf0f8; font-family:'Courier New',monospace; }
 .ap-log-qtd{ font-size:15px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; flex-shrink:0; }
+.ap-log-edit{ background:#141b26; border:1px solid #26303f; color:#8792a6; width:34px; height:34px; border-radius:9px; font-size:14px; cursor:pointer; flex-shrink:0; transition:transform .16s var(--ease-out), background .16s ease; }
+.ap-log-edit:active{ transform:scale(0.9); background:#1b2330; }
 .ap-step{ animation:apStepIn .3s var(--ease-out); }
 @keyframes apStepIn{ from{ opacity:0; transform:translateX(12px); } to{ opacity:1; transform:none; } }
 </style>
