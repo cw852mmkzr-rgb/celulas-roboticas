@@ -6869,7 +6869,8 @@ function metaApKey(){ return Object.keys(celulas).find(k=>getCellTipo(k)==='meta
 function metaApUpdateFab(){
   const fab=document.getElementById('metaApFab');
   if(!fab) return;
-  const ativo = selected && celulas[selected] && getCellTipo(selected)==='metas';
+  // Só na aba Metas E com permissão de edição (admin geral ou host de metas)
+  const ativo = selected && celulas[selected] && getCellTipo(selected)==='metas' && (isAdmin || isAdminMetas);
   fab.style.display = ativo ? 'flex' : 'none';
 }
 function metaApAbrir(){
