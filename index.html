@@ -7161,6 +7161,12 @@ function renderMapaZonaHTML(zona){
 }
 
 function renderMapaProducao(){
+  // ── Sheet de apontamento aberto: NÃO reconstruir o DOM ──
+  // O rebuild do mapaConteudo (poll de 3s) causa reflow que fecha o picker
+  // nativo do <select> e o teclado dos inputs do sheet (que ficam fora do
+  // mapaConteudo, então a proteção de foco abaixo não os cobre).
+  const _apOv = document.getElementById('apOverlay');
+  if(_apOv && _apOv.classList.contains('open')) return;
   mapaUpdateApontarFab();
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
