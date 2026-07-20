@@ -3507,6 +3507,7 @@ function renderMetasDiaria(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
+        ${podeEditar?`<button class="btn metas-apontar-desktop" style="padding:5px 14px;font-size:11px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="metaApAbrir()">📊 Apontar Produção</button>`:""}
         <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
         ${isAdmin?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="copiarDiaAnterior('${selected}')">📋 Copiar dia anterior</button>`:""}
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
@@ -11337,6 +11338,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 #metaApFab{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9150; align-items:center; gap:9px; background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:99px; padding:14px 22px; font-family:'Courier New',monospace; font-size:14px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 12px 30px -8px #00e87a90, 0 2px 10px #0009, inset 0 1px 0 #ffffff55; transition:transform .18s var(--ease-out), filter .18s ease; }
 #metaApFab:active{ transform:translateX(-50%) scale(0.95); }
 @media (min-width:701px){ #metaApFab{ display:none !important; } }
+.metas-apontar-desktop{ display:inline-block; }
+@media (max-width:700px){ .metas-apontar-desktop{ display:none !important; } }
 #metaApOverlay{ position:fixed; inset:0; z-index:9200; background:#00000088; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .26s var(--ease-out); display:flex; align-items:flex-end; justify-content:center; }
 #metaApOverlay.open{ opacity:1; pointer-events:auto; }
 #metaApOverlay.open .ap-sheet{ transform:translateY(0); }
