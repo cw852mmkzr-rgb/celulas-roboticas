@@ -3092,7 +3092,8 @@ async function loadFromAPI(){
   const modalGabAberto    = document.getElementById('modalGabLogin')&&document.getElementById('modalGabLogin').style.display==='flex';
   const modalPecaAberto   = document.getElementById('modalPeca')&&document.getElementById('modalPeca').style.display==='flex';
   const modalMaqAberto    = document.getElementById('modalMapaMaquina')&&document.getElementById('modalMapaMaquina').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto)return;
+  const metaApAberto      = document.getElementById('metaApOverlay')&&document.getElementById('metaApOverlay').classList.contains('open');
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
@@ -3959,6 +3960,7 @@ function renderDetail(){
 }
 
 function _renderDetailInner(){
+  if(typeof metaApUpdateFab==='function') metaApUpdateFab();
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(!selected||!celulas[selected])return;
   const tipo=getCellTipo(selected);
@@ -6855,6 +6857,99 @@ function mapaApontarEnviar(){
   showToast(`Máq ${numero}: ${qtd} peças às ${_apHora} ✓`);
   maqEl.value=''; qtdEl.value='';
   maqEl.focus();
+}
+
+// ===== Apontamento de Produção por Hora — Metas Diárias (mobile) =====
+let _metaApHora = null;
+let _metaApLog = [];
+let _metaApBlockClose = false, _metaApBlockTimer = null;
+function _metaApSetBlockClose(){ clearTimeout(_metaApBlockTimer); _metaApBlockClose=true; _metaApBlockTimer=setTimeout(()=>{ _metaApBlockClose=false; },500); }
+function metaApKey(){ return Object.keys(celulas).find(k=>getCellTipo(k)==='metas'); }
+// Mostra/esconde o FAB (só na aba Metas; CSS esconde no desktop)
+function metaApUpdateFab(){
+  const fab=document.getElementById('metaApFab');
+  if(!fab) return;
+  const ativo = selected && celulas[selected] && getCellTipo(selected)==='metas';
+  fab.style.display = ativo ? 'flex' : 'none';
+}
+function metaApAbrir(){
+  const key=metaApKey();
+  if(!key){ showToast('Aba de Metas não encontrada',true); return; }
+  _metaApHora=null; _metaApLog=[];
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  const agora=new Date();
+  const hh=String(agora.getHours()).padStart(2,'0')+':00';
+  const sugestao=horas.includes(hh)?hh:horas[0];
+  document.getElementById('metaApHoraSel').innerHTML =
+    horas.map(h=>`<option value="${h}" ${h===sugestao?'selected':''}>${h}${HORAS_CAFE.includes(h)?'  ☕':''}</option>`).join('');
+  document.getElementById('metaApRobo').innerHTML =
+    ROBOS.map(r=>{ const nm=(celulas[String(r)]&&celulas[String(r)].nome)||('Robô '+r); return `<option value="${r}">${r} — ${esc(nm)}</option>`; }).join('');
+  document.getElementById('metaApStep1').style.display='';
+  document.getElementById('metaApStep2').style.display='none';
+  document.getElementById('metaApHeadSub').textContent='Escolha a hora do apontamento';
+  document.getElementById('metaApLogWrap').style.display='none';
+  document.getElementById('metaApLogList').innerHTML='';
+  document.getElementById('metaApLogCount').textContent='0';
+  document.getElementById('metaApOverlay').classList.add('open');
+}
+function metaApFechar(){
+  if(_metaApBlockClose) return;
+  document.getElementById('metaApOverlay').classList.remove('open');
+  // reflete os apontamentos na planilha ao fechar
+  if(selected && celulas[selected] && getCellTipo(selected)==='metas'){ try{ renderMetasDiaria(); }catch(e){} }
+}
+function _metaApReanima(el){ el.classList.remove('ap-step'); void el.offsetWidth; el.classList.add('ap-step'); }
+function metaApConfirmarHora(){
+  _metaApHora=document.getElementById('metaApHoraSel').value;
+  document.getElementById('metaApHoraLabel').textContent=_metaApHora;
+  document.getElementById('metaApStep1').style.display='none';
+  const s2=document.getElementById('metaApStep2'); s2.style.display=''; _metaApReanima(s2);
+  document.getElementById('metaApHeadSub').textContent='Robô e quantidade — '+_metaApHora;
+}
+function metaApTrocarHora(){
+  document.getElementById('metaApStep2').style.display='none';
+  const s1=document.getElementById('metaApStep1'); s1.style.display=''; _metaApReanima(s1);
+  document.getElementById('metaApHeadSub').textContent='Escolha a hora do apontamento';
+}
+function metaApEnviar(){
+  const key=metaApKey();
+  if(!key){ showToast('Aba de Metas não encontrada',true); return; }
+  if(_metaApHora===null){ showToast('Escolha a hora primeiro',true); return; }
+  const robo=parseInt(document.getElementById('metaApRobo').value);
+  const qtdEl=document.getElementById('metaApQtd');
+  const qtdRaw=qtdEl.value.trim();
+  if(!robo){ showToast('Escolha o robô',true); return; }
+  if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<=0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
+  const totalDigitado=parseInt(qtdRaw);
+  const chave=getMetasChave(key);
+  if(!celulas[key].metas_dias) celulas[key].metas_dias={};
+  if(!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave]={};
+  if(!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo]={};
+  const rd=celulas[key].metas_dias[chave][robo];
+  const campo=campoH(_metaApHora);
+  const pontos=parseInt(rd.pontos)||0;
+  // divisão automática — MESMA lógica de handleMetasInput (divide por pontos de solda)
+  let novasPecas=totalDigitado;
+  let dividiu=false;
+  if(pontos>1 && totalDigitado>0){
+    const dividido=Math.round(totalDigitado/pontos);
+    if(dividido>=1 && dividido<=999 && dividido!==totalDigitado){ novasPecas=dividido; dividiu=true; }
+  }
+  // soma com o que já existe nesse robô+hora (não sobrescreve)
+  const existente=parseCelVal(rd[campo]||'').num;
+  const somado=existente+novasPecas;
+  // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
+  updateMetasCell(key,robo,campo,String(somado));
+  _metaApLog.unshift({robo, hora:_metaApHora, add:novasPecas, total:somado, dividiu});
+  const wrap=document.getElementById('metaApLogWrap');
+  wrap.style.display='';
+  document.getElementById('metaApLogCount').textContent=_metaApLog.length;
+  document.getElementById('metaApLogList').innerHTML=_metaApLog.map(r=>
+    `<div class="ap-log-item"><span class="ap-log-maq">🤖 Robô ${r.robo} · ${r.hora}</span><span class="ap-log-qtd">+${r.add}${r.dividiu?' ÷':''} → ${r.total}</span></div>`
+  ).join('');
+  showToast(`Robô ${robo}: +${novasPecas} peça${novasPecas!==1?'s':''} às ${_metaApHora} ✓`);
+  qtdEl.value='';
+  qtdEl.focus();
 }
 
 function mapaUpdateData(campo,valor){
@@ -10912,7 +11007,53 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
     </div>
   </div>
 </div>
+
+<!-- ===== Apontamento de Produção por Hora — Metas Diárias (mobile) ===== -->
+<button id="metaApFab" onclick="metaApAbrir()" style="display:none"><span style="font-size:16px">📊</span> Apontar Produção</button>
+<div id="metaApOverlay">
+  <button id="metaApBackdrop" onclick="metaApFechar()" aria-label="Fechar" style="position:absolute;inset:0;background:transparent;border:none;cursor:default;width:100%;height:100%;"></button>
+  <div class="ap-sheet" style="position:relative;z-index:1">
+    <div class="ap-grip"></div>
+    <div class="ap-head">
+      <div style="min-width:0">
+        <div class="ap-title">📊 Apontar Produção</div>
+        <div class="ap-sub" id="metaApHeadSub">Escolha a hora do apontamento</div>
+      </div>
+      <button class="ap-x" onclick="metaApFechar()">✕</button>
+    </div>
+    <!-- Passo 1: escolher a hora -->
+    <div id="metaApStep1" class="ap-step">
+      <div class="ap-label">Hora do apontamento</div>
+      <select id="metaApHoraSel" class="ap-select" onchange="_metaApSetBlockClose()" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()"></select>
+      <button class="ap-btn primary" style="margin-top:16px" onclick="metaApConfirmarHora()">Começar apontamento →</button>
+      <div style="font-size:11.5px;color:#5a6678;text-align:center;margin-top:12px">A hora fica travada até você fechar. Ao reabrir, escolha outra.</div>
+    </div>
+    <!-- Passo 2: loop robô + quantidade -->
+    <div id="metaApStep2" class="ap-step" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px">
+        <span class="ap-hora-chip">🕐 <span id="metaApHoraLabel"></span></span>
+        <button class="ap-trocar" onclick="metaApTrocarHora()">trocar hora</button>
+      </div>
+      <div class="ap-label">Robô</div>
+      <select id="metaApRobo" class="ap-select" onchange="_metaApSetBlockClose()" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()"></select>
+      <div class="ap-label" style="margin-top:15px">Quantidade total produzida</div>
+      <input id="metaApQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
+      <div style="font-size:11px;color:#5a6678;margin-top:6px">Se o robô tiver pontos de solda cadastrados, o valor é dividido automaticamente.</div>
+      <button class="ap-btn primary" style="margin-top:18px" onclick="metaApEnviar()">✓ Enviar</button>
+      <div class="ap-log" id="metaApLogWrap" style="display:none">
+        <div class="ap-log-title">Enviados nesta sessão (<span id="metaApLogCount">0</span>)</div>
+        <div id="metaApLogList"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <style>
+#metaApFab{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9150; align-items:center; gap:9px; background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:99px; padding:14px 22px; font-family:'Courier New',monospace; font-size:14px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 12px 30px -8px #00e87a90, 0 2px 10px #0009, inset 0 1px 0 #ffffff55; transition:transform .18s var(--ease-out), filter .18s ease; }
+#metaApFab:active{ transform:translateX(-50%) scale(0.95); }
+@media (min-width:701px){ #metaApFab{ display:none !important; } }
+#metaApOverlay{ position:fixed; inset:0; z-index:9200; background:#00000088; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .26s var(--ease-out); display:flex; align-items:flex-end; justify-content:center; }
+#metaApOverlay.open{ opacity:1; pointer-events:auto; }
+#metaApOverlay.open .ap-sheet{ transform:translateY(0); }
 #apFab{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9150; align-items:center; gap:9px; background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:99px; padding:14px 22px; font-family:'Courier New',monospace; font-size:14px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 12px 30px -8px #00e87a90, 0 2px 10px #0009, inset 0 1px 0 #ffffff55; transition:transform .18s var(--ease-out), filter .18s ease; }
 #apFab:active{ transform:translateX(-50%) scale(0.95); }
 @media (min-width:701px){ #apFab{ display:none !important; } }
