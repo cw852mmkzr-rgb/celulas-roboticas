@@ -10023,7 +10023,7 @@ async function gabAnalisarFoto(){
       gabMontarPreviewFoto();
 
       status.style.color = "#00e87a";
-      status.textContent = "Leitura concluída. Revise a tabela abaixo e clique em Confirmar.";
+      status.textContent = "Leitura concluída. Revise e edite os valores se necessário, depois clique em Confirmar.";
       btn.textContent = "🔄 Analisar de novo";
       btn.disabled = false;
       return;
@@ -10052,20 +10052,20 @@ function gabMontarPreviewFoto(){
   const body = document.getElementById("gabFotoPreviewBody");
   let vaoEntrar = 0, novosPrb = 0;
   const ignorados = [];
-  body.innerHTML = _gabFotoLinhas.map(l=>{
+  body.innerHTML = _gabFotoLinhas.map((l,idx)=>{
     const alvo = mapa[_gabNormCod(l.codigo)];
     const ehPrb = _gabNormCod(l.codigo).startsWith("PRB");
     let cor, st, ativo;
     if(alvo){ cor="#00e87a"; st="✓ ok"; ativo=true; vaoEntrar++; }
     else if(ehPrb){ cor="#ffb300"; st="+ novo (PRB)"; ativo=true; vaoEntrar++; novosPrb++; }
     else { cor="#ff5b6a"; st="✕ não existe"; ativo=false; ignorados.push(l.codigo); }
-    const prog = l.quantidade!=null ? l.quantidade : "—";
-    const real = l.realizado!=null ? l.realizado : "—";
-    return `<tr style="border-top:1px solid #1c2431${ativo?"":";opacity:.55"}">
-      <td style="padding:8px;color:#eaf0f8;font-weight:700">${esc(l.codigo)}</td>
-      <td style="padding:8px;text-align:center;color:#a78bfa;font-weight:700">${prog}</td>
-      <td style="padding:8px;text-align:center;color:#3d9eff;font-weight:700">${real}</td>
-      <td style="padding:8px;text-align:center;color:${cor};font-size:12px">${st}</td>
+    const prog = l.quantidade!=null ? l.quantidade : "";
+    const real = l.realizado!=null ? l.realizado : "";
+    return `<tr id="gabf-row-${idx}" style="border-top:1px solid #1c2431;opacity:${ativo?'1':'.55'}">
+      <td style="padding:6px"><input class="gabf-edit" value="${esc(l.codigo||'')}" onchange="gabFotoEditLinha(${idx},'codigo',this.value)"></td>
+      <td style="padding:6px"><input class="gabf-edit" style="color:#a78bfa;text-align:center" inputmode="numeric" placeholder="—" value="${esc(String(prog))}" onchange="gabFotoEditLinha(${idx},'quantidade',this.value)"></td>
+      <td style="padding:6px"><input class="gabf-edit" style="color:#3d9eff;text-align:center" inputmode="numeric" placeholder="—" value="${esc(String(real))}" onchange="gabFotoEditLinha(${idx},'realizado',this.value)"></td>
+      <td id="gabf-st-${idx}" style="padding:8px;text-align:center;color:${cor};font-size:12px;white-space:nowrap">${st}</td>
     </tr>`;
   }).join("");
 
@@ -10080,6 +10080,48 @@ function gabMontarPreviewFoto(){
   btnConf.style.display = vaoEntrar>0 ? "" : "none";
   btnConf.disabled = false;
   btnConf.textContent = "✓ Confirmar e Salvar";
+}
+
+// Edita uma linha lida da foto antes de confirmar (corrige código/números da OCR)
+function gabFotoEditLinha(i, campo, valor){
+  if(!_gabFotoLinhas || !_gabFotoLinhas[i]) return;
+  if(campo==='codigo'){
+    _gabFotoLinhas[i].codigo = (valor||'').trim().toUpperCase();
+  } else {
+    const soDigitos = (valor||'').replace(/[^\d]/g,'');
+    _gabFotoLinhas[i][campo] = soDigitos==='' ? null : parseInt(soDigitos);
+  }
+  _gabFotoRefreshStatus(); // atualiza só status/resumo, sem recriar os inputs (mantém o foco no mobile)
+}
+
+// Recalcula ✓/✕/PRB e o resumo sem reconstruir a tabela (preserva o foco dos inputs)
+function _gabFotoRefreshStatus(){
+  if(!_gabFotoLinhas) return;
+  const chave = getGabChave();
+  const existentes = (gabDados[chave] && gabDados[chave].codigos) || [];
+  const mapa = {}; existentes.forEach(c=>{ mapa[_gabNormCod(c)] = c; });
+  let vaoEntrar=0, novosPrb=0; const ignorados=[];
+  _gabFotoLinhas.forEach((l,idx)=>{
+    const alvo = mapa[_gabNormCod(l.codigo)];
+    const ehPrb = _gabNormCod(l.codigo).startsWith("PRB");
+    let cor, st, ativo;
+    if(alvo){ cor="#00e87a"; st="✓ ok"; ativo=true; vaoEntrar++; }
+    else if(ehPrb){ cor="#ffb300"; st="+ novo (PRB)"; ativo=true; vaoEntrar++; novosPrb++; }
+    else { cor="#ff5b6a"; st="✕ não existe"; ativo=false; ignorados.push(l.codigo); }
+    const cell=document.getElementById('gabf-st-'+idx);
+    if(cell){ cell.textContent=st; cell.style.color=cor; }
+    const row=document.getElementById('gabf-row-'+idx);
+    if(row) row.style.opacity = ativo?'1':'.55';
+  });
+  const resumo=document.getElementById("gabFotoResumo");
+  if(resumo){
+    let txt=`${vaoEntrar} de ${_gabFotoLinhas.length} código(s) serão preenchidos no dia ${_gabFotoDiaConfirm}.`;
+    if(novosPrb) txt+=`\n➕ ${novosPrb} código(s) PRB serão criados na planilha.`;
+    if(ignorados.length) txt+=`\n⚠️ Não encontrados no mês (serão ignorados): ${ignorados.join(", ")}`;
+    resumo.textContent=txt;
+  }
+  const btnConf=document.getElementById("gabFotoBtnConfirmar");
+  if(btnConf) btnConf.style.display = vaoEntrar>0 ? "" : "none";
 }
 
 // Aplica a leitura revisada: prog mês + realizado no dia, só para códigos existentes
@@ -11485,6 +11527,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .robo-eq-row.now .robo-eq-hora{ color:#00e87a; }
 .robo-eq-badge{ font-size:12.5px; font-weight:800; padding:3px 11px; border-radius:99px; font-family:'Montserrat',sans-serif; }
 .robo-eq-nomes{ font-size:13px; color:#cdd6e3; font-weight:600; }
+/* Inputs editáveis do preview da foto (gabaritagem) */
+.gabf-edit{ width:100%; box-sizing:border-box; background:#0a0e14; border:1px solid #26303f; border-radius:7px; padding:8px 9px; font-family:'Courier New',monospace; font-size:14px; font-weight:700; color:#eaf0f8; outline:none; transition:border-color .16s ease; }
+.gabf-edit:focus{ border-color:#3d9eff; }
 @media (max-width:560px){ .eq-grid{ grid-template-columns:1fr; } }
 </style>
 
