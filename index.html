@@ -6943,6 +6943,7 @@ function metaApConfirmarHora(){
   document.getElementById('metaApStep1').style.display='none';
   const s2=document.getElementById('metaApStep2'); s2.style.display=''; _metaApReanima(s2);
   document.getElementById('metaApHeadSub').textContent='Robô e quantidade — '+_metaApHora;
+  _metaApPreselEquipe();
   metaApRenderEquipes();
 }
 function metaApTrocarHora(){
@@ -6981,6 +6982,7 @@ function metaApEnviar(){
   // junto do robô+hora; congela os membros no momento do apontamento
   if(equipesData.vincular_metas && _metaApEquipeSel){
     rd['eqp_'+campo] = Object.assign({}, _metaApEquipeSel, { presentes:_metaApMembrosSel.slice() });
+    _metaApLastEquipeId = _metaApEquipeSel.id; // lembra para o próximo apontamento
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
@@ -7212,6 +7214,13 @@ function eqExcluir(id){
 // ---- Integração com o apontamento de Metas (chips de equipe) ----
 let _metaApEquipeSel = null;   // snapshot {id,cor,nome,membros} ou null
 let _metaApMembrosSel = [];    // nomes das pessoas marcadas como presentes na hora
+let _metaApLastEquipeId = null; // última equipe usada — pré-seleciona no próximo apontamento
+// Pré-seleciona a última equipe usada (se ainda existir) quando nada estiver selecionado
+function _metaApPreselEquipe(){
+  if(_metaApEquipeSel || !_metaApLastEquipeId) return;
+  const eq=equipesData.lista.find(e=>e.id===_metaApLastEquipeId);
+  if(eq){ _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() }; _metaApMembrosSel=[]; }
+}
 function metaApRenderEquipes(){
   const box=document.getElementById('metaApEquipeBox');
   if(!box) return;
