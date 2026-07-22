@@ -7247,11 +7247,7 @@ function _eqDesHTML(){
   return `
     <div id="eqDesWrap">
       <div class="eqdes-sec">
-        <div class="eqdes-sec-title">🏆 Melhor equipe da semana</div>
-        <div id="eqDesPodio"></div>
-      </div>
-      <div class="eqdes-sec">
-        <div class="eqdes-sec-title">🎯 Equipe que mais bateu meta na semana</div>
+        <div class="eqdes-sec-title">🏆 Equipe que mais bateu meta na semana</div>
         <div id="eqDesPodioMeta"></div>
       </div>
       <div class="eqdes-sec">
@@ -7286,7 +7282,6 @@ function _eqDesHTML(){
 }
 function _eqDesFill(){
   const recs=_eqDesRecords();
-  _eqDesFillPodio(recs);
   _eqDesFillPodioMeta(recs);
   _eqDesFillFiltros(recs);
   _eqDesFillBusca(recs);
@@ -7344,45 +7339,6 @@ function eqDesSetGraf(g){
   _eqDesFillEquipes(_eqDesRecords());
 }
 // Pódio — 3 equipes que mais produziram na semana atual (segunda a domingo)
-function _eqDesFillPodio(recs){
-  const el=document.getElementById('eqDesPodio'); if(!el) return;
-  const hoje=new Date(); hoje.setHours(0,0,0,0);
-  const dow=(hoje.getDay()+6)%7; // 0 = segunda
-  const seg=new Date(hoje); seg.setDate(seg.getDate()-dow);
-  const dom=new Date(seg); dom.setDate(dom.getDate()+6);
-  const sem=recs.filter(r=>{ const d=_eqDesRecDate(r); return d>=seg&&d<=dom; });
-  if(!sem.length){
-    el.innerHTML=`<div class="eqdes-aviso">Ainda sem apontamentos esta semana.</div>`;
-    return;
-  }
-  const por={};
-  sem.forEach(r=>{
-    const id=r.eq.id||'sem';
-    if(!por[id]) por[id]={id,cor:r.eq.cor,nome:r.eq.nome,total:0,n:0};
-    por[id].total+=r.qtd; por[id].n++;
-  });
-  // total desc; empate desempata pelo nº de apontamentos
-  const top=Object.values(por).map(g=>{
-    const atual=equipesData.lista.find(e=>e.id===g.id);
-    if(atual){ g.cor=atual.cor; g.nome=(atual.nome||'').trim(); }
-    return g;
-  }).sort((a,b)=>(b.total-a.total)||(b.n-a.n)).slice(0,3);
-  const medalhas=['🏆','🥈','🥉'];
-  const card=(g,pos)=>{
-    if(!g) return '';
-    const txt=_eqTextColor(g.cor);
-    return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
-      <div class="eqdes-podio-medal">${medalhas[pos]}</div>
-      <div class="eqdes-podio-nome">${esc(g.nome||'Equipe')}</div>
-      <div class="eqdes-podio-total">${g.total.toLocaleString('pt-BR')} pç</div>
-      <div class="eqdes-podio-sub" style="color:${txt}bb">${g.n} apontamento${g.n!==1?'s':''}</div>
-    </div>`;
-  };
-  // ordem visual: 2º · 1º · 3º
-  el.innerHTML=`<div class="eqdes-podio">${card(top[1],1)}${card(top[0],0)}${card(top[2],2)}</div>
-    <div class="eqdes-podio-legenda">Semana de ${String(seg.getDate()).padStart(2,'0')}/${String(seg.getMonth()+1).padStart(2,'0')} a ${String(dom.getDate()).padStart(2,'0')}/${String(dom.getMonth()+1).padStart(2,'0')}</div>`;
-}
-
 // Pódio de metas — top 3 pela taxa de atingimento na semana atual
 function _eqDesFillPodioMeta(recs){
   const el=document.getElementById('eqDesPodioMeta'); if(!el) return;
