@@ -7528,8 +7528,8 @@ function _eqDesBarSVG(vals,labels,cor,alt){
     const bh=Math.max(v>0?4:2,Math.round((H-26)*v/max));
     const x=pad+i*bw;
     return `<rect x="${(x+bw*0.15).toFixed(1)}" y="${H-18-bh}" width="${(bw*0.7).toFixed(1)}" height="${bh}" rx="3" fill="${cor}" opacity="${v>0?'0.9':'0.25'}"/>
-      ${v>0?`<text x="${(x+bw/2).toFixed(1)}" y="${H-22-bh}" text-anchor="middle" font-size="9" fill="#8a95a8">${v}</text>`:''}
-      <text x="${(x+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="8.5" fill="#5a6678">${labels[i]}</text>`;
+      ${v>0?`<text x="${(x+bw/2).toFixed(1)}" y="${H-22-bh}" text-anchor="middle" font-size="12" font-weight="700" fill="#c5cfdd">${v}</text>`:''}
+      <text x="${(x+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="11" fill="#a5b0c2" font-weight="600">${labels[i]}</text>`;
   }).join('');
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:340px;height:auto">${bars}</svg>`;
 }
@@ -12451,7 +12451,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-subtab:active{ transform:scale(0.97); }
 .eq-subtab.on{ background:#00e87a18; color:#00e87a; }
 .eqdes-sec{ background:#0f1318; border:1px solid #1e2530; border-radius:14px; padding:18px 20px; margin-bottom:16px; }
-.eqdes-sec-title{ font-size:16px; font-weight:800; color:#f0f5fc; letter-spacing:0.03em; margin-bottom:16px; }
+.eqdes-sec-title{ font-size:20px; font-weight:900; color:#f0f5fc; letter-spacing:0.02em; margin-bottom:18px; font-family:'Montserrat',sans-serif; }
 .eqdes-filtros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px 14px; margin-bottom:14px; }
 .eqdes-f{ display:flex; flex-direction:column; gap:6px; min-width:0; }
 .eqdes-f label{ font-size:12px; color:#a5b0c2; text-transform:uppercase; letter-spacing:0.06em; font-weight:700; }
@@ -12463,9 +12463,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-metabadge{ font-size:12.5px; font-weight:800; padding:3px 10px; border-radius:99px; border:1px solid; white-space:nowrap; display:inline-block; font-family:'Montserrat',sans-serif; }
 .eqdes-thead{ font-size:12px; color:#8a95a8; text-transform:uppercase; letter-spacing:0.06em; font-weight:800; border-bottom:1px solid #1b2330; }
 .eqdes-row{ background:#0a0e14; border:1px solid #161d29; border-radius:10px; margin-top:8px; font-size:14px; color:#e0e6ef; font-family:'Courier New',monospace; }
-.eqdes-eqbadge{ font-size:13px; font-weight:800; padding:4px 12px; border-radius:99px; font-family:'Montserrat',sans-serif; display:inline-block; }
-.eqdes-membros{ font-size:13px; color:#a5b0c2; }
-.eqdes-aviso{ text-align:center; color:#a5b0c2; font-size:14.5px; padding:24px 14px; border:1px dashed #26303f; border-radius:12px; }
+.eqdes-eqbadge{ font-size:14.5px; font-weight:800; padding:5px 14px; border-radius:99px; font-family:'Montserrat',sans-serif; display:inline-block; letter-spacing:0.01em; }
+.eqdes-membros{ font-size:14.5px; color:#c5cfdd; }
+.eqdes-aviso{ text-align:center; color:#c5cfdd; font-size:15.5px; padding:28px 16px; border:1px dashed #26303f; border-radius:12px; }
 .eqdes-per{ background:#141b26; border:1px solid #26303f; color:#a5b0c2; border-radius:99px; padding:7px 16px; font-family:'Courier New',monospace; font-size:13px; font-weight:800; cursor:pointer; margin-left:6px; transition:background .18s ease, color .18s ease, transform .16s var(--ease-out); }
 .eqdes-per:active{ transform:scale(0.95); }
 .eqdes-per.on{ background:#00e87a18; border-color:#00e87a55; color:#00e87a; }
@@ -12478,19 +12478,19 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-rank{ font-size:14.5px; font-weight:900; background:#00000030; border-radius:99px; padding:4px 11px; flex-shrink:0; }
 .eqdes-card-nome{ font-size:17.5px; font-weight:900; font-family:'Montserrat',sans-serif; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; letter-spacing:0.01em; }
 .eqdes-card-total{ font-size:15.5px; font-weight:900; font-family:'Courier New',monospace; flex-shrink:0; }
-.eqdes-stats{ display:flex; flex-wrap:wrap; gap:9px; padding:14px 16px 0; }
-.eqdes-stat{ background:#10151d; border:1px solid #1b2330; border-radius:10px; padding:9px 12px; text-align:center; flex:1; min-width:72px; }
-.eqdes-stat b{ display:block; font-size:20px; color:#f0f5fc; font-family:'Courier New',monospace; letter-spacing:0.02em; }
-.eqdes-stat span{ font-size:11.5px; color:#a5b0c2; text-transform:uppercase; letter-spacing:0.05em; font-weight:700; }
-.eqdes-robos{ font-size:13.5px; color:#a5b0c2; padding:12px 16px 0; font-family:'Courier New',monospace; }
+.eqdes-stats{ display:flex; flex-wrap:wrap; gap:10px; padding:14px 16px 0; }
+.eqdes-stat{ background:#10151d; border:1px solid #1b2330; border-radius:10px; padding:11px 14px; text-align:center; flex:1; min-width:78px; }
+.eqdes-stat b{ display:block; font-size:24px; color:#f0f5fc; font-family:'Courier New',monospace; letter-spacing:0.02em; }
+.eqdes-stat span{ font-size:13px; color:#c5cfdd; text-transform:uppercase; letter-spacing:0.04em; font-weight:700; margin-top:3px; display:block; }
+.eqdes-robos{ font-size:15px; color:#c5cfdd; padding:14px 16px 0; font-family:'Courier New',monospace; font-weight:600; }
 .eqdes-graf{ padding:10px 14px 14px; }
 .eqdes-pessoa{ background:#0a0e14; border:1px solid #161d29; border-radius:11px; margin-bottom:8px; overflow:hidden; }
 .eqdes-pessoa.aberta{ border-color:#26303f; }
 .eqdes-pessoa-head{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; background:none; border:none; padding:14px 16px; cursor:pointer; transition:background .16s ease; }
 .eqdes-pessoa-head:active{ background:#10151d; }
-.eqdes-pessoa-nome{ font-size:16.5px; font-weight:800; color:#f0f5fc; font-family:'Courier New',monospace; letter-spacing:0.02em; }
-.eqdes-pessoa-total{ font-size:15.5px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; }
-.eqdes-pessoa-seta{ font-size:13px; color:#a5b0c2; }
+.eqdes-pessoa-nome{ font-size:18.5px; font-weight:900; color:#f0f5fc; font-family:'Courier New',monospace; letter-spacing:0.03em; }
+.eqdes-pessoa-total{ font-size:17px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; }
+.eqdes-pessoa-seta{ font-size:15px; color:#a5b0c2; }
 .eqdes-pessoa-body{ padding:0 14px 14px; }
 .eqdes-pessoa-body.anim{ animation:eqPessoaIn .26s var(--ease-out); }
 /* Desempenho por meta */
@@ -12499,9 +12499,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-meta-val{ font-size:14.5px; color:#e0e6ef; font-family:'Courier New',monospace; font-weight:700; }
 .eqdes-bar{ height:10px; background:#161d29; border-radius:99px; overflow:hidden; }
 .eqdes-bar-fill{ height:100%; border-radius:99px; transition:width .5s var(--ease-out); }
-.eqdes-meta-taxa{ font-size:13.5px; color:#c5cfdd; margin-top:9px; font-weight:600; }
-.eqdes-hist-dias{ display:flex; flex-direction:column; gap:5px; margin-bottom:8px; }
-.eqdes-hist-dia{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13.5px; color:#c5cfdd; font-family:'Courier New',monospace; background:#0a0e14; border:1px solid #1b2330; border-radius:8px; padding:8px 12px; }
+.eqdes-meta-taxa{ font-size:15.5px; color:#e0e6ef; margin-top:12px; font-weight:700; }
+.eqdes-hist-dias{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+.eqdes-hist-dia{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:15px; color:#e0e6ef; font-family:'Courier New',monospace; background:#0a0e14; border:1px solid #1b2330; border-radius:8px; padding:10px 14px; font-weight:600; }
 /* Histórico de alertas */
 .eqdes-alerta-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0e14; border:1px solid #ff6a0040; border-left:4px solid #ff6a00; border-radius:10px; padding:12px 16px; margin-bottom:9px; }
 .eqdes-alerta-txt{ font-size:14px; color:#e0e6ef; flex:1; min-width:200px; font-family:'Courier New',monospace; }
