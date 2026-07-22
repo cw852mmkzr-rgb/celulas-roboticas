@@ -3088,7 +3088,8 @@ async function loadFromAPI(){
   const modalMaqAberto    = document.getElementById('modalMapaMaquina')&&document.getElementById('modalMapaMaquina').style.display==='flex';
   const metaApAberto      = document.getElementById('metaApOverlay')&&document.getElementById('metaApOverlay').classList.contains('open');
   const eqModalAberto     = document.getElementById('eqModal')&&document.getElementById('eqModal').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto)return;
+  const metaEqAberto      = document.getElementById('metaEqModal')&&document.getElementById('metaEqModal').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto||metaEqAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
@@ -6091,6 +6092,11 @@ function handleMetasInput(key,robo,campo,valor){
     }
   }
   updateMetasCell(key,robo,campo,valorFinal);
+  // Desktop: ao preencher a hora com valor > 0 e com vínculo de equipes ativo,
+  // abre o seletor de equipe/pessoa daquela hora (mobile usa o sheet de apontamento)
+  if((isAdmin||isAdminMetas) && equipesData && equipesData.vincular_metas && campo.startsWith('h') && parseCelVal(valorFinal).num>0 && window.innerWidth>700){
+    metaEqAbrir(key,robo,campo);
+  }
 }
 
 function _filtrarCatalogo(){
@@ -7257,6 +7263,76 @@ function metaApToggleMembro(nome){
   if(i>=0) _metaApMembrosSel.splice(i,1); else _metaApMembrosSel.push(nome);
   metaApRenderEquipes();
 }
+
+// ---- Desktop: escolher equipe/pessoa ao digitar valor direto numa hora da tabela de Metas ----
+let _metaEqCtx = null;    // {key, robo, campo, hora}
+let _metaEqSel = null;    // snapshot da equipe
+let _metaEqMembros = [];  // presentes marcados
+function metaEqAbrir(key, robo, campo){
+  if(!(isAdmin||isAdminMetas)) return;
+  if(!equipesData || !equipesData.vincular_metas || !equipesData.lista.length) return;
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  const hora=horas.find(h=>campoH(h)===campo)||campo;
+  _metaEqCtx={key,robo,campo,hora};
+  const chave=getMetasChave(key);
+  const rd=(celulas[key].metas_dias&&celulas[key].metas_dias[chave]&&celulas[key].metas_dias[chave][robo])||{};
+  const ja=rd['eqp_'+campo];
+  if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
+  else {
+    _metaEqSel=null; _metaEqMembros=[];
+    if(_metaApLastEquipeId){ const eq=equipesData.lista.find(e=>e.id===_metaApLastEquipeId); if(eq){ _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()}; } }
+  }
+  const sub=document.getElementById('metaEqSub'); if(sub) sub.textContent=`Robô ${robo} · ${hora}`;
+  metaEqRender();
+  document.getElementById('metaEqModal').style.display='flex';
+}
+function metaEqRender(){
+  const chips=equipesData.lista.map(eq=>{
+    const sel=_metaEqSel&&_metaEqSel.id===eq.id;
+    return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="background:${eq.cor}${sel?';box-shadow:0 0 0 3px #0f1420,0 0 0 6px '+eq.cor:''}" onclick="metaEqSelEquipe('${eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
+  }).join('');
+  let membrosHTML='';
+  if(_metaEqSel){
+    const membros=_metaEqSel.membros||[];
+    if(membros.length){
+      const pessoas=membros.map(m=>{
+        const on=_metaEqMembros.includes(m);
+        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaEqSel.cor+';border-color:'+_metaEqSel.cor+';color:'+_eqTextColor(_metaEqSel.cor):''}" onclick="metaEqToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
+      }).join('');
+      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque nos nomes)</div><div class="metaap-pessoas">${pessoas}</div>`;
+    } else {
+      membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:10px">Esta equipe não tem membros.</div>`;
+    }
+  } else {
+    membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:6px">Toque numa cor (opcional)</div>`;
+  }
+  document.getElementById('metaEqChips').innerHTML=`<div class="metaap-eqchips">${chips}</div>${membrosHTML}`;
+}
+function metaEqSelEquipe(id){
+  if(_metaEqSel&&_metaEqSel.id===id){ _metaEqSel=null; _metaEqMembros=[]; }
+  else { const eq=equipesData.lista.find(e=>e.id===id); if(eq){ _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()}; _metaEqMembros=[]; } }
+  metaEqRender();
+}
+function metaEqToggleMembro(nome){ const i=_metaEqMembros.indexOf(nome); if(i>=0)_metaEqMembros.splice(i,1); else _metaEqMembros.push(nome); metaEqRender(); }
+function metaEqSalvar(){
+  if(!_metaEqCtx) return;
+  const {key,robo,campo}=_metaEqCtx;
+  const chave=getMetasChave(key);
+  if(!celulas[key].metas_dias) celulas[key].metas_dias={};
+  if(!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave]={};
+  if(!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo]={};
+  const rd=celulas[key].metas_dias[chave][robo];
+  if(_metaEqSel){
+    rd['eqp_'+campo]=Object.assign({},_metaEqSel,{presentes:_metaEqMembros.slice()});
+    _metaApLastEquipeId=_metaEqSel.id;
+  } else {
+    delete rd['eqp_'+campo];
+  }
+  saveToAPI(celulas);
+  metaEqFechar();
+  showToast('Equipe registrada ✓');
+}
+function metaEqFechar(){ const m=document.getElementById('metaEqModal'); if(m) m.style.display='none'; _metaEqCtx=null; _metaEqSel=null; _metaEqMembros=[]; }
 
 function mapaUpdateData(campo,valor){
   // Troca de dia/mês/ano é LOCAL deste dispositivo — não salva no servidor,
@@ -11426,6 +11502,24 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqFecharModal()">Cancelar</button>
       <button class="ap-btn primary" onclick="eqSalvarModal()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal Equipe/Pessoa ao digitar na tabela (desktop) ===== -->
+<div id="metaEqModal" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9300;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)metaEqFechar()">
+  <div class="eq-modal-card" onclick="event.stopPropagation()">
+    <div class="eq-modal-head">
+      <div style="min-width:0">
+        <div class="eq-modal-title">👥 Quem estava no robô?</div>
+        <div class="ap-sub" id="metaEqSub"></div>
+      </div>
+      <button class="ap-x" onclick="metaEqFechar()">✕</button>
+    </div>
+    <div id="metaEqChips"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="metaEqFechar()">Pular</button>
+      <button class="ap-btn primary" onclick="metaEqSalvar()">✓ Salvar</button>
     </div>
   </div>
 </div>
