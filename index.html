@@ -7255,6 +7255,10 @@ function _eqDesHTML(){
   return `
     <div id="eqDesWrap">
       <div class="eqdes-sec">
+        <div class="eqdes-sec-title">🏆 Pessoa que mais bateu meta na semana</div>
+        <div id="eqDesPodioPessoa"></div>
+      </div>
+      <div class="eqdes-sec">
         <div class="eqdes-sec-title">🏆 Equipe que mais bateu meta na semana</div>
         <div id="eqDesPodioMeta"></div>
       </div>
@@ -7283,6 +7287,7 @@ function _eqDesHTML(){
 }
 function _eqDesFill(){
   const recs=_eqDesRecords();
+  _eqDesFillPodioPessoa(recs);
   _eqDesFillPodioMeta(recs);
   _eqDesFillFiltros(recs);
   _eqDesFillBusca(recs);
@@ -7339,6 +7344,51 @@ function eqDesSetGraf(g){
   _eqDesFillEquipes(_eqDesRecords());
 }
 // Pódio — 3 equipes que mais produziram na semana atual (segunda a domingo)
+// Pódio de pessoa — top 3 pela taxa de atingimento de meta na semana atual
+function _eqDesFillPodioPessoa(recs){
+  const el=document.getElementById('eqDesPodioPessoa'); if(!el) return;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const dow=(hoje.getDay()+6)%7;
+  const seg=new Date(hoje); seg.setDate(seg.getDate()-dow);
+  const dom=new Date(seg); dom.setDate(dom.getDate()+6);
+  const sem=recs.filter(r=>{ const d=_eqDesRecDate(r); return d>=seg&&d<=dom&&r.meta>0; });
+  if(!sem.length){
+    el.innerHTML=`<div class="eqdes-aviso">Ainda sem apontamentos com meta cadastrada esta semana.</div>`;
+    return;
+  }
+  // agrega por pessoa presente nos apontamentos com meta
+  const porPessoa={};
+  sem.forEach(r=>{
+    _eqDesPresentes(r).forEach(nome=>{
+      if(!porPessoa[nome]) porPessoa[nome]={nome,bateu:0,total:0,cor:null};
+      porPessoa[nome].total++;
+      if(r.qtd>=r.meta) porPessoa[nome].bateu++;
+      // cor da 1ª equipe atual da pessoa (para colorir o card)
+      if(!porPessoa[nome].cor){
+        const eq=equipesData.lista.find(e=>(e.membros||[]).includes(nome));
+        porPessoa[nome].cor=eq?eq.cor:'#3d9eff';
+      }
+    });
+  });
+  const top=Object.values(porPessoa).map(g=>{
+    g.taxa=g.total>0?Math.round(g.bateu/g.total*100):0;
+    return g;
+  }).sort((a,b)=>(b.taxa-a.taxa)||(b.bateu-a.bateu)||(b.total-a.total)).slice(0,3);
+  const medalhas=['🏆','🥈','🥉'];
+  const card=(g,pos)=>{
+    if(!g) return '';
+    const txt=_eqTextColor(g.cor);
+    return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
+      <div class="eqdes-podio-medal">${medalhas[pos]}</div>
+      <div class="eqdes-podio-nome">👤 ${esc(g.nome)}</div>
+      <div class="eqdes-podio-total">${g.taxa}%</div>
+      <div class="eqdes-podio-sub" style="color:${txt}bb">${g.bateu} de ${g.total} apontamento${g.total!==1?'s':''}</div>
+    </div>`;
+  };
+  el.innerHTML=`<div class="eqdes-podio">${card(top[1],1)}${card(top[0],0)}${card(top[2],2)}</div>
+    <div class="eqdes-podio-legenda">Semana de ${String(seg.getDate()).padStart(2,'0')}/${String(seg.getMonth()+1).padStart(2,'0')} a ${String(dom.getDate()).padStart(2,'0')}/${String(dom.getMonth()+1).padStart(2,'0')} · ranking por % de metas batidas</div>`;
+}
+
 // Pódio de metas — top 3 pela taxa de atingimento na semana atual
 function _eqDesFillPodioMeta(recs){
   const el=document.getElementById('eqDesPodioMeta'); if(!el) return;
