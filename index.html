@@ -7178,7 +7178,7 @@ function eqToggleAlertas(){
 }
 
 // ===== Sub-aba Desempenho =====
-let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null };
+let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null };
 
 // Varre as Metas Diárias e monta a lista de apontamentos com equipe
 function _eqDesRecords(){
@@ -7193,7 +7193,7 @@ function _eqDesRecords(){
       horas.forEach(h=>{
         const eq=rd['eqp_'+campoH(h)];
         if(!eq) return;
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd:parseCelVal(rd[campoH(h)]||'').num,eq});
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd:parseCelVal(rd[campoH(h)]||'').num,meta:parseInt(rd.meta)||0,eq});
       });
     });
   });
@@ -7221,6 +7221,26 @@ function _eqDesInPeriodo(r){
   return true;
 }
 const _EQDES_PERIODOS={hoje:'Hoje',semana:'Semana',mes:'Mês',perso:'Personalizado'};
+// ---- Classificação de atingimento de meta ----
+const _EQ_METAINFO={ok:{ic:'✅',cor:'#00e87a',lbl:'Atingiu'},par:{ic:'⚠️',cor:'#ffb300',lbl:'Parcial'},nao:{ic:'❌',cor:'#ff5b6a',lbl:'Não atingiu'}};
+function _eqMetaClass(pct){ return pct>=100?'ok':pct>=70?'par':'nao'; }
+// Status de meta de um registro (meta/hora vs produzido na hora). null = sem meta.
+function _eqRecMeta(r){
+  if(!r.meta||r.meta<=0) return null;
+  const pct=Math.round(r.qtd/r.meta*100);
+  return {pct,cls:_eqMetaClass(pct)};
+}
+// Badge HTML compacto de status
+function _eqMetaBadge(cls){ const i=_EQ_METAINFO[cls]; return `<span class="eqdes-metabadge" style="background:${i.cor}1e;border-color:${i.cor}55;color:${i.cor}">${i.ic} ${i.lbl}</span>`; }
+// Agrega meta de um conjunto de registros: produzido/meta com meta cadastrada + taxa de atingimento
+function _eqMetaAgg(recs){
+  const comMeta=recs.filter(r=>r.meta>0);
+  const prod=comMeta.reduce((s,r)=>s+r.qtd,0);
+  const meta=comMeta.reduce((s,r)=>s+r.meta,0);
+  const pct=meta>0?Math.round(prod/meta*100):null;
+  const bateu=comMeta.filter(r=>r.qtd>=r.meta).length;
+  return {temMeta:comMeta.length>0, n:comMeta.length, prod, meta, pct, cls:pct==null?null:_eqMetaClass(pct), bateu};
+}
 
 // Esqueleto da sub-aba (containers preenchidos por _eqDesFill)
 function _eqDesHTML(){
@@ -7299,7 +7319,7 @@ function eqDesSetFiltro(campo,valor){
   if(campo==='equipeId') _eqDesFillFiltros(recs); // repinta a seleção dos chips
 }
 function eqDesLimparFiltros(){
-  _eqDes.data=''; _eqDes.hora=''; _eqDes.robo=''; _eqDes.equipeId=''; _eqDes.pessoa='';
+  _eqDes.data=''; _eqDes.hora=''; _eqDes.robo=''; _eqDes.equipeId=''; _eqDes.pessoa=''; _eqDes.metaStatus='';
   const recs=_eqDesRecords();
   _eqDesFillFiltros(recs); _eqDesFillBusca(recs);
 }
@@ -7372,6 +7392,7 @@ function _eqDesFillFiltros(recs){
       <div class="eqdes-f"><label>Hora</label><select class="eqdes-inp" onchange="eqDesSetFiltro('hora',this.value)"><option value="">Todas</option>${horas.map(h=>`<option value="${h}" ${_eqDes.hora===h?'selected':''}>${h}</option>`).join('')}</select></div>
       <div class="eqdes-f"><label>Robô</label><select class="eqdes-inp" onchange="eqDesSetFiltro('robo',this.value)"><option value="">Todos</option>${ROBOS.map(r=>`<option value="${r}" ${_eqDes.robo==String(r)?'selected':''}>${r}</option>`).join('')}</select></div>
       <div class="eqdes-f"><label>Pessoa</label><input class="eqdes-inp" list="eqDesPessoasDL" placeholder="Nome..." value="${esc(_eqDes.pessoa)}" oninput="eqDesSetFiltro('pessoa',this.value)"><datalist id="eqDesPessoasDL">${nomes.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>
+      <div class="eqdes-f"><label>Status da meta</label><select class="eqdes-inp" onchange="eqDesSetFiltro('metaStatus',this.value)"><option value="">Todos</option><option value="ok" ${_eqDes.metaStatus==='ok'?'selected':''}>✅ Atingiu</option><option value="par" ${_eqDes.metaStatus==='par'?'selected':''}>⚠️ Parcial</option><option value="nao" ${_eqDes.metaStatus==='nao'?'selected':''}>❌ Não atingiu</option></select></div>
       <div class="eqdes-f"><label>Equipe</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:38px">${chips||'<span style="font-size:12px;color:#5a6678">—</span>'}</div></div>
       <div class="eqdes-f" style="justify-content:flex-end"><label>&nbsp;</label><button class="eqdes-limpar" onclick="eqDesLimparFiltros()">✕ Limpar filtros</button></div>
     </div>`;
@@ -7388,6 +7409,7 @@ function _eqDesFillBusca(recs){
   if(_eqDes.robo){ fil=fil.filter(r=>String(r.robo)===String(_eqDes.robo)); }
   if(_eqDes.equipeId){ fil=fil.filter(r=>r.eq.id===_eqDes.equipeId); }
   if(_eqDes.pessoa){ const p=_eqDes.pessoa.trim().toLowerCase(); fil=fil.filter(r=>_eqDesPresentes(r).some(m=>m.toLowerCase().includes(p))); }
+  if(_eqDes.metaStatus){ fil=fil.filter(r=>{ const m=_eqRecMeta(r); return m&&m.cls===_eqDes.metaStatus; }); }
   if(!fil.length){
     el.innerHTML=`<div class="eqdes-aviso">Nenhum apontamento encontrado com esses filtros.</div>`;
     return;
@@ -7396,19 +7418,22 @@ function _eqDesFillBusca(recs){
   const linhas=fil.slice(0,MAX).map(r=>{
     const txt=_eqTextColor(r.eq.cor);
     const nomeEq=(r.eq.nome&&r.eq.nome.trim())?r.eq.nome.trim():'Equipe';
+    const mm=_eqRecMeta(r);
+    const metaCel=mm?`<span class="eqdes-metabadge" style="background:${_EQ_METAINFO[mm.cls].cor}1e;border-color:${_EQ_METAINFO[mm.cls].cor}55;color:${_EQ_METAINFO[mm.cls].cor}">${_EQ_METAINFO[mm.cls].ic} ${r.qtd}/${r.meta} (${mm.pct}%)</span>`:'<span style="color:#5a6678">—</span>';
     return `<div class="eqdes-row">
       <span class="eqdes-c" data-l="Data">${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}</span>
       <span class="eqdes-c" data-l="Hora">${r.hora}</span>
       <span class="eqdes-c" data-l="Robô"><b style="color:#00e87a">${r.robo}</b></span>
       <span class="eqdes-c" data-l="Peça">${esc(String(r.cod))}</span>
       <span class="eqdes-c" data-l="Qtd"><b style="color:#ffb300">${r.qtd}</b></span>
+      <span class="eqdes-c" data-l="Meta">${metaCel}</span>
       <span class="eqdes-c" data-l="Equipe"><span class="eqdes-eqbadge" style="background:${r.eq.cor};color:${txt}">${esc(nomeEq)}</span></span>
       <span class="eqdes-c eqdes-membros" data-l="Membros">${_eqDesPresentes(r).map(esc).join(', ')||'—'}</span>
     </div>`;
   }).join('');
   el.innerHTML=`
     <div class="eqdes-thead">
-      <span>Data</span><span>Hora</span><span>Robô</span><span>Peça</span><span>Qtd</span><span>Equipe</span><span>Membros</span>
+      <span>Data</span><span>Hora</span><span>Robô</span><span>Peça</span><span>Qtd</span><span>Meta</span><span>Equipe</span><span>Membros</span>
     </div>
     ${linhas}
     ${fil.length>MAX?`<div style="font-size:12px;color:#5a6678;text-align:center;padding:8px">Mostrando ${MAX} de ${fil.length} resultados — refine os filtros.</div>`:''}`;
@@ -7497,6 +7522,24 @@ function _eqDesFillEquipes(recs){
     const robos=[...new Set(g.recs.map(r=>r.robo))].sort();
     const media=g.recs.length?Math.round(g.recs.reduce((s,r)=>s+r.qtd,0)/g.recs.length):0;
     const serie=_eqDes.graf==='semanal'?_eqDesSerieSemanal(g.recs):_eqDesSerieMensal(g.recs);
+    // Atingimento de meta no período
+    const ag=_eqMetaAgg(g.periodo);
+    let metaHTML='';
+    if(ag.temMeta){
+      const info=_EQ_METAINFO[ag.cls];
+      const w=Math.min(100,ag.pct);
+      const taxa=Math.round(ag.bateu/ag.n*100);
+      metaHTML=`<div class="eqdes-meta-box">
+        <div class="eqdes-meta-top">
+          ${_eqMetaBadge(ag.cls)}
+          <span class="eqdes-meta-val">${ag.prod.toLocaleString('pt-BR')} / ${ag.meta.toLocaleString('pt-BR')} <b style="color:${info.cor}">(${ag.pct}%)</b></span>
+        </div>
+        <div class="eqdes-bar"><div class="eqdes-bar-fill" style="width:${w}%;background:${g.cor}"></div></div>
+        <div class="eqdes-meta-taxa">🎯 Taxa de atingimento: <b>${ag.bateu} de ${ag.n} apontamento${ag.n!==1?'s':''}</b> — ${taxa}%</div>
+      </div>`;
+    } else {
+      metaHTML=`<div class="eqdes-meta-box"><div class="eqdes-meta-taxa" style="color:#5a6678">Sem meta cadastrada no período — <b>—</b></div></div>`;
+    }
     return `<div class="eqdes-card" style="border-color:${g.cor}60">
       <div class="eqdes-card-head" style="background:${g.cor};color:${txt}">
         <span class="eqdes-rank">${rank+1}º</span>
@@ -7510,6 +7553,7 @@ function _eqDesFillEquipes(recs){
         <div class="eqdes-stat"><b>${g.recs.length}</b><span>apontam.</span></div>
         <div class="eqdes-stat"><b>${media}</b><span>média/apont.</span></div>
       </div>
+      ${metaHTML}
       <div class="eqdes-robos">🤖 ${robos.join(', ')||'—'}</div>
       <div class="eqdes-graf">${_eqDesBarSVG(serie.vals,serie.labels,g.cor)}</div>
     </div>`;
@@ -7724,7 +7768,11 @@ function _eqDesFillPessoas(recs){
     const aberta=_eqDes.pessoaAberta===nome;
     const equipesDela=equipesData.lista.filter(e=>(e.membros||[]).includes(nome));
     const chipsEq=equipesDela.map(e=>`<span class="eqdes-eqbadge" style="background:${e.cor};color:${_eqTextColor(e.cor)}">${esc((e.nome||'').trim()||'Equipe')}</span>`).join(' ');
-    const totalPeriodo=meus.filter(_eqDesInPeriodo).reduce((s,r)=>s+r.qtd,0);
+    const meusPeriodo=meus.filter(_eqDesInPeriodo);
+    const totalPeriodo=meusPeriodo.reduce((s,r)=>s+r.qtd,0);
+    // status de meta no período (badge ao lado do nome)
+    const agP=_eqMetaAgg(meusPeriodo);
+    const statusBadge=agP.temMeta?_eqMetaBadge(agP.cls):'<span style="font-size:11px;color:#5a6678">—</span>';
     let corpo='';
     if(aberta){
       const tHoje=meus.filter(r=>_eqDesRecYMD(r)===ymdHoje).reduce((s,r)=>s+r.qtd,0);
@@ -7733,6 +7781,15 @@ function _eqDesFillPessoas(recs){
       const horasRobos=[...new Set(meus.map(r=>`${r.hora} · Robô ${r.robo}`))].slice(0,14);
       const serie=_eqDesSerieSemanal(meus);
       const cor=(equipesDela[0]&&equipesDela[0].cor)||'#00e87a';
+      // Card resumo "Metas batidas" no período + histórico dos dias (mais recentes)
+      const taxaHTML=agP.temMeta
+        ? `<div class="eqdes-meta-taxa" style="margin-bottom:10px">🎯 Metas batidas: <b>${agP.bateu} de ${agP.n} apontamento${agP.n!==1?'s':''}</b> (${Math.round(agP.bateu/agP.n*100)}%)</div>`
+        : `<div class="eqdes-meta-taxa" style="margin-bottom:10px;color:#5a6678">Sem meta cadastrada no período</div>`;
+      const comMetaDias=meus.filter(r=>r.meta>0).slice(0,16);
+      const histDias=comMetaDias.length?`<div class="eqdes-hist-dias">${comMetaDias.map(r=>{
+        const mm=_eqRecMeta(r); const info=_EQ_METAINFO[mm.cls];
+        return `<div class="eqdes-hist-dia"><span>${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')} · ${r.hora} · R${r.robo}</span><span style="color:${info.cor};font-weight:800">${info.ic} ${mm.pct}%</span></div>`;
+      }).join('')}</div>`:'';
       corpo=`<div class="eqdes-pessoa-body${_eqDesAnimPessoa?' anim':''}">
         <div class="eqdes-stats" style="margin:0 0 10px">
           <div class="eqdes-stat"><b>${tHoje.toLocaleString('pt-BR')}</b><span>hoje</span></div>
@@ -7740,7 +7797,9 @@ function _eqDesFillPessoas(recs){
           <div class="eqdes-stat"><b>${tMes.toLocaleString('pt-BR')}</b><span>mês</span></div>
           <div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div>
         </div>
-        <div style="margin-bottom:8px">${chipsEq||'<span style="font-size:12px;color:#5a6678">Sem equipe atual</span>'}</div>
+        ${taxaHTML}
+        ${histDias}
+        <div style="margin:10px 0 8px">${chipsEq||'<span style="font-size:12px;color:#5a6678">Sem equipe atual</span>'}</div>
         ${horasRobos.length?`<div class="eqdes-robos" style="margin-bottom:10px">🕐 ${horasRobos.join(' · ')}</div>`:''}
         <div class="eqdes-graf">${_eqDesBarSVG(serie.vals,serie.labels,cor,80)}</div>
       </div>`;
@@ -7748,7 +7807,8 @@ function _eqDesFillPessoas(recs){
     return `<div class="eqdes-pessoa ${aberta?'aberta':''}">
       <button class="eqdes-pessoa-head" onclick="eqDesTogglePessoa('${esc(nome).replace(/'/g,"\\'")}')">
         <span class="eqdes-pessoa-nome">👤 ${esc(nome)}</span>
-        <span style="display:flex;align-items:center;gap:10px">
+        <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+          ${statusBadge}
           <span class="eqdes-pessoa-total">${totalPeriodo.toLocaleString('pt-BR')} pç</span>
           <span class="eqdes-pessoa-seta">${aberta?'▲':'▼'}</span>
         </span>
@@ -12265,7 +12325,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-inp:focus{ border-color:#00e87a; }
 .eqdes-limpar{ background:#141b26; border:1px solid #26303f; color:#8792a6; border-radius:9px; padding:9px 12px; font-family:'Courier New',monospace; font-size:12.5px; font-weight:700; cursor:pointer; transition:transform .16s var(--ease-out), background .16s ease; }
 .eqdes-limpar:active{ transform:scale(0.96); background:#1a2231; }
-.eqdes-thead,.eqdes-row{ display:grid; grid-template-columns:90px 58px 56px 1fr 60px 110px 1.4fr; gap:8px; align-items:center; padding:9px 12px; }
+.eqdes-thead,.eqdes-row{ display:grid; grid-template-columns:82px 50px 46px 0.8fr 46px 150px 100px 1.1fr; gap:8px; align-items:center; padding:9px 12px; }
+.eqdes-metabadge{ font-size:11px; font-weight:800; padding:2px 8px; border-radius:99px; border:1px solid; white-space:nowrap; display:inline-block; font-family:'Montserrat',sans-serif; }
 .eqdes-thead{ font-size:10.5px; color:#5a6678; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; border-bottom:1px solid #1b2330; }
 .eqdes-row{ background:#0a0e14; border:1px solid #161d29; border-radius:10px; margin-top:7px; font-size:13px; color:#cdd6e3; font-family:'Courier New',monospace; }
 .eqdes-eqbadge{ font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:99px; font-family:'Montserrat',sans-serif; display:inline-block; }
@@ -12298,6 +12359,15 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-pessoa-seta{ font-size:11px; color:#5a6678; }
 .eqdes-pessoa-body{ padding:0 14px 14px; }
 .eqdes-pessoa-body.anim{ animation:eqPessoaIn .26s var(--ease-out); }
+/* Desempenho por meta */
+.eqdes-meta-box{ padding:12px 14px 0; }
+.eqdes-meta-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:7px; }
+.eqdes-meta-val{ font-size:13px; color:#cdd6e3; font-family:'Courier New',monospace; font-weight:700; }
+.eqdes-bar{ height:9px; background:#161d29; border-radius:99px; overflow:hidden; }
+.eqdes-bar-fill{ height:100%; border-radius:99px; transition:width .5s var(--ease-out); }
+.eqdes-meta-taxa{ font-size:12px; color:#8a95a8; margin-top:8px; }
+.eqdes-hist-dias{ display:flex; flex-direction:column; gap:4px; margin-bottom:6px; }
+.eqdes-hist-dia{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:#8a95a8; font-family:'Courier New',monospace; background:#0a0e14; border:1px solid #161d29; border-radius:8px; padding:6px 11px; }
 /* Histórico de alertas */
 .eqdes-alerta-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0e14; border:1px solid #ff6a0030; border-left:3px solid #ff6a00; border-radius:10px; padding:10px 14px; margin-bottom:8px; }
 .eqdes-alerta-txt{ font-size:13px; color:#cdd6e3; flex:1; min-width:200px; font-family:'Courier New',monospace; }
