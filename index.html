@@ -7184,7 +7184,10 @@ function eqToggleAlertas(){
 }
 
 // ===== Sub-aba Desempenho =====
-let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null };
+let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null, pesMes:new Date().getMonth(), pesAno:new Date().getFullYear() };
+function _eqDesInMes(r){ return r.ano===_eqDes.pesAno && r.mes===_eqDes.pesMes; }
+function eqDesSetPesMes(v){ _eqDes.pesMes=parseInt(v); _eqDes.pessoaAberta=null; _eqDesFillPessoas(_eqDesRecords()); }
+function eqDesSetPesAno(v){ _eqDes.pesAno=parseInt(v); _eqDes.pessoaAberta=null; _eqDesFillPessoas(_eqDesRecords()); }
 
 // Varre as Metas Diárias e monta a lista de apontamentos com equipe
 function _eqDesRecords(){
@@ -7275,7 +7278,10 @@ function _eqDesHTML(){
         <div id="eqDesEquipes"></div>
       </div>
       <div class="eqdes-sec">
-        <div class="eqdes-sec-title">🧑‍🏭 Desempenho por pessoa</div>
+        <div class="eqdes-sec-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <span>🧑‍🏭 Desempenho por pessoa</span>
+          <span id="eqDesPesFiltro"></span>
+        </div>
         <div id="eqDesPessoas"></div>
         <div style="font-size:11.5px;color:#5a6678;margin-top:12px">Valores referentes à produção da equipe nos apontamentos em que a pessoa estava presente.</div>
       </div>
@@ -7804,72 +7810,76 @@ function eqDesTogglePessoa(nome){
 }
 function _eqDesFillPessoas(recs){
   const el=document.getElementById('eqDesPessoas'); if(!el) return;
-  // Ordena por eficiência de metas no período (taxa desc); empate → mais peças; sem meta vai pro fim
+  // Seletor de mês/ano no cabeçalho da seção
+  const filEl=document.getElementById('eqDesPesFiltro');
+  if(filEl){
+    const anosSet=new Set([_eqDes.pesAno, new Date().getFullYear()]);
+    recs.forEach(r=>anosSet.add(r.ano));
+    const anos=[...anosSet].sort((a,b)=>b-a);
+    filEl.innerHTML=`
+      <select class="eqdes-inp" style="width:auto;padding:6px 10px" onchange="eqDesSetPesMes(this.value)">${MESES.map((n,i)=>`<option value="${i}" ${i===_eqDes.pesMes?'selected':''}>${n}</option>`).join('')}</select>
+      <select class="eqdes-inp" style="width:auto;padding:6px 10px;margin-left:6px" onchange="eqDesSetPesAno(this.value)">${anos.map(a=>`<option value="${a}" ${a===_eqDes.pesAno?'selected':''}>${a}</option>`).join('')}</select>`;
+  }
+  // Ordena por eficiência de metas no MÊS selecionado (taxa desc); empate → mais peças; sem meta vai pro fim
   const todosNomes=[...new Set([...equipesData.lista.flatMap(e=>e.membros||[]), ...recs.flatMap(r=>_eqDesPresentes(r))])];
   const nomes=todosNomes.map(nome=>{
-    const meusP=recs.filter(r=>_eqDesPresentes(r).includes(nome)&&_eqDesInPeriodo(r));
-    const ag=_eqMetaAgg(meusP);
-    const total=meusP.reduce((s,r)=>s+r.qtd,0);
+    const meusM=recs.filter(r=>_eqDesPresentes(r).includes(nome)&&_eqDesInMes(r));
+    const ag=_eqMetaAgg(meusM);
+    const total=meusM.reduce((s,r)=>s+r.qtd,0);
     return { nome, taxa: ag.temMeta?ag.bateu/ag.n:-1, total };
   }).sort((a,b)=>(b.taxa-a.taxa)||(b.total-a.total)||a.nome.localeCompare(b.nome)).map(x=>x.nome);
   if(!nomes.length){
     el.innerHTML=`<div class="eqdes-aviso">Nenhuma pessoa cadastrada nas equipes ainda.</div>`;
     return;
   }
-  const hoje=new Date(); hoje.setHours(0,0,0,0);
-  const ymdHoje=_eqDesYMD(hoje);
-  const iniSem=new Date(hoje); iniSem.setDate(iniSem.getDate()-6);
   el.innerHTML=nomes.map(nome=>{
-    const meus=recs.filter(r=>_eqDesPresentes(r).includes(nome));
+    const meus=recs.filter(r=>_eqDesPresentes(r).includes(nome)&&_eqDesInMes(r));
     const aberta=_eqDes.pessoaAberta===nome;
     const equipesDela=equipesData.lista.filter(e=>(e.membros||[]).includes(nome));
     const chipsEq=equipesDela.map(e=>`<span class="eqdes-eqbadge" style="background:${e.cor};color:${_eqTextColor(e.cor)}">${esc((e.nome||'').trim()||'Equipe')}</span>`).join(' ');
-    const meusPeriodo=meus.filter(_eqDesInPeriodo);
-    const totalPeriodo=meusPeriodo.reduce((s,r)=>s+r.qtd,0);
-    // status de meta no período (badge ao lado do nome)
-    const agP=_eqMetaAgg(meusPeriodo);
-    const statusBadge=agP.temMeta?_eqMetaBadge(agP.cls):'<span style="font-size:11px;color:#5a6678">—</span>';
+    const totalMes=meus.reduce((s,r)=>s+r.qtd,0);
+    // status de meta no mês (badge ao lado do nome)
+    const agM=_eqMetaAgg(meus);
+    const statusBadge=agM.temMeta?_eqMetaBadge(agM.cls):'<span style="font-size:11px;color:#5a6678">—</span>';
     let corpo='';
     if(aberta){
-      const tHoje=meus.filter(r=>_eqDesRecYMD(r)===ymdHoje).reduce((s,r)=>s+r.qtd,0);
-      const tSem=meus.filter(r=>{const d=_eqDesRecDate(r);return d>=iniSem&&d<=hoje;}).reduce((s,r)=>s+r.qtd,0);
-      const tMes=meus.filter(r=>r.ano===hoje.getFullYear()&&r.mes===hoje.getMonth()).reduce((s,r)=>s+r.qtd,0);
-      const horasRobos=[...new Set(meus.map(r=>`${r.hora} · Robô ${r.robo}`))].slice(0,14);
-      const serie=_eqDesSerieSemanal(meus);
       const cor=(equipesDela[0]&&equipesDela[0].cor)||'#00e87a';
-      // Card resumo "Metas batidas" no período + contadores por categoria (✅/⚠️/❌)
+      const horasRobos=[...new Set(meus.map(r=>`${String(r.dia).padStart(2,'0')} ${r.hora} · Robô ${r.robo}`))].slice(0,20);
+      // Contadores ✅/⚠️/❌ do mês
       let contMetaHTML='';
-      if(agP.temMeta){
-        // conta cada categoria nos apontamentos com meta do período
+      if(agM.temMeta){
         let ok=0,par=0,nao=0;
-        meusPeriodo.filter(r=>r.meta>0).forEach(r=>{ const m=_eqRecMeta(r); if(m.cls==='ok')ok++; else if(m.cls==='par')par++; else nao++; });
+        meus.filter(r=>r.meta>0).forEach(r=>{ const m=_eqRecMeta(r); if(m.cls==='ok')ok++; else if(m.cls==='par')par++; else nao++; });
         contMetaHTML=`<div class="eqdes-stats" style="margin:0 0 10px">
-          <div class="eqdes-stat" style="color:#00e87a"><b style="color:#00e87a">${ok}</b><span>✅ atingiu</span></div>
-          <div class="eqdes-stat" style="color:#ffb300"><b style="color:#ffb300">${par}</b><span>⚠️ parcial</span></div>
-          <div class="eqdes-stat" style="color:#ff5b6a"><b style="color:#ff5b6a">${nao}</b><span>❌ não atingiu</span></div>
+          <div class="eqdes-stat"><b style="color:#00e87a">${ok}</b><span>✅ atingiu</span></div>
+          <div class="eqdes-stat"><b style="color:#ffb300">${par}</b><span>⚠️ parcial</span></div>
+          <div class="eqdes-stat"><b style="color:#ff5b6a">${nao}</b><span>❌ não atingiu</span></div>
+          <div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div>
         </div>`;
+      } else {
+        contMetaHTML=`<div class="eqdes-stats" style="margin:0 0 10px"><div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div></div>`;
       }
-      const taxaHTML=agP.temMeta
-        ? `<div class="eqdes-meta-taxa" style="margin-bottom:10px">🎯 Metas batidas: <b>${agP.bateu} de ${agP.n} apontamento${agP.n!==1?'s':''}</b> (${Math.round(agP.bateu/agP.n*100)}%)</div>`
-        : `<div class="eqdes-meta-taxa" style="margin-bottom:10px;color:#5a6678">Sem meta cadastrada no período</div>`;
-      const comMetaDias=meus.filter(r=>r.meta>0).slice(0,16);
+      const taxaHTML=agM.temMeta
+        ? `<div class="eqdes-meta-taxa" style="margin-bottom:10px">🎯 Metas batidas: <b>${agM.bateu} de ${agM.n} apontamento${agM.n!==1?'s':''}</b> (${Math.round(agM.bateu/agM.n*100)}%)</div>`
+        : `<div class="eqdes-meta-taxa" style="margin-bottom:10px;color:#5a6678">Sem meta cadastrada no mês</div>`;
+      // Histórico dos dias do mês com meta
+      const comMetaDias=meus.filter(r=>r.meta>0).slice(0,30);
       const histDias=comMetaDias.length?`<div class="eqdes-hist-dias">${comMetaDias.map(r=>{
         const mm=_eqRecMeta(r); const info=_EQ_METAINFO[mm.cls];
         return `<div class="eqdes-hist-dia"><span>${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')} · ${r.hora} · R${r.robo}</span><span style="color:${info.cor};font-weight:800">${info.ic} ${mm.pct}%</span></div>`;
       }).join('')}</div>`:'';
+      // Mini-gráfico: produção por dia do mês selecionado
+      const nDias=new Date(_eqDes.pesAno,_eqDes.pesMes+1,0).getDate();
+      const vals=Array(nDias).fill(0), labels=[];
+      for(let i=1;i<=nDias;i++) labels.push(i%5===0||i===1?String(i):'');
+      meus.forEach(r=>{ vals[r.dia-1]=(vals[r.dia-1]||0)+r.qtd; });
       corpo=`<div class="eqdes-pessoa-body${_eqDesAnimPessoa?' anim':''}">
-        <div class="eqdes-stats" style="margin:0 0 10px">
-          <div class="eqdes-stat"><b>${tHoje.toLocaleString('pt-BR')}</b><span>hoje</span></div>
-          <div class="eqdes-stat"><b>${tSem.toLocaleString('pt-BR')}</b><span>semana</span></div>
-          <div class="eqdes-stat"><b>${tMes.toLocaleString('pt-BR')}</b><span>mês</span></div>
-          <div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div>
-        </div>
         ${contMetaHTML}
         ${taxaHTML}
         ${histDias}
         <div style="margin:10px 0 8px">${chipsEq||'<span style="font-size:12px;color:#5a6678">Sem equipe atual</span>'}</div>
         ${horasRobos.length?`<div class="eqdes-robos" style="margin-bottom:10px">🕐 ${horasRobos.join(' · ')}</div>`:''}
-        <div class="eqdes-graf">${_eqDesBarSVG(serie.vals,serie.labels,cor,80)}</div>
+        <div class="eqdes-graf">${_eqDesBarSVG(vals,labels,cor,90)}</div>
       </div>`;
     }
     return `<div class="eqdes-pessoa ${aberta?'aberta':''}">
@@ -7877,7 +7887,7 @@ function _eqDesFillPessoas(recs){
         <span class="eqdes-pessoa-nome">👤 ${esc(nome)}</span>
         <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
           ${statusBadge}
-          <span class="eqdes-pessoa-total">${totalPeriodo.toLocaleString('pt-BR')} pç</span>
+          <span class="eqdes-pessoa-total">${totalMes.toLocaleString('pt-BR')} pç</span>
           <span class="eqdes-pessoa-seta">${aberta?'▲':'▼'}</span>
         </span>
       </button>
