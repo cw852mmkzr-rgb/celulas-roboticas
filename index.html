@@ -7747,7 +7747,14 @@ function eqDesTogglePessoa(nome){
 }
 function _eqDesFillPessoas(recs){
   const el=document.getElementById('eqDesPessoas'); if(!el) return;
-  const nomes=[...new Set([...equipesData.lista.flatMap(e=>e.membros||[]), ...recs.flatMap(r=>_eqDesPresentes(r))])].sort((a,b)=>a.localeCompare(b));
+  // Ordena por eficiência de metas no período (taxa desc); empate → mais peças; sem meta vai pro fim
+  const todosNomes=[...new Set([...equipesData.lista.flatMap(e=>e.membros||[]), ...recs.flatMap(r=>_eqDesPresentes(r))])];
+  const nomes=todosNomes.map(nome=>{
+    const meusP=recs.filter(r=>_eqDesPresentes(r).includes(nome)&&_eqDesInPeriodo(r));
+    const ag=_eqMetaAgg(meusP);
+    const total=meusP.reduce((s,r)=>s+r.qtd,0);
+    return { nome, taxa: ag.temMeta?ag.bateu/ag.n:-1, total };
+  }).sort((a,b)=>(b.taxa-a.taxa)||(b.total-a.total)||a.nome.localeCompare(b.nome)).map(x=>x.nome);
   if(!nomes.length){
     el.innerHTML=`<div class="eqdes-aviso">Nenhuma pessoa cadastrada nas equipes ainda.</div>`;
     return;
