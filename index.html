@@ -3089,7 +3089,8 @@ async function loadFromAPI(){
   const metaApAberto      = document.getElementById('metaApOverlay')&&document.getElementById('metaApOverlay').classList.contains('open');
   const eqModalAberto     = document.getElementById('eqModal')&&document.getElementById('eqModal').style.display==='flex';
   const metaEqAberto      = document.getElementById('metaEqModal')&&document.getElementById('metaEqModal').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto||metaEqAberto)return;
+  const eqCfgAberto       = document.getElementById('eqCfgModal')&&document.getElementById('eqCfgModal').style.display==='flex';
+  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto||metaEqAberto||eqCfgAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
@@ -7099,7 +7100,7 @@ async function loadEquipes(){
     const r=await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=equipes",{headers:HEADERS_SB});
     const d=await r.json();
     const e=d&&d[0]&&d[0].equipes;
-    if(e){ equipesData={ vincular_metas:!!e.vincular_metas, lista:Array.isArray(e.lista)?e.lista:[] }; }
+    if(e){ equipesData=Object.assign({}, e, { vincular_metas:!!e.vincular_metas, lista:Array.isArray(e.lista)?e.lista:[] }); }
   }catch(err){}
 }
 async function saveEquipes(silent){
@@ -7227,6 +7228,13 @@ function _eqDesHTML(){
         <div id="eqDesEquipes"></div>
       </div>
       <div class="eqdes-sec">
+        <div class="eqdes-sec-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <span>🕐 Comparativo por Turno</span>
+          <button class="eqdes-limpar" style="padding:6px 11px" onclick="eqCfgAbrir()" title="Configurar faixas de turno">⚙️</button>
+        </div>
+        <div id="eqDesTurnos"></div>
+      </div>
+      <div class="eqdes-sec">
         <div class="eqdes-sec-title">🧑‍🏭 Desempenho por pessoa</div>
         <div id="eqDesPessoas"></div>
         <div style="font-size:11.5px;color:#5a6678;margin-top:12px">Valores referentes à produção da equipe nos apontamentos em que a pessoa estava presente.</div>
@@ -7240,6 +7248,7 @@ function _eqDesFill(){
   _eqDesFillBusca(recs);
   _eqDesFillPeriodos();
   _eqDesFillEquipes(recs);
+  _eqDesFillTurnos(recs);
   _eqDesFillPessoas(recs);
 }
 // Handlers de filtro — atualizam o estado e só as seções afetadas
@@ -7258,12 +7267,12 @@ function eqDesSetPeriodo(p){
   _eqDes.periodo=p;
   _eqDesFillPeriodos();
   const recs=_eqDesRecords();
-  _eqDesFillEquipes(recs); _eqDesFillPessoas(recs);
+  _eqDesFillEquipes(recs); _eqDesFillTurnos(recs); _eqDesFillPessoas(recs);
 }
 function eqDesSetPerso(campo,valor){
   _eqDes[campo]=valor;
   const recs=_eqDesRecords();
-  _eqDesFillEquipes(recs); _eqDesFillPessoas(recs);
+  _eqDesFillEquipes(recs); _eqDesFillTurnos(recs); _eqDesFillPessoas(recs);
 }
 function eqDesSetGraf(g){
   _eqDes.graf=g;
@@ -7467,6 +7476,124 @@ function _eqDesFillEquipes(recs){
   }).join('');
   el.innerHTML=grafBtns+`<div class="eqdes-cards">${cards}</div>`;
 }
+// ===== Comparativo por Turno =====
+const _EQ_TURNOS_DEFAULT=[
+  {nome:'Turno 1',ini:'06:00',fim:'14:00'},
+  {nome:'Turno 2',ini:'14:00',fim:'22:00'},
+  {nome:'Turno 3',ini:'22:00',fim:'06:00'}
+];
+function _eqTurnos(){
+  const t=equipesData.turnos;
+  return (Array.isArray(t)&&t.length===3)?t:_EQ_TURNOS_DEFAULT;
+}
+function _eqMin(h){ const p=String(h||'0:0').split(':'); return (+p[0])*60+(+p[1]||0); }
+// Índice do turno em que a hora cai (faixas com virada de meia-noite suportadas)
+function _eqTurnoDaHora(hora){
+  const h=_eqMin(hora);
+  const ts=_eqTurnos();
+  for(let i=0;i<ts.length;i++){
+    const ini=_eqMin(ts[i].ini), fim=_eqMin(ts[i].fim);
+    if(ini<fim ? (h>=ini&&h<fim) : (h>=ini||h<fim)) return i;
+  }
+  return -1;
+}
+function _eqDesFillTurnos(recs){
+  const el=document.getElementById('eqDesTurnos'); if(!el) return;
+  if(!recs.length){
+    el.innerHTML=`<div class="eqdes-aviso">💡 Ative o vínculo de equipes nas Metas Diárias para começar a coletar dados.</div>`;
+    return;
+  }
+  const ts=_eqTurnos();
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ymdHoje=_eqDesYMD(hoje);
+  const iniSem=new Date(hoje); iniSem.setDate(iniSem.getDate()-6);
+  // por turno: [hoje, semana, mês] + dados do período global
+  const grupos=ts.map((t,i)=>({i,t,hoje:0,sem:0,mes:0,periodo:[],total:0}));
+  recs.forEach(r=>{
+    const gi=_eqTurnoDaHora(r.hora); if(gi<0) return;
+    const g=grupos[gi];
+    const d=_eqDesRecDate(r);
+    if(_eqDesRecYMD(r)===ymdHoje) g.hoje+=r.qtd;
+    if(d>=iniSem&&d<=hoje) g.sem+=r.qtd;
+    if(r.ano===hoje.getFullYear()&&r.mes===hoje.getMonth()) g.mes+=r.qtd;
+    if(_eqDesInPeriodo(r)){ g.periodo.push(r); g.total+=r.qtd; }
+  });
+  // gráfico de barras agrupadas (SVG): 3 grupos (turnos) × 3 barras (hoje/semana/mês)
+  const CORES={hoje:'#00e87a',sem:'#3d9eff',mes:'#a78bfa'};
+  const W=340,H=130,pad=8,gw=(W-pad*2)/3;
+  const max=Math.max(...grupos.flatMap(g=>[g.hoje,g.sem,g.mes]),1);
+  const barras=grupos.map((g,i)=>{
+    const x0=pad+i*gw;
+    const bw=gw*0.22;
+    return ['hoje','sem','mes'].map((k,j)=>{
+      const v=g[k];
+      const bh=Math.max(v>0?4:2,Math.round((H-44)*v/max));
+      const x=x0+gw*0.14+j*bw;
+      return `<rect x="${x.toFixed(1)}" y="${H-26-bh}" width="${(bw*0.82).toFixed(1)}" height="${bh}" rx="3" fill="${CORES[k]}" opacity="${v>0?'0.92':'0.22'}"/>
+        ${v>0?`<text x="${(x+bw*0.41).toFixed(1)}" y="${H-30-bh}" text-anchor="middle" font-size="8.5" fill="#8a95a8">${v}</text>`:''}`;
+    }).join('')+`<text x="${(x0+gw/2).toFixed(1)}" y="${H-12}" text-anchor="middle" font-size="10" font-weight="700" fill="#8a95a8">${esc(g.t.nome)}</text>
+      <text x="${(x0+gw/2).toFixed(1)}" y="${H-2}" text-anchor="middle" font-size="8" fill="#5a6678">${esc(g.t.ini)}–${esc(g.t.fim)}</text>`;
+  }).join('');
+  const legenda=`<div class="eqdes-turno-leg">
+    <span><i style="background:${CORES.hoje}"></i>Hoje</span>
+    <span><i style="background:${CORES.sem}"></i>Semana</span>
+    <span><i style="background:${CORES.mes}"></i>Mês</span>
+  </div>`;
+  // mini-tabela do período global
+  const linhas=grupos.map(g=>{
+    const eqIds=[...new Set(g.periodo.map(r=>r.eq.id))];
+    const chips=eqIds.map(id=>{
+      const r=g.periodo.find(x=>x.eq.id===id);
+      const atual=equipesData.lista.find(e=>e.id===id);
+      const cor=atual?atual.cor:r.eq.cor;
+      const nome=(atual?(atual.nome||'').trim():(r.eq.nome||'').trim())||'Equipe';
+      return `<span class="eqdes-eqbadge" style="background:${cor};color:${_eqTextColor(cor)}">${esc(nome)}</span>`;
+    }).join(' ');
+    const porRobo={};
+    g.periodo.forEach(r=>{ porRobo[r.robo]=(porRobo[r.robo]||0)+r.qtd; });
+    const topRobo=Object.entries(porRobo).sort((a,b)=>b[1]-a[1])[0];
+    return `<div class="eqdes-turno-row">
+      <span class="eqdes-c" data-l="Turno"><b>${esc(g.t.nome)}</b> <small style="color:#5a6678">${esc(g.t.ini)}–${esc(g.t.fim)}</small></span>
+      <span class="eqdes-c" data-l="Peças"><b style="color:#ffb300">${g.total.toLocaleString('pt-BR')}</b></span>
+      <span class="eqdes-c" data-l="Equipes">${chips||'—'}</span>
+      <span class="eqdes-c" data-l="Robô top">${topRobo?`🤖 <b style="color:#00e87a">${topRobo[0]}</b> (${topRobo[1]} pç)`:'—'}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML=`
+    <div class="eqdes-graf" style="padding:0 0 6px"><svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:560px;height:auto">${barras}</svg></div>
+    ${legenda}
+    <div class="eqdes-turno-thead"><span>Turno</span><span>Peças (${_EQDES_PERIODOS[_eqDes.periodo].toLowerCase()})</span><span>Equipes</span><span>Robô top</span></div>
+    ${linhas}`;
+}
+// ---- Configuração das faixas de turno (⚙️) ----
+function eqCfgAbrir(){
+  if(!_eqCanAccess()) return;
+  const ts=_eqTurnos();
+  const rows=ts.map((t,i)=>`
+    <div class="eq-field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:800;color:#eaf0f8;min-width:70px;font-family:'Courier New',monospace">${esc(t.nome)}</span>
+      <input type="time" class="eqdes-inp" style="flex:1" id="eqCfgIni${i}" value="${esc(t.ini)}">
+      <span style="color:#5a6678">até</span>
+      <input type="time" class="eqdes-inp" style="flex:1" id="eqCfgFim${i}" value="${esc(t.fim)}">
+    </div>`).join('');
+  document.getElementById('eqCfgBody').innerHTML=`
+    <div class="ap-label">Faixas de horário dos turnos</div>${rows}`;
+  document.getElementById('eqCfgModal').style.display='flex';
+}
+function eqCfgFechar(){ document.getElementById('eqCfgModal').style.display='none'; }
+function eqCfgSalvar(){
+  const ts=_eqTurnos().map((t,i)=>({
+    nome:t.nome,
+    ini:document.getElementById('eqCfgIni'+i).value||t.ini,
+    fim:document.getElementById('eqCfgFim'+i).value||t.fim
+  }));
+  equipesData.turnos=ts;
+  saveEquipes(true);
+  eqCfgFechar();
+  if(_eqTab==='desempenho') _eqDesFillTurnos(_eqDesRecords());
+  showToast('Configuração salva ✓');
+}
+
 let _eqDesAnimPessoa=false; // anima a expansão só no clique (nunca no poll)
 function eqDesTogglePessoa(nome){
   _eqDes.pessoaAberta=_eqDes.pessoaAberta===nome?null:nome;
@@ -11881,6 +12008,21 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   </div>
 </div>
 
+<!-- ===== Modal Configuração de Desempenho (turnos etc) ===== -->
+<div id="eqCfgModal" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9300;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)eqCfgFechar()">
+  <div class="eq-modal-card" onclick="event.stopPropagation()">
+    <div class="eq-modal-head">
+      <div class="eq-modal-title">⚙️ Configurações</div>
+      <button class="ap-x" onclick="eqCfgFechar()">✕</button>
+    </div>
+    <div id="eqCfgBody"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqCfgFechar()">Cancelar</button>
+      <button class="ap-btn primary" onclick="eqCfgSalvar()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Modal Equipe/Pessoa ao digitar na tabela (desktop) ===== -->
 <div id="metaEqModal" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9300;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)metaEqFechar()">
   <div class="eq-modal-card" onclick="event.stopPropagation()">
@@ -12046,6 +12188,18 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-pessoa-seta{ font-size:11px; color:#5a6678; }
 .eqdes-pessoa-body{ padding:0 14px 14px; }
 .eqdes-pessoa-body.anim{ animation:eqPessoaIn .26s var(--ease-out); }
+/* Comparativo por turno */
+.eqdes-turno-leg{ display:flex; gap:16px; justify-content:center; margin-bottom:14px; font-size:11.5px; color:#8a95a8; flex-wrap:wrap; }
+.eqdes-turno-leg span{ display:inline-flex; align-items:center; gap:6px; }
+.eqdes-turno-leg i{ width:11px; height:11px; border-radius:3px; display:inline-block; }
+.eqdes-turno-thead,.eqdes-turno-row{ display:grid; grid-template-columns:150px 120px 1.6fr 1fr; gap:8px; align-items:center; padding:9px 12px; }
+.eqdes-turno-thead{ font-size:10.5px; color:#5a6678; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; border-bottom:1px solid #1b2330; }
+.eqdes-turno-row{ background:#0a0e14; border:1px solid #161d29; border-radius:10px; margin-top:7px; font-size:13px; color:#cdd6e3; font-family:'Courier New',monospace; }
+@media (max-width:720px){
+  .eqdes-turno-thead{ display:none; }
+  .eqdes-turno-row{ grid-template-columns:1fr 1fr; gap:6px 12px; padding:12px 14px; }
+  .eqdes-turno-row .eqdes-c:nth-child(3),.eqdes-turno-row .eqdes-c:nth-child(4){ grid-column:1/-1; }
+}
 /* Pódio da semana */
 .eqdes-podio{ display:flex; align-items:flex-end; justify-content:center; gap:14px; flex-wrap:wrap; }
 .eqdes-podio-card{ border-radius:16px; padding:16px 20px; text-align:center; min-width:150px; flex:0 1 190px; box-shadow:0 10px 26px -14px #000000d0; }
