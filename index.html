@@ -7405,6 +7405,12 @@ function _eqDesFillBusca(recs){
     el.innerHTML=`<div class="eqdes-aviso">💡 Ative o vínculo de equipes nas Metas Diárias para começar a coletar dados.</div>`;
     return;
   }
+  // Só mostra resultados quando algum filtro está ativo — evita despejar a tabela inteira
+  const temFiltro = _eqDes.data||_eqDes.hora||_eqDes.robo||_eqDes.equipeId||(_eqDes.pessoa&&_eqDes.pessoa.trim())||_eqDes.metaStatus;
+  if(!temFiltro){
+    el.innerHTML=`<div class="eqdes-aviso">Use os filtros acima para buscar apontamentos.</div>`;
+    return;
+  }
   let fil=recs;
   if(_eqDes.data){ fil=fil.filter(r=>_eqDesRecYMD(r)===_eqDes.data); }
   if(_eqDes.hora){ fil=fil.filter(r=>r.hora===_eqDes.hora); }
