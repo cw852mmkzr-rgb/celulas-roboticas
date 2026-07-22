@@ -8046,7 +8046,7 @@ function metaApRenderEquipes(){
     if(membros.length){
       const pessoas=membros.map(m=>{
         const on=_metaApMembrosSel.includes(m);
-        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaApEquipeSel.cor+';border-color:'+_metaApEquipeSel.cor+';color:#fff':''}" onclick="metaApToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
+        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:#fff;border-color:#fff;color:#111':''}" onclick="metaApToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
       }).join('');
       membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque no nome)</div><div class="metaap-pessoas">${pessoas}</div>`;
     } else {
@@ -8111,7 +8111,7 @@ function metaEqRender(){
     if(membros.length){
       const pessoas=membros.map(m=>{
         const on=_metaEqMembros.includes(m);
-        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaEqSel.cor+';border-color:'+_metaEqSel.cor+';color:#fff':''}" onclick="metaEqToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
+        return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:#fff;border-color:#fff;color:#111':''}" onclick="metaEqToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
       }).join('');
       membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque no nome)</div><div class="metaap-pessoas">${pessoas}</div>`;
     } else {
