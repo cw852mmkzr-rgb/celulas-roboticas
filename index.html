@@ -8017,7 +8017,7 @@ function metaApRenderEquipes(){
         const on=_metaApMembrosSel.includes(m);
         return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaApEquipeSel.cor+';border-color:'+_metaApEquipeSel.cor+';color:'+_eqTextColor(_metaApEquipeSel.cor):''}" onclick="metaApToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
       }).join('');
-      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque nos nomes)</div><div class="metaap-pessoas">${pessoas}</div>`;
+      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque no nome)</div><div class="metaap-pessoas">${pessoas}</div>`;
     } else {
       membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:10px">Esta equipe não tem membros cadastrados.</div>`;
     }
@@ -8032,8 +8032,8 @@ function metaApSelEquipe(id){
   metaApRenderEquipes();
 }
 function metaApToggleMembro(nome){
-  const i=_metaApMembrosSel.indexOf(nome);
-  if(i>=0) _metaApMembrosSel.splice(i,1); else _metaApMembrosSel.push(nome);
+  // Seleção única: se já está marcado, desmarca; senão, marca só esse
+  _metaApMembrosSel = (_metaApMembrosSel[0]===nome) ? [] : [nome];
   metaApRenderEquipes();
 }
 
@@ -8082,7 +8082,7 @@ function metaEqRender(){
         const on=_metaEqMembros.includes(m);
         return `<button type="button" class="metaap-pessoa ${on?'on':''}" style="${on?'background:'+_metaEqSel.cor+';border-color:'+_metaEqSel.cor+';color:'+_eqTextColor(_metaEqSel.cor):''}" onclick="metaEqToggleMembro('${esc(m).replace(/'/g,"\\'")}')">${esc(m)}</button>`;
       }).join('');
-      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque nos nomes)</div><div class="metaap-pessoas">${pessoas}</div>`;
+      membrosHTML=`<div class="ap-label" style="margin-top:14px">Quem da equipe estava? (toque no nome)</div><div class="metaap-pessoas">${pessoas}</div>`;
     } else {
       membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:10px">Esta equipe não tem membros.</div>`;
     }
@@ -8096,7 +8096,7 @@ function metaEqSelEquipe(id){
   else { const eq=equipesData.lista.find(e=>e.id===id); if(eq){ _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()}; _metaEqMembros=[]; } }
   metaEqRender();
 }
-function metaEqToggleMembro(nome){ const i=_metaEqMembros.indexOf(nome); if(i>=0)_metaEqMembros.splice(i,1); else _metaEqMembros.push(nome); metaEqRender(); }
+function metaEqToggleMembro(nome){ _metaEqMembros = (_metaEqMembros[0]===nome) ? [] : [nome]; metaEqRender(); }
 function metaEqSalvar(){
   if(!_metaEqCtx) return;
   const {key,robo,campo}=_metaEqCtx;
