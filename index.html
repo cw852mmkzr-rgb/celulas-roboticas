@@ -7773,7 +7773,18 @@ function _eqDesFillPessoas(recs){
       const horasRobos=[...new Set(meus.map(r=>`${r.hora} · Robô ${r.robo}`))].slice(0,14);
       const serie=_eqDesSerieSemanal(meus);
       const cor=(equipesDela[0]&&equipesDela[0].cor)||'#00e87a';
-      // Card resumo "Metas batidas" no período + histórico dos dias (mais recentes)
+      // Card resumo "Metas batidas" no período + contadores por categoria (✅/⚠️/❌)
+      let contMetaHTML='';
+      if(agP.temMeta){
+        // conta cada categoria nos apontamentos com meta do período
+        let ok=0,par=0,nao=0;
+        meusPeriodo.filter(r=>r.meta>0).forEach(r=>{ const m=_eqRecMeta(r); if(m.cls==='ok')ok++; else if(m.cls==='par')par++; else nao++; });
+        contMetaHTML=`<div class="eqdes-stats" style="margin:0 0 10px">
+          <div class="eqdes-stat" style="color:#00e87a"><b style="color:#00e87a">${ok}</b><span>✅ atingiu</span></div>
+          <div class="eqdes-stat" style="color:#ffb300"><b style="color:#ffb300">${par}</b><span>⚠️ parcial</span></div>
+          <div class="eqdes-stat" style="color:#ff5b6a"><b style="color:#ff5b6a">${nao}</b><span>❌ não atingiu</span></div>
+        </div>`;
+      }
       const taxaHTML=agP.temMeta
         ? `<div class="eqdes-meta-taxa" style="margin-bottom:10px">🎯 Metas batidas: <b>${agP.bateu} de ${agP.n} apontamento${agP.n!==1?'s':''}</b> (${Math.round(agP.bateu/agP.n*100)}%)</div>`
         : `<div class="eqdes-meta-taxa" style="margin-bottom:10px;color:#5a6678">Sem meta cadastrada no período</div>`;
@@ -7789,6 +7800,7 @@ function _eqDesFillPessoas(recs){
           <div class="eqdes-stat"><b>${tMes.toLocaleString('pt-BR')}</b><span>mês</span></div>
           <div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div>
         </div>
+        ${contMetaHTML}
         ${taxaHTML}
         ${histDias}
         <div style="margin:10px 0 8px">${chipsEq||'<span style="font-size:12px;color:#5a6678">Sem equipe atual</span>'}</div>
