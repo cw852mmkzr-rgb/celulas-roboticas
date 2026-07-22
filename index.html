@@ -7110,8 +7110,27 @@ async function saveEquipes(silent){
   }catch(e){ if(!silent) showToast("Erro ao salvar equipes",true); return false; }
 }
 
+let _eqTab='gerenciar'; // sub-aba ativa da tela Equipes
 function renderEquipes(){
   if(!_eqCanAccess()){ selected=null; document.getElementById("mainPanel").innerHTML='<div class="empty">🔒 Acesso restrito às equipes.</div>'; return; }
+  const corpo = _eqTab==='desempenho' ? _eqDesHTML() : _eqGerenciarHTML();
+  document.getElementById("mainPanel").innerHTML=`
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:12px">
+      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">👥 Equipes</div>
+      ${_eqTab==='gerenciar'?`<button class="eq-nova-btn" onclick="eqAbrirModal(null)">➕ Nova Equipe</button>`:''}
+    </div>
+    <div class="eq-subtabs">
+      <button class="eq-subtab ${_eqTab==='gerenciar'?'on':''}" onclick="eqSwitchTab('gerenciar')">👥 Gerenciar</button>
+      <button class="eq-subtab ${_eqTab==='desempenho'?'on':''}" onclick="eqSwitchTab('desempenho')">📈 Desempenho</button>
+    </div>
+    ${corpo}
+  </div>`;
+  if(_eqTab==='desempenho') _eqDesFill();
+}
+function eqSwitchTab(t){ _eqTab=t; renderEquipes(); gabNavEnter(); }
+
+function _eqGerenciarHTML(){
   const vinc = equipesData.vincular_metas;
   const cards = equipesData.lista.map(eq=>{
     const txt=_eqTextColor(eq.cor);
@@ -7131,12 +7150,7 @@ function renderEquipes(){
       <div class="eq-membros">${membrosHTML}</div>
     </div>`;
   }).join('');
-  document.getElementById("mainPanel").innerHTML=`
-  <div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-      <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">👥 Equipes</div>
-      <button class="eq-nova-btn" onclick="eqAbrirModal(null)">➕ Nova Equipe</button>
-    </div>
+  return `
     <div class="eq-toggle-row">
       <div style="min-width:0">
         <div class="eq-toggle-title">Vincular equipes às Metas Diárias</div>
@@ -7144,8 +7158,324 @@ function renderEquipes(){
       </div>
       <button id="eqToggle" class="eq-switch ${vinc?'on':''}" role="switch" aria-checked="${vinc}" onclick="eqToggleVincular()"><span class="eq-switch-knob"></span></button>
     </div>
-    <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>
+    <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>`;
+}
+
+// ===== Sub-aba Desempenho =====
+let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null };
+
+// Varre as Metas Diárias e monta a lista de apontamentos com equipe
+function _eqDesRecords(){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const out=[];
+  if(!mk||!celulas[mk].metas_dias) return out;
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  Object.entries(celulas[mk].metas_dias).forEach(([chave,diaData])=>{
+    const p=chave.split('_'); const ano=+p[0], mes=+p[1], dia=+p[2];
+    ROBOS.forEach(r=>{
+      const rd=diaData[r]; if(!rd) return;
+      horas.forEach(h=>{
+        const eq=rd['eqp_'+campoH(h)];
+        if(!eq) return;
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd:parseCelVal(rd[campoH(h)]||'').num,eq});
+      });
+    });
+  });
+  out.sort((a,b)=>(b.ano-a.ano)||(b.mes-a.mes)||(b.dia-a.dia)||a.hora.localeCompare(b.hora)||(a.robo-b.robo));
+  return out;
+}
+function _eqDesYMD(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _eqDesRecYMD(r){ return r.ano+'-'+String(r.mes+1).padStart(2,'0')+'-'+String(r.dia).padStart(2,'0'); }
+function _eqDesRecDate(r){ return new Date(r.ano,r.mes,r.dia); }
+function _eqDesPresentes(r){ const p=r.eq.presentes; return (p&&p.length)?p:(r.eq.membros||[]); }
+// Filtro do período global (seção de desempenho)
+function _eqDesInPeriodo(r){
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const d=_eqDesRecDate(r);
+  if(_eqDes.periodo==='hoje') return d.getTime()===hoje.getTime();
+  if(_eqDes.periodo==='semana'){ const ini=new Date(hoje); ini.setDate(ini.getDate()-6); return d>=ini&&d<=hoje; }
+  if(_eqDes.periodo==='mes') return r.ano===hoje.getFullYear()&&r.mes===hoje.getMonth();
+  if(_eqDes.periodo==='perso'){
+    if(!_eqDes.de&&!_eqDes.ate) return true;
+    const ymd=_eqDesRecYMD(r);
+    if(_eqDes.de&&ymd<_eqDes.de) return false;
+    if(_eqDes.ate&&ymd>_eqDes.ate) return false;
+    return true;
+  }
+  return true;
+}
+const _EQDES_PERIODOS={hoje:'Hoje',semana:'Semana',mes:'Mês',perso:'Personalizado'};
+
+// Esqueleto da sub-aba (containers preenchidos por _eqDesFill)
+function _eqDesHTML(){
+  return `
+    <div id="eqDesWrap">
+      <div class="eqdes-sec">
+        <div class="eqdes-sec-title">🔎 Buscar apontamentos</div>
+        <div id="eqDesFiltros"></div>
+        <div id="eqDesBusca"></div>
+      </div>
+      <div class="eqdes-sec">
+        <div class="eqdes-sec-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <span>📈 Desempenho no período</span>
+          <span id="eqDesPeriodos"></span>
+        </div>
+        <div id="eqDesEquipes"></div>
+      </div>
+      <div class="eqdes-sec">
+        <div class="eqdes-sec-title">🧑‍🏭 Desempenho por pessoa</div>
+        <div id="eqDesPessoas"></div>
+        <div style="font-size:11.5px;color:#5a6678;margin-top:12px">Valores referentes à produção da equipe nos apontamentos em que a pessoa estava presente.</div>
+      </div>
+    </div>`;
+}
+function _eqDesFill(){
+  const recs=_eqDesRecords();
+  _eqDesFillFiltros(recs);
+  _eqDesFillBusca(recs);
+  _eqDesFillPeriodos();
+  _eqDesFillEquipes(recs);
+  _eqDesFillPessoas(recs);
+}
+// Handlers de filtro — atualizam o estado e só as seções afetadas
+function eqDesSetFiltro(campo,valor){
+  _eqDes[campo]=valor;
+  const recs=_eqDesRecords();
+  _eqDesFillBusca(recs);
+  if(campo==='equipeId') _eqDesFillFiltros(recs); // repinta a seleção dos chips
+}
+function eqDesLimparFiltros(){
+  _eqDes.data=''; _eqDes.hora=''; _eqDes.robo=''; _eqDes.equipeId=''; _eqDes.pessoa='';
+  const recs=_eqDesRecords();
+  _eqDesFillFiltros(recs); _eqDesFillBusca(recs);
+}
+function eqDesSetPeriodo(p){
+  _eqDes.periodo=p;
+  _eqDesFillPeriodos();
+  const recs=_eqDesRecords();
+  _eqDesFillEquipes(recs); _eqDesFillPessoas(recs);
+}
+function eqDesSetPerso(campo,valor){
+  _eqDes[campo]=valor;
+  const recs=_eqDesRecords();
+  _eqDesFillEquipes(recs); _eqDesFillPessoas(recs);
+}
+function eqDesSetGraf(g){
+  _eqDes.graf=g;
+  _eqDesFillEquipes(_eqDesRecords());
+}
+function _eqDesFillFiltros(recs){
+  const el=document.getElementById('eqDesFiltros'); if(!el) return;
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  const chips=equipesData.lista.map(eq=>{
+    const sel=_eqDes.equipeId===eq.id;
+    return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="width:30px;height:30px;background:${eq.cor}${sel?';box-shadow:0 0 0 2px #0f1318,0 0 0 4px '+eq.cor:''}" onclick="eqDesSetFiltro('equipeId','${sel?'':eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
+  }).join('');
+  const nomes=[...new Set(equipesData.lista.flatMap(e=>e.membros||[]))];
+  el.innerHTML=`
+    <div class="eqdes-filtros">
+      <div class="eqdes-f"><label>Data</label><input type="date" class="eqdes-inp" value="${_eqDes.data}" onchange="eqDesSetFiltro('data',this.value)"></div>
+      <div class="eqdes-f"><label>Hora</label><select class="eqdes-inp" onchange="eqDesSetFiltro('hora',this.value)"><option value="">Todas</option>${horas.map(h=>`<option value="${h}" ${_eqDes.hora===h?'selected':''}>${h}</option>`).join('')}</select></div>
+      <div class="eqdes-f"><label>Robô</label><select class="eqdes-inp" onchange="eqDesSetFiltro('robo',this.value)"><option value="">Todos</option>${ROBOS.map(r=>`<option value="${r}" ${_eqDes.robo==String(r)?'selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="eqdes-f"><label>Pessoa</label><input class="eqdes-inp" list="eqDesPessoasDL" placeholder="Nome..." value="${esc(_eqDes.pessoa)}" oninput="eqDesSetFiltro('pessoa',this.value)"><datalist id="eqDesPessoasDL">${nomes.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>
+      <div class="eqdes-f"><label>Equipe</label><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:38px">${chips||'<span style="font-size:12px;color:#5a6678">—</span>'}</div></div>
+      <div class="eqdes-f" style="justify-content:flex-end"><label>&nbsp;</label><button class="eqdes-limpar" onclick="eqDesLimparFiltros()">✕ Limpar filtros</button></div>
+    </div>`;
+}
+function _eqDesFillBusca(recs){
+  const el=document.getElementById('eqDesBusca'); if(!el) return;
+  if(!equipesData.vincular_metas && !recs.length){
+    el.innerHTML=`<div class="eqdes-aviso">💡 Ative o vínculo de equipes nas Metas Diárias para começar a coletar dados.</div>`;
+    return;
+  }
+  let fil=recs;
+  if(_eqDes.data){ fil=fil.filter(r=>_eqDesRecYMD(r)===_eqDes.data); }
+  if(_eqDes.hora){ fil=fil.filter(r=>r.hora===_eqDes.hora); }
+  if(_eqDes.robo){ fil=fil.filter(r=>String(r.robo)===String(_eqDes.robo)); }
+  if(_eqDes.equipeId){ fil=fil.filter(r=>r.eq.id===_eqDes.equipeId); }
+  if(_eqDes.pessoa){ const p=_eqDes.pessoa.trim().toLowerCase(); fil=fil.filter(r=>_eqDesPresentes(r).some(m=>m.toLowerCase().includes(p))); }
+  if(!fil.length){
+    el.innerHTML=`<div class="eqdes-aviso">Nenhum apontamento encontrado com esses filtros.</div>`;
+    return;
+  }
+  const MAX=60;
+  const linhas=fil.slice(0,MAX).map(r=>{
+    const txt=_eqTextColor(r.eq.cor);
+    const nomeEq=(r.eq.nome&&r.eq.nome.trim())?r.eq.nome.trim():'Equipe';
+    return `<div class="eqdes-row">
+      <span class="eqdes-c" data-l="Data">${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}</span>
+      <span class="eqdes-c" data-l="Hora">${r.hora}</span>
+      <span class="eqdes-c" data-l="Robô"><b style="color:#00e87a">${r.robo}</b></span>
+      <span class="eqdes-c" data-l="Peça">${esc(String(r.cod))}</span>
+      <span class="eqdes-c" data-l="Qtd"><b style="color:#ffb300">${r.qtd}</b></span>
+      <span class="eqdes-c" data-l="Equipe"><span class="eqdes-eqbadge" style="background:${r.eq.cor};color:${txt}">${esc(nomeEq)}</span></span>
+      <span class="eqdes-c eqdes-membros" data-l="Membros">${_eqDesPresentes(r).map(esc).join(', ')||'—'}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML=`
+    <div class="eqdes-thead">
+      <span>Data</span><span>Hora</span><span>Robô</span><span>Peça</span><span>Qtd</span><span>Equipe</span><span>Membros</span>
+    </div>
+    ${linhas}
+    ${fil.length>MAX?`<div style="font-size:12px;color:#5a6678;text-align:center;padding:8px">Mostrando ${MAX} de ${fil.length} resultados — refine os filtros.</div>`:''}`;
+}
+function _eqDesFillPeriodos(){
+  const el=document.getElementById('eqDesPeriodos'); if(!el) return;
+  el.innerHTML=Object.entries(_EQDES_PERIODOS).map(([k,l])=>
+    `<button class="eqdes-per ${_eqDes.periodo===k?'on':''}" onclick="eqDesSetPeriodo('${k}')">${l}</button>`).join('')
+    +(_eqDes.periodo==='perso'?`<span class="eqdes-perso"><input type="date" class="eqdes-inp" style="width:auto" value="${_eqDes.de}" onchange="eqDesSetPerso('de',this.value)"> até <input type="date" class="eqdes-inp" style="width:auto" value="${_eqDes.ate}" onchange="eqDesSetPerso('ate',this.value)"></span>`:'');
+}
+// Gráfico de barras SVG leve
+function _eqDesBarSVG(vals,labels,cor,alt){
+  const W=280,H=alt||90,pad=4;
+  const max=Math.max(...vals,1);
+  const n=vals.length;
+  const bw=(W-pad*2)/n;
+  const bars=vals.map((v,i)=>{
+    const bh=Math.max(v>0?4:2,Math.round((H-26)*v/max));
+    const x=pad+i*bw;
+    return `<rect x="${(x+bw*0.15).toFixed(1)}" y="${H-18-bh}" width="${(bw*0.7).toFixed(1)}" height="${bh}" rx="3" fill="${cor}" opacity="${v>0?'0.9':'0.25'}"/>
+      ${v>0?`<text x="${(x+bw/2).toFixed(1)}" y="${H-22-bh}" text-anchor="middle" font-size="9" fill="#8a95a8">${v}</text>`:''}
+      <text x="${(x+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="8.5" fill="#5a6678">${labels[i]}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:340px;height:auto">${bars}</svg>`;
+}
+// Séries: últimos 7 dias / semanas do mês
+function _eqDesSerieSemanal(recsEq){
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const vals=[],labels=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(hoje); d.setDate(d.getDate()-i);
+    const ymd=_eqDesYMD(d);
+    vals.push(recsEq.filter(r=>_eqDesRecYMD(r)===ymd).reduce((s,r)=>s+r.qtd,0));
+    labels.push(String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'));
+  }
+  return {vals,labels};
+}
+function _eqDesSerieMensal(recsEq){
+  const hoje=new Date();
+  const vals=[0,0,0,0,0],labels=['S1','S2','S3','S4','S5'];
+  recsEq.forEach(r=>{
+    if(r.ano!==hoje.getFullYear()||r.mes!==hoje.getMonth()) return;
+    const sem=Math.min(4,Math.floor((r.dia-1)/7));
+    vals[sem]+=r.qtd;
+  });
+  return {vals,labels};
+}
+function _eqDesFillEquipes(recs){
+  const el=document.getElementById('eqDesEquipes'); if(!el) return;
+  if(!equipesData.vincular_metas && !recs.length){
+    el.innerHTML=`<div class="eqdes-aviso">💡 Ative o vínculo de equipes nas Metas Diárias para começar a coletar dados.</div>`;
+    return;
+  }
+  if(!recs.length){
+    el.innerHTML=`<div class="eqdes-aviso">Nenhum apontamento com equipe registrado ainda. Use "📊 Apontar Produção" nas Metas.</div>`;
+    return;
+  }
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ymdHoje=_eqDesYMD(hoje);
+  const iniSem=new Date(hoje); iniSem.setDate(iniSem.getDate()-6);
+  // stats por equipe (pelo id do snapshot; cor/nome atuais se a equipe ainda existir)
+  const porEq={};
+  recs.forEach(r=>{
+    const id=r.eq.id||'sem';
+    if(!porEq[id]) porEq[id]={id,cor:r.eq.cor,nome:r.eq.nome,recs:[]};
+    porEq[id].recs.push(r);
+  });
+  // ranking pelo período selecionado
+  const lista=Object.values(porEq).map(g=>{
+    const atual=equipesData.lista.find(e=>e.id===g.id);
+    if(atual){ g.cor=atual.cor; g.nome=(atual.nome||'').trim(); }
+    g.periodo=g.recs.filter(_eqDesInPeriodo);
+    g.totalPeriodo=g.periodo.reduce((s,r)=>s+r.qtd,0);
+    return g;
+  }).sort((a,b)=>b.totalPeriodo-a.totalPeriodo);
+  const grafBtns=`<div class="eqdes-graf-btns">
+    <button class="eqdes-per ${_eqDes.graf==='semanal'?'on':''}" onclick="eqDesSetGraf('semanal')">Semanal</button>
+    <button class="eqdes-per ${_eqDes.graf==='mensal'?'on':''}" onclick="eqDesSetGraf('mensal')">Mensal</button>
   </div>`;
+  const cards=lista.map((g,rank)=>{
+    const txt=_eqTextColor(g.cor);
+    const nomeEq=g.nome||'Equipe';
+    const tHoje=g.recs.filter(r=>_eqDesRecYMD(r)===ymdHoje).reduce((s,r)=>s+r.qtd,0);
+    const tSem=g.recs.filter(r=>{const d=_eqDesRecDate(r);return d>=iniSem&&d<=hoje;}).reduce((s,r)=>s+r.qtd,0);
+    const tMes=g.recs.filter(r=>r.ano===hoje.getFullYear()&&r.mes===hoje.getMonth()).reduce((s,r)=>s+r.qtd,0);
+    const robos=[...new Set(g.recs.map(r=>r.robo))].sort();
+    const media=g.recs.length?Math.round(g.recs.reduce((s,r)=>s+r.qtd,0)/g.recs.length):0;
+    const serie=_eqDes.graf==='semanal'?_eqDesSerieSemanal(g.recs):_eqDesSerieMensal(g.recs);
+    return `<div class="eqdes-card" style="border-color:${g.cor}60">
+      <div class="eqdes-card-head" style="background:${g.cor};color:${txt}">
+        <span class="eqdes-rank">${rank+1}º</span>
+        <span class="eqdes-card-nome">${esc(nomeEq)}</span>
+        <span class="eqdes-card-total">${g.totalPeriodo.toLocaleString('pt-BR')} pç <small style="opacity:.8">(${_EQDES_PERIODOS[_eqDes.periodo].toLowerCase()})</small></span>
+      </div>
+      <div class="eqdes-stats">
+        <div class="eqdes-stat"><b>${tHoje.toLocaleString('pt-BR')}</b><span>hoje</span></div>
+        <div class="eqdes-stat"><b>${tSem.toLocaleString('pt-BR')}</b><span>semana</span></div>
+        <div class="eqdes-stat"><b>${tMes.toLocaleString('pt-BR')}</b><span>mês</span></div>
+        <div class="eqdes-stat"><b>${g.recs.length}</b><span>apontam.</span></div>
+        <div class="eqdes-stat"><b>${media}</b><span>média/apont.</span></div>
+      </div>
+      <div class="eqdes-robos">🤖 ${robos.join(', ')||'—'}</div>
+      <div class="eqdes-graf">${_eqDesBarSVG(serie.vals,serie.labels,g.cor)}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML=grafBtns+`<div class="eqdes-cards">${cards}</div>`;
+}
+let _eqDesAnimPessoa=false; // anima a expansão só no clique (nunca no poll)
+function eqDesTogglePessoa(nome){
+  _eqDes.pessoaAberta=_eqDes.pessoaAberta===nome?null:nome;
+  _eqDesAnimPessoa=true;
+  _eqDesFillPessoas(_eqDesRecords());
+  _eqDesAnimPessoa=false;
+}
+function _eqDesFillPessoas(recs){
+  const el=document.getElementById('eqDesPessoas'); if(!el) return;
+  const nomes=[...new Set([...equipesData.lista.flatMap(e=>e.membros||[]), ...recs.flatMap(r=>_eqDesPresentes(r))])].sort((a,b)=>a.localeCompare(b));
+  if(!nomes.length){
+    el.innerHTML=`<div class="eqdes-aviso">Nenhuma pessoa cadastrada nas equipes ainda.</div>`;
+    return;
+  }
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const ymdHoje=_eqDesYMD(hoje);
+  const iniSem=new Date(hoje); iniSem.setDate(iniSem.getDate()-6);
+  el.innerHTML=nomes.map(nome=>{
+    const meus=recs.filter(r=>_eqDesPresentes(r).includes(nome));
+    const aberta=_eqDes.pessoaAberta===nome;
+    const equipesDela=equipesData.lista.filter(e=>(e.membros||[]).includes(nome));
+    const chipsEq=equipesDela.map(e=>`<span class="eqdes-eqbadge" style="background:${e.cor};color:${_eqTextColor(e.cor)}">${esc((e.nome||'').trim()||'Equipe')}</span>`).join(' ');
+    const totalPeriodo=meus.filter(_eqDesInPeriodo).reduce((s,r)=>s+r.qtd,0);
+    let corpo='';
+    if(aberta){
+      const tHoje=meus.filter(r=>_eqDesRecYMD(r)===ymdHoje).reduce((s,r)=>s+r.qtd,0);
+      const tSem=meus.filter(r=>{const d=_eqDesRecDate(r);return d>=iniSem&&d<=hoje;}).reduce((s,r)=>s+r.qtd,0);
+      const tMes=meus.filter(r=>r.ano===hoje.getFullYear()&&r.mes===hoje.getMonth()).reduce((s,r)=>s+r.qtd,0);
+      const horasRobos=[...new Set(meus.map(r=>`${r.hora} · Robô ${r.robo}`))].slice(0,14);
+      const serie=_eqDesSerieSemanal(meus);
+      const cor=(equipesDela[0]&&equipesDela[0].cor)||'#00e87a';
+      corpo=`<div class="eqdes-pessoa-body${_eqDesAnimPessoa?' anim':''}">
+        <div class="eqdes-stats" style="margin:0 0 10px">
+          <div class="eqdes-stat"><b>${tHoje.toLocaleString('pt-BR')}</b><span>hoje</span></div>
+          <div class="eqdes-stat"><b>${tSem.toLocaleString('pt-BR')}</b><span>semana</span></div>
+          <div class="eqdes-stat"><b>${tMes.toLocaleString('pt-BR')}</b><span>mês</span></div>
+          <div class="eqdes-stat"><b>${meus.length}</b><span>apontam.</span></div>
+        </div>
+        <div style="margin-bottom:8px">${chipsEq||'<span style="font-size:12px;color:#5a6678">Sem equipe atual</span>'}</div>
+        ${horasRobos.length?`<div class="eqdes-robos" style="margin-bottom:10px">🕐 ${horasRobos.join(' · ')}</div>`:''}
+        <div class="eqdes-graf">${_eqDesBarSVG(serie.vals,serie.labels,cor,80)}</div>
+      </div>`;
+    }
+    return `<div class="eqdes-pessoa ${aberta?'aberta':''}">
+      <button class="eqdes-pessoa-head" onclick="eqDesTogglePessoa('${esc(nome).replace(/'/g,"\\'")}')">
+        <span class="eqdes-pessoa-nome">👤 ${esc(nome)}</span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="eqdes-pessoa-total">${totalPeriodo.toLocaleString('pt-BR')} pç</span>
+          <span class="eqdes-pessoa-seta">${aberta?'▲':'▼'}</span>
+        </span>
+      </button>
+      ${corpo}
+    </div>`;
+  }).join('');
 }
 function eqToggleVincular(){
   equipesData.vincular_metas = !equipesData.vincular_metas;
@@ -11624,6 +11954,61 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 /* Inputs editáveis do preview da foto (gabaritagem) */
 .gabf-edit{ width:100%; box-sizing:border-box; background:#0a0e14; border:1px solid #26303f; border-radius:7px; padding:8px 9px; font-family:'Courier New',monospace; font-size:14px; font-weight:700; color:#eaf0f8; outline:none; transition:border-color .16s ease; }
 .gabf-edit:focus{ border-color:#3d9eff; }
+/* ===== Equipes — sub-abas e Desempenho ===== */
+.eq-subtabs{ display:flex; gap:6px; background:#0f1318; border:1px solid #1e2530; border-radius:12px; padding:5px; margin-bottom:16px; width:fit-content; max-width:100%; }
+.eq-subtab{ background:none; border:none; color:#8792a6; font-family:'Courier New',monospace; font-size:13.5px; font-weight:800; padding:9px 18px; border-radius:9px; cursor:pointer; transition:background .18s ease, color .18s ease, transform .16s var(--ease-out); }
+.eq-subtab:active{ transform:scale(0.97); }
+.eq-subtab.on{ background:#00e87a18; color:#00e87a; }
+.eqdes-sec{ background:#0f1318; border:1px solid #1e2530; border-radius:14px; padding:16px 18px; margin-bottom:16px; }
+.eqdes-sec-title{ font-size:14px; font-weight:800; color:#eaf0f8; letter-spacing:0.04em; margin-bottom:14px; }
+.eqdes-filtros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px 12px; margin-bottom:14px; }
+.eqdes-f{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+.eqdes-f label{ font-size:10.5px; color:#8a95a8; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; }
+.eqdes-inp{ background:#080b0f; border:1px solid #1e2530; border-radius:9px; padding:9px 11px; font-family:'Courier New',monospace; font-size:13.5px; color:#eaf0f8; outline:none; width:100%; box-sizing:border-box; color-scheme:dark; }
+.eqdes-inp:focus{ border-color:#00e87a; }
+.eqdes-limpar{ background:#141b26; border:1px solid #26303f; color:#8792a6; border-radius:9px; padding:9px 12px; font-family:'Courier New',monospace; font-size:12.5px; font-weight:700; cursor:pointer; transition:transform .16s var(--ease-out), background .16s ease; }
+.eqdes-limpar:active{ transform:scale(0.96); background:#1a2231; }
+.eqdes-thead,.eqdes-row{ display:grid; grid-template-columns:90px 58px 56px 1fr 60px 110px 1.4fr; gap:8px; align-items:center; padding:9px 12px; }
+.eqdes-thead{ font-size:10.5px; color:#5a6678; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; border-bottom:1px solid #1b2330; }
+.eqdes-row{ background:#0a0e14; border:1px solid #161d29; border-radius:10px; margin-top:7px; font-size:13px; color:#cdd6e3; font-family:'Courier New',monospace; }
+.eqdes-eqbadge{ font-size:11.5px; font-weight:800; padding:3px 10px; border-radius:99px; font-family:'Montserrat',sans-serif; display:inline-block; }
+.eqdes-membros{ font-size:12px; color:#8a95a8; }
+.eqdes-aviso{ text-align:center; color:#5a6678; font-size:13px; padding:22px 14px; border:1px dashed #1e2530; border-radius:12px; }
+.eqdes-per{ background:#141b26; border:1px solid #26303f; color:#8792a6; border-radius:99px; padding:6px 14px; font-family:'Courier New',monospace; font-size:12px; font-weight:800; cursor:pointer; margin-left:6px; transition:background .18s ease, color .18s ease, transform .16s var(--ease-out); }
+.eqdes-per:active{ transform:scale(0.95); }
+.eqdes-per.on{ background:#00e87a18; border-color:#00e87a55; color:#00e87a; }
+.eqdes-perso{ display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#8a95a8; margin-left:8px; flex-wrap:wrap; }
+.eqdes-graf-btns{ display:flex; justify-content:flex-end; margin-bottom:10px; }
+.eqdes-cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:14px; }
+.eqdes-card{ background:#0a0e14; border:1px solid; border-radius:14px; overflow:hidden; }
+#mainPanel.nav-enter .eqdes-card{ animation:eqCardIn .34s var(--ease-out) backwards; }
+.eqdes-card-head{ display:flex; align-items:center; gap:10px; padding:11px 14px; }
+.eqdes-rank{ font-size:13px; font-weight:900; background:#00000028; border-radius:99px; padding:3px 9px; flex-shrink:0; }
+.eqdes-card-nome{ font-size:15.5px; font-weight:900; font-family:'Montserrat',sans-serif; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+.eqdes-card-total{ font-size:14px; font-weight:900; font-family:'Courier New',monospace; flex-shrink:0; }
+.eqdes-stats{ display:flex; flex-wrap:wrap; gap:8px; padding:12px 14px 0; }
+.eqdes-stat{ background:#10151d; border:1px solid #1b2330; border-radius:9px; padding:7px 11px; text-align:center; flex:1; min-width:64px; }
+.eqdes-stat b{ display:block; font-size:16px; color:#eaf0f8; font-family:'Courier New',monospace; }
+.eqdes-stat span{ font-size:10px; color:#5a6678; text-transform:uppercase; letter-spacing:0.06em; }
+.eqdes-robos{ font-size:12px; color:#8a95a8; padding:10px 14px 0; font-family:'Courier New',monospace; }
+.eqdes-graf{ padding:10px 14px 14px; }
+.eqdes-pessoa{ background:#0a0e14; border:1px solid #161d29; border-radius:11px; margin-bottom:8px; overflow:hidden; }
+.eqdes-pessoa.aberta{ border-color:#26303f; }
+.eqdes-pessoa-head{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; background:none; border:none; padding:12px 14px; cursor:pointer; transition:background .16s ease; }
+.eqdes-pessoa-head:active{ background:#10151d; }
+.eqdes-pessoa-nome{ font-size:14.5px; font-weight:800; color:#eaf0f8; font-family:'Courier New',monospace; }
+.eqdes-pessoa-total{ font-size:13.5px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; }
+.eqdes-pessoa-seta{ font-size:11px; color:#5a6678; }
+.eqdes-pessoa-body{ padding:0 14px 14px; }
+.eqdes-pessoa-body.anim{ animation:eqPessoaIn .26s var(--ease-out); }
+@keyframes eqPessoaIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+@media (max-width:720px){
+  .eqdes-thead{ display:none; }
+  .eqdes-row{ grid-template-columns:1fr 1fr; gap:6px 12px; padding:12px 14px; }
+  .eqdes-c::before{ content:attr(data-l); display:block; font-size:9.5px; color:#5a6678; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; margin-bottom:2px; }
+  .eqdes-membros{ grid-column:1/-1; }
+  .eqdes-cards{ grid-template-columns:1fr; }
+}
 @media (max-width:560px){ .eq-grid{ grid-template-columns:1fr; } }
 </style>
 
