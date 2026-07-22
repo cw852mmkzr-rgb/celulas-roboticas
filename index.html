@@ -3380,6 +3380,11 @@ function updateMetasCell(key,robo,campo,valor){
   const _compAnterior = campo.startsWith('h') ? parseCelVal(celulas[key].metas_dias[chave][robo][campo]||'').num : 0;
   const _compCodAntes = (celulas[key].metas_dias[chave][robo].cod||'').trim();
   celulas[key].metas_dias[chave][robo][campo]=valor;
+  // Se a hora foi apagada (vazio/0), remove o snapshot de equipe daquela hora
+  // — evita que apontamentos zerados continuem aparecendo no buscador/relatórios
+  if(campo.startsWith('h') && parseCelVal(valor||'').num===0){
+    delete celulas[key].metas_dias[chave][robo]['eqp_'+campo];
+  }
   // Aplica delta de produção no estoque de componentes (aumento desconta, correção pra baixo devolve)
   if(campo.startsWith('h')){
     const _compNovo = parseCelVal(valor||'').num;
@@ -7194,7 +7199,9 @@ function _eqDesRecords(){
       horas.forEach(h=>{
         const eq=rd['eqp_'+campoH(h)];
         if(!eq) return;
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd:parseCelVal(rd[campoH(h)]||'').num,meta:parseInt(rd.meta)||0,eq});
+        const qtd=parseCelVal(rd[campoH(h)]||'').num;
+        if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:parseInt(rd.meta)||0,eq});
       });
     });
   });
