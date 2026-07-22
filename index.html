@@ -7185,8 +7185,11 @@ function eqToggleAlertas(){
 
 // ===== Sub-aba Desempenho =====
 let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null, pesMes:new Date().getMonth(), pesAno:new Date().getFullYear() };
-function _eqDesInMes(r){ return r.ano===_eqDes.pesAno && r.mes===_eqDes.pesMes; }
-function eqDesSetPesMes(v){ _eqDes.pesMes=parseInt(v); _eqDes.pessoaAberta=null; _eqDesFillPessoas(_eqDesRecords()); }
+function _eqDesInMes(r){
+  if(r.ano!==_eqDes.pesAno) return false;
+  return _eqDes.pesMes==='ano' ? true : r.mes===_eqDes.pesMes;
+}
+function eqDesSetPesMes(v){ _eqDes.pesMes=(v==='ano'?'ano':parseInt(v)); _eqDes.pessoaAberta=null; _eqDesFillPessoas(_eqDesRecords()); }
 function eqDesSetPesAno(v){ _eqDes.pesAno=parseInt(v); _eqDes.pessoaAberta=null; _eqDesFillPessoas(_eqDesRecords()); }
 
 // Varre as Metas Diárias e monta a lista de apontamentos com equipe
@@ -7817,7 +7820,7 @@ function _eqDesFillPessoas(recs){
     recs.forEach(r=>anosSet.add(r.ano));
     const anos=[...anosSet].sort((a,b)=>b-a);
     filEl.innerHTML=`
-      <select class="eqdes-inp" style="width:auto;padding:6px 10px" onchange="eqDesSetPesMes(this.value)">${MESES.map((n,i)=>`<option value="${i}" ${i===_eqDes.pesMes?'selected':''}>${n}</option>`).join('')}</select>
+      <select class="eqdes-inp" style="width:auto;padding:6px 10px" onchange="eqDesSetPesMes(this.value)"><option value="ano" ${_eqDes.pesMes==='ano'?'selected':''}>Ano inteiro</option>${MESES.map((n,i)=>`<option value="${i}" ${i===_eqDes.pesMes?'selected':''}>${n}</option>`).join('')}</select>
       <select class="eqdes-inp" style="width:auto;padding:6px 10px;margin-left:6px" onchange="eqDesSetPesAno(this.value)">${anos.map(a=>`<option value="${a}" ${a===_eqDes.pesAno?'selected':''}>${a}</option>`).join('')}</select>`;
   }
   // Ordena por eficiência de metas no MÊS selecionado (taxa desc); empate → mais peças; sem meta vai pro fim
@@ -7868,11 +7871,18 @@ function _eqDesFillPessoas(recs){
         const mm=_eqRecMeta(r); const info=_EQ_METAINFO[mm.cls];
         return `<div class="eqdes-hist-dia"><span>${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')} · ${r.hora} · R${r.robo}</span><span style="color:${info.cor};font-weight:800">${info.ic} ${mm.pct}%</span></div>`;
       }).join('')}</div>`:'';
-      // Mini-gráfico: produção por dia do mês selecionado
-      const nDias=new Date(_eqDes.pesAno,_eqDes.pesMes+1,0).getDate();
-      const vals=Array(nDias).fill(0), labels=[];
-      for(let i=1;i<=nDias;i++) labels.push(i%5===0||i===1?String(i):'');
-      meus.forEach(r=>{ vals[r.dia-1]=(vals[r.dia-1]||0)+r.qtd; });
+      // Mini-gráfico: por dia do mês, ou por mês se "Ano inteiro"
+      let vals, labels;
+      if(_eqDes.pesMes==='ano'){
+        vals=Array(12).fill(0);
+        labels=['J','F','M','A','M','J','J','A','S','O','N','D'];
+        meus.forEach(r=>{ vals[r.mes]=(vals[r.mes]||0)+r.qtd; });
+      } else {
+        const nDias=new Date(_eqDes.pesAno,_eqDes.pesMes+1,0).getDate();
+        vals=Array(nDias).fill(0); labels=[];
+        for(let i=1;i<=nDias;i++) labels.push(i%5===0||i===1?String(i):'');
+        meus.forEach(r=>{ vals[r.dia-1]=(vals[r.dia-1]||0)+r.qtd; });
+      }
       corpo=`<div class="eqdes-pessoa-body${_eqDesAnimPessoa?' anim':''}">
         ${contMetaHTML}
         ${taxaHTML}
