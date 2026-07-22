@@ -7251,6 +7251,10 @@ function _eqDesHTML(){
         <div id="eqDesPodio"></div>
       </div>
       <div class="eqdes-sec">
+        <div class="eqdes-sec-title">🎯 Equipe que mais bateu meta na semana</div>
+        <div id="eqDesPodioMeta"></div>
+      </div>
+      <div class="eqdes-sec">
         <div class="eqdes-sec-title">🔎 Buscar apontamentos</div>
         <div id="eqDesFiltros"></div>
         <div id="eqDesBusca"></div>
@@ -7283,6 +7287,7 @@ function _eqDesHTML(){
 function _eqDesFill(){
   const recs=_eqDesRecords();
   _eqDesFillPodio(recs);
+  _eqDesFillPodioMeta(recs);
   _eqDesFillFiltros(recs);
   _eqDesFillBusca(recs);
   _eqDesFillPeriodos();
@@ -7376,6 +7381,47 @@ function _eqDesFillPodio(recs){
   // ordem visual: 2º · 1º · 3º
   el.innerHTML=`<div class="eqdes-podio">${card(top[1],1)}${card(top[0],0)}${card(top[2],2)}</div>
     <div class="eqdes-podio-legenda">Semana de ${String(seg.getDate()).padStart(2,'0')}/${String(seg.getMonth()+1).padStart(2,'0')} a ${String(dom.getDate()).padStart(2,'0')}/${String(dom.getMonth()+1).padStart(2,'0')}</div>`;
+}
+
+// Pódio de metas — top 3 pela taxa de atingimento na semana atual
+function _eqDesFillPodioMeta(recs){
+  const el=document.getElementById('eqDesPodioMeta'); if(!el) return;
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const dow=(hoje.getDay()+6)%7;
+  const seg=new Date(hoje); seg.setDate(seg.getDate()-dow);
+  const dom=new Date(seg); dom.setDate(dom.getDate()+6);
+  const sem=recs.filter(r=>{ const d=_eqDesRecDate(r); return d>=seg&&d<=dom&&r.meta>0; });
+  if(!sem.length){
+    el.innerHTML=`<div class="eqdes-aviso">Ainda sem apontamentos com meta cadastrada esta semana.</div>`;
+    return;
+  }
+  const por={};
+  sem.forEach(r=>{
+    const id=r.eq.id||'sem';
+    if(!por[id]) por[id]={id,cor:r.eq.cor,nome:r.eq.nome,bateu:0,total:0};
+    por[id].total++;
+    if(r.qtd>=r.meta) por[id].bateu++;
+  });
+  // taxa desc; empate desempata por nº de metas batidas; depois por nº de apontamentos
+  const top=Object.values(por).map(g=>{
+    const atual=equipesData.lista.find(e=>e.id===g.id);
+    if(atual){ g.cor=atual.cor; g.nome=(atual.nome||'').trim(); }
+    g.taxa=g.total>0?Math.round(g.bateu/g.total*100):0;
+    return g;
+  }).sort((a,b)=>(b.taxa-a.taxa)||(b.bateu-a.bateu)||(b.total-a.total)).slice(0,3);
+  const medalhas=['🏆','🥈','🥉'];
+  const card=(g,pos)=>{
+    if(!g) return '';
+    const txt=_eqTextColor(g.cor);
+    return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
+      <div class="eqdes-podio-medal">${medalhas[pos]}</div>
+      <div class="eqdes-podio-nome">${esc(g.nome||'Equipe')}</div>
+      <div class="eqdes-podio-total">${g.taxa}%</div>
+      <div class="eqdes-podio-sub" style="color:${txt}bb">${g.bateu} de ${g.total} apontamento${g.total!==1?'s':''}</div>
+    </div>`;
+  };
+  el.innerHTML=`<div class="eqdes-podio">${card(top[1],1)}${card(top[0],0)}${card(top[2],2)}</div>
+    <div class="eqdes-podio-legenda">Semana de ${String(seg.getDate()).padStart(2,'0')}/${String(seg.getMonth()+1).padStart(2,'0')} a ${String(dom.getDate()).padStart(2,'0')}/${String(dom.getMonth()+1).padStart(2,'0')} · ranking por % de metas batidas</div>`;
 }
 
 function _eqDesFillFiltros(recs){
