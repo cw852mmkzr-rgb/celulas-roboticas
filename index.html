@@ -7361,7 +7361,8 @@ function _eqDesFillPodioMeta(recs){
   // taxa desc; empate desempata por nº de metas batidas; depois por nº de apontamentos
   const top=Object.values(por).map(g=>{
     const atual=equipesData.lista.find(e=>e.id===g.id);
-    if(atual){ g.cor=atual.cor; g.nome=(atual.nome||'').trim(); }
+    if(atual){ g.cor=atual.cor; g.nome=(atual.nome||'').trim(); g.membros=(atual.membros||[]).slice(); }
+    else { g.membros=[]; }
     g.taxa=g.total>0?Math.round(g.bateu/g.total*100):0;
     return g;
   }).sort((a,b)=>(b.taxa-a.taxa)||(b.bateu-a.bateu)||(b.total-a.total)).slice(0,3);
@@ -7369,11 +7370,15 @@ function _eqDesFillPodioMeta(recs){
   const card=(g,pos)=>{
     if(!g) return '';
     const txt=_eqTextColor(g.cor);
+    const membrosHTML=(g.membros&&g.membros.length)
+      ? `<div class="eqdes-podio-membros">${g.membros.map(m=>`<span class="eqdes-podio-membro" style="background:${txt==='#ffffff'?'#00000028':'#ffffff40'};color:${txt}">${esc(m)}</span>`).join('')}</div>`
+      : `<div class="eqdes-podio-membros" style="color:${txt}88;font-style:italic;font-size:11px">sem membros</div>`;
     return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
       <div class="eqdes-podio-medal">${medalhas[pos]}</div>
       <div class="eqdes-podio-nome">${esc(g.nome||'Equipe')}</div>
       <div class="eqdes-podio-total">${g.taxa}%</div>
       <div class="eqdes-podio-sub" style="color:${txt}bb">${g.bateu} de ${g.total} apontamento${g.total!==1?'s':''}</div>
+      ${membrosHTML}
     </div>`;
   };
   el.innerHTML=`<div class="eqdes-podio">${card(top[1],1)}${card(top[0],0)}${card(top[2],2)}</div>
@@ -12430,6 +12435,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-podio-total{ font-size:22px; font-weight:900; font-family:'Courier New',monospace; margin-top:4px; }
 .eqdes-podio-card.p1 .eqdes-podio-total{ font-size:30px; }
 .eqdes-podio-sub{ font-size:11.5px; margin-top:3px; font-weight:700; }
+.eqdes-podio-membros{ display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin-top:10px; }
+.eqdes-podio-membro{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:99px; letter-spacing:0.02em; }
+.eqdes-podio-card.p1 .eqdes-podio-membro{ font-size:12px; padding:4px 11px; }
 .eqdes-podio-legenda{ text-align:center; font-size:11.5px; color:#5a6678; margin-top:12px; }
 /* entrada sutil só na navegação (nunca no poll de 3s) */
 #mainPanel.nav-enter .eqdes-podio-card{ animation:podioIn .5s var(--ease-out) backwards; }
