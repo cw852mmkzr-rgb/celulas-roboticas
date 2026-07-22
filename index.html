@@ -6993,6 +6993,7 @@ function metaApEnviar(){
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
+  if(equipesData.vincular_metas && _metaApEquipeSel) _eqAlertaCheck(_metaApEquipeSel, _metaApHora);
   _metaApEditIdx=null;
   _metaApLog.unshift({robo, hora:_metaApHora, campo, totalDigitado, pontos, pecas:novasPecas, dividiu});
   _metaApRenderLog();
@@ -7159,7 +7160,21 @@ function _eqGerenciarHTML(){
       </div>
       <button id="eqToggle" class="eq-switch ${vinc?'on':''}" role="switch" aria-checked="${vinc}" onclick="eqToggleVincular()"><span class="eq-switch-knob"></span></button>
     </div>
+    <div class="eq-toggle-row">
+      <div style="min-width:0">
+        <div class="eq-toggle-title">Ativar alertas de desempenho no WhatsApp</div>
+        <div class="eq-toggle-sub">Avisa via MR.ROBOT quando uma equipe fica abaixo de ${equipesData.alerta_limite||60}% da média dela. Número e limite no ⚙️ da sub-aba Desempenho.</div>
+      </div>
+      <button id="eqToggleAlertas" class="eq-switch ${equipesData.alertas_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_ativos}" onclick="eqToggleAlertas()"><span class="eq-switch-knob"></span></button>
+    </div>
     <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>`;
+}
+function eqToggleAlertas(){
+  equipesData.alertas_ativos = !equipesData.alertas_ativos;
+  const btn=document.getElementById('eqToggleAlertas');
+  if(btn){ btn.classList.toggle('on',equipesData.alertas_ativos); btn.setAttribute('aria-checked',equipesData.alertas_ativos); }
+  saveEquipes(true);
+  showToast(equipesData.alertas_ativos?'Alertas de desempenho ligados ✓':'Alertas de desempenho desligados');
 }
 
 // ===== Sub-aba Desempenho =====
@@ -7239,6 +7254,10 @@ function _eqDesHTML(){
         <div id="eqDesPessoas"></div>
         <div style="font-size:11.5px;color:#5a6678;margin-top:12px">Valores referentes à produção da equipe nos apontamentos em que a pessoa estava presente.</div>
       </div>
+      <div class="eqdes-sec">
+        <div class="eqdes-sec-title">🔔 Histórico de alertas</div>
+        <div id="eqDesAlertas"></div>
+      </div>
     </div>`;
 }
 function _eqDesFill(){
@@ -7250,6 +7269,27 @@ function _eqDesFill(){
   _eqDesFillEquipes(recs);
   _eqDesFillTurnos(recs);
   _eqDesFillPessoas(recs);
+  _eqDesFillAlertas();
+}
+function _eqDesFillAlertas(){
+  const el=document.getElementById('eqDesAlertas'); if(!el) return;
+  const hist=Array.isArray(equipesData.alertas_historico)?equipesData.alertas_historico:[];
+  if(!equipesData.alertas_ativos && !hist.length){
+    el.innerHTML=`<div class="eqdes-aviso">Alertas desligados. Ative em "👥 Gerenciar" e configure número/limite no ⚙️ acima.</div>`;
+    return;
+  }
+  if(!hist.length){
+    el.innerHTML=`<div class="eqdes-aviso">Nenhum alerta enviado ainda. Bom sinal! 👍</div>`;
+    return;
+  }
+  el.innerHTML=hist.map(a=>{
+    const cor=a.cor||'#8792a6';
+    return `<div class="eqdes-alerta-row">
+      <span class="eqdes-eqbadge" style="background:${cor};color:${_eqTextColor(cor)}">${esc(a.nome||'Equipe')}</span>
+      <span class="eqdes-alerta-txt">⚠️ ${a.pecas} pç no dia — <b style="color:#ff6a00">${a.pct}% abaixo</b> da média (${a.media} pç/dia)</span>
+      <span class="eqdes-alerta-data">${esc(a.enviado_em||a.ymd||'')}</span>
+    </div>`;
+  }).join('');
 }
 // Handlers de filtro — atualizam o estado e só as seções afetadas
 function eqDesSetFiltro(campo,valor){
@@ -7577,7 +7617,17 @@ function eqCfgAbrir(){
       <input type="time" class="eqdes-inp" style="flex:1" id="eqCfgFim${i}" value="${esc(t.fim)}">
     </div>`).join('');
   document.getElementById('eqCfgBody').innerHTML=`
-    <div class="ap-label">Faixas de horário dos turnos</div>${rows}`;
+    <div class="ap-label">Faixas de horário dos turnos</div>${rows}
+    <div class="ap-label" style="margin-top:18px">Alertas de desempenho (WhatsApp)</div>
+    <div class="eq-field" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:13px;color:#8a95a8;min-width:110px">Limite (%)</span>
+      <input type="number" class="eqdes-inp" style="flex:1" id="eqCfgLimite" min="10" max="95" value="${equipesData.alerta_limite||60}">
+    </div>
+    <div class="eq-field" style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:13px;color:#8a95a8;min-width:110px">Nº WhatsApp</span>
+      <input type="text" class="eqdes-inp" style="flex:1" id="eqCfgNumero" inputmode="numeric" placeholder="Ex: 5511999999999" value="${esc(equipesData.alerta_numero||'')}">
+    </div>
+    <div style="font-size:11px;color:#5a6678">Alerta dispara quando a produção do dia fica abaixo do limite % da média da equipe (últimos 14 dias, mín. 5 dias de histórico).</div>`;
   document.getElementById('eqCfgModal').style.display='flex';
 }
 function eqCfgFechar(){ document.getElementById('eqCfgModal').style.display='none'; }
@@ -7588,10 +7638,68 @@ function eqCfgSalvar(){
     fim:document.getElementById('eqCfgFim'+i).value||t.fim
   }));
   equipesData.turnos=ts;
+  const lim=parseInt(document.getElementById('eqCfgLimite').value);
+  if(!isNaN(lim)&&lim>=10&&lim<=95) equipesData.alerta_limite=lim;
+  equipesData.alerta_numero=(document.getElementById('eqCfgNumero').value||'').replace(/\D/g,'');
   saveEquipes(true);
   eqCfgFechar();
   if(_eqTab==='desempenho') _eqDesFillTurnos(_eqDesRecords());
   showToast('Configuração salva ✓');
+}
+
+// ===== Alerta de queda de desempenho (WhatsApp via MR.ROBOT) =====
+// Chamado após registrar apontamento com equipe. Dispara no máx. 1x/equipe/dia,
+// só perto do fim do turno do apontamento e com ≥5 dias de histórico em 14 dias.
+async function _eqAlertaCheck(equipeSnap, horaApont){
+  try{
+    if(!equipeSnap || !equipesData.alertas_ativos || !equipesData.vincular_metas) return;
+    const numero=(equipesData.alerta_numero||'').replace(/\D/g,'');
+    if(!numero) return;
+    // só avalia se o apontamento está na última hora do turno em que cai (fim do turno)
+    const gi=_eqTurnoDaHora(horaApont);
+    if(gi<0) return;
+    const fim=_eqMin(_eqTurnos()[gi].fim);
+    if(((fim-_eqMin(horaApont)+1440)%1440)>60) return;
+    const hoje=new Date(); hoje.setHours(0,0,0,0);
+    const ymdHoje=_eqDesYMD(hoje);
+    // máx. 1 alerta por equipe por dia
+    if(!Array.isArray(equipesData.alertas_historico)) equipesData.alertas_historico=[];
+    if(equipesData.alertas_historico.some(a=>a.ymd===ymdHoje&&a.equipeId===equipeSnap.id)) return;
+    // histórico da equipe: últimos 14 dias (sem hoje), agrupado por dia
+    const recs=_eqDesRecords().filter(r=>r.eq.id===equipeSnap.id);
+    const ini14=new Date(hoje); ini14.setDate(ini14.getDate()-14);
+    const porDia={};
+    let totalHoje=0;
+    recs.forEach(r=>{
+      const ymd=_eqDesRecYMD(r);
+      if(ymd===ymdHoje){ totalHoje+=r.qtd; return; }
+      const d=_eqDesRecDate(r);
+      if(d>=ini14&&d<hoje) porDia[ymd]=(porDia[ymd]||0)+r.qtd;
+    });
+    const dias=Object.keys(porDia).length;
+    if(dias<5) return; // histórico insuficiente
+    const media=Object.values(porDia).reduce((s,v)=>s+v,0)/dias;
+    if(media<=0) return;
+    const limite=(equipesData.alerta_limite||60)/100;
+    if(totalHoje>=media*limite) return; // desempenho ok
+    const pctAbaixo=Math.round((1-totalHoje/media)*100);
+    const nomeEq=(equipeSnap.nome||'').trim()||'Equipe '+(equipeSnap.cor||'');
+    const msg=`⚠️ *Alerta de Desempenho*\nA equipe ${nomeEq} produziu ${totalHoje} peças hoje, ${pctAbaixo}% abaixo da média dela (${Math.round(media)} peças/dia).`;
+    const r=await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+      body:JSON.stringify({tipo:"alerta",phone:numero,mensagem:msg})
+    });
+    if(!r.ok) return; // não registra se o envio falhou
+    equipesData.alertas_historico.unshift({
+      ymd:ymdHoje, equipeId:equipeSnap.id, nome:nomeEq, cor:equipeSnap.cor,
+      pecas:totalHoje, media:Math.round(media), pct:pctAbaixo,
+      enviado_em:new Date().toLocaleString('pt-BR')
+    });
+    equipesData.alertas_historico=equipesData.alertas_historico.slice(0,50);
+    saveEquipes(true);
+    showToast(`⚠️ Alerta de desempenho enviado: ${nomeEq}`);
+  }catch(e){}
 }
 
 let _eqDesAnimPessoa=false; // anima a expansão só no clique (nunca no poll)
@@ -7831,8 +7939,10 @@ function metaEqSalvar(){
     delete rd['eqp_'+campo];
   }
   saveToAPI(celulas);
+  const _alertaEq=_metaEqSel, _alertaHora=_metaEqCtx.hora;
   metaEqFechar();
   showToast('Equipe registrada ✓');
+  if(_alertaEq) _eqAlertaCheck(_alertaEq, _alertaHora);
 }
 function metaEqFechar(){ const m=document.getElementById('metaEqModal'); if(m) m.style.display='none'; _metaEqCtx=null; _metaEqSel=null; _metaEqMembros=[]; }
 
@@ -12188,6 +12298,10 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-pessoa-seta{ font-size:11px; color:#5a6678; }
 .eqdes-pessoa-body{ padding:0 14px 14px; }
 .eqdes-pessoa-body.anim{ animation:eqPessoaIn .26s var(--ease-out); }
+/* Histórico de alertas */
+.eqdes-alerta-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0e14; border:1px solid #ff6a0030; border-left:3px solid #ff6a00; border-radius:10px; padding:10px 14px; margin-bottom:8px; }
+.eqdes-alerta-txt{ font-size:13px; color:#cdd6e3; flex:1; min-width:200px; font-family:'Courier New',monospace; }
+.eqdes-alerta-data{ font-size:11.5px; color:#5a6678; font-family:'Courier New',monospace; }
 /* Comparativo por turno */
 .eqdes-turno-leg{ display:flex; gap:16px; justify-content:center; margin-bottom:14px; font-size:11.5px; color:#8a95a8; flex-wrap:wrap; }
 .eqdes-turno-leg span{ display:inline-flex; align-items:center; gap:6px; }
