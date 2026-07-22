@@ -7989,10 +7989,10 @@ function _eqUltimaDoRobo(robo){
 function _metaApPreselEquipe(){
   const roboEl=document.getElementById('metaApRobo');
   const robo=roboEl?parseInt(roboEl.value):null;
-  // 1º: cache da sessão; 2º: última do banco pra esse robô; 3º: fallback global
+  // 1º: cache da sessão; 2º: última do banco pra esse robô (sem fallback global)
   let lembrado=(robo!=null&&_metaApLastPorRobo[robo])?_metaApLastPorRobo[robo]:null;
   if(!lembrado && robo!=null){ lembrado=_eqUltimaDoRobo(robo); }
-  const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
+  const eqId=lembrado?lembrado.equipeId:null;
   if(!eqId){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
   const eq=equipesData.lista.find(e=>e.id===eqId);
   if(!eq){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
@@ -8053,10 +8053,10 @@ function metaEqAbrir(key, robo, campo){
   if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
   else {
     _metaEqSel=null; _metaEqMembros=[];
-    // Fallback: sessão → banco (últimos 7 dias, mesmo robô) → última global
+    // Fallback: sessão → banco (últimos 7 dias, mesmo robô); sem fallback global
     let lembrado=_metaApLastPorRobo[robo];
     if(!lembrado){ lembrado=_eqUltimaDoRobo(robo); }
-    const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
+    const eqId=lembrado?lembrado.equipeId:null;
     if(eqId){
       const eq=equipesData.lista.find(e=>e.id===eqId);
       if(eq){
