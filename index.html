@@ -7184,7 +7184,8 @@ function eqToggleAlertas(){
 }
 
 // ===== Sub-aba Desempenho =====
-let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null, pesMes:new Date().getMonth(), pesAno:new Date().getFullYear() };
+let _eqDes = { data:'', hora:'', robo:'', equipeId:'', pessoa:'', metaStatus:'', periodo:'hoje', de:'', ate:'', graf:'semanal', pessoaAberta:null, pesMes:new Date().getMonth(), pesAno:new Date().getFullYear(), cardMembros:{} };
+function eqDesToggleCardMembros(id){ _eqDes.cardMembros[id]=!_eqDes.cardMembros[id]; _eqDesFillEquipes(_eqDesRecords()); }
 function _eqDesInMes(r){
   if(r.ano!==_eqDes.pesAno) return false;
   return _eqDes.pesMes==='ano' ? true : r.mes===_eqDes.pesMes;
@@ -7614,12 +7615,22 @@ function _eqDesFillEquipes(recs){
     } else {
       metaHTML=`<div class="eqdes-meta-box"><div class="eqdes-meta-taxa" style="color:#5a6678">Sem meta cadastrada no período — <b>—</b></div></div>`;
     }
+    const atual=equipesData.lista.find(e=>e.id===g.id);
+    const membrosAtuais=(atual&&atual.membros)||[];
+    const membrosAberto=!!_eqDes.cardMembros[g.id];
+    const membrosBox=membrosAberto?`<div class="eqdes-card-membros" style="background:${g.cor}12;border-top:1px solid ${g.cor}55">${
+      membrosAtuais.length
+        ? membrosAtuais.map(m=>`<span class="eqdes-card-membro" style="border-color:${g.cor}66;color:#f0f5fc">${esc(m)}</span>`).join('')
+        : `<span style="font-size:13px;color:#8a95a8;font-style:italic">Sem membros cadastrados.</span>`
+    }</div>`:'';
     return `<div class="eqdes-card" style="border-color:${g.cor}60">
       <div class="eqdes-card-head" style="background:${g.cor};color:${txt}">
         <span class="eqdes-rank">${rank+1}º</span>
         <span class="eqdes-card-nome">${esc(nomeEq)}</span>
+        <button class="eqdes-card-info" onclick="eqDesToggleCardMembros('${g.id}')" title="Ver membros" style="color:${txt};background:${txt==='#ffffff'?'#00000030':'#ffffff40'}">${membrosAberto?'✕':'👥'}</button>
         <span class="eqdes-card-total">${g.totalPeriodo.toLocaleString('pt-BR')} pç <small style="opacity:.8">(${_EQDES_PERIODOS[_eqDes.periodo].toLowerCase()})</small></span>
       </div>
+      ${membrosBox}
       <div class="eqdes-stats">
         <div class="eqdes-stat"><b>${tHoje.toLocaleString('pt-BR')}</b><span>hoje</span></div>
         <div class="eqdes-stat"><b>${tSem.toLocaleString('pt-BR')}</b><span>semana</span></div>
@@ -12478,6 +12489,11 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqdes-rank{ font-size:14.5px; font-weight:900; background:#00000030; border-radius:99px; padding:4px 11px; flex-shrink:0; }
 .eqdes-card-nome{ font-size:17.5px; font-weight:900; font-family:'Montserrat',sans-serif; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; letter-spacing:0.01em; }
 .eqdes-card-total{ font-size:15.5px; font-weight:900; font-family:'Courier New',monospace; flex-shrink:0; }
+.eqdes-card-info{ border:none; width:30px; height:30px; border-radius:8px; font-size:14px; cursor:pointer; flex-shrink:0; transition:transform .16s var(--ease-out), filter .16s ease; padding:0; display:inline-flex; align-items:center; justify-content:center; }
+.eqdes-card-info:active{ transform:scale(0.9); filter:brightness(1.1); }
+.eqdes-card-membros{ display:flex; flex-wrap:wrap; gap:7px; padding:12px 16px; animation:eqCardMembrosIn .22s var(--ease-out); }
+.eqdes-card-membro{ font-size:13.5px; font-weight:800; padding:5px 12px; border-radius:99px; border:1px solid; background:#0a0e14; }
+@keyframes eqCardMembrosIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:none; } }
 .eqdes-stats{ display:flex; flex-wrap:wrap; gap:10px; padding:14px 16px 0; }
 .eqdes-stat{ background:#10151d; border:1px solid #1b2330; border-radius:10px; padding:11px 14px; text-align:center; flex:1; min-width:78px; }
 .eqdes-stat b{ display:block; font-size:24px; color:#f0f5fc; font-family:'Courier New',monospace; letter-spacing:0.02em; }
