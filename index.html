@@ -7382,7 +7382,7 @@ function _eqDesFillPodioPessoa(recs){
     return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
       <div class="eqdes-podio-medal">${medalhas[pos]}</div>
       <div class="eqdes-podio-nome">👤 ${esc(g.nome)}</div>
-      <div class="eqdes-podio-total"><span style="color:${txt}">✅ ${g.bateu}</span> <span style="opacity:.55;font-weight:800">/</span> <span style="color:${txt}">❌ ${naoBateu}</span></div>
+      <div class="eqdes-podio-total"><span style="color:${txt};white-space:nowrap">✅ ${g.bateu}</span><span style="opacity:.5;font-weight:800">/</span><span style="color:${txt};white-space:nowrap">❌ ${naoBateu}</span></div>
       <div class="eqdes-podio-sub" style="color:${txt}bb">${g.total} apontamento${g.total!==1?'s':''} com meta</div>
     </div>`;
   };
@@ -7428,7 +7428,7 @@ function _eqDesFillPodioMeta(recs){
     return `<div class="eqdes-podio-card p${pos+1}" style="background:${g.cor};color:${txt}">
       <div class="eqdes-podio-medal">${medalhas[pos]}</div>
       <div class="eqdes-podio-nome">${esc(g.nome||'Equipe')}</div>
-      <div class="eqdes-podio-total"><span style="color:${txt}">✅ ${g.bateu}</span> <span style="opacity:.55;font-weight:800">/</span> <span style="color:${txt}">❌ ${naoBateu}</span></div>
+      <div class="eqdes-podio-total"><span style="color:${txt};white-space:nowrap">✅ ${g.bateu}</span><span style="opacity:.5;font-weight:800">/</span><span style="color:${txt};white-space:nowrap">❌ ${naoBateu}</span></div>
       <div class="eqdes-podio-sub" style="color:${txt}bb">${g.total} apontamento${g.total!==1?'s':''} com meta</div>
       ${membrosHTML}
     </div>`;
@@ -12476,16 +12476,16 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 }
 /* Pódio da semana */
 .eqdes-podio{ display:flex; align-items:flex-end; justify-content:center; gap:14px; flex-wrap:wrap; }
-.eqdes-podio-card{ border-radius:16px; padding:16px 20px; text-align:center; min-width:150px; flex:0 1 190px; box-shadow:0 10px 26px -14px #000000d0; }
-.eqdes-podio-card.p1{ flex:0 1 240px; padding:24px 24px 20px; transform-origin:bottom center; order:2; }
+.eqdes-podio-card{ border-radius:16px; padding:16px 20px; text-align:center; min-width:180px; flex:0 1 220px; box-shadow:0 10px 26px -14px #000000d0; }
+.eqdes-podio-card.p1{ flex:0 1 270px; padding:24px 24px 20px; transform-origin:bottom center; order:2; }
 .eqdes-podio-card.p2{ order:1; opacity:.96; }
 .eqdes-podio-card.p3{ order:3; opacity:.96; }
 .eqdes-podio-medal{ font-size:30px; line-height:1; }
 .eqdes-podio-card.p1 .eqdes-podio-medal{ font-size:44px; }
 .eqdes-podio-nome{ font-size:16px; font-weight:900; font-family:'Montserrat',sans-serif; margin-top:8px; word-break:break-word; }
 .eqdes-podio-card.p1 .eqdes-podio-nome{ font-size:20px; }
-.eqdes-podio-total{ font-size:22px; font-weight:900; font-family:'Courier New',monospace; margin-top:4px; }
-.eqdes-podio-card.p1 .eqdes-podio-total{ font-size:30px; }
+.eqdes-podio-total{ font-size:19px; font-weight:900; font-family:'Courier New',monospace; margin-top:6px; white-space:nowrap; display:flex; align-items:center; justify-content:center; gap:6px; }
+.eqdes-podio-card.p1 .eqdes-podio-total{ font-size:26px; gap:8px; }
 .eqdes-podio-sub{ font-size:11.5px; margin-top:3px; font-weight:700; }
 .eqdes-podio-membros{ display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin-top:10px; }
 .eqdes-podio-membro{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:99px; letter-spacing:0.02em; }
