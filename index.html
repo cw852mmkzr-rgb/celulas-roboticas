@@ -7963,12 +7963,35 @@ let _metaApMembrosSel = [];    // nomes das pessoas marcadas como presentes na h
 let _metaApLastPorRobo = {}; // { [robo]: {equipeId, membros:[]} }
 // Compat: última equipe global (fallback quando o robô ainda não tem histórico na sessão)
 let _metaApLastEquipeId = null;
-// Pré-seleciona a equipe do robô atual (ou a última global como fallback).
+// Busca no banco a última equipe usada para este robô (últimos 7 dias).
+// Retorna {equipeId, membros:[]} ou null. Reaproveita snapshots já salvos.
+function _eqUltimaDoRobo(robo){
+  const key=metaApKey(); if(!key) return null;
+  const c=celulas[key]; if(!c||!c.metas_dias) return null;
+  const horas=[...HORAS_DIA,...HORAS_NOITE];
+  const hoje=new Date();
+  // varre até 7 dias atrás (hoje inclusive), mais recente primeiro
+  for(let i=0;i<7;i++){
+    const d=new Date(hoje); d.setDate(d.getDate()-i);
+    const chave=`${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+    const rd=c.metas_dias[chave]&&c.metas_dias[chave][robo];
+    if(!rd) continue;
+    // varre horas em ordem inversa (mais recente do dia primeiro)
+    for(let j=horas.length-1;j>=0;j--){
+      const eq=rd['eqp_'+campoH(horas[j])];
+      if(eq&&eq.id) return { equipeId:eq.id, membros:(eq.presentes||[]).slice() };
+    }
+  }
+  return null;
+}
+// Pré-seleciona a equipe do robô atual: sessão → banco → fallback global.
 // Chamada ao trocar de robô no select e ao entrar no passo 2.
 function _metaApPreselEquipe(){
   const roboEl=document.getElementById('metaApRobo');
   const robo=roboEl?parseInt(roboEl.value):null;
-  const lembrado=(robo!=null&&_metaApLastPorRobo[robo])?_metaApLastPorRobo[robo]:null;
+  // 1º: cache da sessão; 2º: última do banco pra esse robô; 3º: fallback global
+  let lembrado=(robo!=null&&_metaApLastPorRobo[robo])?_metaApLastPorRobo[robo]:null;
+  if(!lembrado && robo!=null){ lembrado=_eqUltimaDoRobo(robo); }
   const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
   if(!eqId){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
   const eq=equipesData.lista.find(e=>e.id===eqId);
@@ -8030,8 +8053,9 @@ function metaEqAbrir(key, robo, campo){
   if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
   else {
     _metaEqSel=null; _metaEqMembros=[];
-    // Fallback: última equipe usada NESTE robô (por robô); se não houver, a última global
-    const lembrado=_metaApLastPorRobo[robo];
+    // Fallback: sessão → banco (últimos 7 dias, mesmo robô) → última global
+    let lembrado=_metaApLastPorRobo[robo];
+    if(!lembrado){ lembrado=_eqUltimaDoRobo(robo); }
     const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
     if(eqId){
       const eq=equipesData.lista.find(e=>e.id===eqId);
