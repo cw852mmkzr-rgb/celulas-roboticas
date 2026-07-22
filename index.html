@@ -6989,7 +6989,8 @@ function metaApEnviar(){
   // junto do robô+hora; congela os membros no momento do apontamento
   if(equipesData.vincular_metas && _metaApEquipeSel){
     rd['eqp_'+campo] = Object.assign({}, _metaApEquipeSel, { presentes:_metaApMembrosSel.slice() });
-    _metaApLastEquipeId = _metaApEquipeSel.id; // lembra para o próximo apontamento
+    _metaApLastEquipeId = _metaApEquipeSel.id; // fallback global
+    _metaApLastPorRobo[robo] = { equipeId:_metaApEquipeSel.id, membros:_metaApMembrosSel.slice() }; // por robô
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   updateMetasCell(key,robo,campo,String(somado));
@@ -7868,12 +7869,24 @@ function eqExcluir(id){
 // ---- Integração com o apontamento de Metas (chips de equipe) ----
 let _metaApEquipeSel = null;   // snapshot {id,cor,nome,membros} ou null
 let _metaApMembrosSel = [];    // nomes das pessoas marcadas como presentes na hora
-let _metaApLastEquipeId = null; // última equipe usada — pré-seleciona no próximo apontamento
-// Pré-seleciona a última equipe usada (se ainda existir) quando nada estiver selecionado
+// Última equipe/pessoas usadas por robô — pré-seleciona no próximo apontamento
+// do mesmo robô. Ex: robô 601 → equipe verde; robô 606 → equipe rosa.
+let _metaApLastPorRobo = {}; // { [robo]: {equipeId, membros:[]} }
+// Compat: última equipe global (fallback quando o robô ainda não tem histórico na sessão)
+let _metaApLastEquipeId = null;
+// Pré-seleciona a equipe do robô atual (ou a última global como fallback).
+// Chamada ao trocar de robô no select e ao entrar no passo 2.
 function _metaApPreselEquipe(){
-  if(_metaApEquipeSel || !_metaApLastEquipeId) return;
-  const eq=equipesData.lista.find(e=>e.id===_metaApLastEquipeId);
-  if(eq){ _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() }; _metaApMembrosSel=[]; }
+  const roboEl=document.getElementById('metaApRobo');
+  const robo=roboEl?parseInt(roboEl.value):null;
+  const lembrado=(robo!=null&&_metaApLastPorRobo[robo])?_metaApLastPorRobo[robo]:null;
+  const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
+  if(!eqId){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
+  const eq=equipesData.lista.find(e=>e.id===eqId);
+  if(!eq){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
+  _metaApEquipeSel={ id:eq.id, cor:eq.cor, nome:(eq.nome||'').trim(), membros:(eq.membros||[]).slice() };
+  // Restaura só os membros que ainda existem na equipe (nomes podem ter mudado)
+  _metaApMembrosSel=lembrado?(lembrado.membros||[]).filter(m=>(eq.membros||[]).includes(m)):[];
 }
 function metaApRenderEquipes(){
   const box=document.getElementById('metaApEquipeBox');
@@ -7928,7 +7941,16 @@ function metaEqAbrir(key, robo, campo){
   if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
   else {
     _metaEqSel=null; _metaEqMembros=[];
-    if(_metaApLastEquipeId){ const eq=equipesData.lista.find(e=>e.id===_metaApLastEquipeId); if(eq){ _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()}; } }
+    // Fallback: última equipe usada NESTE robô (por robô); se não houver, a última global
+    const lembrado=_metaApLastPorRobo[robo];
+    const eqId=lembrado?lembrado.equipeId:_metaApLastEquipeId;
+    if(eqId){
+      const eq=equipesData.lista.find(e=>e.id===eqId);
+      if(eq){
+        _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()};
+        _metaEqMembros=lembrado?(lembrado.membros||[]).filter(m=>(eq.membros||[]).includes(m)):[];
+      }
+    }
   }
   const sub=document.getElementById('metaEqSub'); if(sub) sub.textContent=`Robô ${robo} · ${hora}`;
   metaEqRender();
@@ -7973,6 +7995,7 @@ function metaEqSalvar(){
   if(_metaEqSel){
     rd['eqp_'+campo]=Object.assign({},_metaEqSel,{presentes:_metaEqMembros.slice()});
     _metaApLastEquipeId=_metaEqSel.id;
+    _metaApLastPorRobo[robo]={ equipeId:_metaEqSel.id, membros:_metaEqMembros.slice() };
   } else {
     delete rd['eqp_'+campo];
   }
@@ -12109,7 +12132,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
         <button class="ap-trocar" onclick="metaApTrocarHora()">trocar hora</button>
       </div>
       <div class="ap-label">Robô</div>
-      <select id="metaApRobo" class="ap-select" onchange="_metaApSetBlockClose()" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()"></select>
+      <select id="metaApRobo" class="ap-select" onchange="_metaApSetBlockClose();_metaApPreselEquipe();metaApRenderEquipes()" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()"></select>
       <div class="ap-label" style="margin-top:15px">Quantidade total produzida</div>
       <input id="metaApQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
       <div style="font-size:11px;color:#5a6678;margin-top:6px">Se o robô tiver pontos de solda cadastrados, o valor é dividido automaticamente.</div>
