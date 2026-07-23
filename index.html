@@ -10692,7 +10692,14 @@ function mapaLerFoto(event){
       const ano=mapaDados.metas_ano||new Date().getFullYear();
       const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
       const dia=mapaDados.metas_dia||new Date().getDate();
-      document.getElementById("mapaFotoDataLabel").textContent = `${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
+      // Preenche os seletores de data do modal (padrão = data atual da tela, editável)
+      const anoAtual=new Date().getFullYear();
+      const selDia=document.getElementById("mapaFotoDia");
+      const selMes=document.getElementById("mapaFotoMes");
+      const selAno=document.getElementById("mapaFotoAno");
+      selDia.innerHTML=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
+      selMes.innerHTML=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
+      selAno.innerHTML=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
 
       document.getElementById("modalMapaFoto").style.display = "flex";
     };
@@ -10749,10 +10756,17 @@ async function mapaAnalisarFoto(){
         return;
       }
 
-      const ano=mapaDados.metas_ano||new Date().getFullYear();
-      const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
-      const dia=mapaDados.metas_dia||new Date().getDate();
+      // Data escolhida no modal (seletores próprios); fallback pra data da tela
+      const selDia=document.getElementById("mapaFotoDia");
+      const selMes=document.getElementById("mapaFotoMes");
+      const selAno=document.getElementById("mapaFotoAno");
+      const ano=selAno?parseInt(selAno.value):(mapaDados.metas_ano||new Date().getFullYear());
+      const mes=selMes?parseInt(selMes.value):(mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth());
+      const dia=selDia?parseInt(selDia.value):(mapaDados.metas_dia||new Date().getDate());
       const chave=`${ano}_${mes}_${dia}`;
+      // Sincroniza a data da tela com a escolhida no modal, pra que a leitura de
+      // rótulos (mapaGetNomeMaquina) e o render mostrem o dia preenchido.
+      mapaDados.metas_ano=ano; mapaDados.metas_mes=mes; mapaDados.metas_dia=dia;
       if(!mapaDados.metas_dias) mapaDados.metas_dias={};
       if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
       const diaData = mapaDados.metas_dias[chave];
@@ -12168,7 +12182,12 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:14px">
     <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher Produção via Foto</div>
     <img id="mapaFotoPreview" style="display:none;width:100%;max-height:240px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
-    <div style="font-size:12px;color:#4a5568">A foto será preenchida na data selecionada na tela (<span id="mapaFotoDataLabel" style="color:#a78bfa;font-weight:700"></span>). Para mudar a data, feche este modal e ajuste no seletor de Dia/Mês/Ano antes de tirar a foto.</div>
+    <div style="font-size:12px;color:#8a93a3">Escolha o dia que será preenchido com a foto:</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="mapaFotoDia" style="flex:1;min-width:64px;background:#161b22;border:1px solid #2a3040;color:#e0e6ef;border-radius:8px;padding:8px;font-family:'Courier New',monospace;font-weight:700"></select>
+      <select id="mapaFotoMes" style="flex:2;min-width:100px;background:#161b22;border:1px solid #2a3040;color:#e0e6ef;border-radius:8px;padding:8px;font-family:'Courier New',monospace;font-weight:700"></select>
+      <select id="mapaFotoAno" style="flex:1;min-width:80px;background:#161b22;border:1px solid #2a3040;color:#e0e6ef;border-radius:8px;padding:8px;font-family:'Courier New',monospace;font-weight:700"></select>
+    </div>
     <div id="mapaFotoStatus" style="font-size:12px;color:#4a5568;min-height:16px;white-space:pre-wrap"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
       <button onclick="document.getElementById('modalMapaFoto').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
