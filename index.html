@@ -10754,33 +10754,59 @@ async function mapaAnalisarFoto(){
       const chave=`${ano}_${mes}_${dia}`;
       if(!mapaDados.metas_dias) mapaDados.metas_dias={};
       if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
+      const diaData = mapaDados.metas_dias[chave];
 
-      let maquinasPreenchidas = 0, celulasPreenchidas = 0;
+      // As linhas da tabela usam chaves FIXAS (t_0..t_49 / s_0..s_7). O número da
+      // máquina lido da foto é só o RÓTULO (nome), não a chave de dados. Então cada
+      // máquina lida precisa casar com um slot fixo: por rótulo já existente, ou no
+      // próximo slot livre (sem rótulo). Sem isso os dados caem em chaves órfãs que a
+      // tabela nunca renderiza.
+      const slots = mapaGetMaquinasAtivas();
+      const norm = s => String(s||'').trim().replace(/[^0-9a-z]/gi,'').toLowerCase();
+      const nomeToSlot = {};
+      slots.forEach(sl=>{ const nm=norm(mapaGetNomeMaquina(sl)); if(nm) nomeToSlot[nm]=sl; });
+      const usados = new Set(Object.values(nomeToSlot));
+      const livres = slots.filter(sl=>!usados.has(sl) && !norm(mapaGetNomeMaquina(sl)));
+      let idxLivre = 0;
+
+      let maquinasPreenchidas = 0, celulasPreenchidas = 0, semSlot = 0;
       const resumoLinhas = [];
       Object.entries(maquinas).forEach(([maq, info])=>{
         if(!maq) return;
-        if(!mapaDados.metas_dias[chave][maq]) mapaDados.metas_dias[chave][maq]={};
+        const nm = norm(maq);
+        let slot = nomeToSlot[nm];
+        if(!slot){
+          if(idxLivre < livres.length){ slot = livres[idxLivre++]; nomeToSlot[nm] = slot; }
+          else { semSlot++; return; }
+        }
+        if(!diaData[slot]) diaData[slot] = {};
+        // Preenche a "primeira coluna" (rótulo da máquina) se ainda estiver vazia
+        if(diaData[slot].nome===undefined || String(diaData[slot].nome).trim()===''){
+          diaData[slot].nome = String(maq).trim();
+        }
         let countMaq = 0;
         Object.entries(info).forEach(([k,v])=>{
           if(k==='cod'){
-            if(v) mapaDados.metas_dias[chave][maq].cod = String(v).trim();
+            if(v) diaData[slot].cod = String(v).trim();
             return;
           }
           const m = k.match(/^(\d{2}):(\d{2})$/);
           if(!m) return;
           const n = parseInt(v);
           if(isNaN(n) || n<=0) return;
-          mapaDados.metas_dias[chave][maq][campoH(k)] = n;
+          diaData[slot][campoH(k)] = n;
           countMaq++; celulasPreenchidas++;
         });
-        if(countMaq>0){ maquinasPreenchidas++; resumoLinhas.push(`  ${maq}: ${countMaq} hora(s)`); }
+        if(countMaq>0){ maquinasPreenchidas++; resumoLinhas.push(`  máq ${maq}: ${countMaq} hora(s)`); }
       });
 
       await saveMapaDados();
-      renderMapaProducaoTabela();
+      renderMapaProducaoTabela(true);
 
       status.style.color = "#00e87a";
-      status.textContent = `✓ ${maquinasPreenchidas} máquina(s), ${celulasPreenchidas} valor(es) preenchidos:\n` + resumoLinhas.join('\n');
+      let msgFinal = `✓ ${maquinasPreenchidas} máquina(s), ${celulasPreenchidas} valor(es) preenchidos:\n` + resumoLinhas.join('\n');
+      if(semSlot>0) msgFinal += `\n⚠ ${semSlot} máquina(s) não couberam (sem linha livre nesta aba).`;
+      status.textContent = msgFinal;
       btn.textContent = "✓ Concluído";
       showToast(`${maquinasPreenchidas} máquina(s) preenchidas ✓`);
       btn.disabled = false;
