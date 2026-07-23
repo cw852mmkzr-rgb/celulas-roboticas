@@ -6770,6 +6770,22 @@ function mapaCopiarDiaAnterior(){
   showToast(`Máquinas, códigos e metas copiados de ${copiadas} máquina(s) ✓`);
 }
 
+function mapaLimparDia(){
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const dataLbl=`${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
+  if(!mapaDados.metas_dias || !mapaDados.metas_dias[chave] || !Object.keys(mapaDados.metas_dias[chave]).length){
+    showToast("O dia "+dataLbl+" já está vazio.", true); return;
+  }
+  if(!confirm(`Limpar TODO o conteúdo do dia ${dataLbl}?\n\nIsso apaga números das máquinas, códigos, metas e todas as horas preenchidas desse dia. Não pode ser desfeito.`)) return;
+  delete mapaDados.metas_dias[chave];
+  saveMapaDados();
+  renderMapaProducaoTabela(true);
+  showToast("Conteúdo do dia "+dataLbl+" limpo ✓");
+}
+
 function mapaUpdateMetasCell(chaveM,campo,valor){
   const ano=mapaDados.metas_ano||new Date().getFullYear();
   const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
@@ -8326,6 +8342,7 @@ function renderMapaProducaoTabela(force){
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" title="Tirar foto" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="document.getElementById('mapaFotoInputBib').click()" title="Escolher da biblioteca" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🖼️</button><input type="file" id="mapaFotoInputBib" accept="image/*" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
+      <button onclick="mapaLimparDia()" title="Limpar conteúdo do dia" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff6b6b;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">🗑️</button>
       `:''}
       ${!podeEditar?`<button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
     </div>
