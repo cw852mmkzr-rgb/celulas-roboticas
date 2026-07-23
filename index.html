@@ -4920,7 +4920,7 @@ function renderEquipesRobo(key){
     const eq=rd['eqp_'+campoH(h)];
     if(!eq) return '';
     const txt=_eqTextColor(eq.cor);
-    const presentes=(eq.presentes&&eq.presentes.length)?eq.presentes:(eq.membros||[]);
+    const presentes=Array.isArray(eq.presentes)?eq.presentes:(eq.membros||[]);
     const nomeEq=eq.nome||eq.cor;
     const isNow=h===horaAtual;
     return `<div class="robo-eq-row${isNow?' now':''}">
@@ -7234,7 +7234,9 @@ function _eqDesRecords(){
 function _eqDesYMD(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _eqDesRecYMD(r){ return r.ano+'-'+String(r.mes+1).padStart(2,'0')+'-'+String(r.dia).padStart(2,'0'); }
 function _eqDesRecDate(r){ return new Date(r.ano,r.mes,r.dia); }
-function _eqDesPresentes(r){ const p=r.eq.presentes; return (p&&p.length)?p:(r.eq.membros||[]); }
+// presentes=[] (ninguém marcado) é respeitado como "ninguém"; só cai nos membros
+// quando o campo nem existe (registros antigos, anteriores ao snapshot de presentes).
+function _eqDesPresentes(r){ const p=r.eq.presentes; return Array.isArray(p)?p:(r.eq.membros||[]); }
 // Filtro do período global (seção de desempenho)
 function _eqDesInPeriodo(r){
   const hoje=new Date(); hoje.setHours(0,0,0,0);
