@@ -10771,8 +10771,10 @@ async function mapaAnalisarFoto(){
         throw new Error(errText);
       }
 
-      const maquinas = data.maquinas; // { "244": { cod:"401-1", "08:00":128, "10:00":180, ... }, ... }
-      if(!maquinas || !Object.keys(maquinas).length){
+      // A Edge Function devolve um ARRAY já na ordem da foto (de cima pra baixo).
+      // (Objeto com chave = número perdia a ordem: chaves numéricas são reordenadas por JS.)
+      const maquinas = data.maquinas;
+      if(!Array.isArray(maquinas) || !maquinas.length){
         status.style.color = "#ff4d4d";
         status.textContent = "Nenhuma máquina com valores encontrada na foto.";
         btn.textContent = "🤖 Analisar";
@@ -10780,17 +10782,16 @@ async function mapaAnalisarFoto(){
         return;
       }
 
-      // Guarda o resultado lido preservando a ORDEM da foto (de cima pra baixo)
-      // para revisão editável antes de preencher.
-      _mapaFotoLido = Object.entries(maquinas).map(([maq, info])=>{
+      // Guarda o resultado lido preservando a ORDEM da foto para revisão editável.
+      _mapaFotoLido = maquinas.map(m=>{
         const horas = {};
-        Object.entries(info).forEach(([k,v])=>{
-          if(k==='cod') return;
+        const src = (m && m.horas && typeof m.horas==='object') ? m.horas : m;
+        Object.entries(src||{}).forEach(([k,v])=>{
           if(!/^\d{2}:\d{2}$/.test(k)) return;
           const n = parseInt(v); if(!isNaN(n) && n>0) horas[k]=n;
         });
-        return { maq:String(maq).trim(), cod: info.cod?String(info.cod).trim():'', horas };
-      });
+        return { maq:String((m&&m.maq)||'').trim(), cod: (m&&m.cod)?String(m.cod).trim():'', horas };
+      }).filter(m=>m.maq);
 
       mapaFotoRenderRevisao();
       status.style.color = "#00e87a";
