@@ -10677,6 +10677,7 @@ let _gabFotoDiaConfirm = null; // dia digitado, congelado no momento da análise
 
 let _mapaFotoBase64 = null;
 let _mapaFotoMime = 'image/jpeg';
+let _mapaFotoLido = []; // resultado da foto (ordem da foto), editável antes de confirmar
 
 function mapaLerFoto(event){
   const file = event.target.files[0];
@@ -10717,6 +10718,12 @@ function mapaLerFoto(event){
       selDia.innerHTML=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
       selMes.innerHTML=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
       selAno.innerHTML=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
+
+      // Reseta a revisão de uma leitura anterior
+      _mapaFotoLido = [];
+      mapaFotoRenderRevisao();
+      const btnConf=document.getElementById("mapaFotoBtnConfirmar"); if(btnConf) btnConf.style.display="none";
+      const btnAn=document.getElementById("mapaFotoBtnAnalisar"); if(btnAn) btnAn.textContent="🤖 Analisar";
 
       document.getElementById("modalMapaFoto").style.display = "flex";
     };
@@ -10768,80 +10775,30 @@ async function mapaAnalisarFoto(){
       if(!maquinas || !Object.keys(maquinas).length){
         status.style.color = "#ff4d4d";
         status.textContent = "Nenhuma máquina com valores encontrada na foto.";
-        btn.textContent = "🤖 Analisar e Preencher";
+        btn.textContent = "🤖 Analisar";
         btn.disabled = false;
         return;
       }
 
-      // Data escolhida no modal (seletores próprios); fallback pra data da tela
-      const selDia=document.getElementById("mapaFotoDia");
-      const selMes=document.getElementById("mapaFotoMes");
-      const selAno=document.getElementById("mapaFotoAno");
-      const ano=selAno?parseInt(selAno.value):(mapaDados.metas_ano||new Date().getFullYear());
-      const mes=selMes?parseInt(selMes.value):(mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth());
-      const dia=selDia?parseInt(selDia.value):(mapaDados.metas_dia||new Date().getDate());
-      const chave=`${ano}_${mes}_${dia}`;
-      // Sincroniza a data da tela com a escolhida no modal, pra que a leitura de
-      // rótulos (mapaGetNomeMaquina) e o render mostrem o dia preenchido.
-      mapaDados.metas_ano=ano; mapaDados.metas_mes=mes; mapaDados.metas_dia=dia;
-      if(!mapaDados.metas_dias) mapaDados.metas_dias={};
-      if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
-      const diaData = mapaDados.metas_dias[chave];
-
-      // As linhas da tabela usam chaves FIXAS (t_0..t_49 / s_0..s_7). O número da
-      // máquina lido da foto é só o RÓTULO (nome), não a chave de dados. Então cada
-      // máquina lida precisa casar com um slot fixo: por rótulo já existente, ou no
-      // próximo slot livre (sem rótulo). Sem isso os dados caem em chaves órfãs que a
-      // tabela nunca renderiza.
-      const slots = mapaGetMaquinasAtivas();
-      const norm = s => String(s||'').trim().replace(/[^0-9a-z]/gi,'').toLowerCase();
-      const nomeToSlot = {};
-      slots.forEach(sl=>{ const nm=norm(mapaGetNomeMaquina(sl)); if(nm) nomeToSlot[nm]=sl; });
-      const usados = new Set(Object.values(nomeToSlot));
-      const livres = slots.filter(sl=>!usados.has(sl) && !norm(mapaGetNomeMaquina(sl)));
-      let idxLivre = 0;
-
-      let maquinasPreenchidas = 0, celulasPreenchidas = 0, semSlot = 0;
-      const resumoLinhas = [];
-      Object.entries(maquinas).forEach(([maq, info])=>{
-        if(!maq) return;
-        const nm = norm(maq);
-        let slot = nomeToSlot[nm];
-        if(!slot){
-          if(idxLivre < livres.length){ slot = livres[idxLivre++]; nomeToSlot[nm] = slot; }
-          else { semSlot++; return; }
-        }
-        if(!diaData[slot]) diaData[slot] = {};
-        // Preenche a "primeira coluna" (rótulo da máquina) se ainda estiver vazia
-        if(diaData[slot].nome===undefined || String(diaData[slot].nome).trim()===''){
-          diaData[slot].nome = String(maq).trim();
-        }
-        let countMaq = 0;
+      // Guarda o resultado lido preservando a ORDEM da foto (de cima pra baixo)
+      // para revisão editável antes de preencher.
+      _mapaFotoLido = Object.entries(maquinas).map(([maq, info])=>{
+        const horas = {};
         Object.entries(info).forEach(([k,v])=>{
-          if(k==='cod'){
-            if(v) diaData[slot].cod = String(v).trim();
-            return;
-          }
-          const m = k.match(/^(\d{2}):(\d{2})$/);
-          if(!m) return;
-          const n = parseInt(v);
-          if(isNaN(n) || n<=0) return;
-          diaData[slot][campoH(k)] = n;
-          countMaq++; celulasPreenchidas++;
+          if(k==='cod') return;
+          if(!/^\d{2}:\d{2}$/.test(k)) return;
+          const n = parseInt(v); if(!isNaN(n) && n>0) horas[k]=n;
         });
-        if(countMaq>0){ maquinasPreenchidas++; resumoLinhas.push(`  máq ${maq}: ${countMaq} hora(s)`); }
+        return { maq:String(maq).trim(), cod: info.cod?String(info.cod).trim():'', horas };
       });
 
-      await saveMapaDados();
-      renderMapaProducaoTabela(true);
-
+      mapaFotoRenderRevisao();
       status.style.color = "#00e87a";
-      let msgFinal = `✓ ${maquinasPreenchidas} máquina(s), ${celulasPreenchidas} valor(es) preenchidos:\n` + resumoLinhas.join('\n');
-      if(semSlot>0) msgFinal += `\n⚠ ${semSlot} máquina(s) não couberam (sem linha livre nesta aba).`;
-      status.textContent = msgFinal;
-      btn.textContent = "✓ Concluído";
-      showToast(`${maquinasPreenchidas} máquina(s) preenchidas ✓`);
+      status.textContent = `✓ ${_mapaFotoLido.length} máquina(s) lida(s), na ordem da foto. Confira e edite se precisar, depois clique em Confirmar.`;
+      btn.textContent = "🔄 Reanalisar";
       btn.disabled = false;
+      const btnConf=document.getElementById("mapaFotoBtnConfirmar");
+      if(btnConf) btnConf.style.display = "";
       return;
 
     }catch(e){
@@ -10852,9 +10809,127 @@ async function mapaAnalisarFoto(){
 
   status.style.color = "#ff4d4d";
   status.textContent = "Erro após "+MAX_TENTATIVAS+" tentativas: " + ultimoErro;
-  btn.textContent = "🤖 Analisar e Preencher";
+  btn.textContent = "🤖 Analisar";
   btn.disabled = false;
   showToast("Erro ao analisar foto", true);
+}
+
+// Renderiza a revisão editável do que foi lido na foto (na ordem da foto)
+function mapaFotoRenderRevisao(){
+  const box = document.getElementById("mapaFotoRevisao");
+  if(!box) return;
+  if(!_mapaFotoLido || !_mapaFotoLido.length){ box.style.display="none"; box.innerHTML=""; return; }
+  box.style.display = "block";
+  const linhas = _mapaFotoLido.map((m,i)=>{
+    const horasKeys = Object.keys(m.horas);
+    const horasHTML = horasKeys.length
+      ? horasKeys.map(h=>`<div style="text-align:center">
+          <div style="font-size:9px;color:#6b7788;font-family:'Courier New',monospace">${h}</div>
+          <input value="${esc(String(m.horas[h]))}" inputmode="numeric" style="width:48px;background:#161b22;border:1px solid #2a3040;color:#00e87a;border-radius:5px;padding:4px 2px;text-align:center;font-family:'Courier New',monospace;font-weight:700;font-size:12px" onchange="mapaFotoEditHora(${i},'${h}',this.value)">
+        </div>`).join('')
+      : `<div style="font-size:10px;color:#ff6b6b;align-self:center">sem horas lidas</div>`;
+    return `<div style="border:1px solid #2a3040;border-radius:8px;padding:8px;margin-bottom:6px;background:#0f1318">
+      <div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-end">
+        <div style="flex:0 0 auto">
+          <div style="font-size:9px;color:#6b7788;text-transform:uppercase;letter-spacing:.05em">Máquina</div>
+          <input value="${esc(m.maq)}" style="width:66px;background:#161b22;border:1px solid #2a3040;color:#e0e6ef;border-radius:5px;padding:5px 4px;text-align:center;font-family:'Courier New',monospace;font-weight:800;font-size:13px" onchange="mapaFotoEdit(${i},'maq',this.value)">
+        </div>
+        <div style="flex:1">
+          <div style="font-size:9px;color:#6b7788;text-transform:uppercase;letter-spacing:.05em">Cód. Peça</div>
+          <input value="${esc(m.cod)}" placeholder="—" style="width:100%;background:#161b22;border:1px solid #2a3040;color:#ffb300;border-radius:5px;padding:5px 6px;font-family:'Courier New',monospace;font-weight:700;font-size:12px" onchange="mapaFotoEdit(${i},'cod',this.value)">
+        </div>
+        <button title="Remover esta máquina da lista" onclick="mapaFotoRemover(${i})" style="flex:0 0 auto;background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff6b6b;border-radius:6px;padding:6px 9px;cursor:pointer;font-weight:800;font-size:12px">✕</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${horasHTML}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML = `<div style="font-size:11px;color:#8a93a3;margin-bottom:6px;font-weight:700">📋 Revisão (${_mapaFotoLido.length} máquina(s) — na ordem da foto)</div>${linhas}`;
+}
+
+function mapaFotoEdit(i, campo, val){
+  if(!_mapaFotoLido[i]) return;
+  _mapaFotoLido[i][campo] = String(val||'').trim();
+}
+function mapaFotoEditHora(i, h, val){
+  if(!_mapaFotoLido[i]) return;
+  const n = parseInt(String(val).replace(/[.\s]/g,''));
+  if(isNaN(n) || n<=0){ delete _mapaFotoLido[i].horas[h]; }
+  else { _mapaFotoLido[i].horas[h] = n; }
+}
+function mapaFotoRemover(i){
+  if(!_mapaFotoLido[i]) return;
+  _mapaFotoLido.splice(i,1);
+  mapaFotoRenderRevisao();
+}
+
+// Aplica o que está na revisão (já editado) na planilha do dia escolhido
+async function mapaConfirmarFoto(){
+  if(!_mapaFotoLido || !_mapaFotoLido.length){ showToast("Nada para preencher",true); return; }
+  const status = document.getElementById("mapaFotoStatus");
+  const btnConf = document.getElementById("mapaFotoBtnConfirmar");
+  if(btnConf) btnConf.disabled = true;
+
+  // Data escolhida no modal (seletores próprios); fallback pra data da tela
+  const selDia=document.getElementById("mapaFotoDia");
+  const selMes=document.getElementById("mapaFotoMes");
+  const selAno=document.getElementById("mapaFotoAno");
+  const ano=selAno?parseInt(selAno.value):(mapaDados.metas_ano||new Date().getFullYear());
+  const mes=selMes?parseInt(selMes.value):(mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth());
+  const dia=selDia?parseInt(selDia.value):(mapaDados.metas_dia||new Date().getDate());
+  const chave=`${ano}_${mes}_${dia}`;
+  // Sincroniza a data da tela com a escolhida, pra leitura de rótulos e render mostrarem o dia
+  mapaDados.metas_ano=ano; mapaDados.metas_mes=mes; mapaDados.metas_dia=dia;
+  if(!mapaDados.metas_dias) mapaDados.metas_dias={};
+  if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
+  const diaData = mapaDados.metas_dias[chave];
+
+  // Casa cada máquina lida com um slot fixo (t_0.. / s_0..): por rótulo já existente
+  // ou no próximo slot livre. Dados fora dos slots fixos não são renderizados.
+  const slots = mapaGetMaquinasAtivas();
+  const norm = s => String(s||'').trim().replace(/[^0-9a-z]/gi,'').toLowerCase();
+  const nomeToSlot = {};
+  slots.forEach(sl=>{ const nm=norm(mapaGetNomeMaquina(sl)); if(nm) nomeToSlot[nm]=sl; });
+  const usados = new Set(Object.values(nomeToSlot));
+  const livres = slots.filter(sl=>!usados.has(sl) && !norm(mapaGetNomeMaquina(sl)));
+  let idxLivre = 0;
+
+  let maquinasPreenchidas = 0, celulasPreenchidas = 0, semSlot = 0;
+  _mapaFotoLido.forEach(m=>{
+    if(!m.maq) return;
+    const nm = norm(m.maq);
+    let slot = nomeToSlot[nm];
+    if(!slot){
+      if(idxLivre < livres.length){ slot = livres[idxLivre++]; nomeToSlot[nm] = slot; }
+      else { semSlot++; return; }
+    }
+    if(!diaData[slot]) diaData[slot] = {};
+    if(diaData[slot].nome===undefined || String(diaData[slot].nome).trim()===''){
+      diaData[slot].nome = String(m.maq).trim();
+    }
+    if(m.cod) diaData[slot].cod = String(m.cod).trim();
+    let countMaq = 0;
+    Object.entries(m.horas).forEach(([h,v])=>{
+      const n = parseInt(v);
+      if(isNaN(n) || n<=0) return;
+      diaData[slot][campoH(h)] = n;
+      countMaq++; celulasPreenchidas++;
+    });
+    if(countMaq>0){ maquinasPreenchidas++; }
+  });
+
+  await saveMapaDados();
+  renderMapaProducaoTabela(true);
+  showToast(`${maquinasPreenchidas} máquina(s) preenchidas ✓`);
+
+  if(status){
+    status.style.color = "#00e87a";
+    let msgFinal = `✓ ${maquinasPreenchidas} máquina(s), ${celulasPreenchidas} valor(es) preenchidos.`;
+    if(semSlot>0) msgFinal += `\n⚠ ${semSlot} máquina(s) não couberam (sem linha livre nesta aba).`;
+    status.textContent = msgFinal;
+  }
+  // Fecha o modal e limpa o estado
+  _mapaFotoLido = [];
+  setTimeout(()=>{ const md=document.getElementById("modalMapaFoto"); if(md) md.style.display="none"; }, 700);
 }
 
 function gabLerFoto(event){
@@ -12196,7 +12271,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 
 <!-- Modal login gabaritagem -->
 <div id="modalMapaFoto" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9200;align-items:center;justify-content:center">
-  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:14px">
+  <div style="background:#0f1318;border:1px solid #a78bfa40;border-radius:16px;padding:24px;width:90%;max-width:440px;max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:14px">
     <div style="font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px">📷 Preencher Produção via Foto</div>
     <img id="mapaFotoPreview" style="display:none;width:100%;max-height:240px;object-fit:contain;border-radius:8px;border:1px solid #1e2530">
     <div style="font-size:12px;color:#8a93a3">Escolha o dia que será preenchido com a foto:</div>
@@ -12206,9 +12281,11 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <select id="mapaFotoAno" style="flex:1;min-width:80px;background:#161b22;border:1px solid #2a3040;color:#e0e6ef;border-radius:8px;padding:8px;font-family:'Courier New',monospace;font-weight:700"></select>
     </div>
     <div id="mapaFotoStatus" style="font-size:12px;color:#4a5568;min-height:16px;white-space:pre-wrap"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+    <div id="mapaFotoRevisao" style="display:none"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;flex-wrap:wrap">
       <button onclick="document.getElementById('modalMapaFoto').style.display='none'" style="background:#1e2530;border:none;color:#4a5568;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace">Cancelar</button>
-      <button onclick="mapaAnalisarFoto()" id="mapaFotoBtnAnalisar" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">🤖 Analisar e Preencher</button>
+      <button onclick="mapaAnalisarFoto()" id="mapaFotoBtnAnalisar" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">🤖 Analisar</button>
+      <button onclick="mapaConfirmarFoto()" id="mapaFotoBtnConfirmar" style="display:none;background:linear-gradient(180deg,#00f082,#00c46a);border:none;color:#04120a;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Courier New',monospace;font-weight:800">✓ Confirmar e Preencher</button>
     </div>
   </div>
 </div>
