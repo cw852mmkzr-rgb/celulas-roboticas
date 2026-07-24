@@ -7222,6 +7222,9 @@ function _eqDesRecords(){
       horas.forEach(h=>{
         const eq=rd['eqp_'+campoH(h)];
         if(!eq) return;
+        // Sem ninguém marcado (presentes=[] explícito) não gera registro no Desempenho.
+        // Registros antigos sem o campo presentes continuam contando (fallback nos membros).
+        if(Array.isArray(eq.presentes) && eq.presentes.length===0) return;
         const qtd=parseCelVal(rd[campoH(h)]||'').num;
         if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
         out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:parseInt(rd.meta)||0,eq});
