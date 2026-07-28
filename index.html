@@ -9910,6 +9910,17 @@ function abrirPainelRobo(robo, silencioso){
   }
 }
 
+// ===== Manutenção — filtros e helpers de UI =====
+let _manuFiltro='pendentes';   // 'todos' | 'pendentes' | 'concluidas'
+let _manuFiltroRobo='';        // '' = todos
+let _manuFiltroPrio='';        // '' = todas
+function manuSetFiltro(f){ _manuFiltro=f; renderManutencao(); }
+function manuSetFiltroRobo(v){ _manuFiltroRobo=v; renderManutencao(); }
+function manuSetFiltroPrio(v){ _manuFiltroPrio=v; renderManutencao(); }
+const MANU_PRIO={ 'Urgente':{ic:'🔴',cor:'#ff4d4d',peso:0}, 'Alta':{ic:'🟠',cor:'#ff6a00',peso:1}, 'Média':{ic:'🟡',cor:'#ffb300',peso:2}, 'Baixa':{ic:'🟢',cor:'#2fd07a',peso:3} };
+const MANU_TIPO={ 'Corretiva':'🔧', 'Preventiva':'🛡', 'Preditiva':'📊', 'Melhoria':'⬆' };
+function _manuPrio(p){ return MANU_PRIO[p]||{ic:'🟡',cor:'#ffb300',peso:2}; }
+
 function renderManutencao(){
   const c = celulas[selected];
   const itens = c.manutencoes || {};
@@ -9932,85 +9943,107 @@ function renderManutencao(){
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
     </div>
 
-    <!-- Dashboard de resumo -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-      <div style="background:linear-gradient(135deg,#ffb30015,#ffb30005);border:1px solid #ffb30030;border-radius:14px;padding:18px 16px;text-align:center">
-        <div style="font-size:32px;font-weight:900;color:#ffb300;line-height:1">${totalPendentes}</div>
-        <div style="font-size:11px;color:#ffb300;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Pendentes</div>
-      </div>
-      <div style="background:linear-gradient(135deg,#00e87a15,#00e87a05);border:1px solid #00e87a30;border-radius:14px;padding:18px 16px;text-align:center">
-        <div style="font-size:32px;font-weight:900;color:#00e87a;line-height:1">${totalConcluidas}</div>
-        <div style="font-size:12.5px;color:#00e87a;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Concluídas</div>
-      </div>
-      <div style="background:linear-gradient(135deg,${taxaCor}15,${taxaCor}05);border:1px solid ${taxaCor}30;border-radius:14px;padding:18px 16px;text-align:center">
-        <div style="font-size:32px;font-weight:900;color:${taxaCor};line-height:1">${taxaConclusao}%</div>
-        <div style="font-size:11px;color:${taxaCor};font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Taxa Conclusão</div>
-      </div>
-      <div style="background:linear-gradient(135deg,#3d9eff15,#3d9eff05);border:1px solid #3d9eff30;border-radius:14px;padding:18px 16px;text-align:center">
-        <div style="font-size:32px;font-weight:900;color:#3d9eff;line-height:1">${totalRegistros}</div>
-        <div style="font-size:11px;color:#3d9eff;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">Total Registros</div>
-      </div>
-    </div>
-
-    <!-- Barra de progresso geral -->
-    <div style="background:#0a0d12;border:1px solid #1e2530;border-radius:12px;padding:16px 20px;margin-bottom:20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-size:13px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em">Progresso Geral</span>
-        <span style="font-size:13px;font-weight:800;color:${taxaCor}">${totalConcluidas}/${totalRegistros}</span>
-      </div>
-      <div style="background:#1e2530;border-radius:8px;height:10px;overflow:hidden">
-        <div style="height:100%;border-radius:8px;background:linear-gradient(90deg,#00e87a,#00e87acc);width:100%;transform-origin:left;transform:scaleX(${taxaConclusao/100});transition:transform 400ms var(--ease-out)"></div>
-      </div>
-    </div>
-
-    <!-- Separador -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-      <span style="font-size:13px;font-weight:800;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em">Robôs</span>
-      <div style="flex:1;height:1px;background:#1e2530"></div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
-      ${ROBOS.map((robo,_idx)=>{
-        const lista = (itens[robo]||[]);
-        const pendentes = lista.filter(m=>!m.concluido);
-        const concluidas = lista.filter(m=>m.concluido);
-        const temPendente = pendentes.length>0;
-        const total = lista.length;
-        const conclPct = total > 0 ? Math.round((concluidas.length / total) * 100) : 0;
-        const isFanuc = robo <= 604;
-        const marcaCor = isFanuc ? '#ffb300' : '#ff6a00';
-        const statusCor = temPendente ? '#ffb300' : concluidas.length > 0 ? '#00e87a' : '#1e2530';
-        const statusBg = temPendente ? '#ffb30008' : '#0a0d12';
-        return`<div onclick="abrirCardManu(${robo})" style="background:${statusBg};border:1px solid ${statusCor}40;border-radius:14px;padding:20px;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s,transform 180ms var(--ease-out);position:relative;overflow:hidden;animation:cardIn 280ms var(--ease-out) both;animation-delay:${_idx*40}ms" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px ${statusCor}15'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${marcaCor},${marcaCor}80)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:48px;height:48px;border-radius:12px;background:${marcaCor}15;border:1px solid ${marcaCor}30;display:flex;align-items:center;justify-content:center;font-size:22px">${isFanuc?'🟡':'🟠'}</div>
-              <div>
-                <div style="font-size:20px;font-weight:900;color:#fff">Robô ${robo}</div>
-                <div style="font-size:12px;font-weight:700;color:${marcaCor};text-transform:uppercase;letter-spacing:0.1em">${isFanuc?'Fanuc':'Kuka'}</div>
-              </div>
-            </div>
-            <span style="color:#4a5568;font-size:20px;transition:transform 0.2s">›</span>
-          </div>
-          ${total > 0 ? `
-          <div style="display:flex;gap:16px;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <div style="width:8px;height:8px;border-radius:50%;background:${temPendente?'#ffb300':'#1e2530'}"></div>
-              <span style="font-size:12px;color:${temPendente?'#ffb300':'#4a5568'};font-weight:700">${pendentes.length} pendente${pendentes.length!==1?'s':''}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:5px">
-              <div style="width:8px;height:8px;border-radius:50%;background:#00e87a"></div>
-              <span style="font-size:12px;color:#00e87a;font-weight:700">${concluidas.length} concluída${concluidas.length!==1?'s':''}</span>
-            </div>
-          </div>
-          <div style="background:#1e2530;border-radius:6px;height:6px;overflow:hidden">
-            <div style="height:100%;border-radius:6px;background:#00e87a;width:100%;transform-origin:left;transform:scaleX(${conclPct/100});transition:transform 360ms var(--ease-out)"></div>
-          </div>
-          ` : `<div style="font-size:13px;color:#2a3040;font-weight:600">Sem registros de manutenção</div>`}
-          ${isAdmin?`<button onclick="event.stopPropagation();abrirModalManu(${robo})" style="background:#ffb30015;border:1px solid #ffb30030;color:#ffb300;border-radius:8px;padding:8px 0;font-size:13px;cursor:pointer;font-weight:700;width:100%;margin-top:14px;transition:background 0.2s" onmouseenter="this.style.background='#ffb30025'" onmouseleave="this.style.background='#ffb30015'">+ Nova Manutenção</button>`:''}
+    <!-- KPIs (clicáveis = filtro rápido) -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px">
+      ${[
+        {id:'pendentes', val:totalPendentes, lbl:'Pendentes',      cor:'#ffb300'},
+        {id:'concluidas',val:totalConcluidas,lbl:'Concluídas',     cor:'#2fd07a'},
+        {id:null,        val:taxaConclusao+'%',lbl:'Taxa Conclusão',cor:taxaCor},
+        {id:'todos',     val:totalRegistros, lbl:'Total Registros', cor:'#3d9eff'}
+      ].map(k=>{
+        const ativo = k.id && _manuFiltro===k.id;
+        const clickable = !!k.id;
+        return `<div ${clickable?`onclick="manuSetFiltro('${k.id}')"`:''} style="background:${ativo?k.cor+'1f':'#0d1117'};border:1px solid ${ativo?k.cor:k.cor+'2e'};border-radius:14px;padding:16px 18px;${clickable?'cursor:pointer;':''}transition:border-color .18s var(--ease-out),background .18s var(--ease-out)">
+          <div style="font-size:30px;font-weight:900;color:${k.cor};line-height:1;font-variant-numeric:tabular-nums">${k.val}</div>
+          <div style="font-size:11px;color:${k.cor};font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.1em">${k.lbl}</div>
         </div>`;
       }).join('')}
+    </div>
+
+    <!-- Barra de filtros + ações -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${[
+        {id:'pendentes', lbl:'Pendentes',  count:totalPendentes,  cor:'#ffb300'},
+        {id:'concluidas',lbl:'Concluídas', count:totalConcluidas, cor:'#2fd07a'},
+        {id:'todos',     lbl:'Todas',      count:totalRegistros,  cor:'#3d9eff'}
+      ].map(ch=>{
+        const on=_manuFiltro===ch.id;
+        return `<button onclick="manuSetFiltro('${ch.id}')" style="background:${on?ch.cor+'22':'#0d1117'};border:1px solid ${on?ch.cor+'80':'#1e2530'};color:${on?ch.cor:'#9ca3af'};border-radius:10px;padding:7px 13px;font-size:12.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .18s var(--ease-out)">${ch.lbl}<span style="background:${on?ch.cor+'25':'#ffffff0d'};border-radius:20px;padding:1px 8px;font-size:11px;font-variant-numeric:tabular-nums">${ch.count}</span></button>`;
+      }).join('')}
+      <div style="width:1px;height:24px;background:#1e2530;margin:0 2px"></div>
+      <select onchange="manuSetFiltroRobo(this.value)" style="background:#0d1117;border:1px solid #1e2530;color:${_manuFiltroRobo?'#e0e6ef':'#9ca3af'};border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none">
+        <option value="" ${_manuFiltroRobo===''?'selected':''}>🤖 Todos os robôs</option>
+        ${ROBOS.map(r=>`<option value="${r}" ${String(r)===_manuFiltroRobo?'selected':''}>Robô ${r} — ${r<=604?'Fanuc':'Kuka'}</option>`).join('')}
+      </select>
+      <select onchange="manuSetFiltroPrio(this.value)" style="background:#0d1117;border:1px solid #1e2530;color:${_manuFiltroPrio?'#e0e6ef':'#9ca3af'};border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none">
+        <option value="" ${_manuFiltroPrio===''?'selected':''}>⚑ Toda prioridade</option>
+        ${Object.keys(MANU_PRIO).map(p=>`<option value="${p}" ${p===_manuFiltroPrio?'selected':''}>${MANU_PRIO[p].ic} ${p}</option>`).join('')}
+      </select>
+      ${isAdmin?`<button onclick="abrirModalManu()" style="margin-left:auto;background:linear-gradient(180deg,#00f082,#00c46a);border:none;color:#04120a;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;transition:transform .12s var(--ease-out)" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">+ Nova Manutenção</button>`:''}
+    </div>
+
+    <!-- Lista unificada acionável -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${(()=>{
+        const todos=[];
+        ROBOS.forEach(robo=>{ (itens[robo]||[]).forEach((m,idx)=>{ todos.push({robo,idx,m}); }); });
+        let lista=todos.slice();
+        if(_manuFiltro==='pendentes') lista=lista.filter(x=>!x.m.concluido);
+        else if(_manuFiltro==='concluidas') lista=lista.filter(x=>x.m.concluido);
+        if(_manuFiltroRobo) lista=lista.filter(x=>String(x.robo)===_manuFiltroRobo);
+        if(_manuFiltroPrio) lista=lista.filter(x=>x.m.prioridade===_manuFiltroPrio);
+        lista.sort((a,b)=>{
+          if(!!a.m.concluido!==!!b.m.concluido) return a.m.concluido?1:-1;
+          if(!a.m.concluido) return _manuPrio(a.m.prioridade).peso-_manuPrio(b.m.prioridade).peso;
+          return 0;
+        });
+        if(!lista.length){
+          const msg=_manuFiltro==='concluidas'?'Nenhuma manutenção concluída ainda.':_manuFiltro==='pendentes'?'Nenhuma manutenção pendente. Tudo em dia.':'Nenhuma manutenção registrada.';
+          return `<div style="text-align:center;padding:48px 20px;border:1px dashed #1e2530;border-radius:14px">
+            <div style="font-size:38px;margin-bottom:8px;opacity:.6">🛠️</div>
+            <div style="font-size:14px;font-weight:700;color:#5b6676">${msg}</div>
+          </div>`;
+        }
+        return lista.map(({robo,idx,m})=>{
+          const done=!!m.concluido;
+          const pr=_manuPrio(m.prioridade);
+          const tipoIc=MANU_TIPO[m.tipo]||'🔧';
+          const isFanuc=robo<=604;
+          const marca=isFanuc?'#ffd500':'#ff6a00';
+          const barCor=done?'#2fd07a':pr.cor;
+          const btn=(bg,bd,col,extra)=>`background:${bg};border:1px solid ${bd};color:${col};border-radius:8px;padding:7px 13px;font-size:12.5px;cursor:pointer;font-weight:700;${extra||''}`;
+          const acoes=!isAdmin?'':(done
+            ? `<button onclick="editarConclusaoManu('${selected}',${robo},${idx})" style="${btn('#3d9eff12','#3d9eff33','#3d9eff')}">✏ Editar conclusão</button>
+               <button onclick="excluirManu('${selected}',${robo},${idx})" style="${btn('#ff4d4d10','#ff4d4d30','#ff4d4d')}">🗑</button>`
+            : `<button onclick="concluirManu('${selected}',${robo},${idx})" style="${btn('#00e87a1c','#00e87a45','#2fd07a')}">✓ Concluir</button>
+               <button onclick="editarManu('${selected}',${robo},${idx})" style="${btn('#a78bfa1c','#a78bfa40','#a78bfa')}">✏ Editar</button>
+               <button onclick="excluirManu('${selected}',${robo},${idx})" style="${btn('#ff4d4d10','#ff4d4d30','#ff4d4d')}">🗑</button>`);
+          return `<div style="display:flex;background:#0d1117;border:1px solid ${done?'#2fd07a22':pr.cor+'33'};border-radius:14px;overflow:hidden">
+            <div style="width:5px;background:${barCor};flex-shrink:0"></div>
+            <div style="flex:1;padding:14px 16px;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <button onclick="abrirCardManu(${robo})" title="Ver histórico do robô ${robo}" style="display:flex;align-items:center;gap:6px;background:${marca}14;border:1px solid ${marca}45;border-radius:8px;padding:4px 10px;cursor:pointer">
+                  <span style="font-size:13px;font-weight:900;color:#fff">${robo}</span>
+                  <span style="font-size:9px;font-weight:800;color:${marca};letter-spacing:.1em">${isFanuc?'FANUC':'KUKA'}</span>
+                </button>
+                ${m.tipo?`<span style="background:#ffffff08;border:1px solid #ffffff14;border-radius:6px;padding:3px 9px;font-size:11px;color:#9ca3af;font-weight:700">${tipoIc} ${esc(m.tipo)}</span>`:''}
+                <span style="background:${pr.cor}18;border:1px solid ${pr.cor}45;border-radius:6px;padding:3px 9px;font-size:11px;color:${pr.cor};font-weight:800">${pr.ic} ${esc(m.prioridade||'Média')}</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:800;color:${done?'#2fd07a':'#ffb300'};display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:50%;background:${done?'#2fd07a':'#ffb300'}"></span>${done?'Concluída':'Pendente'}</span>
+              </div>
+              <div style="font-size:15px;font-weight:800;color:${done?'#6b7788':'#fff'};line-height:1.35;${done?'text-decoration:line-through':''}">${esc(m.descricao)}</div>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:7px;font-size:12px;color:#7a8699">
+                ${m.peca?`<span>🔩 <b style="color:#3d9eff;font-weight:700">${esc(m.peca)}</b></span>`:''}
+                <span>📅 ${esc(m.data||'—')}</span>
+                ${m.responsavel?`<span>👤 ${esc(m.responsavel)}</span>`:''}
+                ${done&&m.data_conclusao?`<span style="color:#2fd07a">✓ ${esc(m.data_conclusao)}${m.realizado_por?' · '+esc(m.realizado_por):''}</span>`:''}
+                ${done&&m.tempo_parada?`<span style="color:#ffb300">⏱ ${esc(m.tempo_parada)} min</span>`:''}
+              </div>
+              ${done&&m.como_foi?`<div style="font-size:12px;color:#9ca3af;margin-top:7px;padding:8px 11px;background:#2fd07a0d;border-radius:8px;border-left:3px solid #2fd07a45"><b style="color:#2fd07a">Como foi:</b> ${esc(m.como_foi)}${m.pecas_trocadas?` · <b style="color:#d8dde6">Peças:</b> ${esc(m.pecas_trocadas)}`:''}</div>`:''}
+              ${acoes?`<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">${acoes}</div>`:''}
+            </div>
+          </div>`;
+        }).join('');
+      })()}
     </div>
 
     <!-- Modal card do robô -->
@@ -10021,7 +10054,11 @@ function renderManutencao(){
     <!-- Modal nova manutenção -->
     <div id="modalManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
       <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px">
-        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">🔩 Nova Manutenção — Robô <span id="manuRoboLabel"></span></div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">🔩 Nova Manutenção<span id="manuRoboLabel" style="display:none"></span></div>
+        <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Robô</div>
+        <select id="manu_robo" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
+          ${ROBOS.map(r=>`<option value="${r}">Robô ${r} — ${r<=604?'Fanuc':'Kuka'}</option>`).join('')}
+        </select>
         <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Tipo de manutenção</div>
         <select id="manu_tipo" style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none">
           <option value="Corretiva">🔧 Corretiva</option>
@@ -10183,8 +10220,9 @@ function abrirCardManu(robo){
 function toggleManuRobo(robo){}
 
 function abrirModalManu(robo){
-  _manuRoboAtual = robo;
-  document.getElementById("manuRoboLabel").textContent = robo;
+  _manuRoboAtual = robo || null;
+  const selRobo = document.getElementById("manu_robo");
+  if(selRobo && robo) selRobo.value = robo;
   document.getElementById("manu_tipo").value = 'Corretiva';
   document.getElementById("manu_prioridade").value = 'Média';
   document.getElementById("manu_descricao").value = '';
@@ -10200,14 +10238,17 @@ function fecharModalManu(){
 function salvarManu(){
   const desc = document.getElementById("manu_descricao").value.trim();
   if(!desc){ showToast("Informe a descrição!", true); return; }
+  const selRobo = document.getElementById("manu_robo");
+  const robo = selRobo ? parseInt(selRobo.value) : _manuRoboAtual;
+  if(!robo){ showToast("Selecione o robô!", true); return; }
   const resp = document.getElementById("manu_responsavel").value.trim();
   const tipo = document.getElementById("manu_tipo").value;
   const prioridade = document.getElementById("manu_prioridade").value;
   const peca = document.getElementById("manu_peca").value.trim();
   const now = new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   if(!celulas[selected].manutencoes) celulas[selected].manutencoes = {};
-  if(!celulas[selected].manutencoes[_manuRoboAtual]) celulas[selected].manutencoes[_manuRoboAtual] = [];
-  celulas[selected].manutencoes[_manuRoboAtual].push({descricao:desc, responsavel:resp, data:now, concluido:false, tipo:tipo, prioridade:prioridade, peca:peca});
+  if(!celulas[selected].manutencoes[robo]) celulas[selected].manutencoes[robo] = [];
+  celulas[selected].manutencoes[robo].push({descricao:desc, responsavel:resp, data:now, concluido:false, tipo:tipo, prioridade:prioridade, peca:peca});
   saveToAPI(celulas);
   fecharModalManu();
   renderManutencao();
