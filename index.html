@@ -4902,7 +4902,12 @@ function renderRelatorio(){
   </div>`;
 }
 
-// Equipes apontadas para este robô no dia ativo das Metas (auto-vinculado do apontamento)
+// Dia selecionado por robô na seção de Equipes (histórico). roboNum -> chave 'ano_mes_dia'
+let _roboEqDiaSel = {};
+function roboEqSetDia(roboNum, chave){ _roboEqDiaSel[roboNum]=chave; renderDetail(); }
+function _fmtChaveDia(ch){ const p=ch.split('_'); return String(+p[2]).padStart(2,'0')+'/'+String(+p[1]+1).padStart(2,'0')+'/'+p[0]; }
+
+// Equipes apontadas para este robô — com seletor de dia (histórico)
 function renderEquipesRobo(key){
   if(!(isAdmin||isAdminMetas)) return '';                 // só host/metas
   if(!equipesData || !equipesData.vincular_metas) return ''; // só com vínculo ativo
@@ -4912,11 +4917,25 @@ function renderEquipesRobo(key){
   if(!roboNum || !ROBOS.includes(roboNum)) return '';
   const metasKey=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   if(!metasKey) return '';
-  const chave=getMetasChave(metasKey);
-  const rd=(celulas[metasKey].metas_dias&&celulas[metasKey].metas_dias[chave]&&celulas[metasKey].metas_dias[chave][roboNum])||{};
+  const md=(celulas[metasKey].metas_dias)||{};
+  const hojeChave=getMetasChave(metasKey);
+  // Dias que têm equipe apontada para este robô (histórico), + hoje, ordenados do mais recente
+  const diasComEq=Object.keys(md).filter(ch=>{
+    const rr=md[ch]&&md[ch][roboNum];
+    return rr && Object.keys(rr).some(k=>k.startsWith('eqp_'));
+  });
+  const dias=Array.from(new Set([hojeChave, ...diasComEq])).sort((a,b)=>{
+    const pa=a.split('_').map(Number), pb=b.split('_').map(Number);
+    return (pb[0]-pa[0])||(pb[1]-pa[1])||(pb[2]-pa[2]);
+  });
+  let selChave=_roboEqDiaSel[roboNum];
+  if(!selChave || !dias.includes(selChave)) selChave=hojeChave;
+  const ehHoje=selChave===hojeChave;
+
+  const rd=(md[selChave]&&md[selChave][roboNum])||{};
   const horas=[...HORAS_DIA,...HORAS_NOITE];
   const hNow=String(new Date().getHours()).padStart(2,'0')+':00';
-  const horaAtual=horas.includes(hNow)?hNow:null;
+  const horaAtual=ehHoje&&horas.includes(hNow)?hNow:null;
   const linhas=horas.map(h=>{
     const eq=rd['eqp_'+campoH(h)];
     if(!eq) return '';
@@ -4930,8 +4949,18 @@ function renderEquipesRobo(key){
       <span class="robo-eq-nomes">${presentes.map(esc).join(', ')||'—'}</span>
     </div>`;
   }).filter(Boolean).join('');
-  const body = linhas || `<div style="font-size:12px;color:#2a3040;padding:6px 0">Nenhuma equipe apontada hoje para este robô. Use "📊 Apontar Produção" nas Metas.</div>`;
-  return `<div class="section"><div class="sec-title">👥 Equipes de Hoje — Robô ${roboNum}</div>
+  const vazioMsg = ehHoje
+    ? 'Nenhuma equipe apontada hoje para este robô. Use "📊 Apontar Produção" nas Metas.'
+    : 'Nenhuma equipe apontada neste dia para este robô.';
+  const body = linhas || `<div style="font-size:12px;color:#2a3040;padding:6px 0">${vazioMsg}</div>`;
+  const opts=dias.map(ch=>`<option value="${ch}" ${ch===selChave?'selected':''}>${_fmtChaveDia(ch)}${ch===hojeChave?' (hoje)':''}</option>`).join('');
+  const seletor=`<select onchange="roboEqSetDia(${roboNum}, this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;border-radius:7px;padding:5px 8px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;cursor:pointer">${opts}</select>`;
+  const titulo=ehHoje?`👥 Equipes de Hoje — Robô ${roboNum}`:`👥 Equipes — Robô ${roboNum}`;
+  return `<div class="section">
+    <div class="sec-title" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between">
+      <span>${titulo}</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#8a93a3;font-weight:600">📅 ${seletor}</span>
+    </div>
     <div class="robo-eq-list">${body}</div></div>`;
 }
 
