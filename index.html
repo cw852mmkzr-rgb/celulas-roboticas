@@ -3129,6 +3129,7 @@ async function loadFromAPI(){
     if(e.name==='AbortError') showToast("Conexão lenta — usando dados locais",true);
   }
 
+  avaliarStatusAutomatico(); // automação de status dos robôs (roda em qualquer tela)
   renderSidebar();
   if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
   else{
@@ -9614,10 +9615,11 @@ let _mrPainelAberto = null;
 let _mrPainelAbertoTs = 0;
 
 function mapaRobosStatusInfo(st){
-  if(st==='Produzindo')       return {cor:'#00e87a', label:'PRODUZINDO', pulse:true,  grupo:'verde'};
-  if(st==='Manutenção')       return {cor:'#ff4d4d', label:'MANUTENÇÃO', pulse:true,  grupo:'vermelho'};
-  if(st==='Parado')           return {cor:'#ff4d4d', label:'PARADO',     pulse:false, grupo:'vermelho'};
-  if(st==='Setup/Troca Peça') return {cor:'#ffb300', label:'SETUP',      pulse:true,  grupo:'amarelo'};
+  if(st==='Produzindo')        return {cor:'#00e87a', label:'PRODUZINDO', pulse:true,  grupo:'verde'};
+  if(st==='Manutenção')        return {cor:'#ff4d4d', label:'MANUTENÇÃO', pulse:true,  grupo:'vermelho'};
+  if(st==='Parado')            return {cor:'#ff4d4d', label:'PARADO',     pulse:false, grupo:'vermelho'};
+  if(st==='Setup/Troca Peça')  return {cor:'#ffb300', label:'SETUP',      pulse:true,  grupo:'amarelo'};
+  if(st==='Sem mão de obra')   return {cor:'#b06cff', label:'SEM MÃO DE OBRA', pulse:false, grupo:'cinza'};
   return {cor:'#5b6676', label:(st||'OCIOSO').toUpperCase(), pulse:false, grupo:'cinza'};
 }
 
@@ -9644,6 +9646,56 @@ function mapaRobosManuPendentes(robo){
   const cm = kManu ? celulas[kManu] : null;
   const lista = (cm && cm.manutencoes && cm.manutencoes[robo]) || [];
   return lista.filter(m=>!m.concluido);
+}
+
+// ===== Automação de status do robô (aba de robôs) =====
+// Regras (precedência): manutenção Alta/Urgente aberta -> "Manutenção";
+// senão, se houver valor nas 2 últimas horas já vencidas do turno -> "Produzindo";
+// se essas 2 horas estiverem vazias -> "Sem mão de obra".
+// "Automação manda": sobrescreve o status manual a cada avaliação.
+function _horaVenceu(h, now){
+  // hora "vencida" = já passou o fim dela (h + 1h). Ex.: 08:00 vence às 09:00.
+  const m = /^(\d{2}):(\d{2})$/.exec(h); if(!m) return false;
+  const fim = new Date(now); fim.setHours(parseInt(m[1])+1, parseInt(m[2]), 0, 0);
+  return now.getTime() >= fim.getTime();
+}
+let _autoStatusRodando = false;
+function avaliarStatusAutomatico(){
+  if(_autoStatusRodando) return false;
+  _autoStatusRodando = true;
+  try{
+    const kMetas = Object.keys(celulas).find(k=>celulas[k]&&getCellTipo(k)==='metas');
+    const kManu  = Object.keys(celulas).find(k=>celulas[k]&&getCellTipo(k)==='manutencao');
+    const cm    = kMetas ? celulas[kMetas] : null;
+    const cManu = kManu  ? celulas[kManu]  : null;
+    const now = new Date();
+    const chave = `${now.getFullYear()}_${now.getMonth()}_${now.getDate()}`;
+    const horasTurno = [...HORAS_DIA, ...HORAS_NOITE];
+    const vencidas = horasTurno.filter(h=>_horaVenceu(h, now));
+    const ult2 = vencidas.slice(-2);
+    let mudou = false;
+    ROBOS.forEach(robo=>{
+      const cel = celulas[String(robo)];
+      if(!cel) return;
+      const manus = (cManu && cManu.manutencoes && cManu.manutencoes[robo]) || [];
+      const temManuCritica = manus.some(m=>!m.concluido && (m.prioridade==='Alta' || m.prioridade==='Urgente'));
+      let novo = null;
+      if(temManuCritica){
+        novo = 'Manutenção';
+      } else if(cm){
+        const rd = (cm.metas_dias && cm.metas_dias[chave] && cm.metas_dias[chave][robo]) || {};
+        const temValor = h => String(rd[campoH(h)]||'').trim()!=='';
+        if(ult2.some(temValor)){
+          novo = 'Produzindo';
+        } else if(ult2.length>=2){
+          novo = 'Sem mão de obra';
+        } // início do turno (<2 horas vencidas): não força
+      }
+      if(novo && cel.status!==novo){ cel.status = novo; mudou = true; }
+    });
+    if(mudou) saveToAPI(celulas);
+    return mudou;
+  } finally { _autoStatusRodando = false; }
 }
 
 function mrRoboSVG(cor, size){
@@ -9691,6 +9743,7 @@ function mrCardHTML(robo){
 }
 
 function renderMapaRobos(){
+  avaliarStatusAutomatico(); // atualiza status automático antes de desenhar
   const FANUC_TOPO = [604,603,602,601,600];
   const KUKA_TOPO  = [605,606,607,608,609,610,611];
   const grupos = {verde:0, vermelho:0, amarelo:0, cinza:0};
