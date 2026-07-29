@@ -3169,7 +3169,7 @@ async function saveToAPI(data){
   }catch(e){showToast("Erro ao salvar",true);}
 }
 
-function update(key,field,value){celulas[key][field]=value;saveToAPI(celulas);}
+function update(key,field,value){celulas[key][field]=value;if(field==='status')celulas[key].status_manual=true;saveToAPI(celulas);}
 function updateAndRefreshRitmo(key,field,value){
   celulas[key][field]=value;saveToAPI(celulas);
   const el=document.getElementById("ritmoDisplay");if(el)el.value=calcRitmo(celulas[key].meta_hora,celulas[key].tempo_peca);
@@ -3392,6 +3392,10 @@ function updateMetasCell(key,robo,campo,valor){
     const _compDelta = _compNovo - _compAnterior;
     const _compCod = (celulas[key].metas_dias[chave][robo].cod||'').trim();
     if(_compDelta!==0 && _compCod && _compCod!=='—') subtrairComponentesProducao(_compCod, _compDelta);
+    // Novo valor em hora: destrava a automação de status pra este robô
+    if(_compNovo>0 && celulas[String(robo)] && celulas[String(robo)].status_manual){
+      delete celulas[String(robo)].status_manual;
+    }
   }
   syncMetasToProducao(key);
   saveToAPI(celulas);
@@ -9707,6 +9711,8 @@ function avaliarStatusAutomatico(){
     ROBOS.forEach(robo=>{
       const cel = celulas[String(robo)];
       if(!cel) return;
+      // Se o usuário mudou o status manualmente, respeita até vir novo valor de hora
+      if(cel.status_manual) return;
       const manus = (cManu && cManu.manutencoes && cManu.manutencoes[robo]) || [];
       const temManuCritica = manus.some(m=>!m.concluido && (m.prioridade==='Alta' || m.prioridade==='Urgente'));
       let novo = null;
