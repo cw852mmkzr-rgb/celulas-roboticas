@@ -3419,6 +3419,7 @@ function updateMetasCell(key,robo,campo,valor){
       if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe);
     });
   }
+  avaliarStatusAutomatico();
 }
 
 function updateMetasData(key,campo,valor){
@@ -4904,7 +4905,7 @@ function renderRelatorio(){
 
 // Dia selecionado por robô na seção de Equipes (histórico). roboNum -> chave 'ano_mes_dia'
 let _roboEqDiaSel = {};
-function roboEqSetDia(roboNum, chave){ _roboEqDiaSel[roboNum]=chave; renderDetail(); }
+function roboEqSetDia(roboNum, chave){ _roboEqDiaSel[roboNum]=chave; document.activeElement&&document.activeElement.blur(); renderDetail(); }
 function _fmtChaveDia(ch){ const p=ch.split('_'); return String(+p[2]).padStart(2,'0')+'/'+String(+p[1]+1).padStart(2,'0')+'/'+p[0]; }
 
 // Equipes apontadas para este robô — com seletor de dia (histórico)
@@ -9714,15 +9715,20 @@ function avaliarStatusAutomatico(){
       } else if(cm){
         const rd = (cm.metas_dias && cm.metas_dias[chave] && cm.metas_dias[chave][robo]) || {};
         const temValor = h => String(rd[campoH(h)]||'').trim()!=='';
-        if(ult2.some(temValor)){
+        const temQualquerValor = horasTurno.some(temValor);
+        if(temQualquerValor){
           novo = 'Produzindo';
         } else if(ult2.length>=2){
           novo = 'Sem mão de obra';
-        } // início do turno (<2 horas vencidas): não força
+        }
       }
       if(novo && cel.status!==novo){ cel.status = novo; mudou = true; }
     });
-    if(mudou) saveToAPI(celulas);
+    if(mudou){
+      saveToAPI(celulas);
+      if(typeof renderSidebar==='function') renderSidebar();
+      if(selected==='__maparobos' && typeof renderMapaRobos==='function') renderMapaRobos();
+    }
     return mudou;
   } finally { _autoStatusRodando = false; }
 }
