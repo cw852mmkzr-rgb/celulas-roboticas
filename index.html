@@ -7223,14 +7223,14 @@ function _eqGerenciarHTML(){
     if(vinc){
       if(stAt && stAt.robos.length){
         const robosTxt = stAt.robos.map(r=>`#${r}`).join(' ');
-        statusHTML = `<div class="eq-status-badge eq-status-on" style="background:${txt}20;color:${txt};border-color:${txt}55">
-          <span class="eq-status-dot eq-status-pulse" style="background:${txt}"></span>
+        statusHTML = `<div class="eq-status-badge eq-status-on">
+          <span class="eq-status-dot eq-status-pulse"></span>
           <span>TRABALHANDO · ${robosTxt}</span>
         </div>`;
       } else {
-        statusHTML = `<div class="eq-status-badge eq-status-off" style="background:${txt}0f;color:${txt}99;border-color:${txt}33">
-          <span class="eq-status-dot" style="background:${txt}55"></span>
-          <span>SEM ATIVIDADE AGORA</span>
+        statusHTML = `<div class="eq-status-badge eq-status-off">
+          <span class="eq-status-dot"></span>
+          <span>DISPONÍVEL</span>
         </div>`;
       }
     }
@@ -12737,10 +12737,13 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-card-btn{ background:#00000022; border:1px solid #ffffff33; border-radius:8px; width:32px; height:32px; font-size:13px; cursor:pointer; transition:transform .16s var(--ease-out), background .16s ease; }
 .eq-card-btn:active{ transform:scale(0.9); background:#00000040; }
 .eq-card-cor{ font-size:12px; font-family:'Courier New',monospace; opacity:0.85; margin-top:2px; }
-.eq-status-badge{ display:inline-flex; align-items:center; gap:7px; margin-top:10px; padding:5px 10px; border-radius:99px; border:1px solid; font-size:10.5px; font-weight:800; letter-spacing:0.08em; font-family:'Courier New',monospace; }
-.eq-status-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.eq-status-pulse{ animation:eqStatusPulse 1.6s ease-in-out infinite; box-shadow:0 0 0 0 currentColor; }
-@keyframes eqStatusPulse{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.35); opacity:0.7; } }
+.eq-status-badge{ display:inline-flex; align-items:center; gap:9px; margin-top:11px; padding:7px 13px; border-radius:99px; border:1.5px solid; font-size:13.5px; font-weight:900; letter-spacing:0.09em; font-family:'Courier New',monospace; }
+.eq-status-badge.eq-status-on{ background:#00e87a; color:#062012; border-color:#062012; animation:eqStatusOnPulse 1.5s ease-in-out infinite; box-shadow:0 0 0 0 #00e87a; }
+.eq-status-badge.eq-status-off{ background:#ffffff; color:#111; border-color:#111; }
+.eq-status-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; background:currentColor; }
+.eq-status-pulse{ animation:eqStatusPulse 1.5s ease-in-out infinite; }
+@keyframes eqStatusPulse{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.5); opacity:0.6; } }
+@keyframes eqStatusOnPulse{ 0%,100%{ box-shadow:0 0 0 0 #00e87a80; } 50%{ box-shadow:0 0 0 8px #00e87a00; } }
 .eq-membros{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
 .eq-membro{ font-size:16px; font-weight:800; padding:7px 14px; border-radius:99px; border:1px solid; background:#00000018; letter-spacing:0.02em; }
 .eq-membro-vazio{ font-size:14px; font-style:italic; }
