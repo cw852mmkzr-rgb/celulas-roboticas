@@ -3012,6 +3012,7 @@ const SC = {
 // ── tipo da célula detectado pelo nome ───────
 function getCellTipo(k) {
   if (k === '__maparobos') return 'mapa_robos';
+  if (k === '__gerenciar') return 'gerenciar';
   if (!celulas[k]) return 'robo';
   const n = (celulas[k].nome||'').toLowerCase();
   if (n.includes('armario')||n.includes('armário')||n.includes('gabarito')) return 'armario';
@@ -3221,6 +3222,17 @@ function renderSidebar(){
       <div class="cell-info">
         <div class="cell-name">Equipes</div>
         <div class="cell-peca">Equipes e membros</div>
+      </div>
+      <div class="dot dot-green"></div>
+    </div>`;
+  }
+  // Aba Gerenciar — só host
+  if(isAdmin){
+    html+=`<div class="cell-item ${selected==='__gerenciar'?'active':''}" onclick="selectCell('__gerenciar')">
+      <div class="cell-num" style="font-size:15px">⚙️</div>
+      <div class="cell-info">
+        <div class="cell-name">Gerenciar</div>
+        <div class="cell-peca">Configurações do host</div>
       </div>
       <div class="dot dot-green"></div>
     </div>`;
@@ -3987,6 +3999,10 @@ function _renderDetailInner(){
     renderEquipes(); return;
   }
   if(selected==='__maparobos'){renderMapaRobos();return;}
+  if(selected==='__gerenciar'){
+    if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
+    renderGerenciar(); return;
+  }
   if(!selected||!celulas[selected])return;
   const tipo=getCellTipo(selected);
   if(tipo==='armario'){renderArmario();return;}
@@ -7171,6 +7187,36 @@ async function saveEquipes(silent){
 }
 
 let _eqTab='gerenciar'; // sub-aba ativa da tela Equipes
+// ═══════════════ Aba Gerenciar — só host ═══════════════
+function renderGerenciar(){
+  if(!isAdmin){ document.getElementById("mainPanel").innerHTML='<div class="empty">🔒 Acesso restrito.</div>'; return; }
+  const eqOn = !!equipesData.alertas_eletrodo_ativos;
+  const numEl = esc(equipesData.alerta_numero_eletrodo||'');
+  document.getElementById("mainPanel").innerHTML=`
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:0.03em;font-family:'Montserrat',sans-serif">⚙️ Gerenciar</div>
+        <span style="font-size:11px;font-weight:700;color:#ffb300;background:#ffb30015;border:1px solid #ffb30040;padding:3px 8px;border-radius:6px;letter-spacing:0.08em">HOST</span>
+      </div>
+      <div style="font-size:13px;color:#8a93a3;margin-bottom:20px">Configurações administrativas do sistema. Só o host tem acesso.</div>
+
+      <div class="ger-section">
+        <div class="ger-section-title">🔴 Alertas de eletrodo crítico</div>
+        <div class="eq-toggle-row" style="align-items:flex-start">
+          <div style="min-width:0;flex:1">
+            <div class="eq-toggle-title">Ativar alertas no WhatsApp</div>
+            <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico. Uma mensagem por eletrodo (reinicia quando registra a troca).</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+              <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Número dedicado:</label>
+              <input id="gerAlertaNumEletrodo" type="tel" placeholder="Ex: 5511987654321" value="${numEl}" onchange="eqSetNumeroEletrodo(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:7px 11px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700;min-width:200px">
+              <span style="font-size:10px;color:#4a5568">(vazio = usa o número dos alertas de desempenho)</span>
+            </div>
+          </div>
+          <button id="gerToggleAlertasEletrodo" class="eq-switch ${eqOn?'on':''}" role="switch" aria-checked="${eqOn}" onclick="eqToggleAlertasEletrodo()"><span class="eq-switch-knob"></span></button>
+        </div>
+      </div>
+    </div>`;
+}
 function renderEquipes(){
   if(!_eqCanAccess()){ selected=null; document.getElementById("mainPanel").innerHTML='<div class="empty">🔒 Acesso restrito às equipes.</div>'; return; }
   const corpo = _eqTab==='desempenho' ? _eqDesHTML() : _eqGerenciarHTML();
@@ -7262,18 +7308,6 @@ function _eqGerenciarHTML(){
       </div>
       <button id="eqToggleAlertas" class="eq-switch ${equipesData.alertas_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_ativos}" onclick="eqToggleAlertas()"><span class="eq-switch-knob"></span></button>
     </div>
-    <div class="eq-toggle-row">
-      <div style="min-width:0;flex:1">
-        <div class="eq-toggle-title">Ativar alertas de eletrodo crítico no WhatsApp</div>
-        <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico. Uma mensagem por eletrodo (reinicia quando registra a troca).</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Número dedicado:</label>
-          <input id="eqAlertaNumEletrodo" type="tel" placeholder="Ex: 5511987654321" value="${esc(equipesData.alerta_numero_eletrodo||'')}" onchange="eqSetNumeroEletrodo(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:6px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;min-width:180px">
-          <span style="font-size:10px;color:#4a5568">(vazio = usa o número dos alertas de desempenho)</span>
-        </div>
-      </div>
-      <button id="eqToggleAlertasEletrodo" class="eq-switch ${equipesData.alertas_eletrodo_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_eletrodo_ativos}" onclick="eqToggleAlertasEletrodo()"><span class="eq-switch-knob"></span></button>
-    </div>
     <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>`;
 }
 function eqToggleAlertas(){
@@ -7285,8 +7319,10 @@ function eqToggleAlertas(){
 }
 function eqToggleAlertasEletrodo(){
   equipesData.alertas_eletrodo_ativos = !equipesData.alertas_eletrodo_ativos;
-  const btn=document.getElementById('eqToggleAlertasEletrodo');
-  if(btn){ btn.classList.toggle('on',equipesData.alertas_eletrodo_ativos); btn.setAttribute('aria-checked',equipesData.alertas_eletrodo_ativos); }
+  ['eqToggleAlertasEletrodo','gerToggleAlertasEletrodo'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn){ btn.classList.toggle('on',equipesData.alertas_eletrodo_ativos); btn.setAttribute('aria-checked',equipesData.alertas_eletrodo_ativos); }
+  });
   saveEquipes(true);
   showToast(equipesData.alertas_eletrodo_ativos?'Alertas de eletrodo ligados ✓':'Alertas de eletrodo desligados');
   if(equipesData.alertas_eletrodo_ativos) _eletrodoAlertaCheck();
@@ -12787,6 +12823,9 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-nova-btn{ background:linear-gradient(180deg,#00f082,#00c46a); color:#04120a; border:none; border-radius:10px; padding:12px 22px; font-family:'Courier New',monospace; font-size:14.5px; font-weight:800; letter-spacing:0.03em; cursor:pointer; box-shadow:0 6px 16px -8px #00e87a95, inset 0 1px 0 #ffffff55; transition:transform .16s var(--ease-out), filter .16s ease; }
 .eq-nova-btn:active{ transform:scale(0.97); filter:brightness(0.96); }
 .eq-toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; background:#0f1318; border:1px solid #1e2530; border-radius:12px; padding:14px 18px; margin-bottom:18px; flex-wrap:wrap; }
+.ger-section{ background:#0b0f16; border:1px solid #1e2530; border-radius:14px; padding:18px 20px; margin-bottom:18px; }
+.ger-section-title{ font-size:14px; font-weight:800; color:#e0e6ef; margin-bottom:14px; letter-spacing:0.05em; font-family:'Courier New',monospace; }
+.ger-section .eq-toggle-row{ margin-bottom:0; background:#080b0f; }
 .eq-toggle-title{ font-size:16.5px; font-weight:800; color:#f0f5fc; }
 .eq-toggle-sub{ font-size:13.5px; color:#a5b0c2; margin-top:4px; max-width:560px; line-height:1.45; }
 .eq-switch{ position:relative; width:56px; height:31px; border-radius:99px; border:1px solid #26303f; background:#141b26; cursor:pointer; flex-shrink:0; transition:background .22s var(--ease-out), border-color .22s ease; padding:0; }
