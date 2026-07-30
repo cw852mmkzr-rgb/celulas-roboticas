@@ -3947,21 +3947,31 @@ function registrarTrocaEletrodo(key){
   if(typeof _eletrodoTrocaNotificar==='function') _eletrodoTrocaNotificar(key, pecasFeitas, agora);
 }
 
+// Extrai a lista de números destino (multi-número separado por vírgula/;/quebra de linha)
+function _eletrodoNumerosDestino(){
+  const bruto=((equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||''));
+  return bruto.split(/[,;\n]+/).map(s=>s.replace(/\D/g,'')).filter(s=>s.length>=8);
+}
+
 async function _eletrodoTrocaNotificar(key, pecasFeitas, quando){
   try{
     if(!equipesData || !equipesData.alertas_eletrodo_ativos) return;
-    const numero=((equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||'')).replace(/\D/g,'');
-    if(!numero) return;
+    const numeros=_eletrodoNumerosDestino();
+    if(!numeros.length) return;
     const c=celulas[key]; if(!c) return;
     const nomeRobo=c.nome||('Robô '+key);
     const eletrodo=(c.eletrodo||'').trim();
     const tipo=(c.tipo_eletrodo||'').trim();
     const msg=`✅ *Troca de eletrodo registrada*\n${nomeRobo}\n• Data: ${quando}\n• Peças feitas: ${pecasFeitas.toLocaleString('pt-BR')}${eletrodo?`\n• Eletrodo: ${eletrodo}${tipo?' ('+tipo+')':''}`:''}`;
-    await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
-      body:JSON.stringify({tipo:"alerta",phone:numero,mensagem:msg})
-    });
+    for(const num of numeros){
+      try{
+        await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+        });
+      }catch(e){}
+    }
   }catch(e){}
 }
 function removerHistEletrodo(key,idx){
@@ -7228,8 +7238,8 @@ function renderGerenciar(){
             <div class="eq-toggle-title">Ativar alertas no WhatsApp</div>
             <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico. Uma mensagem por eletrodo (reinicia quando registra a troca).</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Número dedicado:</label>
-              <input id="gerAlertaNumEletrodo" type="tel" placeholder="Ex: 5511987654321" value="${numEl}" onchange="eqSetNumeroEletrodo(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:7px 11px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700;min-width:200px">
+              <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Números (separe por vírgula):</label>
+              <input id="gerAlertaNumEletrodo" type="text" placeholder="Ex: 5511987654321, 5511998877665" value="${numEl}" onchange="eqSetNumeroEletrodo(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:7px 11px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700;min-width:280px;flex:1">
               <span style="font-size:10px;color:#4a5568">(vazio = usa o número dos alertas de desempenho)</span>
             </div>
           </div>
@@ -7360,9 +7370,8 @@ async function _eletrodoAlertaCheck(){
   try{
     if(_eletrodoAlertaRodando) return;
     if(!equipesData || !equipesData.alertas_eletrodo_ativos) return;
-    // usa número dedicado do eletrodo; se vazio, cai no número dos alertas de desempenho
-    const numero=((equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||'')).replace(/\D/g,'');
-    if(!numero) return;
+    const numeros=_eletrodoNumerosDestino();
+    if(!numeros.length) return;
     _eletrodoAlertaRodando=true;
     const enviados=[];
     for(const robo of ROBOS){
@@ -7378,16 +7387,18 @@ async function _eletrodoAlertaCheck(){
       const tipo=(c.tipo_eletrodo||'').trim();
       const eletrodo=(c.eletrodo||'').trim();
       const msg=`🔴 *Eletrodo crítico*\n${nomeRobo}\n• Desgaste: ${desgaste.toLocaleString('pt-BR')} peças\n• Limite crítico: ${critico.toLocaleString('pt-BR')}${eletrodo?`\n• Eletrodo: ${eletrodo}${tipo?' ('+tipo+')':''}`:''}\nRegistre a troca no sistema.`;
-      try{
-        const r=await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
-          method:"POST",
-          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
-          body:JSON.stringify({tipo:"alerta",phone:numero,mensagem:msg})
-        });
-        if(!r.ok) continue;
-        c.eletrodo_alerta_key=chaveEletrodo;
-        enviados.push(robo);
-      }catch(e){}
+      let algumOk=false;
+      for(const num of numeros){
+        try{
+          const r=await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+            method:"POST",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+            body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+          });
+          if(r.ok) algumOk=true;
+        }catch(e){}
+      }
+      if(algumOk){ c.eletrodo_alerta_key=chaveEletrodo; enviados.push(robo); }
     }
     if(enviados.length){
       saveToAPI(celulas);
