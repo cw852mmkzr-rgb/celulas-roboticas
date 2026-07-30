@@ -3424,6 +3424,7 @@ function updateMetasCell(key,robo,campo,valor){
     });
   }
   avaliarStatusAutomatico();
+  if(typeof _eletrodoAlertaCheck==='function') _eletrodoAlertaCheck();
 }
 
 function updateMetasData(key,campo,valor){
@@ -7261,6 +7262,13 @@ function _eqGerenciarHTML(){
       </div>
       <button id="eqToggleAlertas" class="eq-switch ${equipesData.alertas_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_ativos}" onclick="eqToggleAlertas()"><span class="eq-switch-knob"></span></button>
     </div>
+    <div class="eq-toggle-row">
+      <div style="min-width:0">
+        <div class="eq-toggle-title">Ativar alertas de eletrodo crítico no WhatsApp</div>
+        <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico configurado. Uma mensagem por eletrodo (reinicia quando você registra a troca). Usa o mesmo número dos alertas de desempenho.</div>
+      </div>
+      <button id="eqToggleAlertasEletrodo" class="eq-switch ${equipesData.alertas_eletrodo_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_eletrodo_ativos}" onclick="eqToggleAlertasEletrodo()"><span class="eq-switch-knob"></span></button>
+    </div>
     <div class="eq-grid">${cards || `<div class="eq-empty">Nenhuma equipe ainda. Clique em <b>➕ Nova Equipe</b> para começar.</div>`}</div>`;
 }
 function eqToggleAlertas(){
@@ -7269,6 +7277,55 @@ function eqToggleAlertas(){
   if(btn){ btn.classList.toggle('on',equipesData.alertas_ativos); btn.setAttribute('aria-checked',equipesData.alertas_ativos); }
   saveEquipes(true);
   showToast(equipesData.alertas_ativos?'Alertas de desempenho ligados ✓':'Alertas de desempenho desligados');
+}
+function eqToggleAlertasEletrodo(){
+  equipesData.alertas_eletrodo_ativos = !equipesData.alertas_eletrodo_ativos;
+  const btn=document.getElementById('eqToggleAlertasEletrodo');
+  if(btn){ btn.classList.toggle('on',equipesData.alertas_eletrodo_ativos); btn.setAttribute('aria-checked',equipesData.alertas_eletrodo_ativos); }
+  saveEquipes(true);
+  showToast(equipesData.alertas_eletrodo_ativos?'Alertas de eletrodo ligados ✓':'Alertas de eletrodo desligados');
+  if(equipesData.alertas_eletrodo_ativos) _eletrodoAlertaCheck();
+}
+
+// Verifica todos os robôs; se desgaste passou do limite crítico e ainda não avisou pra esse eletrodo, manda WhatsApp
+let _eletrodoAlertaRodando=false;
+async function _eletrodoAlertaCheck(){
+  try{
+    if(_eletrodoAlertaRodando) return;
+    if(!equipesData || !equipesData.alertas_eletrodo_ativos) return;
+    const numero=(equipesData.alerta_numero||'').replace(/\D/g,'');
+    if(!numero) return;
+    _eletrodoAlertaRodando=true;
+    const enviados=[];
+    for(const robo of ROBOS){
+      const key=String(robo);
+      const c=celulas[key]; if(!c) continue;
+      const critico=c.limite_eletrodo||500;
+      const desgaste=calcDesgaste(key);
+      if(desgaste<critico) continue;
+      // chave do eletrodo atual = data da última troca (muda quando registra troca nova)
+      const chaveEletrodo=(c.ultima_troca||'—')+'|'+critico;
+      if(c.eletrodo_alerta_key===chaveEletrodo) continue; // já avisou pra esse
+      const nomeRobo=c.nome||('Robô '+robo);
+      const tipo=(c.tipo_eletrodo||'').trim();
+      const eletrodo=(c.eletrodo||'').trim();
+      const msg=`🔴 *Eletrodo crítico*\n${nomeRobo}\n• Desgaste: ${desgaste.toLocaleString('pt-BR')} peças\n• Limite crítico: ${critico.toLocaleString('pt-BR')}${eletrodo?`\n• Eletrodo: ${eletrodo}${tipo?' ('+tipo+')':''}`:''}\nRegistre a troca no sistema.`;
+      try{
+        const r=await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+          body:JSON.stringify({tipo:"alerta",phone:numero,mensagem:msg})
+        });
+        if(!r.ok) continue;
+        c.eletrodo_alerta_key=chaveEletrodo;
+        enviados.push(robo);
+      }catch(e){}
+    }
+    if(enviados.length){
+      saveToAPI(celulas);
+      showToast(`🔴 Eletrodo crítico avisado: ${enviados.join(', ')}`);
+    }
+  } finally { _eletrodoAlertaRodando=false; }
 }
 
 // ===== Sub-aba Desempenho =====
