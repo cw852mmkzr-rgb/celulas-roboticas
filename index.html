@@ -3940,8 +3940,29 @@ function registrarTrocaEletrodo(key){
   const pecasFeitas = calcDesgaste(key);
   c.historico_eletrodo.push({data:agora, eletrodo:c.eletrodo, tipo:c.tipo_eletrodo||'—', pecas_feitas:pecasFeitas});
   c.ultima_troca=agora;
+  // limpa a chave de alerta pra próxima crítica poder disparar de novo
+  delete c.eletrodo_alerta_key;
   celulas[key]=c; saveToAPI(celulas); renderDetail();
   showToast(`Troca registrada ✓ — eletrodo fez ${pecasFeitas.toLocaleString("pt-BR")} peças`);
+  if(typeof _eletrodoTrocaNotificar==='function') _eletrodoTrocaNotificar(key, pecasFeitas, agora);
+}
+
+async function _eletrodoTrocaNotificar(key, pecasFeitas, quando){
+  try{
+    if(!equipesData || !equipesData.alertas_eletrodo_ativos) return;
+    const numero=((equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||'')).replace(/\D/g,'');
+    if(!numero) return;
+    const c=celulas[key]; if(!c) return;
+    const nomeRobo=c.nome||('Robô '+key);
+    const eletrodo=(c.eletrodo||'').trim();
+    const tipo=(c.tipo_eletrodo||'').trim();
+    const msg=`✅ *Troca de eletrodo registrada*\n${nomeRobo}\n• Data: ${quando}\n• Peças feitas: ${pecasFeitas.toLocaleString('pt-BR')}${eletrodo?`\n• Eletrodo: ${eletrodo}${tipo?' ('+tipo+')':''}`:''}`;
+    await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+      body:JSON.stringify({tipo:"alerta",phone:numero,mensagem:msg})
+    });
+  }catch(e){}
 }
 function removerHistEletrodo(key,idx){
   if(!celulas[key].historico_eletrodo)return;
