@@ -7223,6 +7223,8 @@ function renderGerenciar(){
   if(!isAdmin){ document.getElementById("mainPanel").innerHTML='<div class="empty">🔒 Acesso restrito.</div>'; return; }
   const eqOn = !!equipesData.alertas_eletrodo_ativos;
   const numEl = esc(equipesData.alerta_numero_eletrodo||'');
+  const manuOn = !!equipesData.alertas_manu_ativos;
+  const numManu = esc(equipesData.alerta_numero_manu||'');
   document.getElementById("mainPanel").innerHTML=`
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
@@ -7244,6 +7246,22 @@ function renderGerenciar(){
             </div>
           </div>
           <button id="gerToggleAlertasEletrodo" class="eq-switch ${eqOn?'on':''}" role="switch" aria-checked="${eqOn}" onclick="eqToggleAlertasEletrodo()"><span class="eq-switch-knob"></span></button>
+        </div>
+      </div>
+
+      <div class="ger-section">
+        <div class="ger-section-title">🔧 Alertas de manutenção Alta / Urgente</div>
+        <div class="eq-toggle-row" style="align-items:flex-start">
+          <div style="min-width:0;flex:1">
+            <div class="eq-toggle-title">Ativar alertas no WhatsApp</div>
+            <div class="eq-toggle-sub">Avisa via MR.ROBOT toda vez que uma manutenção nova for aberta com prioridade Alta ou Urgente.</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+              <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Números (separe por vírgula):</label>
+              <input id="gerAlertaNumManu" type="text" placeholder="Ex: 5511987654321, 5511998877665" value="${numManu}" onchange="eqSetNumeroManu(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:7px 11px;border-radius:6px;font-family:'Courier New',monospace;font-size:13px;font-weight:700;min-width:280px;flex:1">
+              <span style="font-size:10px;color:#4a5568">(vazio = usa o dos alertas de eletrodo, ou dos de desempenho)</span>
+            </div>
+          </div>
+          <button id="gerToggleAlertasManu" class="eq-switch ${manuOn?'on':''}" role="switch" aria-checked="${manuOn}" onclick="eqToggleAlertasManu()"><span class="eq-switch-knob"></span></button>
         </div>
       </div>
     </div>`;
@@ -7362,6 +7380,18 @@ function eqSetNumeroEletrodo(v){
   equipesData.alerta_numero_eletrodo = (v||'').trim();
   saveEquipes(true);
   showToast(equipesData.alerta_numero_eletrodo?'Número de eletrodo salvo ✓':'Número de eletrodo removido');
+}
+function eqToggleAlertasManu(){
+  equipesData.alertas_manu_ativos = !equipesData.alertas_manu_ativos;
+  const btn=document.getElementById('gerToggleAlertasManu');
+  if(btn){ btn.classList.toggle('on',equipesData.alertas_manu_ativos); btn.setAttribute('aria-checked',equipesData.alertas_manu_ativos); }
+  saveEquipes(true);
+  showToast(equipesData.alertas_manu_ativos?'Alertas de manutenção ligados ✓':'Alertas de manutenção desligados');
+}
+function eqSetNumeroManu(v){
+  equipesData.alerta_numero_manu = (v||'').trim();
+  saveEquipes(true);
+  showToast(equipesData.alerta_numero_manu?'Número de manutenção salvo ✓':'Número de manutenção removido');
 }
 
 // Verifica todos os robôs; se desgaste passou do limite crítico e ainda não avisou pra esse eletrodo, manda WhatsApp
@@ -10438,6 +10468,30 @@ function salvarManu(){
   fecharModalManu();
   renderManutencao();
   showToast("Manutenção adicionada ✓");
+  if((prioridade==='Alta' || prioridade==='Urgente') && typeof _manuAlertaNotificar==='function'){
+    _manuAlertaNotificar(robo, {descricao:desc, responsavel:resp, tipo, prioridade, peca, data:now});
+  }
+}
+
+async function _manuAlertaNotificar(robo, m){
+  try{
+    if(!equipesData || !equipesData.alertas_manu_ativos) return;
+    const bruto=((equipesData.alerta_numero_manu||'').trim()||(equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||''));
+    const numeros=bruto.split(/[,;\n]+/).map(s=>s.replace(/\D/g,'')).filter(s=>s.length>=8);
+    if(!numeros.length) return;
+    const nomeRobo=(celulas[String(robo)]&&celulas[String(robo)].nome)||('Robô '+robo);
+    const emoji=m.prioridade==='Urgente'?'🚨':'🔴';
+    const msg=`${emoji} *Manutenção ${m.prioridade}*\n${nomeRobo}\n• Tipo: ${m.tipo||'—'}\n• Descrição: ${m.descricao}${m.peca?`\n• Peça: ${m.peca}`:''}${m.responsavel?`\n• Aberta por: ${m.responsavel}`:''}\n• ${m.data}`;
+    for(const num of numeros){
+      try{
+        await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+        });
+      }catch(e){}
+    }
+  }catch(e){}
 }
 
 function concluirManu(key,robo,idx){
