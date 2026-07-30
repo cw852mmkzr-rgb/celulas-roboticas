@@ -7263,9 +7263,14 @@ function _eqGerenciarHTML(){
       <button id="eqToggleAlertas" class="eq-switch ${equipesData.alertas_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_ativos}" onclick="eqToggleAlertas()"><span class="eq-switch-knob"></span></button>
     </div>
     <div class="eq-toggle-row">
-      <div style="min-width:0">
+      <div style="min-width:0;flex:1">
         <div class="eq-toggle-title">Ativar alertas de eletrodo crítico no WhatsApp</div>
-        <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico configurado. Uma mensagem por eletrodo (reinicia quando você registra a troca). Usa o mesmo número dos alertas de desempenho.</div>
+        <div class="eq-toggle-sub">Avisa via MR.ROBOT quando o desgaste de qualquer robô ultrapassa o limite crítico. Uma mensagem por eletrodo (reinicia quando registra a troca).</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <label style="font-size:11px;color:#8a93a3;font-weight:700">📱 Número dedicado:</label>
+          <input id="eqAlertaNumEletrodo" type="tel" placeholder="Ex: 5511987654321" value="${esc(equipesData.alerta_numero_eletrodo||'')}" onchange="eqSetNumeroEletrodo(this.value)" style="background:#0f1318;border:1px solid #2a3040;color:#e0e6ef;padding:6px 10px;border-radius:6px;font-family:'Courier New',monospace;font-size:12px;font-weight:700;min-width:180px">
+          <span style="font-size:10px;color:#4a5568">(vazio = usa o número dos alertas de desempenho)</span>
+        </div>
       </div>
       <button id="eqToggleAlertasEletrodo" class="eq-switch ${equipesData.alertas_eletrodo_ativos?'on':''}" role="switch" aria-checked="${!!equipesData.alertas_eletrodo_ativos}" onclick="eqToggleAlertasEletrodo()"><span class="eq-switch-knob"></span></button>
     </div>
@@ -7286,6 +7291,11 @@ function eqToggleAlertasEletrodo(){
   showToast(equipesData.alertas_eletrodo_ativos?'Alertas de eletrodo ligados ✓':'Alertas de eletrodo desligados');
   if(equipesData.alertas_eletrodo_ativos) _eletrodoAlertaCheck();
 }
+function eqSetNumeroEletrodo(v){
+  equipesData.alerta_numero_eletrodo = (v||'').trim();
+  saveEquipes(true);
+  showToast(equipesData.alerta_numero_eletrodo?'Número de eletrodo salvo ✓':'Número de eletrodo removido');
+}
 
 // Verifica todos os robôs; se desgaste passou do limite crítico e ainda não avisou pra esse eletrodo, manda WhatsApp
 let _eletrodoAlertaRodando=false;
@@ -7293,7 +7303,8 @@ async function _eletrodoAlertaCheck(){
   try{
     if(_eletrodoAlertaRodando) return;
     if(!equipesData || !equipesData.alertas_eletrodo_ativos) return;
-    const numero=(equipesData.alerta_numero||'').replace(/\D/g,'');
+    // usa número dedicado do eletrodo; se vazio, cai no número dos alertas de desempenho
+    const numero=((equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||'')).replace(/\D/g,'');
     if(!numero) return;
     _eletrodoAlertaRodando=true;
     const enviados=[];
