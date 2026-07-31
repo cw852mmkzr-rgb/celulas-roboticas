@@ -3963,12 +3963,13 @@ async function _eletrodoTrocaNotificar(key, pecasFeitas, quando){
     const eletrodo=(c.eletrodo||'').trim();
     const tipo=(c.tipo_eletrodo||'').trim();
     const msg=`✅ *Troca de eletrodo registrada*\n${nomeRobo}\n• Data: ${quando}\n• Peças feitas: ${pecasFeitas.toLocaleString('pt-BR')}${eletrodo?`\n• Eletrodo: ${eletrodo}${tipo?' ('+tipo+')':''}`:''}`;
+    const dedupBase="elt_troca_"+key+"_"+(quando||'').replace(/\D/g,'');
     for(const num of numeros){
       try{
         await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
-          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg,dedup_key:dedupBase+"_"+num})
         });
       }catch(e){}
     }
@@ -7423,7 +7424,7 @@ async function _eletrodoAlertaCheck(){
           const r=await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
             method:"POST",
             headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
-            body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+            body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg,dedup_key:"elt_crit_"+robo+"_"+num+"_"+chaveEletrodo})
           });
           if(r.ok) algumOk=true;
         }catch(e){}
@@ -10482,12 +10483,14 @@ async function _manuAlertaNotificar(robo, m){
     const nomeRobo=(celulas[String(robo)]&&celulas[String(robo)].nome)||('Robô '+robo);
     const emoji=m.prioridade==='Urgente'?'🚨':'🔴';
     const msg=`${emoji} *Manutenção ${m.prioridade}*\n${nomeRobo}\n• Tipo: ${m.tipo||'—'}\n• Descrição: ${m.descricao}${m.peca?`\n• Peça: ${m.peca}`:''}${m.responsavel?`\n• Aberta por: ${m.responsavel}`:''}\n• ${m.data}`;
+    const descHash=(m.descricao||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);
+    const dedupBase="manu_"+robo+"_"+(m.data||'').replace(/\D/g,'')+"_"+descHash;
     for(const num of numeros){
       try{
         await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
-          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg})
+          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg,dedup_key:dedupBase+"_"+num})
         });
       }catch(e){}
     }
