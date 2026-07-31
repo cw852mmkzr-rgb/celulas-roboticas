@@ -10528,6 +10528,33 @@ function salvarConclusaoManu(){
   document.getElementById("modalConcluirManu").style.display = 'none';
   renderManutencao();
   showToast("Manutenção concluída ✓");
+  const item = celulas[_manuKeyAtual].manutencoes[_manuRoboAtual][_manuIdxAtual];
+  if(typeof _manuConclusaoNotificar==='function'){
+    _manuConclusaoNotificar(_manuRoboAtual, item);
+  }
+}
+
+async function _manuConclusaoNotificar(robo, m){
+  try{
+    if(!equipesData || !equipesData.alertas_manu_ativos) return;
+    const bruto=((equipesData.alerta_numero_manu||'').trim()||(equipesData.alerta_numero_eletrodo||'').trim()||(equipesData.alerta_numero||''));
+    const numeros=bruto.split(/[,;\n]+/).map(s=>s.replace(/\D/g,'')).filter(s=>s.length>=8);
+    if(!numeros.length) return;
+    const nomeRobo=(celulas[String(robo)]&&celulas[String(robo)].nome)||('Robô '+robo);
+    const prio=m.prioridade?` (${m.prioridade})`:'';
+    const msg=`✅ *Manutenção concluída*${prio}\n${nomeRobo}\n• Descrição: ${m.descricao||'—'}${m.tipo?`\n• Tipo: ${m.tipo}`:''}${m.peca?`\n• Peça: ${m.peca}`:''}${m.como_foi?`\n• Como foi: ${m.como_foi}`:''}${m.pecas_trocadas?`\n• Peças trocadas: ${m.pecas_trocadas}`:''}${m.tempo_parada?`\n• Tempo de parada: ${m.tempo_parada}`:''}${m.realizado_por&&m.realizado_por!=='—'?`\n• Realizado por: ${m.realizado_por}`:''}\n• Concluído: ${m.data_conclusao||'—'}`;
+    const descHash=(m.descricao||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);
+    const dedupBase="manuok_"+robo+"_"+(m.data_conclusao||'').replace(/\D/g,'')+"_"+descHash;
+    for(const num of numeros){
+      try{
+        await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+          body:JSON.stringify({tipo:"alerta",phone:num,mensagem:msg,dedup_key:dedupBase+"_"+num})
+        });
+      }catch(e){}
+    }
+  }catch(e){}
 }
 
 function editarConclusaoManu(key,robo,idx){
