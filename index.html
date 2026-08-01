@@ -13789,7 +13789,154 @@ window.iniciarIntro = function(){
     setTimeout(()=>{intro.style.display="none";},580);
   },4800);
 };
+
+// ===== Rastreamento de dispositivos que acessam o site =====
+(function initDispositivosSessoes(){
+  try {
+    let sessionId = sessionStorage.getItem('dispSessionId');
+    if(!sessionId){
+      sessionId = (crypto.randomUUID ? crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16);}));
+      sessionStorage.setItem('dispSessionId', sessionId);
+    }
+    window._dispSessionId = sessionId;
+    const ua = navigator.userAgent;
+    let navegador='Desconhecido';
+    if(/Edg\//.test(ua)) navegador='Edge';
+    else if(/OPR|Opera/.test(ua)) navegador='Opera';
+    else if(/Chrome/.test(ua) && !/Chromium/.test(ua)) navegador='Chrome';
+    else if(/Firefox/.test(ua)) navegador='Firefox';
+    else if(/Safari/.test(ua) && !/Chrome/.test(ua)) navegador='Safari';
+    let plataforma='Desconhecido';
+    if(/Android/.test(ua)) plataforma='Android';
+    else if(/iPhone|iPad|iPod/.test(ua)) plataforma='iOS';
+    else if(/Windows/.test(ua)) plataforma='Windows';
+    else if(/Mac OS/.test(ua)) plataforma='macOS';
+    else if(/Linux/.test(ua)) plataforma='Linux';
+    fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?on_conflict=session_id", {
+      method: "POST",
+      headers: {...HEADERS_SB, "Prefer":"resolution=merge-duplicates,return=minimal"},
+      body: JSON.stringify({
+        session_id: sessionId,
+        user_agent: ua,
+        plataforma: plataforma,
+        navegador: navegador,
+        ultimo_ping: new Date().toISOString(),
+        fechou_em: null
+      })
+    }).catch(()=>{});
+    setInterval(()=>{
+      fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+        method:"PATCH", headers:HEADERS_SB,
+        body: JSON.stringify({ultimo_ping: new Date().toISOString()})
+      }).catch(()=>{});
+    }, 30000);
+    window.addEventListener('beforeunload', ()=>{
+      try {
+        fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+          method:"PATCH", headers:HEADERS_SB,
+          body: JSON.stringify({fechou_em: new Date().toISOString()}),
+          keepalive: true
+        });
+      } catch(e){}
+    });
+  } catch(e){ console.warn('Tracking sessoes falhou:', e); }
+})();
+
+const DISP_PW = "3102";
+function dispAbrirLogin(){
+  const pw = prompt("Senha do host:");
+  if(pw === null) return;
+  if(pw === DISP_PW) dispMostrarModal();
+  else showToast("Senha incorreta", true);
+}
+function dispMostrarModal(){
+  document.getElementById('modalDispositivos').style.display='flex';
+  dispCarregarDados();
+}
+function dispFecharModal(){
+  document.getElementById('modalDispositivos').style.display='none';
+}
+async function dispCarregarDados(){
+  const listaOnline = document.getElementById('dispListaOnline');
+  const listaHist = document.getElementById('dispListaHist');
+  listaOnline.innerHTML = '<div style="color:#4a5568;padding:14px;text-align:center">Carregando...</div>';
+  listaHist.innerHTML = '';
+  try {
+    const limiteOnline = new Date(Date.now()-60000).toISOString();
+    const rOn = await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?ultimo_ping=gte."+limiteOnline+"&fechou_em=is.null&order=ultimo_ping.desc&select=*", {headers:{...HEADERS_SB,"Prefer":"count=exact"}});
+    const online = await rOn.json();
+    const limite30d = new Date(Date.now()-30*24*60*60*1000).toISOString();
+    const rH = await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?primeiro_acesso=gte."+limite30d+"&order=primeiro_acesso.desc&select=*&limit=500", {headers:HEADERS_SB});
+    const hist = await rH.json();
+    document.getElementById('dispCountOnline').textContent = online.length;
+    document.getElementById('dispCountHist').textContent = hist.length;
+    listaOnline.innerHTML = online.length===0
+      ? '<div style="color:#4a5568;padding:24px;text-align:center">Ninguém online agora</div>'
+      : online.map(s=>dispRenderCard(s,true)).join('');
+    listaHist.innerHTML = hist.length===0
+      ? '<div style="color:#4a5568;padding:24px;text-align:center">Sem acessos nos últimos 30 dias</div>'
+      : hist.map(s=>dispRenderCard(s,false)).join('');
+  } catch(e){
+    listaOnline.innerHTML = '<div style="color:#ff4d4d;padding:14px">Erro ao carregar: '+esc(e.message||String(e))+'</div>';
+  }
+}
+function dispRenderCard(s, online){
+  const abriu = new Date(s.primeiro_acesso);
+  const pingou = new Date(s.ultimo_ping);
+  const fechou = s.fechou_em ? new Date(s.fechou_em) : null;
+  const dur = ((fechou||pingou)-abriu)/1000;
+  const durFmt = dur<60 ? Math.round(dur)+'s'
+    : dur<3600 ? Math.round(dur/60)+' min'
+    : (Math.round(dur/3600*10)/10)+' h';
+  const abriuFmt = abriu.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const icone = (s.plataforma==='Android'||s.plataforma==='iOS') ? '📱' : '💻';
+  const cor = online ? '#00e87a' : '#4a5568';
+  const badge = online
+    ? '<div style="font-size:11px;color:#00e87a;font-weight:800;letter-spacing:.1em">● ONLINE</div>'
+    : (s.fechou_em?'<div style="font-size:11px;color:#4a5568">fechou</div>':'<div style="font-size:11px;color:#ffb300">inativo</div>');
+  return `<div style="background:#0f1318;border:1px solid ${cor}40;border-left:3px solid ${cor};border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="min-width:0;flex:1">
+      <div style="font-size:14px;font-weight:700;color:#fff">${icone} ${esc(s.plataforma||'?')} · ${esc(s.navegador||'?')}</div>
+      <div style="font-size:11px;color:#4a5568;margin-top:3px">Entrou: ${abriuFmt} · Duração: ${durFmt}</div>
+    </div>
+    ${badge}
+  </div>`;
+}
 </script>
+
+<button onclick="dispAbrirLogin()" title="Dispositivos conectados" style="position:fixed;bottom:14px;right:14px;background:#0f1318;border:1px solid #2a3040;color:#6b7788;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;z-index:9500;opacity:0.35;transition:opacity .2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.35">🖥️</button>
+
+<div id="modalDispositivos" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9700;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)dispFecharModal()">
+  <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:22px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#fff">🖥️ Dispositivos Conectados</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:2px">Quem está acessando o site</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="dispCarregarDados()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">↻ Atualizar</button>
+        <button onclick="dispFecharModal()" style="background:#1e2530;border:none;color:#8a95a8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">✕</button>
+      </div>
+    </div>
+    <div style="overflow-y:auto;flex:1;min-height:0">
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;font-weight:800;color:#00e87a;text-transform:uppercase;letter-spacing:.08em">
+          <span>● Ao vivo</span>
+          <span style="background:#00e87a20;color:#00e87a;padding:2px 8px;border-radius:99px;font-size:11px" id="dispCountOnline">0</span>
+        </div>
+        <div id="dispListaOnline"></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;font-weight:800;color:#8a95a8;text-transform:uppercase;letter-spacing:.08em">
+          <span>📜 Histórico (30d)</span>
+          <span style="background:#8a95a820;color:#8a95a8;padding:2px 8px;border-radius:99px;font-size:11px" id="dispCountHist">0</span>
+        </div>
+        <div id="dispListaHist"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
