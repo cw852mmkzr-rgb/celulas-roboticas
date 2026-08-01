@@ -6547,7 +6547,7 @@ function mapaCopiarDiaAnterior(){
 }
 
 function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
-  const podeEditar = isMapaAdmin;
+  const podeEditar = isMapaAdmin || isMapaApontar;
   const subColor = isNoite ? '#a78bfa' : '#00e87a';
   const subLabel = isNoite ? 'Noite' : 'Dia';
   const total = HORAS.length;
@@ -6621,7 +6621,9 @@ function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
 
 // ===== MAPA DA PRODUÇÃO =====
 const MAPA_PW = "mapa2026";
+const MAPA_PW_APONTAR = "1711";
 let isMapaAdmin = false;
+let isMapaApontar = false;
 let mapaDados = null;
 let mapaPollTimer = null;
 let mapaZoomAtual = 100;
@@ -8425,7 +8427,7 @@ function mapaUpdateData(campo,valor){
 }
 
 function mapaBuildTurnoTableProducao(turno,chave,maquinas){
-  const podeEditar = isMapaAdmin;
+  const podeEditar = isMapaAdmin || isMapaApontar;
   const ro=!podeEditar?'readonly':'';
   const HORAS=turno==='dia'?MAPA_HORAS_DIA:HORAS_NOITE;
   const isNoite=turno==='noite';
@@ -8544,7 +8546,7 @@ function renderMapaProducaoTabela(force){
     }
   }
   const maquinasSlots = mapaGetMaquinasAtivas(); // chaves fixas: t_0..t_49 ou s_0..s_7
-  const podeEditar = isMapaAdmin;
+  const podeEditar = isMapaAdmin || isMapaApontar;
   const anoAtual=new Date().getFullYear();
   const ano=mapaDados.metas_ano||anoAtual;
   const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
@@ -8566,7 +8568,7 @@ function renderMapaProducaoTabela(force){
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}">🔩 SOLDA TOPO <span style="opacity:.8;font-weight:800">(${totalSoldaTopo})</span></button>
       <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}">📋 MÁQUINAS <span style="opacity:.8;font-weight:800">(${totalMaquinasGeral})</span></button>
-      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
+      ${isMapaAdmin?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
       <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📋 Copiar Dia Ant.</button>
       `:''}
@@ -8586,12 +8588,13 @@ function renderMapaProducaoTabela(force){
       <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}" style="padding:9px 14px;font-size:13px">🔩 SOLDA TOPO <span style="opacity:.8">(${totalSoldaTopo})</span></button>
       <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}" style="padding:9px 14px;font-size:13px">📋 MÁQUINAS <span style="opacity:.8">(${totalMaquinasGeral})</span></button>
-      ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" title="Tirar foto" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
+      ${isMapaAdmin?`<button onclick="document.getElementById('mapaFotoInput').click()" title="Tirar foto" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="document.getElementById('mapaFotoInputBib').click()" title="Escolher da biblioteca" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🖼️</button><input type="file" id="mapaFotoInputBib" accept="image/*" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
       <button onclick="mapaLimparDia()" title="Limpar conteúdo do dia" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff6b6b;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🗑️ Limpar Dia</button>
       `:''}
-      ${!podeEditar?`<button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="entrarModoEdicaoMapa()">✏</button>`:''}
+      ${isMapaApontar?`<button class="btn btn-gray" style="padding:6px 12px;font-size:11px;color:#00e87a;border-color:#00e87a40" onclick="sairModoEdicaoMapa()">✓ APONTANDO</button>`
+        :(!podeEditar?`<button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="entrarModoEdicaoMapa()">✏ APONTAR</button>`:'')}
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div class="date-sel"><label>Dia</label><select onchange="mapaUpdateData('metas_dia',+this.value)">${diasOpts}</select></div>
@@ -8672,16 +8675,21 @@ function entrarModoEdicaoMapa(){
 function confirmarMapaLogin(){
   const pw=document.getElementById("mapaPwInput").value;
   if(pw===MAPA_PW){
-    isMapaAdmin=true;
+    isMapaAdmin=true; isMapaApontar=false;
     document.getElementById("modalMapaLogin").style.display="none";
     showToast("Modo edição ativado ✓");
+    renderMapaProducao();
+  } else if(pw===MAPA_PW_APONTAR){
+    isMapaApontar=true; isMapaAdmin=false;
+    document.getElementById("modalMapaLogin").style.display="none";
+    showToast("Modo apontar ativado ✓");
     renderMapaProducao();
   } else {
     document.getElementById("mapaLoginErr").style.display="block";
   }
 }
 function sairModoEdicaoMapa(){
-  isMapaAdmin=false;
+  isMapaAdmin=false; isMapaApontar=false;
   renderMapaProducao();
 }
 
@@ -8774,7 +8782,9 @@ function renderMapaProducao(){
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         ${isMapaAdmin
           ? `<button class="btn-mapa-destaque azul on" onclick="sairModoEdicaoMapa()">✓ EDITANDO — SAIR</button>`
-          : `<button class="btn-mapa-destaque azul" onclick="entrarModoEdicaoMapa()">✏ EDITAR</button>`}
+          : isMapaApontar
+            ? `<button class="btn-mapa-destaque azul on" onclick="sairModoEdicaoMapa()">✓ APONTANDO — SAIR</button>`
+            : `<button class="btn-mapa-destaque azul" onclick="entrarModoEdicaoMapa()">✏ APONTAR</button>`}
         <button class="btn btn-red" style="padding:6px 12px;font-size:11px" onclick="fecharMapaProducao()">✕ Voltar ao login</button>
       </div>
     </div>
@@ -13311,7 +13321,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 <div id="modalMapaLogin" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9600;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:28px;width:90%;max-width:360px;text-align:center">
     <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">🏭 Mapa da Produção</div>
-    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Digite a senha para editar</div>
+    <div style="font-size:12px;color:#4a5568;margin-bottom:16px">Digite a senha para apontar</div>
     <input type="password" id="mapaPwInput" placeholder="Senha"
       style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:10px 14px;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;margin-bottom:8px;box-sizing:border-box;outline:none"
       onkeydown="if(event.key==='Enter')confirmarMapaLogin()">
