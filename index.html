@@ -8758,9 +8758,7 @@ function renderMapaZonaHTML(zona){
     const ehCaixa = MAPA_CODIGOS_CAIXA.includes(label);
     const formaClasse = ehBateria?'mapa-maq-bateria':ehRedonda?'mapa-maq-redonda':ehCaixa?'mapa-maq-caixa':'';
     const antenas = ehCaixa?`<span class="antena-ponta antena-ponta-esq"></span><span class="antena-ponta antena-ponta-dir"></span>`:'';
-    const prod = mapaGetProdDia(label);
-    const prodBadge = prod>0 ? `<span style="display:block;font-size:9px;font-weight:900;letter-spacing:0;opacity:.95;line-height:1;margin-top:2px;color:${info.cor}">${prod}</span>` : '';
-    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${formaClasse}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${antenas}${esc(label)}${prodBadge}</div>`;
+    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${formaClasse}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${antenas}${esc(label)}</div>`;
   }).join('');
   return `<div class="mapa-zona">
     ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
