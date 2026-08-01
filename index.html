@@ -8770,8 +8770,8 @@ function renderMapaProducao(){
       </div>
       <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
         ${isMapaAdmin
-          ? `<span style="font-size:11px;color:#3d9eff;font-weight:700">✓ Editando</span><button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="sairModoEdicaoMapa()">✕ Sair edição</button>`
-          : `<button class="btn btn-gray" style="padding:6px 12px;font-size:11px" onclick="entrarModoEdicaoMapa()">✏ Editar</button>`}
+          ? `<button class="btn-mapa-destaque azul on" onclick="sairModoEdicaoMapa()">✓ EDITANDO — SAIR</button>`
+          : `<button class="btn-mapa-destaque azul" onclick="entrarModoEdicaoMapa()">✏ EDITAR</button>`}
         <button class="btn btn-red" style="padding:6px 12px;font-size:11px" onclick="fecharMapaProducao()">✕ Voltar ao login</button>
       </div>
     </div>
@@ -8779,7 +8779,8 @@ function renderMapaProducao(){
       <div class="mapa-sidebar" id="mapaSidebar">
         ${['Mapa','Produção','Ordens','Estoque','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
           const icones = {Mapa:'📍',Produção:'🏭',Ordens:'📋',Estoque:'📦',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
-          return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
+          const destaque = it==='Planilha' ? ' mapa-sidebar-destaque' : '';
+          return `<div class="mapa-sidebar-item${destaque} ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
           <div class="mapa-legend-title">Legenda</div>
@@ -12961,7 +12962,14 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-card-btn:active{ transform:scale(0.9); background:#00000040; }
 .eq-card-cor{ font-size:12px; font-family:'Courier New',monospace; opacity:0.85; margin-top:2px; }
 .eq-status-badge{ display:inline-flex; align-items:center; gap:9px; margin-top:11px; padding:7px 13px; border-radius:99px; border:1.5px solid; font-size:13.5px; font-weight:900; letter-spacing:0.09em; font-family:'Courier New',monospace; }
-.btn-solda-topo{ display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; border:2px solid #ffb300; background:linear-gradient(135deg,#ffb300,#ff8c00); color:#1a0f00; font-size:15px; font-weight:900; letter-spacing:0.12em; cursor:pointer; box-shadow:0 4px 14px -2px #ffb30055, inset 0 1px 0 #ffffff40; text-shadow:0 1px 0 #ffffff30; transition:transform .16s var(--ease-out), box-shadow .16s ease, filter .16s ease; font-family:'Courier New',monospace; }
+.btn-solda-topo, .btn-mapa-destaque{ display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; border:2px solid #ffb300; background:linear-gradient(135deg,#ffb300,#ff8c00); color:#1a0f00; font-size:15px; font-weight:900; letter-spacing:0.12em; cursor:pointer; box-shadow:0 4px 14px -2px #ffb30055, inset 0 1px 0 #ffffff40; text-shadow:0 1px 0 #ffffff30; transition:transform .16s var(--ease-out), box-shadow .16s ease, filter .16s ease; font-family:'Courier New',monospace; }
+.btn-mapa-destaque.azul{ border-color:#3d9eff; background:linear-gradient(135deg,#3d9eff,#1e6fdb); color:#001a33; box-shadow:0 4px 14px -2px #3d9eff55, inset 0 1px 0 #ffffff40; }
+.btn-mapa-destaque.azul:hover{ box-shadow:0 6px 20px -2px #3d9eff80, inset 0 1px 0 #ffffff50; }
+.btn-mapa-destaque:hover{ transform:translateY(-1px); filter:brightness(1.08); }
+.btn-mapa-destaque:active{ transform:scale(.97); }
+.mapa-sidebar-destaque{ background:linear-gradient(135deg,#ffb30022,#ff8c0022) !important; border:2px solid #ffb30070 !important; color:#ffb300 !important; font-weight:900 !important; letter-spacing:0.08em; text-transform:uppercase; box-shadow:0 3px 12px -2px #ffb30033, inset 0 1px 0 #ffffff10; margin:6px 4px !important; border-radius:10px !important; }
+.mapa-sidebar-destaque:hover{ background:linear-gradient(135deg,#ffb30035,#ff8c0035) !important; filter:brightness(1.1); }
+.mapa-sidebar-destaque.ativo{ background:linear-gradient(135deg,#ffb300,#ff8c00) !important; color:#1a0f00 !important; border-color:#ffb300 !important; box-shadow:0 4px 14px -2px #ffb30066, inset 0 1px 0 #ffffff40; animation:btnSoldaTopoPulse 2s ease-in-out infinite; }
 .btn-solda-topo:hover{ transform:translateY(-1px); filter:brightness(1.08); box-shadow:0 6px 20px -2px #ffb30080, inset 0 1px 0 #ffffff50; }
 .btn-solda-topo:active{ transform:scale(.97); }
 .btn-solda-topo.on{ background:linear-gradient(135deg,#00e87a,#00c060); border-color:#00e87a; box-shadow:0 4px 14px -2px #00e87a66, inset 0 1px 0 #ffffff40; animation:btnSoldaTopoPulse 2s ease-in-out infinite; }
