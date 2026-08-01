@@ -6993,21 +6993,27 @@ function mapaApontarTrocarHora(){
 function mapaApontarEnviar(){
   const maqEl=document.getElementById('apMaquina');
   const qtdEl=document.getElementById('apQtd');
+  const metaEl=document.getElementById('apMeta');
+  const codEl=document.getElementById('apCod');
   const numero=maqEl.value.trim();
   const qtdRaw=qtdEl.value.trim();
   if(!numero){ showToast('Informe o número da máquina',true); maqEl.focus(); return; }
   if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
   if(!_apHora){ showToast('Escolha a hora primeiro',true); return; }
   const qtd=parseInt(qtdRaw);
+  const meta=metaEl.value.trim();
+  const cod=codEl.value.trim();
   const chaveL=mapaFindOrCreateChave(numero);
   if(!chaveL){ showToast('Sem slot livre para nova máquina',true); return; }
-  mapaUpdateMetasCell(chaveL, campoH(_apHora), String(qtd));  // grava + salva na planilha
-  _apLog.unshift({maquina:numero, qtd:qtd, hora:_apHora});
+  mapaUpdateMetasCell(chaveL, campoH(_apHora), String(qtd));
+  if(meta) mapaUpdateMetasCell(chaveL, 'meta', meta);
+  if(cod)  mapaUpdateMetasCell(chaveL, 'cod', cod);
+  _apLog.unshift({maquina:numero, qtd:qtd, hora:_apHora, meta:meta, cod:cod});
   const wrap=document.getElementById('apLogWrap');
   wrap.style.display='';
   document.getElementById('apLogCount').textContent=_apLog.length;
   document.getElementById('apLogList').innerHTML=_apLog.map(r=>
-    `<div class="ap-log-item"><span class="ap-log-maq">🏭 Máq ${esc(String(r.maquina))} · ${r.hora}</span><span class="ap-log-qtd">${r.qtd} pç</span></div>`
+    `<div class="ap-log-item"><span class="ap-log-maq">🏭 Máq ${esc(String(r.maquina))}${r.cod?' · '+esc(r.cod):''} · ${r.hora}</span><span class="ap-log-qtd">${r.qtd} pç${r.meta?' · meta '+r.meta:''}</span></div>`
   ).join('');
   showToast(`Máq ${numero}: ${qtd} peças às ${_apHora} ✓`);
   maqEl.value=''; qtdEl.value='';
@@ -12797,7 +12803,17 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
           <button class="ap-trocar" onclick="mapaApontarTrocarHora()">trocar hora</button>
         </div>
         <div class="ap-label">Número da máquina</div>
-        <input id="apMaquina" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 244" autocomplete="off" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter'){document.getElementById('apQtd').focus();}">
+        <input id="apMaquina" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 244" autocomplete="off" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter'){document.getElementById('apMeta').focus();}">
+        <div style="display:flex;gap:10px;margin-top:15px">
+          <div style="flex:1">
+            <div class="ap-label">Meta/h</div>
+            <input id="apMeta" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 500" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter'){document.getElementById('apCod').focus();}">
+          </div>
+          <div style="flex:1">
+            <div class="ap-label">Cód. Peça</div>
+            <input id="apCod" class="ap-input" type="text" inputmode="numeric" placeholder="Ex: 3692" autocomplete="off" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter'){document.getElementById('apQtd').focus();}">
+          </div>
+        </div>
         <div class="ap-label" style="margin-top:15px">Quantidade de peças</div>
         <input id="apQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
         <button class="ap-btn primary" style="margin-top:18px" onclick="mapaApontarEnviar()">✓ Enviar</button>
