@@ -6860,11 +6860,14 @@ function mapaLimparDia(){
   const dia=mapaDados.metas_dia||new Date().getDate();
   const chave=`${ano}_${mes}_${dia}`;
   const dataLbl=`${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
-  if(!mapaDados.metas_dias || !mapaDados.metas_dias[chave] || !Object.keys(mapaDados.metas_dias[chave]).length){
-    showToast("O dia "+dataLbl+" já está vazio.", true); return;
-  }
+  const slots=mapaChaveLinhas(mapaProducaoSubTela);
+  const temDados=(mapaDados.metas_dias&&mapaDados.metas_dias[chave]&&Object.keys(mapaDados.metas_dias[chave]).length);
+  const temNomes=slots.some(s=>mapaDados.nomes_maquinas&&mapaDados.nomes_maquinas[s]);
+  if(!temDados && !temNomes){ showToast("O dia "+dataLbl+" já está vazio.", true); return; }
   if(!confirm(`Limpar TODO o conteúdo do dia ${dataLbl}?\n\nIsso apaga números das máquinas, códigos, metas e todas as horas preenchidas desse dia. Não pode ser desfeito.`)) return;
-  delete mapaDados.metas_dias[chave];
+  if(mapaDados.metas_dias) delete mapaDados.metas_dias[chave];
+  // Limpa também os nomes globais dos slots do turno atual
+  if(mapaDados.nomes_maquinas) slots.forEach(s=>{ mapaDados.nomes_maquinas[s]=''; });
   saveMapaDados();
   renderMapaProducaoTabela(true);
   showToast("Conteúdo do dia "+dataLbl+" limpo ✓");
