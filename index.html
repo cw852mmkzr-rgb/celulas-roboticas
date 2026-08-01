@@ -8929,6 +8929,19 @@ function mapaAbrirMaquina(cod){
   mapaMaquinaAberta = cod;
   const m = mapaDados.maquinas[cod];
   const podeEditar = isMapaAdmin || isMapaHost;
+  // Puxa meta/cod/produção diretamente da tabela de Produção do dia atual
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chaveDia=`${ano}_${mes}_${dia}`;
+  const slotProd = mapaFindChaveByNumero(cod.replace(/b$/,''));
+  const rdProd = (slotProd && mapaDados.metas_dias && mapaDados.metas_dias[chaveDia] && mapaDados.metas_dias[chaveDia][slotProd]) || {};
+  const metaProd = parseInt(rdProd.meta)||0;
+  const codProd = rdProd.cod||'';
+  const prodDia = slotProd ? [...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rdProd[campoH(h)])||'').num),0) : 0;
+  // Se a tabela tem dados, usa como fonte de verdade
+  if(metaProd>0) m.meta = metaProd;
+  if(codProd) m.peca = codProd;
   const statusOpts = Object.entries(MAPA_STATUS_INFO).map(([k,v])=>`<option value="${k}" ${k===m.status?'selected':''}>${v.label}</option>`).join('');
   const historicoHTML = (m.historico&&m.historico.length)
     ? m.historico.slice().reverse().map(h=>`<div class="hist-item"><span class="hist-item-data">${esc(h.data)}</span><span class="hist-item-val">${esc(h.texto)}</span></div>`).join('')
@@ -8943,6 +8956,9 @@ function mapaAbrirMaquina(cod){
     </div>
     <div class="modal-field"><label>Meta de produção / hora</label>
       <input class="modal-input" type="number" id="mapaMaqMeta" value="${m.meta||0}" ${podeEditar?'':'readonly'}>
+    </div>
+    <div class="modal-field"><label>Produção do dia</label>
+      <div style="background:#04070d;border:1px solid #1e2530;border-radius:8px;padding:10px 14px;font-family:'Courier New',monospace;font-size:20px;font-weight:900;color:${prodDia>0?'#00e87a':'#4a5568'}">${prodDia>0?prodDia.toLocaleString('pt-BR')+' pç':'—'}</div>
     </div>
     <div class="modal-field"><label>Observações</label>
       <textarea class="modal-input" id="mapaMaqObs" rows="3" ${podeEditar?'':'readonly'} placeholder="—">${esc(m.obs||'')}</textarea>
