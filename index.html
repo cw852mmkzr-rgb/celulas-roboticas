@@ -13843,7 +13843,6 @@ window.iniciarIntro = function(){
       } catch(e){}
       // Notifica no WhatsApp do host
       try {
-        // Reusa nome de modelo do UA
         let modelo='';
         if(/iPhone/.test(ua)) modelo='iPhone';
         else if(/iPad/.test(ua)) modelo='iPad';
@@ -13853,7 +13852,7 @@ window.iniciarIntro = function(){
         }
         const agora = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
         const msg = `🔔 *Novo acesso ao sistema*\n• Aparelho: ${modelo||plataforma}\n• Navegador: ${navegador}${loc?`\n• Local: ${loc}`:''}${ip?`\n• IP: ${ip}`:''}\n• Quando: ${agora}`;
-        await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
+        const resp = await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
           method:"POST",
           headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
           body: JSON.stringify({
@@ -13863,7 +13862,9 @@ window.iniciarIntro = function(){
             dedup_key: "disp_"+sessionId+"_"+Date.now()
           })
         });
-      } catch(e){}
+        const respBody = await resp.text();
+        console.log('[disp] WhatsApp resp:', resp.status, respBody);
+      } catch(e){ console.error('[disp] Erro ao notificar WhatsApp:', e); }
     })();
     let _dispKicked = false;
     // Check rápido de encerramento a cada 5s
