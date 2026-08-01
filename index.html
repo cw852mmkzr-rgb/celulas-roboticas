@@ -13826,18 +13826,43 @@ window.iniciarIntro = function(){
         fechou_em: null
       })
     }).catch(()=>{});
-    // Busca localização por IP em background e atualiza a linha
+    // Busca localização por IP + notifica no WhatsApp
     (async ()=>{
+      let loc='', ip='';
       try {
         const r = await fetch("https://ipwho.is/");
         const j = await r.json();
         if(j && j.success){
-          const loc = [j.city, j.region, j.country].filter(Boolean).join(', ');
+          loc = [j.city, j.region, j.country].filter(Boolean).join(', ');
+          ip = j.ip||'';
           fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
             method:"PATCH", headers:HEADERS_SB,
-            body: JSON.stringify({ip: j.ip||null, localizacao: loc||null})
+            body: JSON.stringify({ip: ip||null, localizacao: loc||null})
           }).catch(()=>{});
         }
+      } catch(e){}
+      // Notifica no WhatsApp do host
+      try {
+        // Reusa nome de modelo do UA
+        let modelo='';
+        if(/iPhone/.test(ua)) modelo='iPhone';
+        else if(/iPad/.test(ua)) modelo='iPad';
+        else {
+          const m = ua.match(/Android[^;]*;\s*[^;]+?;\s*([^;)]+?)(?:\s+Build|\))/);
+          if(m && m[1]) modelo=m[1].trim();
+        }
+        const agora = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+        const msg = `🔔 *Novo acesso ao sistema*\n• Aparelho: ${modelo||plataforma}\n• Navegador: ${navegador}${loc?`\n• Local: ${loc}`:''}${ip?`\n• IP: ${ip}`:''}\n• Quando: ${agora}`;
+        await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
+          method:"POST",
+          headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+          body: JSON.stringify({
+            tipo:"alerta",
+            phone:"5511963262732",
+            mensagem: msg,
+            dedup_key: "disp_"+sessionId+"_"+Date.now()
+          })
+        });
       } catch(e){}
     })();
     let _dispKicked = false;
