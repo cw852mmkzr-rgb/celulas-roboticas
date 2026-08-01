@@ -8715,6 +8715,20 @@ const MAPA_CODIGOS_BATERIA = ['406','410','404','407','405','411','420'];
 const MAPA_CODIGOS_REDONDA = ['90','91','87','88','83','40','37'];
 const MAPA_CODIGOS_CAIXA = ['241','242','243','247','224','227','245','228','141','190','154'];
 
+function mapaGetProdDia(codMaquina){
+  if(!mapaDados||!mapaDados.metas_dias) return 0;
+  const ano=mapaDados.metas_ano||new Date().getFullYear();
+  const mes=mapaDados.metas_mes!==undefined?mapaDados.metas_mes:new Date().getMonth();
+  const dia=mapaDados.metas_dia||new Date().getDate();
+  const chave=`${ano}_${mes}_${dia}`;
+  const diaData=mapaDados.metas_dias[chave];
+  if(!diaData) return 0;
+  const slot=mapaFindChaveByNumero(codMaquina);
+  if(!slot||!diaData[slot]) return 0;
+  const rd=diaData[slot];
+  return [...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
+}
+
 function renderMapaZonaHTML(zona){
   const celulasHTML = zona.celulas.map((cod,idx)=>{
     if(cod===null){
@@ -8733,7 +8747,9 @@ function renderMapaZonaHTML(zona){
     const ehCaixa = MAPA_CODIGOS_CAIXA.includes(label);
     const formaClasse = ehBateria?'mapa-maq-bateria':ehRedonda?'mapa-maq-redonda':ehCaixa?'mapa-maq-caixa':'';
     const antenas = ehCaixa?`<span class="antena-ponta antena-ponta-esq"></span><span class="antena-ponta antena-ponta-dir"></span>`:'';
-    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${formaClasse}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${antenas}${esc(label)}</div>`;
+    const prod = mapaGetProdDia(label);
+    const prodBadge = prod>0 ? `<span style="display:block;font-size:9px;font-weight:900;letter-spacing:0;opacity:.95;line-height:1;margin-top:2px;color:${info.cor}">${prod}</span>` : '';
+    return `<div class="mapa-maq ${m.status==='setup'?'mapa-maq-glow':''} ${formaClasse}" style="background:${info.cor}18;border-color:${info.cor}80;color:${info.cor}" onclick="mapaAbrirMaquina('${cod}')">${antenas}${esc(label)}${prodBadge}</div>`;
   }).join('');
   return `<div class="mapa-zona">
     ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
