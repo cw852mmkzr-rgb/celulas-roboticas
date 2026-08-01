@@ -8561,8 +8561,8 @@ function renderMapaProducaoTabela(force){
   const abas = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
-      <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700;margin-left:8px">📋 Todas as Máquinas</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}">🔩 SOLDA TOPO <span style="opacity:.8;font-weight:800">(${totalSoldaTopo})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}">📋 MÁQUINAS <span style="opacity:.8;font-weight:800">(${totalMaquinasGeral})</span></button>
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
       <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📋 Copiar Dia Ant.</button>
@@ -8581,8 +8581,8 @@ function renderMapaProducaoTabela(force){
   <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch;outline:none;scrollbar-width:thick" id="mapaProducaoScroll" tabindex="0">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
-      <button onclick="mapaTrocarSubTelaProducao('todas')" style="background:${mapaProducaoSubTela==='todas'?'#3d9eff20':'#1e2530'};border:1px solid ${mapaProducaoSubTela==='todas'?'#3d9eff60':'#2a3040'};color:${mapaProducaoSubTela==='todas'?'#3d9eff':'#9ca3af'};border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📋 ${totalMaquinasGeral}</button>
       <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}" style="padding:9px 14px;font-size:13px">🔩 SOLDA TOPO <span style="opacity:.8">(${totalSoldaTopo})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}" style="padding:9px 14px;font-size:13px">📋 MÁQUINAS <span style="opacity:.8">(${totalMaquinasGeral})</span></button>
       ${podeEditar?`<button onclick="document.getElementById('mapaFotoInput').click()" title="Tirar foto" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="document.getElementById('mapaFotoInputBib').click()" title="Escolher da biblioteca" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🖼️</button><input type="file" id="mapaFotoInputBib" accept="image/*" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
@@ -8779,8 +8779,7 @@ function renderMapaProducao(){
       <div class="mapa-sidebar" id="mapaSidebar">
         ${['Mapa','Produção','Ordens','Estoque','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
           const icones = {Mapa:'📍',Produção:'🏭',Ordens:'📋',Estoque:'📦',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
-          const destaque = it==='Planilha' ? ' mapa-sidebar-destaque' : '';
-          return `<div class="mapa-sidebar-item${destaque} ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
+          return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
           <div class="mapa-legend-title">Legenda</div>
