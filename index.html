@@ -13813,6 +13813,7 @@ window.iniciarIntro = function(){
     else if(/Windows/.test(ua)) plataforma='Windows';
     else if(/Mac OS/.test(ua)) plataforma='macOS';
     else if(/Linux/.test(ua)) plataforma='Linux';
+    // Insere imediatamente com o que temos
     fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?on_conflict=session_id", {
       method: "POST",
       headers: {...HEADERS_SB, "Prefer":"resolution=merge-duplicates,return=minimal"},
@@ -13825,6 +13826,20 @@ window.iniciarIntro = function(){
         fechou_em: null
       })
     }).catch(()=>{});
+    // Busca localização por IP em background e atualiza a linha
+    (async ()=>{
+      try {
+        const r = await fetch("https://ipwho.is/");
+        const j = await r.json();
+        if(j && j.success){
+          const loc = [j.city, j.region, j.country].filter(Boolean).join(', ');
+          fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+            method:"PATCH", headers:HEADERS_SB,
+            body: JSON.stringify({ip: j.ip||null, localizacao: loc||null})
+          }).catch(()=>{});
+        }
+      } catch(e){}
+    })();
     let _dispKicked = false;
     // Check rápido de encerramento a cada 5s
     setInterval(async ()=>{
@@ -13900,6 +13915,23 @@ async function dispCarregarDados(){
     listaOnline.innerHTML = '<div style="color:#ff4d4d;padding:14px">Erro ao carregar: '+esc(e.message||String(e))+'</div>';
   }
 }
+function dispExtrairModelo(ua){
+  if(!ua) return '';
+  // iOS
+  if(/iPhone/.test(ua)) return 'iPhone';
+  if(/iPad/.test(ua)) return 'iPad';
+  // Android: modelo vem entre "Android X.Y; " e "; Build" ou ")"
+  const m = ua.match(/Android[^;]*;\s*[^;]+?;\s*([^;)]+?)(?:\s+Build|\))/);
+  if(m && m[1]) return m[1].trim();
+  const m2 = ua.match(/Linux;\s*Android[^;]*;\s*([^;)]+?)(?:\s+Build|\))/);
+  if(m2 && m2[1]) return m2[1].trim();
+  // Windows
+  if(/Windows NT 10/.test(ua)) return 'PC (Win 10/11)';
+  if(/Windows NT/.test(ua)) return 'PC (Windows)';
+  if(/Mac OS/.test(ua)) return 'Mac';
+  if(/Linux/.test(ua)) return 'PC (Linux)';
+  return '';
+}
 function dispRenderCard(s, online){
   const abriu = new Date(s.primeiro_acesso);
   const pingou = new Date(s.ultimo_ping);
@@ -13912,19 +13944,37 @@ function dispRenderCard(s, online){
   const icone = (s.plataforma==='Android'||s.plataforma==='iOS') ? '📱' : '💻';
   const cor = online ? '#00e87a' : '#4a5568';
   const ehEu = s.session_id === window._dispSessionId;
+  const modelo = dispExtrairModelo(s.user_agent);
+  const nomeExibido = s.apelido ? esc(s.apelido) : (modelo?esc(modelo):esc(s.plataforma||'?'));
+  const localFmt = s.localizacao ? `📍 ${esc(s.localizacao)}` : '';
   const badge = online
     ? '<div style="font-size:11px;color:#00e87a;font-weight:800;letter-spacing:.1em">● ONLINE</div>'
     : (s.fechou_em?'<div style="font-size:11px;color:#4a5568">fechou</div>':'<div style="font-size:11px;color:#ffb300">inativo</div>');
   const btnEncerrar = (online && !ehEu)
     ? `<button onclick="dispEncerrarSessao('${s.session_id}')" style="background:#ff4d4d20;border:1px solid #ff4d4d60;color:#ff6b6b;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">✕ Encerrar</button>`
     : (ehEu?'<div style="font-size:10px;color:#3d9eff;font-weight:700">(este)</div>':'');
+  const btnApelido = `<button onclick="dispEditarApelido('${s.session_id}', ${JSON.stringify(s.apelido||'').replace(/"/g,'&quot;')})" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:10px;font-weight:700">✏</button>`;
   return `<div style="background:#0f1318;border:1px solid ${cor}40;border-left:3px solid ${cor};border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
     <div style="min-width:0;flex:1">
-      <div style="font-size:14px;font-weight:700;color:#fff">${icone} ${esc(s.plataforma||'?')} · ${esc(s.navegador||'?')}</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px">${icone} ${nomeExibido} ${btnApelido}</div>
+      <div style="font-size:11px;color:#8a95a8;margin-top:2px">${esc(s.plataforma||'?')} · ${esc(s.navegador||'?')}${modelo&&s.apelido?' · '+esc(modelo):''}</div>
+      ${localFmt?`<div style="font-size:11px;color:#3d9eff;margin-top:2px">${localFmt}</div>`:''}
       <div style="font-size:11px;color:#4a5568;margin-top:3px">Entrou: ${abriuFmt} · Duração: ${durFmt}</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${badge}${btnEncerrar}</div>
   </div>`;
+}
+async function dispEditarApelido(sessionId, atual){
+  const novo = prompt("Apelido do dispositivo (ex: Celular do Eduardo):", atual||'');
+  if(novo===null) return;
+  try {
+    await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+      method:"PATCH", headers:HEADERS_SB,
+      body: JSON.stringify({apelido: novo.trim()||null})
+    });
+    showToast("Apelido salvo ✓");
+    dispCarregarDados();
+  } catch(e){ showToast("Erro: "+e.message, true); }
 }
 async function dispEncerrarSessao(sessionId){
   if(!confirm('Encerrar essa sessão? O dispositivo será desconectado em até 30s.')) return;
