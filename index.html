@@ -13825,11 +13825,23 @@ window.iniciarIntro = function(){
         fechou_em: null
       })
     }).catch(()=>{});
-    setInterval(()=>{
-      fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
-        method:"PATCH", headers:HEADERS_SB,
-        body: JSON.stringify({ultimo_ping: new Date().toISOString()})
-      }).catch(()=>{});
+    setInterval(async ()=>{
+      try {
+        // Checa se foi encerrado remotamente
+        const r = await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId+"&select=fechou_em", {headers:HEADERS_SB});
+        const arr = await r.json();
+        if(arr && arr[0] && arr[0].fechou_em){
+          alert("Sua sessão foi encerrada pelo host.");
+          sessionStorage.removeItem('dispSessionId');
+          location.reload();
+          return;
+        }
+        // Envia heartbeat
+        fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+          method:"PATCH", headers:HEADERS_SB,
+          body: JSON.stringify({ultimo_ping: new Date().toISOString()})
+        });
+      } catch(e){}
     }, 30000);
     window.addEventListener('beforeunload', ()=>{
       try {
@@ -13892,16 +13904,48 @@ function dispRenderCard(s, online){
   const abriuFmt = abriu.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const icone = (s.plataforma==='Android'||s.plataforma==='iOS') ? '📱' : '💻';
   const cor = online ? '#00e87a' : '#4a5568';
+  const ehEu = s.session_id === window._dispSessionId;
   const badge = online
     ? '<div style="font-size:11px;color:#00e87a;font-weight:800;letter-spacing:.1em">● ONLINE</div>'
     : (s.fechou_em?'<div style="font-size:11px;color:#4a5568">fechou</div>':'<div style="font-size:11px;color:#ffb300">inativo</div>');
+  const btnEncerrar = (online && !ehEu)
+    ? `<button onclick="dispEncerrarSessao('${s.session_id}')" style="background:#ff4d4d20;border:1px solid #ff4d4d60;color:#ff6b6b;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">✕ Encerrar</button>`
+    : (ehEu?'<div style="font-size:10px;color:#3d9eff;font-weight:700">(este)</div>':'');
   return `<div style="background:#0f1318;border:1px solid ${cor}40;border-left:3px solid ${cor};border-radius:8px;padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
     <div style="min-width:0;flex:1">
       <div style="font-size:14px;font-weight:700;color:#fff">${icone} ${esc(s.plataforma||'?')} · ${esc(s.navegador||'?')}</div>
       <div style="font-size:11px;color:#4a5568;margin-top:3px">Entrou: ${abriuFmt} · Duração: ${durFmt}</div>
     </div>
-    ${badge}
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">${badge}${btnEncerrar}</div>
   </div>`;
+}
+async function dispEncerrarSessao(sessionId){
+  if(!confirm('Encerrar essa sessão? O dispositivo será desconectado em até 30s.')) return;
+  try {
+    await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+sessionId, {
+      method:"PATCH", headers:HEADERS_SB,
+      body: JSON.stringify({fechou_em: new Date().toISOString()})
+    });
+    showToast("Sessão encerrada ✓");
+    dispCarregarDados();
+  } catch(e){ showToast("Erro ao encerrar: "+e.message, true); }
+}
+async function dispEncerrarTodos(){
+  if(!confirm('Encerrar TODAS as sessões online (menos esta)? Todos os outros dispositivos serão desconectados em até 30s.')) return;
+  try {
+    const limite = new Date(Date.now()-60000).toISOString();
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?ultimo_ping=gte."+limite+"&fechou_em=is.null&select=session_id", {headers:HEADERS_SB});
+    const arr = await r.json();
+    const outros = arr.filter(s=>s.session_id!==window._dispSessionId);
+    for(const s of outros){
+      await fetch(SUPABASE_URL+"/rest/v1/dispositivos_sessoes?session_id=eq."+s.session_id, {
+        method:"PATCH", headers:HEADERS_SB,
+        body: JSON.stringify({fechou_em: new Date().toISOString()})
+      });
+    }
+    showToast(outros.length+" sessão(ões) encerrada(s) ✓");
+    dispCarregarDados();
+  } catch(e){ showToast("Erro: "+e.message, true); }
 }
 </script>
 
@@ -13914,7 +13958,8 @@ function dispRenderCard(s, online){
         <div style="font-size:18px;font-weight:900;color:#fff">🖥️ Dispositivos Conectados</div>
         <div style="font-size:11px;color:#4a5568;margin-top:2px">Quem está acessando o site</div>
       </div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="dispEncerrarTodos()" style="background:#ff4d4d20;border:1px solid #ff4d4d40;color:#ff6b6b;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">✕ Encerrar todos</button>
         <button onclick="dispCarregarDados()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">↻ Atualizar</button>
         <button onclick="dispFecharModal()" style="background:#1e2530;border:none;color:#8a95a8;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">✕</button>
       </div>
