@@ -6886,6 +6886,17 @@ function mapaUpdateMetasCell(chaveM,campo,valor){
   if(!mapaDados.metas_dias[chave]) mapaDados.metas_dias[chave]={};
   if(!mapaDados.metas_dias[chave][chaveM]) mapaDados.metas_dias[chave][chaveM]={};
   mapaDados.metas_dias[chave][chaveM][campo]=valor;
+
+  // Sincroniza com mapaDados.maquinas para refletir no mapa visual
+  const nomeMaq = mapaGetNomeMaquina(chaveM);
+  if(nomeMaq && mapaDados.maquinas){
+    if(!mapaDados.maquinas[nomeMaq]) mapaDados.maquinas[nomeMaq]={status:'producao',peca:'',meta:0,obs:'',historico:[]};
+    const maq = mapaDados.maquinas[nomeMaq];
+    if(campo==='meta') maq.meta = parseInt(valor)||0;
+    if(campo==='cod')  maq.peca = valor;
+    if(campo.startsWith('h_') && parseCelVal(valor).num>0 && maq.status!=='manutencao' && maq.status!=='parada') maq.status='producao';
+  }
+
   saveMapaDados();
   // Ao mudar a META, repinta as horas dessa máquina (verde/vermelho conforme a nova meta)
   if(campo==='meta') mapaRecolorirLinha(chaveM);
