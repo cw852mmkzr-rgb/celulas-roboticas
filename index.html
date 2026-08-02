@@ -6960,13 +6960,17 @@ function mapaUpdateApontarFab(){
   if(!fab) return;
   const ms = document.getElementById('mapaScreen');
   const aberto = ms && ms.style.display!=='none';
-  const podeApontar = isMapaAdmin || isMapaHost || isMapaApontar;
-  fab.style.display = (aberto && mapaTelaAtual==='Produção' && podeApontar) ? 'flex' : 'none';
+  fab.style.display = (aberto && mapaTelaAtual==='Produção') ? 'flex' : 'none';
 }
 function mapaAbrirApontar(){
+  // Se nao esta autenticado, pede a senha toda vez
   if(!isMapaAdmin && !isMapaHost && !isMapaApontar){
-    showToast('Digite a senha para apontar', true);
-    return;
+    const pw = prompt("Digite a senha para apontar:");
+    if(pw === null) return;
+    if(pw !== MAPA_PW_APONTAR && pw !== MAPA_PW_HOST && pw !== MAPA_PW){
+      showToast("Senha incorreta", true);
+      return;
+    }
   }
   _apHora = null;
   _apLog = [];
