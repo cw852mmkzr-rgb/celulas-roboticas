@@ -6960,9 +6960,14 @@ function mapaUpdateApontarFab(){
   if(!fab) return;
   const ms = document.getElementById('mapaScreen');
   const aberto = ms && ms.style.display!=='none';
-  fab.style.display = (aberto && mapaTelaAtual==='Produção') ? 'flex' : 'none';
+  const podeApontar = isMapaAdmin || isMapaHost || isMapaApontar;
+  fab.style.display = (aberto && mapaTelaAtual==='Produção' && podeApontar) ? 'flex' : 'none';
 }
 function mapaAbrirApontar(){
+  if(!isMapaAdmin && !isMapaHost && !isMapaApontar){
+    showToast('Digite a senha para apontar', true);
+    return;
+  }
   _apHora = null;
   _apLog = [];
   const horas = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
@@ -8699,6 +8704,7 @@ function confirmarMapaLogin(){
     document.getElementById("modalMapaLogin").style.display="none";
     showToast("Modo edição ativado ✓");
     renderMapaProducao();
+    mapaUpdateApontarFab();
   } else if(pw===MAPA_PW_HOST){
     isMapaHost=true; isMapaAdmin=false; isMapaApontar=false;
     document.getElementById("modalMapaLogin").style.display="none";
@@ -8716,6 +8722,7 @@ function confirmarMapaLogin(){
 function sairModoEdicaoMapa(){
   isMapaAdmin=false; isMapaApontar=false; isMapaHost=false;
   renderMapaProducao();
+  mapaUpdateApontarFab();
 }
 
 function mapaContarStatus(st){
