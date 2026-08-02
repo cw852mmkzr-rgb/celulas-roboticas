@@ -526,6 +526,29 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .mapa-sidebar.aberta { transform:translateX(0); }
   .mapa-canvas-wrap { padding:14px; }
 }
+@media (max-width:700px){
+  .mapa-canvas-wrap { --mapa-min-cell:32px; padding:6px !important; }
+  .mapa-canvas { min-width:auto !important; }
+  .mapa-canvas > div { gap:10px !important; }
+  .mapa-zona { padding:9px 7px !important; }
+  .mapa-zona-label { font-size:9px !important; padding:0 5px !important; top:-9px !important; }
+  .mapa-grid { gap:5px !important; }
+  .mapa-maq { min-height:30px !important; font-size:11px !important; border-width:1px !important; }
+  .mapa-maq-bateria { min-height:48px !important; font-size:13px !important; border-radius:10px !important; }
+  .mapa-maq-bateria::before { top:-5px !important; height:5px !important; }
+  .mapa-maq-caixa { min-height:52px !important; font-size:13px !important; }
+  .mapa-maq-caixa::before, .mapa-maq-caixa::after { top:-9px !important; height:9px !important; }
+  .mapa-maq-caixa .antena-ponta { top:-11px !important; }
+  .mapa-maq-redonda { min-height:36px !important; font-size:12px !important; }
+  .mapa-g-slot { min-height:26px !important; font-size:10px !important; }
+  .mapa-room { min-width:80px !important; min-height:90px !important; padding:8px !important; font-size:9px !important; }
+  .mapa-arrow { font-size:14px !important; }
+  .mapa-legend { font-size:9px !important; padding:6px !important; }
+  .mapa-legend-title { font-size:9px !important; }
+  .mapa-toolbar { padding:6px !important; gap:6px !important; }
+  .mapa-tool-btn { width:32px !important; height:32px !important; font-size:13px !important; }
+  .mapa-tool-zoom { font-size:11px !important; min-width:36px !important; }
+}
 
 /* ══ Controle de Componentes ══ */
 :root{
@@ -8773,7 +8796,7 @@ function renderMapaZonaHTML(zona){
   }).join('');
   return `<div class="mapa-zona">
     ${zona.label?`<div class="mapa-zona-label">${esc(zona.label)}</div>`:''}
-    <div class="mapa-grid" style="grid-template-columns:repeat(${zona.cols},minmax(46px,1fr))">${celulasHTML}</div>
+    <div class="mapa-grid" style="grid-template-columns:repeat(${zona.cols},minmax(var(--mapa-min-cell,46px),1fr))">${celulasHTML}</div>
   </div>`;
 }
 
