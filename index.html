@@ -527,6 +527,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .mapa-canvas-wrap { padding:14px; }
 }
 @media (max-width:700px){
+  .mapa-stats-row { display:none !important; }
   .mapa-canvas-wrap { --mapa-min-cell:32px; padding:6px !important; }
   .mapa-canvas { min-width:auto !important; }
   .mapa-canvas > div { gap:10px !important; }
@@ -8845,7 +8846,7 @@ function renderMapaProducao(){
           <div style="font-size:10px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Planta Industrial</div>
         </div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:8px">
+      <div class="mapa-stats-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-left:8px">
         <div class="mapa-stat-card"><span style="font-size:18px">▶</span><div><div class="mapa-stat-label" style="color:#00e87a">Produzindo</div><div class="mapa-stat-val">${produzindo}</div></div></div>
         <div class="mapa-stat-card"><span style="font-size:18px">⚙</span><div><div class="mapa-stat-label" style="color:#ffb300">Setup</div><div class="mapa-stat-val">${setup}</div></div></div>
         <div class="mapa-stat-card"><span style="font-size:18px">⛔</span><div><div class="mapa-stat-label" style="color:#ff4d4d">Parada</div><div class="mapa-stat-val">${parada}</div></div></div>
