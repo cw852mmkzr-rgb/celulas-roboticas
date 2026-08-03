@@ -8618,8 +8618,8 @@ function renderMapaProducaoTabela(force){
   const abas = `
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">🏭 Produção — Todas as Máquinas (${totalMaquinasGeral})</div>
-      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}">🔩 SOLDA TOPO <span style="opacity:.8;font-weight:800">(${totalSoldaTopo})</span></button>
-      <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}">📋 MÁQUINAS <span style="opacity:.8;font-weight:800">(${totalMaquinasGeral})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="mapa-sub-toggle ${mapaProducaoSubTela==='solda_topo'?'on':''}">🔩 SOLDA TOPO <span style="opacity:.8;font-weight:800">(${totalSoldaTopo})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" class="mapa-sub-toggle ${mapaProducaoSubTela==='todas'?'on':''}">📋 MÁQUINAS <span style="opacity:.8;font-weight:800">(${totalMaquinasGeral})</span></button>
       ${(isMapaAdmin||isMapaHost)?`<button onclick="document.getElementById('mapaFotoInput').click()" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📷 Ler Foto</button>
       <input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;font-weight:700">📋 Copiar Dia Ant.</button>
@@ -8638,8 +8638,8 @@ function renderMapaProducaoTabela(force){
   <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch;outline:none;scrollbar-width:thick" id="mapaProducaoScroll" tabindex="0">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <div style="font-size:15px;font-weight:900;color:#fff;flex:1;min-width:100px">🏭 Produção</div>
-      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="btn-solda-topo ${mapaProducaoSubTela==='solda_topo'?'on':''}" style="padding:9px 14px;font-size:13px">🔩 SOLDA TOPO <span style="opacity:.8">(${totalSoldaTopo})</span></button>
-      <button onclick="mapaTrocarSubTelaProducao('todas')" class="btn-solda-topo btn-mapa-destaque azul ${mapaProducaoSubTela==='todas'?'on':''}" style="padding:9px 14px;font-size:13px">📋 MÁQUINAS <span style="opacity:.8">(${totalMaquinasGeral})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('solda_topo')" class="mapa-sub-toggle ${mapaProducaoSubTela==='solda_topo'?'on':''}" style="padding:9px 14px;font-size:13px">🔩 SOLDA TOPO <span style="opacity:.8">(${totalSoldaTopo})</span></button>
+      <button onclick="mapaTrocarSubTelaProducao('todas')" class="mapa-sub-toggle ${mapaProducaoSubTela==='todas'?'on':''}" style="padding:9px 14px;font-size:13px">📋 MÁQUINAS <span style="opacity:.8">(${totalMaquinasGeral})</span></button>
       ${(isMapaAdmin||isMapaHost)?`<button onclick="document.getElementById('mapaFotoInput').click()" title="Tirar foto" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">📷</button><input type="file" id="mapaFotoInput" accept="image/*" capture="environment" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="document.getElementById('mapaFotoInputBib').click()" title="Escolher da biblioteca" style="background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;font-weight:700">🖼️</button><input type="file" id="mapaFotoInputBib" accept="image/*" style="display:none" onchange="mapaLerFoto(event)">
       <button onclick="mapaCopiarDiaAnterior()" style="background:#3d9eff20;border:1px solid #3d9eff40;color:#3d9eff;border-radius:8px;padding:5px 8px;font-size:10px;cursor:pointer;font-weight:700">📋</button>
@@ -13087,6 +13087,11 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .btn-solda-topo:hover{ transform:translateY(-1px); filter:brightness(1.08); box-shadow:0 6px 20px -2px #ffb30080, inset 0 1px 0 #ffffff50; }
 .btn-solda-topo:active{ transform:scale(.97); }
 .btn-solda-topo.on{ background:linear-gradient(135deg,#00e87a,#00c060); border-color:#00e87a; box-shadow:0 4px 14px -2px #00e87a66, inset 0 1px 0 #ffffff40; animation:btnSoldaTopoPulse 2s ease-in-out infinite; }
+.mapa-sub-toggle{ display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; border:2px solid #2a3040; background:linear-gradient(135deg,#1e2530,#0f1318); color:#8a95a8; font-size:15px; font-weight:900; letter-spacing:0.12em; cursor:pointer; box-shadow:0 3px 10px -2px #00000066, inset 0 1px 0 #ffffff08; text-shadow:0 1px 0 #00000030; transition:transform .16s var(--ease-out), box-shadow .16s ease, filter .16s ease, background .18s ease, border-color .18s ease, color .18s ease; font-family:'Courier New',monospace; }
+.mapa-sub-toggle:hover{ transform:translateY(-1px); filter:brightness(1.18); color:#d8dde6; }
+.mapa-sub-toggle:active{ transform:scale(.97); }
+.mapa-sub-toggle.on{ border-color:#3d9eff; background:linear-gradient(135deg,#3d9eff,#1e6fdb); color:#fff; box-shadow:0 4px 14px -2px #3d9eff88, inset 0 1px 0 #ffffff40; text-shadow:0 1px 0 #001a3350; }
+.mapa-sub-toggle.on:hover{ box-shadow:0 6px 20px -2px #3d9eff99, inset 0 1px 0 #ffffff50; color:#fff; }
 @keyframes btnSoldaTopoPulse{ 0%,100%{ box-shadow:0 4px 14px -2px #00e87a66, inset 0 1px 0 #ffffff40, 0 0 0 0 #00e87a55; } 50%{ box-shadow:0 4px 14px -2px #00e87a99, inset 0 1px 0 #ffffff40, 0 0 0 8px #00e87a00; } }
 .eq-status-badge.eq-status-on{ background:#00e87a; color:#062012; border-color:#062012; animation:eqStatusOnPulse 1.5s ease-in-out infinite; box-shadow:0 0 0 0 #00e87a; }
 .eq-status-badge.eq-status-off{ background:#ffffff; color:#111; border-color:#111; }
