@@ -7060,7 +7060,7 @@ function mapaApontarEnviar(){
     `<div class="ap-log-item"><span class="ap-log-maq">🏭 Máq ${esc(String(r.maquina))}${r.cod?' · '+esc(r.cod):''} · ${r.hora}</span><span class="ap-log-qtd">${r.qtd} pç${r.meta?' · meta '+r.meta:''}</span></div>`
   ).join('');
   showToast(`Máq ${numero}: ${qtd} peças às ${_apHora} ✓`);
-  maqEl.value=''; qtdEl.value='';
+  maqEl.value=''; qtdEl.value=''; metaEl.value=''; codEl.value='';
   maqEl.focus();
 }
 
