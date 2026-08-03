@@ -6730,17 +6730,20 @@ async function loadMapaDados(){
   mapaAplicarView();
 }
 
-async function saveMapaDados(){
+let _mapaSaveDebounce = null;
+function saveMapaDados(){
+  // Debounce: se chamado várias vezes seguidas, agrupa em um único PATCH com o estado final
   _mapaLastSave = Date.now();
-  // Mostra indicador de salvo na tela
   const ind = document.getElementById('mapaSaveIndicator');
   if(ind){ ind.style.opacity='1'; clearTimeout(window._mapaSaveTimer); window._mapaSaveTimer=setTimeout(()=>{ind.style.opacity='0';},2000); }
-  try{
-    // Envia tudo MENOS o dia em visualização (esse é local por dispositivo)
-    const payload = Object.assign({}, mapaDados);
-    delete payload.metas_ano; delete payload.metas_mes; delete payload.metas_dia;
-    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:payload})});
-  }catch(e){ showToast("Erro ao salvar mapa",true); }
+  clearTimeout(_mapaSaveDebounce);
+  _mapaSaveDebounce = setTimeout(async ()=>{
+    try{
+      const payload = Object.assign({}, mapaDados);
+      delete payload.metas_ano; delete payload.metas_mes; delete payload.metas_dia;
+      await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({mapa_producao:payload})});
+    }catch(e){ showToast("Erro ao salvar mapa",true); }
+  }, 250);
 }
 
 function abrirMapaProducao(){
