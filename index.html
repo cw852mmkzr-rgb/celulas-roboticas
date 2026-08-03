@@ -527,7 +527,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .mapa-canvas-wrap { padding:14px; }
 }
 @media (max-width:700px){
-  .mapa-stats-row { display:none !important; }
+  #mapaScreen[data-tela="Produção"] .mapa-stats-row { display:none !important; }
   .mapa-canvas-wrap { --mapa-min-cell:32px; padding:6px !important; }
   .mapa-canvas { min-width:auto !important; }
   .mapa-canvas > div { gap:10px !important; }
@@ -8809,6 +8809,8 @@ function renderMapaProducao(){
   const _apOv = document.getElementById('apOverlay');
   if(_apOv && _apOv.classList.contains('open')) return;
   mapaUpdateApontarFab();
+  const _mapaScreenEl = document.getElementById('mapaScreen');
+  if(_mapaScreenEl) _mapaScreenEl.dataset.tela = mapaTelaAtual;
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
