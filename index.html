@@ -7064,6 +7064,8 @@ function mapaApontarEnviar(){
   ).join('');
   showToast(`Máq ${numero}: ${qtd} peças às ${_apHora} ✓`);
   maqEl.value=''; qtdEl.value=''; metaEl.value=''; codEl.value='';
+  // Atualiza a tabela por baixo do sheet pra refletir imediatamente meta+cod+hora
+  if(mapaTelaAtual==='Produção'){ try{ renderMapaProducaoTabela(true); }catch(e){} }
   maqEl.focus();
 }
 
