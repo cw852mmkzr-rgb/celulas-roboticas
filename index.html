@@ -8878,7 +8878,8 @@ function renderMapaZonaHTML(zona){
 // ═══════════════════════════ INDICADORES ═══════════════════════════
 let _indPeriodo = 'hoje';
 const _indCache = {};
-function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); }
+let _indPrecisaRerender = true;
+function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); _indPrecisaRerender = true; }
 function _indChaveDia(d){ return `${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`; }
 function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês'})[p]||p; }
 function _indLabelAnterior(p){ return ({hoje:'ontem',semana:'sem. passada',mes:'mês passado'})[p]||''; }
@@ -9057,10 +9058,15 @@ function _indBarsHoriz(items, maxItems){
 
 function _indSetPeriodo(p){ _indPeriodo=p; _indLimparCache(); renderMapaIndicadores(); }
 
-function renderMapaIndicadores(){
+function renderMapaIndicadores(force){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
   if(!mapaDados){ wrap.innerHTML = '<div class="ind-empty" style="padding:60px">Carregando...</div>'; return; }
+  // Não re-renderiza no polling se o conteudo ja existe e nao mudou nada (evita piscar/scroll reset)
+  const jaTemInd = wrap.querySelector('.ind-wrap');
+  if(!force && jaTemInd && !_indPrecisaRerender) return;
+  // Preserva scroll do wrap externo
+  const scrollTopSalvo = wrap.scrollTop;
   const atual = _indCalcular(_indPeriodo);
   const chavesAnt = _indChavesAnterior(_indPeriodo);
   const anterior = chavesAnt.length ? _indCalcularPorChaves(chavesAnt) : null;
@@ -9104,6 +9110,9 @@ function renderMapaIndicadores(){
       <div class="ind-footer">Dados calculados a partir da tabela de Produção. Atualização automática.</div>
     </div>
   `;
+  _indPrecisaRerender = false;
+  // Restaura scroll pra não voltar pro topo
+  if(scrollTopSalvo>0) requestAnimationFrame(()=>{ wrap.scrollTop = scrollTopSalvo; });
 }
 
 function renderMapaProducao(){
@@ -9116,6 +9125,11 @@ function renderMapaProducao(){
   mapaUpdateApontarFab();
   const _mapaScreenEl = document.getElementById('mapaScreen');
   if(_mapaScreenEl) _mapaScreenEl.dataset.tela = mapaTelaAtual;
+  // Aba Indicadores: se ja renderizou e nada mudou, nao rebuild (evita piscar e reset de scroll)
+  if(mapaTelaAtual==='Indicadores'){
+    const _conteudo = document.getElementById('mapaConteudo');
+    if(_conteudo && _conteudo.querySelector('.ind-wrap') && !_indPrecisaRerender) return;
+  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
