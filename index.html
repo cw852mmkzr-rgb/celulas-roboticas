@@ -6842,6 +6842,7 @@ function toggleMapaSidebar(){
 function mapaSidebarClick(item){
   if(item==='Mapa' || item==='Produção' || item==='Indicadores'){
     mapaTelaAtual = item;
+    if(item==='Indicadores') _indPrecisaRerender = true;
     renderMapaProducao();
     mapaUpdateApontarFab();
     return;
@@ -8879,7 +8880,10 @@ function renderMapaZonaHTML(zona){
 let _indPeriodo = 'hoje';
 const _indCache = {};
 let _indPrecisaRerender = true;
-function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); _indPrecisaRerender = true; }
+// Limpa apenas o cache de cálculos (não força rebuild do DOM — evita piscar no polling)
+function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); }
+// Marca que precisa reconstruir o DOM (usado por ações do usuário)
+function _indForcarRerender(){ _indLimparCache(); _indPrecisaRerender = true; }
 function _indChaveDia(d){ return `${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`; }
 function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês'})[p]||p; }
 function _indLabelAnterior(p){ return ({hoje:'ontem',semana:'sem. passada',mes:'mês passado'})[p]||''; }
@@ -9056,7 +9060,7 @@ function _indBarsHoriz(items, maxItems){
   }).join('')}</div>`;
 }
 
-function _indSetPeriodo(p){ _indPeriodo=p; _indLimparCache(); renderMapaIndicadores(); }
+function _indSetPeriodo(p){ _indPeriodo=p; _indForcarRerender(); renderMapaIndicadores(true); }
 
 function renderMapaIndicadores(force){
   const wrap = document.getElementById('mapaCanvasWrap');
@@ -9083,7 +9087,7 @@ function renderMapaIndicadores(force){
         ${['hoje','ontem','semana','mes'].map(p=>
           `<button class="ind-fbtn ${_indPeriodo===p?'on':''}" onclick="_indSetPeriodo('${p}')">${_indLabelPeriodo(p)}</button>`
         ).join('')}
-        <button class="ind-fbtn ind-refresh" onclick="_indLimparCache();renderMapaIndicadores()" title="Atualizar">↻</button>
+        <button class="ind-fbtn ind-refresh" onclick="_indForcarRerender();renderMapaIndicadores(true)" title="Atualizar">↻</button>
       </div>
       <div class="ind-cards">
         ${_indCard('📦', 'Total '+_indLabelPeriodo(_indPeriodo).toLowerCase(), atual.totalPecas.toLocaleString('pt-BR'), cmpTotal?_indBadgeCmp(cmpTotal)+' vs '+antLbl:'peças', '#00e87a')}
