@@ -597,6 +597,100 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .ind-meta-val{ font-size:17px; }
   .ind-meta-sub{ font-size:9.5px; }
 }
+/* ── Extras Indicadores v2 ── */
+.ind-sec-hint{ margin-left:auto; font-size:9px; color:#3a4250; text-transform:none; letter-spacing:0; font-weight:600; }
+.ind-clickable{ cursor:pointer; transition:transform .14s cubic-bezier(.4,0,.2,1), background .16s ease; border-radius:8px; }
+.ind-clickable:hover{ background:#ffffff05; }
+.ind-clickable:active{ transform:scale(.985); }
+.ind-bar-chev{ color:#4a5568; font-weight:900; }
+.ind-sub-sel .ind-date{ flex:1; }
+.ind-date-lbl{ flex:1; display:flex; align-items:center; gap:6px; font-size:10px; color:#8a95a8; text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+.ind-date{ color-scheme:dark; }
+.ind-filtro-banner{ display:flex; align-items:center; justify-content:space-between; gap:8px; background:#3d9eff12; border:1px solid #3d9eff30; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:11px; color:#3d9eff; font-weight:700; }
+.ind-filtro-banner button{ background:#3d9eff22; border:none; color:#3d9eff; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:700; }
+.ind-pull-ind{ position:absolute; top:-6px; left:50%; margin-left:-14px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f1318; border:1px solid #1e2530; border-radius:50%; color:#3d9eff; font-size:15px; opacity:0; pointer-events:none; z-index:5; transition:opacity .15s ease; }
+.ind-pull-ind.ready{ color:#00e87a; transform:translateY(20px) rotate(180deg); }
+/* Peça cards */
+.ind-peca-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.ind-peca-card{ background:#080b0f; border:1px solid #1e2530; border-radius:10px; padding:10px 12px 6px; animation:indCardIn .4s cubic-bezier(.34,1.56,.64,1) both; }
+.ind-peca-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.ind-peca-cod{ font-size:12px; font-weight:800; color:#d8dde6; font-family:'Courier New',monospace; }
+.ind-peca-pct{ font-size:10px; color:#8a95a8; font-weight:700; background:#1e2530; padding:1px 7px; border-radius:99px; }
+.ind-peca-val{ font-size:19px; font-weight:900; font-family:'Courier New',monospace; line-height:1.1; }
+.ind-peca-val span{ font-size:11px; opacity:.7; }
+.ind-peca-spark{ margin-top:4px; height:38px; }
+/* Comparativo */
+.ind-comp-tabs{ display:flex; gap:6px; margin-bottom:10px; }
+.ind-comp-tab{ flex:1; background:#080b0f; border:1px solid #1e2530; color:#8a95a8; padding:8px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; font-family:'Courier New',monospace; transition:all .16s ease; }
+.ind-comp-tab.on{ background:#3d9eff18; border-color:#3d9eff; color:#3d9eff; }
+.ind-comp-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; max-height:120px; overflow-y:auto; }
+.ind-comp-chip{ background:#0f1318; border:1px solid #2a3040; color:#8a95a8; padding:6px 12px; border-radius:99px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Courier New',monospace; transition:all .14s ease; }
+.ind-comp-chip:hover{ border-color:#3d9eff50; color:#d8dde6; }
+.ind-comp-chip.on{ background:#3d9eff; border-color:#3d9eff; color:#fff; }
+.ind-comp-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:12px; }
+.ind-comp-item{ background:#080b0f; border:1px solid #1e2530; border-radius:10px; padding:10px 12px; }
+.ind-comp-nome{ font-size:12px; font-weight:800; font-family:'Courier New',monospace; margin-bottom:4px; }
+.ind-comp-total{ font-size:20px; font-weight:900; color:#fff; font-family:'Courier New',monospace; }
+.ind-comp-total span{ font-size:11px; opacity:.6; }
+.ind-comp-mini{ height:5px; background:#04070d; border-radius:3px; margin-top:6px; overflow:hidden; }
+.ind-comp-mini-fill{ height:100%; border-radius:3px; animation:indBarFill .7s cubic-bezier(.4,0,.2,1) both; }
+.ind-comp-chart{ background:#04070d; border-radius:8px; padding:10px; }
+.ind-comp-chart-t{ font-size:11px; color:#d8dde6; font-weight:800; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.ind-comp-leg{ display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+.ind-comp-leg-i{ display:flex; align-items:center; gap:5px; font-size:10.5px; color:#8a95a8; font-family:'Courier New',monospace; }
+.ind-comp-dot{ width:9px; height:9px; border-radius:50%; }
+/* Modal detalhe */
+.ind-modal{ position:fixed; inset:0; background:#000000dd; z-index:9700; display:none; align-items:center; justify-content:center; padding:16px; }
+.ind-modal.open{ display:flex; animation:indFadeIn .2s ease; }
+.ind-modal-card{ background:#0f1318; border:1px solid #3d9eff40; border-radius:16px; padding:18px; width:100%; max-width:440px; max-height:86vh; overflow-y:auto; -webkit-overflow-scrolling:touch; animation:indModalIn .28s cubic-bezier(.34,1.4,.6,1); }
+@keyframes indModalIn{ from{opacity:0;transform:translateY(16px) scale(.97)} to{opacity:1;transform:none} }
+.ind-dt-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+.ind-dt-title{ font-size:18px; font-weight:900; color:#fff; }
+.ind-dt-sub{ font-size:11px; color:#4a5568; margin-top:2px; text-transform:uppercase; letter-spacing:.06em; }
+.ind-dt-x{ background:#1e2530; border:none; color:#8a95a8; width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:13px; flex:0 0 auto; }
+.ind-dt-kpis{ display:flex; gap:8px; margin-bottom:12px; }
+.ind-dt-kpi{ flex:1; background:#080b0f; border:1px solid #1e2530; border-radius:10px; padding:10px 6px; text-align:center; }
+.ind-dt-kv{ font-size:20px; font-weight:900; font-family:'Courier New',monospace; }
+.ind-dt-kl{ font-size:10px; color:#6b7788; margin-top:2px; }
+.ind-dt-cmp{ background:#080b0f; border:1px solid #1e2530; border-radius:8px; padding:9px 12px; font-size:12px; color:#8a95a8; margin-bottom:12px; }
+.ind-dt-sec-t{ font-size:11px; color:#8a95a8; text-transform:uppercase; letter-spacing:.08em; font-weight:800; margin:14px 0 8px; display:flex; align-items:center; gap:8px; }
+.ind-dt-expand{ margin-left:auto; background:#1e2530; border:1px solid #2a3040; color:#8a95a8; width:26px; height:24px; border-radius:6px; cursor:pointer; font-size:12px; }
+.ind-dt-spark{ background:#04070d; border-radius:8px; padding:8px; }
+.ind-dt-line{ display:flex; justify-content:space-between; align-items:center; padding:7px 10px; background:#080b0f; border:1px solid #161c26; border-radius:7px; margin-bottom:5px; font-size:12px; color:#b8c0cc; font-family:'Courier New',monospace; }
+.ind-dt-line b{ color:#fff; }
+/* Filtro sheet */
+.ind-sheet{ position:fixed; inset:0; background:#00000099; z-index:9700; display:none; align-items:flex-end; justify-content:center; }
+.ind-sheet.open{ display:flex; animation:indFadeIn .2s ease; }
+.ind-sheet-card{ background:#0f1318; border-top:1px solid #2a3040; border-radius:20px 20px 0 0; width:100%; max-width:520px; max-height:80vh; display:flex; flex-direction:column; animation:indSheetUp .3s cubic-bezier(.34,1.3,.6,1); }
+@keyframes indSheetUp{ from{transform:translateY(100%)} to{transform:translateY(0)} }
+.ind-sheet-grip{ width:38px; height:4px; background:#2a3040; border-radius:99px; margin:10px auto 6px; }
+.ind-sheet-head{ display:flex; justify-content:space-between; align-items:center; padding:6px 18px 12px; font-size:15px; font-weight:800; color:#fff; }
+.ind-sheet-head button{ background:#1e2530; border:none; color:#8a95a8; width:28px; height:28px; border-radius:7px; cursor:pointer; }
+.ind-sheet-body{ overflow-y:auto; padding:0 14px; display:flex; flex-direction:column; gap:6px; }
+.ind-fchk{ display:flex; align-items:center; gap:10px; background:#080b0f; border:1px solid #1e2530; color:#b8c0cc; padding:11px 14px; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; font-family:'Courier New',monospace; text-align:left; transition:all .14s ease; }
+.ind-fchk-box{ width:20px; height:20px; border-radius:6px; border:1.5px solid #2a3040; display:flex; align-items:center; justify-content:center; font-size:11px; color:transparent; flex:0 0 auto; }
+.ind-fchk.on{ border-color:#3d9eff60; background:#3d9eff12; color:#fff; }
+.ind-fchk.on .ind-fchk-box{ background:#3d9eff; border-color:#3d9eff; color:#fff; }
+.ind-fchk-tot{ margin-left:auto; color:#6b7788; font-size:12px; }
+.ind-sheet-actions{ display:flex; gap:10px; padding:14px; border-top:1px solid #161c26; }
+.ind-sheet-btn{ flex:1; padding:12px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; border:none; font-family:'Courier New',monospace; }
+.ind-sheet-btn.ghost{ background:#1e2530; color:#8a95a8; }
+.ind-sheet-btn.primary{ background:linear-gradient(135deg,#3d9eff,#1e6fdb); color:#fff; }
+/* Expand overlay (fullscreen chart) */
+.ind-expand{ position:fixed; inset:0; background:#04070df5; z-index:9750; display:none; align-items:center; justify-content:center; padding:16px; }
+.ind-expand.open{ display:flex; animation:indFadeIn .2s ease; }
+.ind-expand-card{ width:100%; max-width:820px; }
+.ind-expand-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:15px; font-weight:800; color:#fff; }
+.ind-expand-head button{ background:#1e2530; border:none; color:#8a95a8; width:32px; height:32px; border-radius:8px; cursor:pointer; }
+.ind-expand-body{ background:#0f1318; border:1px solid #1e2530; border-radius:12px; padding:14px; }
+.ind-expand-hint{ text-align:center; font-size:11px; color:#4a5568; margin-top:10px; }
+@media (min-width:701px){ .ind-expand-hint{ display:none; } }
+@media (max-width:700px){
+  .ind-peca-grid{ grid-template-columns:repeat(auto-fill,minmax(46%,1fr)); }
+  .ind-comp-grid{ grid-template-columns:repeat(2,1fr); }
+  .ind-modal{ padding:0; align-items:flex-end; }
+  .ind-modal-card{ max-width:100%; max-height:90vh; border-radius:18px 18px 0 0; animation:indSheetUp .3s cubic-bezier(.34,1.3,.6,1); }
+}
 @media (max-width:700px){
   .ind-wrap{ padding:10px 10px 30px; }
   .ind-cards{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:6px; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-left:-10px; margin-right:-10px; padding-left:10px; padding-right:10px; }
@@ -8904,9 +8998,14 @@ function renderMapaZonaHTML(zona){
 let _indPeriodo = 'hoje';
 let _indMesSelecionado = new Date().getMonth();
 let _indAnoSelecionado = new Date().getFullYear();
+let _indDataIni = null, _indDataFim = null; // período personalizado 'YYYY-MM-DD'
+let _indFiltroMaquinas = null; // Set de nomes, ou null = todas
+let _indComp = [];             // nomes selecionados para comparar
+let _indCompTipo = 'maquina';  // 'maquina' | 'peca'
 const _indCache = {};
 let _indPrecisaRerender = true;
 const MESES_IND = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const _HORAS_TODAS = () => [...MAPA_HORAS_DIA, ...HORAS_NOITE];
 // Limpa apenas o cache de cálculos (não força rebuild do DOM — evita piscar no polling)
 function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); }
 // Marca que precisa reconstruir o DOM (usado por ações do usuário)
@@ -8914,8 +9013,22 @@ function _indForcarRerender(){ _indLimparCache(); _indPrecisaRerender = true; }
 function _indSetMes(m){ _indMesSelecionado=m; _indForcarRerender(); renderMapaIndicadores(true); }
 function _indSetAno(a){ _indAnoSelecionado=a; _indForcarRerender(); renderMapaIndicadores(true); }
 function _indChaveDia(d){ return `${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`; }
-function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês',ano:'Ano'})[p]||p; }
+function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês',ano:'Ano',custom:'Personalizado'})[p]||p; }
 function _indLabelAnterior(p){ return ({hoje:'ontem',semana:'sem. passada',mes:'mês anterior',ano:'ano passado'})[p]||''; }
+function _indSetDataIni(v){ _indDataIni=v; _indForcarRerender(); renderMapaIndicadores(true); }
+function _indSetDataFim(v){ _indDataFim=v; _indForcarRerender(); renderMapaIndicadores(true); }
+function _indChavesCustom(){
+  if(!_indDataIni || !_indDataFim) return [];
+  const [ai,mi,di] = _indDataIni.split('-').map(Number);
+  const [af,mf,df] = _indDataFim.split('-').map(Number);
+  let ini = new Date(ai, mi-1, di), fim = new Date(af, mf-1, df);
+  if(fim < ini){ const t=ini; ini=fim; fim=t; }
+  const chaves = [];
+  const cur = new Date(ini);
+  let guard = 0;
+  while(cur <= fim && guard < 800){ chaves.push(_indChaveDia(cur)); cur.setDate(cur.getDate()+1); guard++; }
+  return chaves;
+}
 
 function _indChavesPeriodo(periodo){
   const now = new Date();
@@ -8938,6 +9051,8 @@ function _indChavesPeriodo(periodo){
       const numDias = new Date(y, m+1, 0).getDate();
       for(let d=1; d<=numDias; d++) chaves.push(`${y}_${m}_${d}`);
     }
+  } else if(periodo === 'custom'){
+    return _indChavesCustom();
   }
   return chaves;
 }
@@ -9084,16 +9199,17 @@ function _indSvgLinha(dados, w, h){
   </svg>`;
 }
 
-function _indBarsHoriz(items, maxItems){
+function _indBarsHoriz(items, maxItems, tipo){
   const sorted = items.slice(0, maxItems||20);
   if(!sorted.length) return `<div class="ind-empty">Sem dados</div>`;
   const maxV = Math.max(...sorted.map(i=>i.valor), 1);
   return `<div class="ind-bars">${sorted.map((it, idx)=>{
     const pct = (it.valor/maxV)*100;
     const cor = idx===0?'#00e87a':idx===1?'#3d9eff':idx===2?'#ffb300':idx<6?'#a78bfa':'#6b7788';
-    return `<div class="ind-bar-row">
+    const clk = tipo ? `class="ind-bar-row ind-clickable" data-k="${esc(it.label)}" onclick="_indAbrirDetalhe('${tipo}', this.dataset.k)"` : `class="ind-bar-row"`;
+    return `<div ${clk}>
       <div class="ind-bar-head">
-        <span class="ind-bar-lbl">${esc(it.label)}</span>
+        <span class="ind-bar-lbl">${esc(it.label)}${tipo?' <span class="ind-bar-chev">›</span>':''}</span>
         <span class="ind-bar-val" style="color:${cor}">${it.valor.toLocaleString('pt-BR')} pç</span>
       </div>
       <div class="ind-bar-track"><div class="ind-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${cor},${cor}80);animation-delay:${idx*40}ms"></div></div>
@@ -9101,7 +9217,307 @@ function _indBarsHoriz(items, maxItems){
   }).join('')}</div>`;
 }
 
-function _indSetPeriodo(p){ _indPeriodo=p; _indForcarRerender(); renderMapaIndicadores(true); }
+// ── Séries temporais (para sparklines e detalhes) ──
+function _indGruposPeriodo(){
+  const p = _indPeriodo;
+  if(p==='hoje' || p==='ontem'){
+    const chave = _indChavesPeriodo(p)[0];
+    return _HORAS_TODAS().map(h=>({label:h, chaves:[chave], hora:h}));
+  }
+  if(p==='semana' || p==='custom'){
+    return _indChavesPeriodo(p).map(c=>{ const pr=c.split('_'); return {label:pr[2]+'/'+(+pr[1]+1), chaves:[c]}; });
+  }
+  if(p==='mes'){
+    return _indChavesPeriodo('mes').map(c=>{ const pr=c.split('_'); return {label:pr[2], chaves:[c]}; });
+  }
+  if(p==='ano'){
+    return MESES_IND.map((mn,mi)=>({label:mn.slice(0,3), chaves:_indChavesPeriodo('ano').filter(c=>+c.split('_')[1]===mi)}));
+  }
+  return [];
+}
+function _indSerie(matchFn){
+  const HORAS = _HORAS_TODAS();
+  return _indGruposPeriodo().map(g=>{
+    let s = 0;
+    g.chaves.forEach(chave=>{
+      const dia = mapaDados && mapaDados.metas_dias && mapaDados.metas_dias[chave];
+      if(!dia) return;
+      Object.entries(dia).forEach(([slot, rd])=>{
+        const nome = (rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim();
+        const cod = (rd.cod||'').trim();
+        if(!matchFn(nome, cod)) return;
+        if(g.hora){ s += parseCelVal(rd[campoH(g.hora)]||'').num; }
+        else { HORAS.forEach(h=>{ s += parseCelVal(rd[campoH(h)]||'').num; }); }
+      });
+    });
+    return {x:g.label, y:s};
+  });
+}
+function _indSerieMaquina(nome){ return _indSerie((n)=>n===nome); }
+function _indSeriePeca(cod){ return _indSerie((n,c)=>c===cod); }
+
+function _indSparkline(serie, w, h, cor){
+  if(!serie.length || !serie.some(d=>d.y>0)) return `<div class="ind-empty" style="padding:10px;font-size:10px">sem dados</div>`;
+  const maxY = Math.max(...serie.map(d=>d.y), 1);
+  const pad = 3;
+  const cw = w - pad*2, ch = h - pad*2;
+  const stepX = serie.length>1 ? cw/(serie.length-1) : 0;
+  const pts = serie.map((d,i)=>[pad + i*stepX, pad + ch - (d.y/maxY)*ch]);
+  const path = pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const area = path + ` L${pts[pts.length-1][0].toFixed(1)},${(pad+ch).toFixed(1)} L${pts[0][0].toFixed(1)},${(pad+ch).toFixed(1)} Z`;
+  const gid = 'spk'+Math.random().toString(36).slice(2,7);
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" style="display:block">
+    <defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity="0.4"/><stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${path}" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
+// ── Gráfico de linha grande (para fullscreen/comparativo) ──
+function _indSvgLinhaMulti(series, w, h){
+  const cores = ['#3d9eff','#00e87a','#ffb300','#a78bfa','#ff6b9d','#2dd4bf'];
+  const todas = series.flatMap(s=>s.dados.map(d=>d.y));
+  const maxY = Math.max(...todas, 1);
+  const padL=40, padR=14, padT=14, padB=30;
+  const cw = w-padL-padR, ch = h-padT-padB;
+  const n = series.length ? series[0].dados.length : 0;
+  const stepX = n>1 ? cw/(n-1) : 0;
+  const grid = [0,0.25,0.5,0.75,1].map(f=>{
+    const y = padT + ch - f*ch;
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="#1e2530" stroke-width="0.5"/>
+            <text x="${padL-6}" y="${y+3}" text-anchor="end" fill="#4a5568" font-size="10" font-family="Courier New,monospace">${Math.round(f*maxY)}</text>`;
+  }).join('');
+  const paths = series.map((s,si)=>{
+    const cor = cores[si%cores.length];
+    const pts = s.dados.map((d,i)=>[padL + i*stepX, padT + ch - (d.y/maxY)*ch]);
+    const path = pts.map((p,i)=>(i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const dots = pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5" fill="${cor}"/>`).join('');
+    return `<path d="${path}" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}`;
+  }).join('');
+  const showEvery = n>12?Math.ceil(n/8):(n>6?2:1);
+  const labels = (series[0]?series[0].dados:[]).map((d,i)=>{
+    if(i%showEvery!==0 && i!==n-1) return '';
+    return `<text x="${padL + i*stepX}" y="${h-10}" text-anchor="middle" fill="#4a5568" font-size="10" font-family="Courier New,monospace">${d.x}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">${grid}${paths}${labels}</svg>`;
+}
+
+// ── Detalhes por máquina / peça ──
+function _indDetalheMaquina(nome){
+  const HORAS = _HORAS_TODAS();
+  const chaves = _indChavesPeriodo(_indPeriodo);
+  let total=0; const pecas={}; const apont=[]; const horasSet=new Set();
+  chaves.forEach(chave=>{
+    const dia = mapaDados && mapaDados.metas_dias && mapaDados.metas_dias[chave];
+    if(!dia) return;
+    Object.entries(dia).forEach(([slot,rd])=>{
+      const n=(rd.nome||(mapaDados.nomes_maquinas&&mapaDados.nomes_maquinas[slot])||'').trim();
+      if(n!==nome) return;
+      const cod=(rd.cod||'').trim();
+      HORAS.forEach(h=>{
+        const {num}=parseCelVal(rd[campoH(h)]||'');
+        if(num>0){ total+=num; if(cod) pecas[cod]=(pecas[cod]||0)+num; horasSet.add(chave+'_'+h); apont.push({chave,h,num,cod}); }
+      });
+    });
+  });
+  const horas=horasSet.size;
+  const mediaHora = horas?Math.round(total/horas):0;
+  const mediaMin = horas?+(total/(horas*60)).toFixed(2):0;
+  apont.sort((a,b)=>{ const pa=a.chave.split('_').map(Number),pb=b.chave.split('_').map(Number); const da=new Date(pa[0],pa[1],pa[2]),db=new Date(pb[0],pb[1],pb[2]); if(+da!==+db) return db-da; return b.h.localeCompare(a.h); });
+  // Comparativo com média das outras máquinas
+  const dadosP = _indCalcular(_indPeriodo);
+  const totais = Object.values(dadosP.porMaquina).map(d=>d.total);
+  const mediaOutras = totais.length>1 ? Math.round((totais.reduce((a,b)=>a+b,0)-total)/(totais.length-1)) : 0;
+  const cmp = mediaOutras>0 ? _indComparar(total, mediaOutras) : null;
+  return {nome,total,pecas,mediaHora,mediaMin,horas,apont:apont.slice(0,12),mediaOutras,cmp,serie:_indSerieMaquina(nome)};
+}
+function _indDetalhePeca(cod){
+  const HORAS = _HORAS_TODAS();
+  const chaves = _indChavesPeriodo(_indPeriodo);
+  let total=0; const maquinas={}; const horasSet=new Set(); const horasPorMaq={};
+  chaves.forEach(chave=>{
+    const dia = mapaDados && mapaDados.metas_dias && mapaDados.metas_dias[chave];
+    if(!dia) return;
+    Object.entries(dia).forEach(([slot,rd])=>{
+      if((rd.cod||'').trim()!==cod) return;
+      const n=(rd.nome||(mapaDados.nomes_maquinas&&mapaDados.nomes_maquinas[slot])||'').trim();
+      if(!n) return;
+      HORAS.forEach(h=>{
+        const {num}=parseCelVal(rd[campoH(h)]||'');
+        if(num>0){ total+=num; maquinas[n]=(maquinas[n]||0)+num; horasSet.add(chave+'_'+h); horasPorMaq[n]=(horasPorMaq[n]||new Set()); horasPorMaq[n].add(chave+'_'+h); }
+      });
+    });
+  });
+  const horas=horasSet.size;
+  const mediaHora = horas?Math.round(total/horas):0;
+  const mediaMin = horas?+(total/(horas*60)).toFixed(2):0;
+  // Melhor máquina (maior média por hora nessa peça)
+  let melhor=null, melhorMedia=-1;
+  Object.entries(maquinas).forEach(([n,q])=>{ const hm=horasPorMaq[n]?horasPorMaq[n].size:1; const md=Math.round(q/hm); if(md>melhorMedia){ melhorMedia=md; melhor={nome:n, media:md, total:q}; } });
+  return {cod,total,maquinas,mediaHora,mediaMin,horas,melhor,serie:_indSeriePeca(cod)};
+}
+
+function _indAbrirDetalhe(tipo, chave){
+  const modal = document.getElementById('indDetalheModal');
+  const body = document.getElementById('indDetalheBody');
+  if(!modal||!body) return;
+  if(tipo==='maquina'){
+    const d = _indDetalheMaquina(chave);
+    const pecasArr = Object.entries(d.pecas).sort((a,b)=>b[1]-a[1]);
+    body.innerHTML = `
+      <div class="ind-dt-head">
+        <div><div class="ind-dt-title">🏭 Máquina ${esc(d.nome)}</div><div class="ind-dt-sub">${_indLabelPeriodo(_indPeriodo)}</div></div>
+        <button class="ind-dt-x" onclick="_indFecharDetalhe()">✕</button>
+      </div>
+      <div class="ind-dt-kpis">
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#00e87a">${d.total.toLocaleString('pt-BR')}</div><div class="ind-dt-kl">peças</div></div>
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#3d9eff">${d.mediaHora}</div><div class="ind-dt-kl">pç/hora</div></div>
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#a78bfa">${String(d.mediaMin).replace('.',',')}</div><div class="ind-dt-kl">pç/min</div></div>
+      </div>
+      ${d.cmp?`<div class="ind-dt-cmp">${d.cmp.up?'↑':'↓'} <b style="color:${d.cmp.up?'#00e87a':'#ff4d4d'}">${Math.abs(d.cmp.pct)}%</b> vs média das outras (${d.mediaOutras.toLocaleString('pt-BR')})</div>`:''}
+      <div class="ind-dt-sec-t">📈 Produção ao longo do período <button class="ind-dt-expand" onclick="_indExpandChart('Máquina ${esc(d.nome)}', ${JSON.stringify(JSON.stringify([{nome:d.nome,dados:d.serie}])).replace(/"/g,'&quot;')})">⛶</button></div>
+      <div class="ind-dt-spark">${_indSparkline(d.serie, 320, 70, '#3d9eff')}</div>
+      <div class="ind-dt-sec-t">📦 Peças produzidas</div>
+      ${pecasArr.length? pecasArr.map(([c,q])=>`<div class="ind-dt-line"><span>${esc(c)}</span><b>${q.toLocaleString('pt-BR')} pç</b></div>`).join('') : '<div class="ind-empty" style="padding:8px">Sem código de peça</div>'}
+      <div class="ind-dt-sec-t">🕐 Últimos apontamentos</div>
+      ${d.apont.length? d.apont.map(a=>{ const pr=a.chave.split('_'); return `<div class="ind-dt-line"><span>${String(pr[2]).padStart(2,'0')}/${String(+pr[1]+1).padStart(2,'0')} · ${a.h}${a.cod?' · '+esc(a.cod):''}</span><b>${a.num} pç</b></div>`; }).join('') : '<div class="ind-empty" style="padding:8px">Sem apontamentos</div>'}
+    `;
+  } else {
+    const d = _indDetalhePeca(chave);
+    const maqArr = Object.entries(d.maquinas).sort((a,b)=>b[1]-a[1]);
+    const dadosP = _indCalcular(_indPeriodo);
+    const pctGeral = dadosP.totalPecas>0 ? Math.round(d.total/dadosP.totalPecas*100) : 0;
+    body.innerHTML = `
+      <div class="ind-dt-head">
+        <div><div class="ind-dt-title">📦 Peça ${esc(d.cod)}</div><div class="ind-dt-sub">${_indLabelPeriodo(_indPeriodo)} · ${pctGeral}% do total</div></div>
+        <button class="ind-dt-x" onclick="_indFecharDetalhe()">✕</button>
+      </div>
+      <div class="ind-dt-kpis">
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#00e87a">${d.total.toLocaleString('pt-BR')}</div><div class="ind-dt-kl">peças</div></div>
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#3d9eff">${d.mediaHora}</div><div class="ind-dt-kl">pç/hora</div></div>
+        <div class="ind-dt-kpi"><div class="ind-dt-kv" style="color:#a78bfa">${String(d.mediaMin).replace('.',',')}</div><div class="ind-dt-kl">pç/min</div></div>
+      </div>
+      ${d.melhor?`<div class="ind-dt-cmp">🏅 Melhor máquina: <b style="color:#ffb300">${esc(d.melhor.nome)}</b> — ${d.melhor.media} pç/h</div>`:''}
+      <div class="ind-dt-sec-t">📈 Produção ao longo do período <button class="ind-dt-expand" onclick="_indExpandChart('Peça ${esc(d.cod)}', ${JSON.stringify(JSON.stringify([{nome:d.cod,dados:d.serie}])).replace(/"/g,'&quot;')})">⛶</button></div>
+      <div class="ind-dt-spark">${_indSparkline(d.serie, 320, 70, '#00e87a')}</div>
+      <div class="ind-dt-sec-t">🏭 Máquinas que produziram</div>
+      ${maqArr.length? maqArr.map(([n,q])=>`<div class="ind-dt-line"><span>Máq. ${esc(n)}</span><b>${q.toLocaleString('pt-BR')} pç</b></div>`).join('') : '<div class="ind-empty" style="padding:8px">—</div>'}
+    `;
+  }
+  modal.classList.add('open');
+}
+function _indFecharDetalhe(){ const m=document.getElementById('indDetalheModal'); if(m) m.classList.remove('open'); }
+
+// ── Comparativo lado a lado ──
+function _indCompSetTipo(t){ if(_indCompTipo!==t){ _indCompTipo=t; _indComp=[]; } _indForcarRerender(); renderMapaIndicadores(true); }
+function _indCompToggle(nome){ const i=_indComp.indexOf(nome); if(i>=0) _indComp.splice(i,1); else if(_indComp.length<6) _indComp.push(nome); _indForcarRerender(); renderMapaIndicadores(true); }
+
+// ── Filtro (bottom sheet) ──
+function _indAbrirFiltro(){ const s=document.getElementById('indFiltroSheet'); if(s) s.classList.add('open'); }
+function _indFecharFiltro(){ const s=document.getElementById('indFiltroSheet'); if(s) s.classList.remove('open'); }
+function _indToggleFiltroMaq(nome){
+  if(!_indFiltroMaquinas) _indFiltroMaquinas=new Set();
+  if(_indFiltroMaquinas.has(nome)) _indFiltroMaquinas.delete(nome); else _indFiltroMaquinas.add(nome);
+  const chk=document.getElementById('indfm_'+btoa(unescape(encodeURIComponent(nome))).replace(/=/g,''));
+  if(chk) chk.classList.toggle('on', _indFiltroMaquinas.has(nome));
+}
+function _indAplicarFiltro(){
+  if(_indFiltroMaquinas && _indFiltroMaquinas.size===0) _indFiltroMaquinas=null;
+  _indForcarRerender(); _indFecharFiltro(); renderMapaIndicadores(true);
+}
+function _indLimparFiltro(){ _indFiltroMaquinas=null; _indForcarRerender(); _indFecharFiltro(); renderMapaIndicadores(true); }
+
+// ── Fullscreen do gráfico (rotacionável) ──
+function _indExpandChart(titulo, seriesJSON){
+  const ov = document.getElementById('indExpandOverlay');
+  const body = document.getElementById('indExpandBody');
+  if(!ov||!body) return;
+  let series; try{ series = JSON.parse(seriesJSON); }catch(e){ series = []; }
+  document.getElementById('indExpandTitle').textContent = titulo;
+  body.innerHTML = _indSvgLinhaMulti(series, 760, 380);
+  ov.classList.add('open');
+}
+function _indFecharExpand(){ const ov=document.getElementById('indExpandOverlay'); if(ov) ov.classList.remove('open'); }
+
+function _indSetPeriodo(p){ _indPeriodo=p; _indComp=[]; _indForcarRerender(); renderMapaIndicadores(true); }
+
+function _indPecaCards(pecas, totalGeral){
+  if(!pecas.length) return '<div class="ind-empty">Nenhum código de peça registrado no período</div>';
+  return `<div class="ind-peca-grid">`+ pecas.slice(0,15).map((p,idx)=>{
+    const pct = totalGeral>0?Math.round(p.valor/totalGeral*100):0;
+    const cor = idx===0?'#00e87a':idx===1?'#3d9eff':idx===2?'#ffb300':'#a78bfa';
+    const serie = _indSeriePeca(p.label);
+    return `<div class="ind-peca-card ind-clickable" data-k="${esc(p.label)}" onclick="_indAbrirDetalhe('peca', this.dataset.k)">
+      <div class="ind-peca-top"><span class="ind-peca-cod">${esc(p.label)} <span class="ind-bar-chev">›</span></span><span class="ind-peca-pct">${pct}%</span></div>
+      <div class="ind-peca-val" style="color:${cor}">${p.valor.toLocaleString('pt-BR')} <span>pç</span></div>
+      <div class="ind-peca-spark">${_indSparkline(serie, 200, 38, cor)}</div>
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+function _indComparativoHTML(atual){
+  const tipo = _indCompTipo;
+  const fonte = tipo==='maquina'
+    ? Object.entries(atual.porMaquina).map(([n,d])=>({nome:n,total:d.total})).sort((a,b)=>b.total-a.total)
+    : Object.entries(atual.porPeca).map(([c,d])=>({nome:c,total:d.total})).sort((a,b)=>b.total-a.total);
+  const chips = fonte.slice(0,40).map(f=>{
+    const on=_indComp.includes(f.nome);
+    return `<button class="ind-comp-chip ${on?'on':''}" data-k="${esc(f.nome)}" onclick="_indCompToggle(this.dataset.k)">${esc(f.nome)}</button>`;
+  }).join('');
+  let painel;
+  if(_indComp.length>=1){
+    const sel = _indComp.map(nome=>{
+      const total = tipo==='maquina' ? (atual.porMaquina[nome]?atual.porMaquina[nome].total:0) : (atual.porPeca[nome]?atual.porPeca[nome].total:0);
+      const serie = tipo==='maquina'?_indSerieMaquina(nome):_indSeriePeca(nome);
+      return {nome,total,serie};
+    });
+    const maxT = Math.max(...sel.map(s=>s.total),1);
+    const cores = ['#3d9eff','#00e87a','#ffb300','#a78bfa','#ff6b9d','#2dd4bf'];
+    const series = sel.map(s=>({nome:s.nome, dados:s.serie}));
+    painel = `
+      <div class="ind-comp-grid">${sel.map((s,i)=>{
+        const cor=cores[i%cores.length];
+        return `<div class="ind-comp-item"><div class="ind-comp-nome" style="color:${cor}">${esc(s.nome)}</div><div class="ind-comp-total">${s.total.toLocaleString('pt-BR')}<span> pç</span></div><div class="ind-comp-mini"><div class="ind-comp-mini-fill" style="width:${s.total/maxT*100}%;background:${cor}"></div></div></div>`;
+      }).join('')}</div>
+      <div class="ind-comp-chart">
+        <div class="ind-comp-chart-t">📈 Evolução <button class="ind-dt-expand" onclick="_indExpandChart('Comparativo', ${JSON.stringify(JSON.stringify(series)).replace(/"/g,'&quot;')})">⛶</button></div>
+        ${_indSvgLinhaMulti(series, 500, 200)}
+        <div class="ind-comp-leg">${sel.map((s,i)=>`<span class="ind-comp-leg-i"><span class="ind-comp-dot" style="background:${cores[i%cores.length]}"></span>${esc(s.nome)}</span>`).join('')}</div>
+      </div>`;
+  } else {
+    painel = `<div class="ind-empty">Toque ${tipo==='maquina'?'nas máquinas':'nas peças'} acima para comparar (até 6)</div>`;
+  }
+  return `
+    <div class="ind-comp-tabs">
+      <button class="ind-comp-tab ${tipo==='maquina'?'on':''}" onclick="_indCompSetTipo('maquina')">🏭 Máquinas</button>
+      <button class="ind-comp-tab ${tipo==='peca'?'on':''}" onclick="_indCompSetTipo('peca')">📦 Peças</button>
+    </div>
+    <div class="ind-comp-chips">${chips||'<span style="color:#4a5568;font-size:11px">sem itens no período</span>'}</div>
+    ${painel}
+  `;
+}
+
+// Pull-to-refresh (mobile): puxar pra baixo no topo recarrega
+function _indSetupPullRefresh(wrap){
+  const inner = wrap.querySelector('.ind-wrap');
+  if(!inner) return;
+  let startY=0, pulling=false, dist=0;
+  const ind = document.getElementById('indPullInd');
+  inner.addEventListener('touchstart', e=>{ if(inner.scrollTop<=0){ startY=e.touches[0].clientY; pulling=true; dist=0; } }, {passive:true});
+  inner.addEventListener('touchmove', e=>{
+    if(!pulling) return;
+    dist = e.touches[0].clientY - startY;
+    if(dist>0 && inner.scrollTop<=0){
+      const d = Math.min(dist*0.5, 70);
+      if(ind){ ind.style.transform=`translateY(${d}px)`; ind.style.opacity=Math.min(d/60,1); if(d>=60) ind.classList.add('ready'); else ind.classList.remove('ready'); }
+    }
+  }, {passive:true});
+  inner.addEventListener('touchend', ()=>{
+    if(!pulling) return; pulling=false;
+    if(dist*0.5>=60){ if(ind){ ind.style.transform='translateY(20px)'; } _indForcarRerender(); renderMapaIndicadores(true); }
+    else if(ind){ ind.style.transform=''; ind.style.opacity=''; ind.classList.remove('ready'); }
+  }, {passive:true});
+}
 
 function _indMetasAtingidas(chaves){
   const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
@@ -9140,15 +9556,19 @@ function renderMapaIndicadores(force){
   // Não re-renderiza no polling se o conteudo ja existe e nao mudou nada (evita piscar/scroll reset)
   const jaTemInd = wrap.querySelector('.ind-wrap');
   if(!force && jaTemInd && !_indPrecisaRerender) return;
-  // Preserva scroll do wrap externo
-  const scrollTopSalvo = wrap.scrollTop;
+  // Preserva scroll do container interno (.ind-wrap é quem rola)
+  const scrollTopSalvo = jaTemInd ? jaTemInd.scrollTop : 0;
   const atual = _indCalcular(_indPeriodo);
   const chavesAnt = _indChavesAnterior(_indPeriodo);
   const anterior = chavesAnt.length ? _indCalcularPorChaves(chavesAnt) : null;
   const cmpTotal = anterior ? _indComparar(atual.totalPecas, anterior.totalPecas) : null;
   const cmpMedia = anterior ? _indComparar(atual.mediaHora, anterior.mediaHora) : null;
-  const topMaquinas = Object.entries(atual.porMaquina).map(([nome,d])=>({label:nome, valor:d.total})).sort((a,b)=>b.valor-a.valor);
-  const topPecas = Object.entries(atual.porPeca).map(([cod,d])=>({label:cod, valor:d.total})).sort((a,b)=>b.valor-a.valor);
+  let topMaquinas = Object.entries(atual.porMaquina).map(([nome,d])=>({label:nome, valor:d.total})).sort((a,b)=>b.valor-a.valor);
+  let topPecas = Object.entries(atual.porPeca).map(([cod,d])=>({label:cod, valor:d.total})).sort((a,b)=>b.valor-a.valor);
+  // Filtro de máquinas específicas
+  if(_indFiltroMaquinas && _indFiltroMaquinas.size){
+    topMaquinas = topMaquinas.filter(m=>_indFiltroMaquinas.has(m.label));
+  }
   const antLbl = _indLabelAnterior(_indPeriodo);
   const anoAtual = new Date().getFullYear();
   const anosOpts = [anoAtual-2, anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===_indAnoSelecionado?'selected':''}>${a}</option>`).join('');
@@ -9162,18 +9582,29 @@ function renderMapaIndicadores(force){
     <div class="ind-sub-sel">
       <select class="ind-sel" onchange="_indSetAno(+this.value)">${anosOpts}</select>
     </div>` : '';
+  const hojeStr = _indChaveDia(new Date()).split('_'); const hojeISO = `${hojeStr[0]}-${String(+hojeStr[1]+1).padStart(2,'0')}-${String(hojeStr[2]).padStart(2,'0')}`;
+  const seletorCustom = _indPeriodo==='custom' ? `
+    <div class="ind-sub-sel">
+      <label class="ind-date-lbl">De <input type="date" class="ind-sel ind-date" value="${_indDataIni||''}" max="${hojeISO}" onchange="_indSetDataIni(this.value)"></label>
+      <label class="ind-date-lbl">Até <input type="date" class="ind-sel ind-date" value="${_indDataFim||''}" max="${hojeISO}" onchange="_indSetDataFim(this.value)"></label>
+    </div>` : '';
   const lblTotal = _indPeriodo==='mes' ? `Total ${MESES_IND[_indMesSelecionado]}/${_indAnoSelecionado}`
     : _indPeriodo==='ano' ? `Total ${_indAnoSelecionado}`
+    : _indPeriodo==='custom' ? 'Total do período'
     : 'Total '+_indLabelPeriodo(_indPeriodo).toLowerCase();
+  const filtroAtivo = _indFiltroMaquinas && _indFiltroMaquinas.size;
   wrap.innerHTML = `
     <div class="ind-wrap" id="indWrap">
+      <div id="indPullInd" class="ind-pull-ind">↻</div>
       <div class="ind-filtros">
-        ${['hoje','ontem','semana','mes','ano'].map(p=>
+        ${['hoje','ontem','semana','mes','ano','custom'].map(p=>
           `<button class="ind-fbtn ${_indPeriodo===p?'on':''}" onclick="_indSetPeriodo('${p}')">${_indLabelPeriodo(p)}</button>`
         ).join('')}
+        <button class="ind-fbtn ${filtroAtivo?'on':''}" onclick="_indAbrirFiltro()" title="Filtrar máquinas">⚙${filtroAtivo?' '+_indFiltroMaquinas.size:''}</button>
         <button class="ind-fbtn ind-refresh" onclick="_indForcarRerender();renderMapaIndicadores(true)" title="Atualizar">↻</button>
       </div>
-      ${seletorMes}${seletorAno}
+      ${seletorMes}${seletorAno}${seletorCustom}
+      ${filtroAtivo?`<div class="ind-filtro-banner">Filtrando ${_indFiltroMaquinas.size} máquina(s) <button onclick="_indLimparFiltro()">limpar ✕</button></div>`:''}
       <div class="ind-cards">
         ${_indCard('📦', lblTotal, atual.totalPecas.toLocaleString('pt-BR'), cmpTotal?_indBadgeCmp(cmpTotal)+' vs '+antLbl:'peças', '#00e87a')}
         ${_indCard('⏱', 'Média peças/hora', atual.mediaHora.toLocaleString('pt-BR'), cmpMedia?_indBadgeCmp(cmpMedia)+' vs '+antLbl:atual.horasTrabalhadas+'h trab.', '#3d9eff')}
@@ -9185,17 +9616,22 @@ function renderMapaIndicadores(force){
         ${topMaquinas.length ? _indPodio(topMaquinas.slice(0,3)) : '<div class="ind-empty">Sem produção no período</div>'}
       </div>
       <div class="ind-sec">
-        <div class="ind-sec-title">🏭 Máquinas <span class="ind-sec-count">${topMaquinas.length}</span></div>
-        ${_indBarsHoriz(topMaquinas, 20)}
+        <div class="ind-sec-title">🏭 Máquinas <span class="ind-sec-count">${topMaquinas.length}</span><span class="ind-sec-hint">toque p/ detalhe</span></div>
+        ${_indBarsHoriz(topMaquinas, 20, 'maquina')}
       </div>
       <div class="ind-sec">
-        <div class="ind-sec-title">📦 Peças produzidas <span class="ind-sec-count">${topPecas.length}</span></div>
-        ${topPecas.length ? _indBarsHoriz(topPecas, 15) : '<div class="ind-empty">Nenhum código de peça registrado no período</div>'}
+        <div class="ind-sec-title">📦 Peças produzidas <span class="ind-sec-count">${topPecas.length}</span><span class="ind-sec-hint">toque p/ detalhe</span></div>
+        ${_indPecaCards(topPecas, atual.totalPecas)}
+      </div>
+      <div class="ind-sec">
+        <div class="ind-sec-title">⚖️ Comparativo lado a lado</div>
+        ${_indComparativoHTML(atual)}
       </div>
       <div class="ind-sec">
         <div class="ind-sec-title">🎯 Metas atingidas por máquina <span class="ind-sec-count">${(_indMetasAtingidas(_indChavesPeriodo(_indPeriodo))||[]).length}</span></div>
         ${(()=>{
-          const rows = _indMetasAtingidas(_indChavesPeriodo(_indPeriodo));
+          let rows = _indMetasAtingidas(_indChavesPeriodo(_indPeriodo));
+          if(filtroAtivo) rows = rows.filter(r=>_indFiltroMaquinas.has(r.nome));
           if(!rows.length) return '<div class="ind-empty">Sem meta definida no período</div>';
           return rows.map((r,idx)=>{
             const cor = r.pct>=80?'#00e87a':r.pct>=50?'#ffb300':'#ff4d4d';
@@ -9218,10 +9654,42 @@ function renderMapaIndicadores(force){
       </div>
       <div class="ind-footer">Dados calculados a partir da tabela de Produção. Atualização automática.</div>
     </div>
+    <div id="indDetalheModal" class="ind-modal" onclick="if(event.target===this)_indFecharDetalhe()">
+      <div class="ind-modal-card" id="indDetalheBody"></div>
+    </div>
+    <div id="indFiltroSheet" class="ind-sheet" onclick="if(event.target===this)_indFecharFiltro()">
+      <div class="ind-sheet-card">
+        <div class="ind-sheet-grip"></div>
+        <div class="ind-sheet-head"><span>⚙ Filtrar máquinas</span><button onclick="_indFecharFiltro()">✕</button></div>
+        <div class="ind-sheet-body">
+          ${(()=>{
+            const nomes = Object.keys(atual.porMaquina).sort((a,b)=>atual.porMaquina[b].total-atual.porMaquina[a].total);
+            if(!nomes.length) return '<div class="ind-empty">Sem máquinas no período</div>';
+            return nomes.map(n=>{
+              const on = _indFiltroMaquinas && _indFiltroMaquinas.has(n);
+              const id = 'indfm_'+btoa(unescape(encodeURIComponent(n))).replace(/=/g,'');
+              return `<button id="${id}" class="ind-fchk ${on?'on':''}" data-k="${esc(n)}" onclick="_indToggleFiltroMaq(this.dataset.k)"><span class="ind-fchk-box">✓</span>Máq. ${esc(n)} <span class="ind-fchk-tot">${atual.porMaquina[n].total.toLocaleString('pt-BR')}</span></button>`;
+            }).join('');
+          })()}
+        </div>
+        <div class="ind-sheet-actions">
+          <button class="ind-sheet-btn ghost" onclick="_indLimparFiltro()">Limpar</button>
+          <button class="ind-sheet-btn primary" onclick="_indAplicarFiltro()">Aplicar</button>
+        </div>
+      </div>
+    </div>
+    <div id="indExpandOverlay" class="ind-expand" onclick="if(event.target===this)_indFecharExpand()">
+      <div class="ind-expand-card">
+        <div class="ind-expand-head"><span id="indExpandTitle"></span><button onclick="_indFecharExpand()">✕</button></div>
+        <div class="ind-expand-body" id="indExpandBody"></div>
+        <div class="ind-expand-hint">📱 Vire o celular para ver na horizontal</div>
+      </div>
+    </div>
   `;
   _indPrecisaRerender = false;
+  _indSetupPullRefresh(wrap);
   // Restaura scroll pra não voltar pro topo
-  if(scrollTopSalvo>0) requestAnimationFrame(()=>{ wrap.scrollTop = scrollTopSalvo; });
+  if(scrollTopSalvo>0) requestAnimationFrame(()=>{ const nw=wrap.querySelector('.ind-wrap'); if(nw) nw.scrollTop = scrollTopSalvo; });
 }
 
 function renderMapaProducao(){
