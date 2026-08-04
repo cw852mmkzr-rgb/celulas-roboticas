@@ -529,6 +529,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .ind-fbtn:hover{ border-color:#3d9eff40; color:#d8dde6; }
 .ind-fbtn.on{ background:linear-gradient(135deg,#3d9eff,#1e6fdb); border-color:#3d9eff; color:#fff; box-shadow:0 3px 12px -2px #3d9eff66; }
 .ind-fbtn.ind-refresh{ margin-left:auto; padding:8px 12px; font-size:14px; }
+.ind-sub-sel{ display:flex; gap:8px; margin-bottom:14px; animation:indFadeIn .25s cubic-bezier(.4,0,.2,1); }
+.ind-sel{ flex:1; background:#0f1318; border:1px solid #1e2530; color:#d8dde6; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; font-family:'Courier New',monospace; cursor:pointer; outline:none; transition:border-color .18s ease; }
+.ind-sel:hover, .ind-sel:focus{ border-color:#3d9eff60; }
 .ind-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:18px; }
 .ind-card{ background:linear-gradient(135deg,#0f1318,#0a0d12); border:1px solid #1e2530; border-left:3px solid; border-radius:12px; padding:12px 14px; transition:transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease; animation:indCardIn .45s cubic-bezier(.34,1.56,.64,1) both; }
 .ind-card:nth-child(1){ animation-delay:0ms }
@@ -8878,15 +8881,20 @@ function renderMapaZonaHTML(zona){
 
 // ═══════════════════════════ INDICADORES ═══════════════════════════
 let _indPeriodo = 'hoje';
+let _indMesSelecionado = new Date().getMonth();
+let _indAnoSelecionado = new Date().getFullYear();
 const _indCache = {};
 let _indPrecisaRerender = true;
+const MESES_IND = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 // Limpa apenas o cache de cálculos (não força rebuild do DOM — evita piscar no polling)
 function _indLimparCache(){ Object.keys(_indCache).forEach(k=>delete _indCache[k]); }
 // Marca que precisa reconstruir o DOM (usado por ações do usuário)
 function _indForcarRerender(){ _indLimparCache(); _indPrecisaRerender = true; }
+function _indSetMes(m){ _indMesSelecionado=m; _indForcarRerender(); renderMapaIndicadores(true); }
+function _indSetAno(a){ _indAnoSelecionado=a; _indForcarRerender(); renderMapaIndicadores(true); }
 function _indChaveDia(d){ return `${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`; }
-function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês'})[p]||p; }
-function _indLabelAnterior(p){ return ({hoje:'ontem',semana:'sem. passada',mes:'mês passado'})[p]||''; }
+function _indLabelPeriodo(p){ return ({hoje:'Hoje',ontem:'Ontem',semana:'Semana',mes:'Mês',ano:'Ano'})[p]||p; }
+function _indLabelAnterior(p){ return ({hoje:'ontem',semana:'sem. passada',mes:'mês anterior',ano:'ano passado'})[p]||''; }
 
 function _indChavesPeriodo(periodo){
   const now = new Date();
@@ -8900,9 +8908,15 @@ function _indChavesPeriodo(periodo){
     inicio.setDate(inicio.getDate() - now.getDay());
     for(let i=0; i<7; i++){ const d = new Date(inicio); d.setDate(d.getDate()+i); chaves.push(_indChaveDia(d)); }
   } else if(periodo === 'mes'){
-    const y = now.getFullYear(), m = now.getMonth();
+    const y = _indAnoSelecionado, m = _indMesSelecionado;
     const numDias = new Date(y, m+1, 0).getDate();
     for(let d=1; d<=numDias; d++) chaves.push(`${y}_${m}_${d}`);
+  } else if(periodo === 'ano'){
+    const y = _indAnoSelecionado;
+    for(let m=0; m<12; m++){
+      const numDias = new Date(y, m+1, 0).getDate();
+      for(let d=1; d<=numDias; d++) chaves.push(`${y}_${m}_${d}`);
+    }
   }
   return chaves;
 }
@@ -8918,10 +8932,16 @@ function _indChavesAnterior(periodo){
     inicio.setDate(inicio.getDate() - now.getDay() - 7);
     for(let i=0; i<7; i++){ const d = new Date(inicio); d.setDate(d.getDate()+i); chaves.push(_indChaveDia(d)); }
   } else if(periodo === 'mes'){
-    const y = now.getMonth()===0 ? now.getFullYear()-1 : now.getFullYear();
-    const m = now.getMonth()===0 ? 11 : now.getMonth()-1;
+    const y = _indMesSelecionado===0 ? _indAnoSelecionado-1 : _indAnoSelecionado;
+    const m = _indMesSelecionado===0 ? 11 : _indMesSelecionado-1;
     const numDias = new Date(y, m+1, 0).getDate();
     for(let d=1; d<=numDias; d++) chaves.push(`${y}_${m}_${d}`);
+  } else if(periodo === 'ano'){
+    const y = _indAnoSelecionado - 1;
+    for(let m=0; m<12; m++){
+      const numDias = new Date(y, m+1, 0).getDate();
+      for(let d=1; d<=numDias; d++) chaves.push(`${y}_${m}_${d}`);
+    }
   }
   return chaves;
 }
@@ -9078,19 +9098,33 @@ function renderMapaIndicadores(force){
   const cmpMedia = anterior ? _indComparar(atual.mediaHora, anterior.mediaHora) : null;
   const topMaquinas = Object.entries(atual.porMaquina).map(([nome,d])=>({label:nome, valor:d.total})).sort((a,b)=>b.valor-a.valor);
   const topPecas = Object.entries(atual.porPeca).map(([cod,d])=>({label:cod, valor:d.total})).sort((a,b)=>b.valor-a.valor);
-  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
-  const dadosLinha = HORAS.map(h=>({x:h, y: (atual.porHora[h]&&atual.porHora[h].total)||0}));
   const antLbl = _indLabelAnterior(_indPeriodo);
+  const anoAtual = new Date().getFullYear();
+  const anosOpts = [anoAtual-2, anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===_indAnoSelecionado?'selected':''}>${a}</option>`).join('');
+  const mesesOpts = MESES_IND.map((m,i)=>`<option value="${i}" ${i===_indMesSelecionado?'selected':''}>${m}</option>`).join('');
+  const seletorMes = _indPeriodo==='mes' ? `
+    <div class="ind-sub-sel">
+      <select class="ind-sel" onchange="_indSetMes(+this.value)">${mesesOpts}</select>
+      <select class="ind-sel" onchange="_indSetAno(+this.value)">${anosOpts}</select>
+    </div>` : '';
+  const seletorAno = _indPeriodo==='ano' ? `
+    <div class="ind-sub-sel">
+      <select class="ind-sel" onchange="_indSetAno(+this.value)">${anosOpts}</select>
+    </div>` : '';
+  const lblTotal = _indPeriodo==='mes' ? `Total ${MESES_IND[_indMesSelecionado]}/${_indAnoSelecionado}`
+    : _indPeriodo==='ano' ? `Total ${_indAnoSelecionado}`
+    : 'Total '+_indLabelPeriodo(_indPeriodo).toLowerCase();
   wrap.innerHTML = `
     <div class="ind-wrap" id="indWrap">
       <div class="ind-filtros">
-        ${['hoje','ontem','semana','mes'].map(p=>
+        ${['hoje','ontem','semana','mes','ano'].map(p=>
           `<button class="ind-fbtn ${_indPeriodo===p?'on':''}" onclick="_indSetPeriodo('${p}')">${_indLabelPeriodo(p)}</button>`
         ).join('')}
         <button class="ind-fbtn ind-refresh" onclick="_indForcarRerender();renderMapaIndicadores(true)" title="Atualizar">↻</button>
       </div>
+      ${seletorMes}${seletorAno}
       <div class="ind-cards">
-        ${_indCard('📦', 'Total '+_indLabelPeriodo(_indPeriodo).toLowerCase(), atual.totalPecas.toLocaleString('pt-BR'), cmpTotal?_indBadgeCmp(cmpTotal)+' vs '+antLbl:'peças', '#00e87a')}
+        ${_indCard('📦', lblTotal, atual.totalPecas.toLocaleString('pt-BR'), cmpTotal?_indBadgeCmp(cmpTotal)+' vs '+antLbl:'peças', '#00e87a')}
         ${_indCard('⏱', 'Média peças/hora', atual.mediaHora.toLocaleString('pt-BR'), cmpMedia?_indBadgeCmp(cmpMedia)+' vs '+antLbl:atual.horasTrabalhadas+'h trab.', '#3d9eff')}
         ${_indCard('⚡', 'Média peças/min', String(atual.mediaMin).replace('.',','), 'geral', '#a78bfa')}
         ${_indCard('🏭', 'Máquinas ativas', atual.maquinasAtivas, 'produziram no período', '#ffb300')}
@@ -9098,10 +9132,6 @@ function renderMapaIndicadores(force){
       <div class="ind-sec">
         <div class="ind-sec-title">🏆 Ranking de máquinas</div>
         ${topMaquinas.length ? _indPodio(topMaquinas.slice(0,3)) : '<div class="ind-empty">Sem produção no período</div>'}
-      </div>
-      <div class="ind-sec">
-        <div class="ind-sec-title">📈 Produção por hora</div>
-        <div class="ind-chart-wrap">${_indSvgLinha(dadosLinha, 500, 220)}</div>
       </div>
       <div class="ind-sec">
         <div class="ind-sec-title">🏭 Máquinas <span class="ind-sec-count">${topMaquinas.length}</span></div>
