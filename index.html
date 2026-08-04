@@ -7148,6 +7148,7 @@ function toggleMapaSidebar(){
 
 function mapaSidebarClick(item){
   if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Equipes' || item==='Configurações'){
+    if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
     renderMapaProducao();
@@ -10162,6 +10163,15 @@ function renderMapaEquipes(){
 // ═══════════════════════════ CONFIGURAÇÕES (backup/restore) ═══════════════════════════
 const CFG_PW = "3102";
 let _cfgProgresso = '';
+let _cfgAuthOk = false;
+function _cfgAuthEntrada(){
+  if(isMapaHost || isMapaAdmin || _cfgAuthOk) return true;
+  const pw = prompt("Digite a senha do host para acessar as Configurações:");
+  if(pw === null) return false;
+  if(pw === CFG_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _cfgAuthOk = true; return true; }
+  showToast("Senha incorreta", true);
+  return false;
+}
 
 function _cfgSetProgresso(msg, cor){
   _cfgProgresso = msg || '';
