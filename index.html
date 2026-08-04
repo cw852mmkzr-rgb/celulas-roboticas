@@ -844,6 +844,42 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .eqm-fn-edit{ padding:6px 10px; font-size:10.5px; }
   .eqm-avatar{ width:30px; height:30px; font-size:11px; }
 }
+/* ═══════════════════════════ CONFIGURAÇÕES ═══════════════════════════ */
+.cfg-wrap{ padding:18px 20px 40px; overflow-y:auto; flex:1; min-height:0; -webkit-overflow-scrolling:touch; animation:indFadeIn .3s cubic-bezier(.4,0,.2,1); max-width:820px; margin:0 auto; width:100%; }
+.cfg-header{ margin-bottom:22px; }
+.cfg-titulo{ font-size:24px; font-weight:900; color:#fff; letter-spacing:.04em; }
+.cfg-sub{ font-size:12px; color:#6b7788; margin-top:5px; }
+.cfg-secao{ background:linear-gradient(135deg,#0f1318,#0a0d12); border:1px solid #1e2530; border-radius:14px; padding:18px 20px; margin-bottom:16px; animation:indCardIn .4s cubic-bezier(.34,1.56,.64,1) both; }
+.cfg-secao-h{ font-size:13px; color:#d8dde6; font-weight:900; letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:10px; padding-bottom:12px; border-bottom:1px solid #1e2530; }
+.cfg-secao-h span{ font-size:18px; }
+.cfg-item{ background:#080b0f; border:1px solid #161c26; border-radius:12px; padding:16px 18px; margin-bottom:12px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; transition:border-color .14s ease; }
+.cfg-item:hover{ border-color:#3d9eff30; }
+.cfg-item:last-of-type{ margin-bottom:0; }
+.cfg-item-info{ flex:1; min-width:220px; }
+.cfg-item-t{ font-size:15px; font-weight:800; color:#fff; margin-bottom:6px; }
+.cfg-item-d{ font-size:12px; color:#8a95a8; line-height:1.5; }
+.cfg-item-d b{ color:#d8dde6; }
+.cfg-btn{ padding:12px 20px; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; border:none; font-family:'Courier New',monospace; letter-spacing:.04em; transition:transform .14s ease, filter .14s ease, box-shadow .16s ease; flex:0 0 auto; }
+.cfg-btn:hover{ transform:translateY(-1px); filter:brightness(1.1); }
+.cfg-btn:active{ transform:scale(.97); }
+.cfg-btn:disabled{ opacity:.55; cursor:wait; transform:none; }
+.cfg-btn.primary{ background:linear-gradient(135deg,#00e87a,#00c060); color:#04120a; box-shadow:0 4px 14px -2px #00e87a55; }
+.cfg-btn.primary:hover{ box-shadow:0 6px 18px -2px #00e87a80; }
+.cfg-btn.danger{ background:linear-gradient(135deg,#ff4d4d,#dc2626); color:#fff; box-shadow:0 4px 14px -2px #ff4d4d55; }
+.cfg-btn.danger:hover{ box-shadow:0 6px 18px -2px #ff4d4d80; }
+.cfg-progresso{ margin-top:14px; padding:11px 14px; background:#080b0f; border:1px solid #1e2530; border-radius:8px; font-size:12px; color:#8a95a8; font-family:'Courier New',monospace; min-height:36px; display:flex; align-items:center; }
+.cfg-progresso:empty{ display:none; }
+.cfg-info{ display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:#8a95a8; line-height:1.5; }
+.cfg-info b{ color:#d8dde6; margin-right:4px; }
+.cfg-info a{ color:#3d9eff; text-decoration:none; }
+.cfg-info a:hover{ text-decoration:underline; }
+@media (max-width:700px){
+  .cfg-wrap{ padding:12px 12px 40px; }
+  .cfg-titulo{ font-size:20px; }
+  .cfg-secao{ padding:14px 14px 16px; }
+  .cfg-item{ flex-direction:column; align-items:stretch; padding:14px; gap:12px; }
+  .cfg-btn{ width:100%; text-align:center; }
+}
 @media (max-width:700px){
   .ind-wrap{ padding:10px 10px 30px; }
   .ind-cards{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:6px; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-left:-10px; margin-right:-10px; padding-left:10px; padding-right:10px; }
@@ -7111,7 +7147,7 @@ function toggleMapaSidebar(){
 }
 
 function mapaSidebarClick(item){
-  if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Equipes'){
+  if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Equipes' || item==='Configurações'){
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
     renderMapaProducao();
@@ -10123,6 +10159,242 @@ function renderMapaEquipes(){
   `;
 }
 
+// ═══════════════════════════ CONFIGURAÇÕES (backup/restore) ═══════════════════════════
+const CFG_PW = "3102";
+let _cfgProgresso = '';
+
+function _cfgSetProgresso(msg, cor){
+  _cfgProgresso = msg || '';
+  const el = document.getElementById('cfgProgresso');
+  if(el){ el.textContent = msg; el.style.color = cor||'#8a95a8'; }
+}
+
+async function _cfgFazerBackup(){
+  const btn = document.getElementById('cfgBtnBackup');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Preparando...'; }
+  _cfgSetProgresso('Buscando dados no Supabase...', '#3d9eff');
+  try {
+    // Busca a linha principal (todas as colunas)
+    const rMain = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=*", {headers:HEADERS_SB});
+    const mainRows = await rMain.json();
+    const dadosMain = (mainRows && mainRows[0]) ? mainRows[0] : null;
+
+    // Busca tabelas de componentes
+    async function fetchAll(tabela, select){
+      try {
+        const r = await fetch(SUPABASE_URL+"/rest/v1/"+tabela+"?select="+(select||'*')+"&limit=100000", {headers:HEADERS_SB});
+        if(!r.ok) return [];
+        return await r.json();
+      } catch(e){ return []; }
+    }
+    _cfgSetProgresso('Buscando componentes...', '#3d9eff');
+    const componentes = await fetchAll('componentes');
+    const componentesPecas = await fetchAll('componentes_pecas');
+    const componentesHist = await fetchAll('componentes_historico');
+
+    const now = new Date();
+    const backup = {
+      versao: 1,
+      sistema: 'Celulas Roboticas / Tremps',
+      gerado_em: now.toISOString(),
+      gerado_em_br: now.toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'}),
+      dados_main: dadosMain,
+      componentes: componentes,
+      componentes_pecas: componentesPecas,
+      componentes_historico: componentesHist
+    };
+    const nomeArq = `backup_celulas_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}h${String(now.getMinutes()).padStart(2,'0')}.json`;
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArq;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+
+    const tamKb = Math.round(blob.size/1024);
+    _cfgSetProgresso(`✓ Backup gerado — ${nomeArq} (${tamKb.toLocaleString('pt-BR')} KB)`, '#00e87a');
+    showToast('Backup baixado ✓');
+  } catch(err) {
+    _cfgSetProgresso('Erro: '+(err.message||err), '#ff4d4d');
+    showToast('Erro ao gerar backup: '+(err.message||err), true);
+  } finally {
+    if(btn){ btn.disabled = false; btn.textContent = '📥 Fazer Backup (baixar .json)'; }
+  }
+}
+
+function _cfgAbrirRestaurar(){
+  const inp = document.getElementById('cfgInpRestore');
+  if(inp) inp.click();
+}
+
+async function _cfgProcessarRestore(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ''; // limpa pra permitir re-selecionar mesmo arquivo
+  if(!file) return;
+
+  // Senha
+  const pw = prompt("Digite a senha do host para restaurar:");
+  if(pw === null) return;
+  if(pw !== CFG_PW && pw !== MAPA_PW_HOST && pw !== MAPA_PW){
+    showToast('Senha incorreta', true);
+    return;
+  }
+
+  // Lê o arquivo
+  let backup;
+  try {
+    const txt = await file.text();
+    backup = JSON.parse(txt);
+  } catch(e) {
+    showToast('Arquivo inválido (não é JSON): '+e.message, true);
+    return;
+  }
+  if(!backup || typeof backup !== 'object' || !backup.dados_main){
+    if(!confirm('O arquivo não parece um backup válido do sistema. Continuar mesmo assim?')) return;
+  }
+
+  // Confirmação séria
+  const nomeArq = file.name;
+  const dataBackup = backup.gerado_em_br || backup.gerado_em || 'desconhecida';
+  const comps = (backup.componentes||[]).length;
+  const compsP = (backup.componentes_pecas||[]).length;
+  const compsH = (backup.componentes_historico||[]).length;
+  const aviso = `⚠️ ATENÇÃO — RESTAURAÇÃO IRREVERSÍVEL
+
+Arquivo: ${nomeArq}
+Gerado em: ${dataBackup}
+Componentes: ${comps} · Peças: ${compsP} · Histórico: ${compsH}
+
+Isso vai SUBSTITUIR TUDO no sistema pelos dados desse backup:
+• Todas as células, produção, gabaritagem, equipes, base de conhecimento
+• Todos os componentes, peças e histórico
+
+Não é possível desfazer. Recomendação: faça um backup ATUAL antes.
+
+Digite RESTAURAR (em maiúsculas) para confirmar:`;
+  const conf = prompt(aviso);
+  if(conf !== 'RESTAURAR'){ showToast('Restauração cancelada', true); return; }
+
+  const btn = document.getElementById('cfgBtnRestaurar');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Restaurando...'; }
+  _cfgSetProgresso('Restaurando dados/main...', '#ffb300');
+
+  try {
+    // 1) dados/main — PATCH com todas as colunas exceto id
+    if(backup.dados_main){
+      const patch = Object.assign({}, backup.dados_main);
+      delete patch.id;
+      delete patch.atualizado_em;
+      const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main", {
+        method: "PATCH", headers: HEADERS_SB,
+        body: JSON.stringify(patch)
+      });
+      if(!r.ok) throw new Error('Falha ao restaurar dados/main: '+r.status+' '+(await r.text().catch(()=>'')));
+    }
+
+    // 2) Componentes (histórico -> peças -> componentes na hora de deletar por FK; ordem inversa na inserção)
+    async function apagarEReinsertir(tabela, rows){
+      _cfgSetProgresso('Restaurando '+tabela+'...', '#ffb300');
+      // Apaga todas as linhas (?id=gte.0 pega tudo se id for numérico; usa filtro amplo)
+      const del = await fetch(SUPABASE_URL+"/rest/v1/"+tabela+"?id=gte.0", {
+        method: "DELETE",
+        headers: {...HEADERS_SB, "Prefer":"return=minimal"}
+      });
+      // ignora status do DELETE (pode ser 204/404 sem rows)
+      if(!rows || !rows.length) return;
+      // Insere em lotes de 200
+      const lote = 200;
+      for(let i=0; i<rows.length; i+=lote){
+        const bloco = rows.slice(i, i+lote);
+        // Remove campos gerados que o postgres precisa recriar? Manter id se existir (respeita id original)
+        const r = await fetch(SUPABASE_URL+"/rest/v1/"+tabela, {
+          method: "POST", headers: {...HEADERS_SB, "Prefer":"return=minimal"},
+          body: JSON.stringify(bloco)
+        });
+        if(!r.ok){
+          const txt = await r.text().catch(()=>'');
+          throw new Error('Falha em '+tabela+' lote '+i+': '+r.status+' '+txt.slice(0,140));
+        }
+      }
+    }
+    // Ordem de deleção respeitando FK: histórico -> peças -> componentes
+    // Reinsere em ordem inversa: componentes -> peças -> histórico
+    if(Array.isArray(backup.componentes_historico)){
+      await apagarEReinsertir('componentes_historico', []);
+    }
+    if(Array.isArray(backup.componentes_pecas)){
+      await apagarEReinsertir('componentes_pecas', []);
+    }
+    if(Array.isArray(backup.componentes)){
+      await apagarEReinsertir('componentes', backup.componentes);
+    }
+    if(Array.isArray(backup.componentes_pecas)){
+      await apagarEReinsertir('componentes_pecas', backup.componentes_pecas);
+    }
+    if(Array.isArray(backup.componentes_historico)){
+      await apagarEReinsertir('componentes_historico', backup.componentes_historico);
+    }
+
+    _cfgSetProgresso('✓ Restauração concluída! Recarregando página...', '#00e87a');
+    showToast('Restauração concluída ✓');
+    setTimeout(()=>location.reload(), 1500);
+  } catch(err) {
+    _cfgSetProgresso('❌ Erro: '+(err.message||err), '#ff4d4d');
+    showToast('Erro na restauração: '+(err.message||err), true);
+    if(btn){ btn.disabled = false; btn.textContent = '📤 Restaurar Backup...'; }
+  }
+}
+
+function renderMapaConfiguracoes(){
+  const wrap = document.getElementById('mapaCanvasWrap');
+  if(!wrap) return;
+  wrap.innerHTML = `
+    <div class="cfg-wrap">
+      <div class="cfg-header">
+        <div class="cfg-titulo">⚙ Configurações</div>
+        <div class="cfg-sub">Backup, restauração e ajustes do sistema</div>
+      </div>
+
+      <div class="cfg-secao">
+        <div class="cfg-secao-h"><span>💾</span> Backup e Restauração</div>
+
+        <div class="cfg-item">
+          <div class="cfg-item-info">
+            <div class="cfg-item-t">📥 Fazer Backup</div>
+            <div class="cfg-item-d">Baixa um arquivo <b>.json</b> com todos os dados do sistema: células robóticas, produção, gabaritagem, mapa, equipes, peças cadastradas, base de conhecimento, componentes e histórico. Guarde em local seguro.</div>
+          </div>
+          <button id="cfgBtnBackup" class="cfg-btn primary" onclick="_cfgFazerBackup()">📥 Fazer Backup (baixar .json)</button>
+        </div>
+
+        <div class="cfg-item">
+          <div class="cfg-item-info">
+            <div class="cfg-item-t">📤 Restaurar Backup</div>
+            <div class="cfg-item-d"><b style="color:#ff6b6b">⚠️ Cuidado:</b> escolhe um arquivo de backup <b>.json</b> e <b>substitui TODOS os dados atuais</b> do sistema. Pede senha e confirmação por segurança. Recomendado: fazer um backup atual antes.</div>
+          </div>
+          <button id="cfgBtnRestaurar" class="cfg-btn danger" onclick="_cfgAbrirRestaurar()">📤 Restaurar Backup...</button>
+          <input type="file" id="cfgInpRestore" accept=".json,application/json" style="display:none" onchange="_cfgProcessarRestore(event)">
+        </div>
+
+        <div id="cfgProgresso" class="cfg-progresso">${esc(_cfgProgresso)}</div>
+      </div>
+
+      <div class="cfg-secao">
+        <div class="cfg-secao-h"><span>ℹ️</span> Informações</div>
+        <div class="cfg-info">
+          <div><b>Sistema:</b> Células Robóticas · Tremps</div>
+          <div><b>Repositório:</b> <a href="https://github.com/cw852mmkzr-rgb/celulas-roboticas" target="_blank" rel="noopener">cw852mmkzr-rgb/celulas-roboticas</a></div>
+          <div><b>Backup ideal:</b> semanal, guardar em nuvem (Drive, Dropbox) ou pendrive.</div>
+          <div><b>Restauração:</b> substitui todos os dados. Não pode ser desfeita.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderMapaIndicadores(force){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
@@ -10295,6 +10567,10 @@ function renderMapaProducao(){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.eqm-wrap')) return;
   }
+  if(mapaTelaAtual==='Configurações'){
+    const _c = document.getElementById('mapaConteudo');
+    if(_c && _c.querySelector('.cfg-wrap')) return;
+  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
@@ -10361,8 +10637,8 @@ function renderMapaProducao(){
           ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
         </div>
       </div>
-      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes')?'padding:0;display:flex;flex-direction:column;':''}">
-        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes') ? '' : `
+      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
+        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
         <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
 
           <div style="display:flex;gap:26px;align-items:flex-start">
@@ -10404,7 +10680,7 @@ function renderMapaProducao(){
         `}
       </div>
     </div>
-    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes') ? '' : `
+    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
     <div class="mapa-toolbar">
       <button class="mapa-tool-btn ativo">⊙</button>
       <button class="mapa-tool-btn">✋</button>
@@ -10423,6 +10699,8 @@ function renderMapaProducao(){
     renderMapaCadastroPecas();
   } else if(mapaTelaAtual==='Equipes'){
     renderMapaEquipes();
+  } else if(mapaTelaAtual==='Configurações'){
+    renderMapaConfiguracoes();
   } else {
     aplicarMapaZoom();
     // Restaura o scroll do mapa visual após re-render do polling
