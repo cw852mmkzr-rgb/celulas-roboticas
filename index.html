@@ -10097,6 +10097,14 @@ function renderMapaEquipes(){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
   if(!mapaDados){ wrap.innerHTML = '<div class="eqm-empty">Carregando...</div>'; return; }
+  // Carrega equipes de Células Robóticas se ainda não tiver
+  const semEquipes = !equipesData || !Array.isArray(equipesData.lista) || !equipesData.lista.length;
+  if(semEquipes && typeof loadEquipes==='function' && !window._eqmLoading){
+    window._eqmLoading = true;
+    loadEquipes().finally(()=>{ window._eqmLoading = false; renderMapaEquipes(); });
+    wrap.innerHTML = '<div class="eqm-empty">Carregando equipes...</div>';
+    return;
+  }
   const tabConteudo = _eqmTab==='funcionarios' ? _eqmRenderFuncionariosTab() : _eqmRenderEquipesTab();
   wrap.innerHTML = `
     <div class="eqm-wrap">
