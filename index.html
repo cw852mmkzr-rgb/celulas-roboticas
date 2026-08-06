@@ -7147,7 +7147,7 @@ function toggleMapaSidebar(){
 }
 
 function mapaSidebarClick(item){
-  if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Equipes' || item==='Configurações'){
+  if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
@@ -9999,6 +9999,274 @@ function renderMapaCadastroPecas(){
   `;
 }
 
+// ═══════════════════════════ CATÁLOGO DE PEÇAS ═══════════════════════════
+let _catAuthOk = false;
+let _catBusca = '';
+let _catEditIdx = null;
+let _catImagens = {};
+let _catImagensCarregadas = false;
+let _catImgPendente; // undefined = sem alteração · '' = remover · string = nova imagem (dataURL)
+
+function _catAuth(){
+  if(isMapaHost || isMapaAdmin || _catAuthOk) return true;
+  const pw = prompt("Digite a senha do host para editar:");
+  if(pw === null) return false;
+  if(pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _catAuthOk = true; return true; }
+  showToast("Senha incorreta", true);
+  return false;
+}
+function _catLista(){
+  if(!mapaDados) return [];
+  if(!Array.isArray(mapaDados.mapa_catalogo)) mapaDados.mapa_catalogo = [];
+  return mapaDados.mapa_catalogo;
+}
+function _catSetBusca(v){
+  _catBusca = (v||'').toLowerCase().trim();
+  const cont = document.getElementById('catListaWrap');
+  if(cont) cont.innerHTML = _catListaHTML();
+}
+async function _catCarregarImagens(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    _catImagens = (d&&d[0]&&d[0].imagens&&d[0].imagens._mapa_catalogo) || {};
+  }catch(e){}
+  if(mapaTelaAtual==='Catálogo') renderMapaCatalogo();
+}
+function _catAbrirImagemGrande(src){
+  let el = document.getElementById('catImgLightbox');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'catImgLightbox';
+    el.style.cssText = 'position:fixed;inset:0;background:#000000ee;z-index:9800;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+    el.onclick = ()=>{ el.style.display='none'; };
+    el.innerHTML = '<img id="catImgLightboxImg" style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:8px;box-shadow:0 0 60px #000000cc">';
+    document.body.appendChild(el);
+  }
+  document.getElementById('catImgLightboxImg').src = src;
+  el.style.display = 'flex';
+}
+function _catListaHTML(){
+  let lista = _catLista().slice();
+  if(_catBusca){
+    lista = lista.filter(p=> (p.codigo||'').toLowerCase().includes(_catBusca)
+      || (p.nome||'').toLowerCase().includes(_catBusca)
+      || (p.cliente||'').toLowerCase().includes(_catBusca)
+      || (p.maquina||'').toLowerCase().includes(_catBusca));
+  }
+  lista.sort((a,b)=> (a.codigo||'').localeCompare(b.codigo||'', 'pt', {numeric:true}));
+  if(!lista.length){
+    return `<div class="pec-empty">${_catBusca ? `Nenhuma peça encontrada para "<b>${esc(_catBusca)}</b>"` : 'Nenhuma peça no catálogo ainda. Clique em <b style="color:#00e87a">+ Nova peça</b> para começar.'}</div>`;
+  }
+  return `<div class="pec-grid">${lista.map(p=>{
+    const idx = _catLista().indexOf(p);
+    const img = _catImagens[p.codigo];
+    return `<div class="pec-card">
+      <div class="pec-card-top">
+        <div class="pec-cod-wrap">
+          <div class="pec-cod-lbl">Código</div>
+          <div class="pec-cod">${esc(p.codigo||'—')}</div>
+        </div>
+        <div class="pec-actions">
+          <button class="pec-btn edit" title="Editar" onclick="_catAbrirEditar(${idx})">✎</button>
+          <button class="pec-btn del" title="Excluir" onclick="_catExcluir(${idx})">🗑</button>
+        </div>
+      </div>
+      ${img?`<img src="${img}" alt="Desenho técnico" style="width:100%;max-height:160px;object-fit:contain;border-radius:9px;border:1px solid #1e2530;background:#080b0f;cursor:zoom-in" onclick="_catAbrirImagemGrande('${img}')">`:''}
+      <div class="pec-nome">${esc(p.nome||'Sem nome')}</div>
+      ${p.cliente?`<div class="pec-cliente">🏢 ${esc(p.cliente)}</div>`:''}
+      <div class="pec-stats">
+        ${p.tempo_ciclo?`<div class="pec-stat"><div class="pec-stat-v" style="color:#a78bfa">${esc(p.tempo_ciclo)}</div><div class="pec-stat-l">ciclo</div></div>`:''}
+        ${p.tipo_solda?`<div class="pec-stat"><div class="pec-stat-v" style="color:#3d9eff;font-size:13px">${esc(p.tipo_solda)}</div><div class="pec-stat-l">tipo solda</div></div>`:''}
+        ${p.qtd_componentes?`<div class="pec-stat"><div class="pec-stat-v" style="color:#ffb300">${esc(String(p.qtd_componentes))}</div><div class="pec-stat-l">componentes</div></div>`:''}
+      </div>
+      ${p.maquina?`<div class="pec-obs">⚙ Máquina: ${esc(p.maquina)}</div>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+function _catAbrirNovo(){
+  if(!_catAuth()) return;
+  _catEditIdx = null;
+  _catAbrirModal({codigo:'',nome:'',cliente:'',tempo_ciclo:'',tipo_solda:'',maquina:'',qtd_componentes:''});
+}
+function _catAbrirEditar(idx){
+  if(!_catAuth()) return;
+  const p = _catLista()[idx];
+  if(!p) return;
+  _catEditIdx = idx;
+  _catAbrirModal(p);
+}
+function _catAtualizarPreview(src){
+  const wrap = document.getElementById('catImgPreviewWrap');
+  if(!wrap) return;
+  wrap.innerHTML = src
+    ? `<img src="${src}" style="width:100%;max-height:200px;object-fit:contain;border-radius:9px;border:1px solid #1e2530;background:#080b0f">
+       <button type="button" class="pec-mbtn ghost" style="margin-top:8px" onclick="_catRemoverImagem()">🗑 Remover desenho</button>`
+    : `<div style="text-align:center;color:#4a5568;font-size:12px;padding:14px;border:1px dashed #1e2530;border-radius:9px">Nenhum desenho anexado</div>`;
+}
+function _catAbrirModal(p){
+  const modal = document.getElementById('catModal');
+  if(!modal) return;
+  _catImgPendente = undefined;
+  document.getElementById('catModalTitulo').textContent = _catEditIdx===null ? '➕ Nova peça' : '✎ Editar peça';
+  document.getElementById('catInpCod').value = p.codigo||'';
+  document.getElementById('catInpNome').value = p.nome||'';
+  document.getElementById('catInpCliente').value = p.cliente||'';
+  document.getElementById('catInpCiclo').value = p.tempo_ciclo||'';
+  document.getElementById('catInpSolda').value = p.tipo_solda||'';
+  document.getElementById('catInpMaquina').value = p.maquina||'';
+  document.getElementById('catInpQtdComp').value = p.qtd_componentes||'';
+  _catAtualizarPreview(_catImagens[p.codigo] || '');
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('catInpCod').focus(), 100);
+}
+function _catSelecionarImagem(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = function(){
+    const maxSize = 1000;
+    let w = img.width, h = img.height;
+    if(w>maxSize||h>maxSize){
+      if(w>h){ h=Math.round(h*maxSize/w); w=maxSize; }
+      else { w=Math.round(w*maxSize/h); h=maxSize; }
+    }
+    canvas.width=w; canvas.height=h;
+    ctx.drawImage(img,0,0,w,h);
+    const compressed = canvas.toDataURL('image/jpeg', 0.85);
+    URL.revokeObjectURL(url);
+    _catImgPendente = compressed;
+    _catAtualizarPreview(compressed);
+  };
+  img.src = url;
+}
+function _catRemoverImagem(){
+  _catImgPendente = '';
+  _catAtualizarPreview('');
+}
+function _catFecharModal(){
+  const m = document.getElementById('catModal');
+  if(m) m.classList.remove('open');
+}
+async function _catSalvarImagem(codigo, codigoAntigo){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    const d = await r.json();
+    const imgsAtuais = (d&&d[0]&&d[0].imagens) ? d[0].imagens : {};
+    if(!imgsAtuais._mapa_catalogo) imgsAtuais._mapa_catalogo = {};
+    let valor;
+    if(_catImgPendente !== undefined){
+      valor = _catImgPendente;
+    } else if(codigoAntigo && imgsAtuais._mapa_catalogo[codigoAntigo]!==undefined){
+      valor = imgsAtuais._mapa_catalogo[codigoAntigo];
+    }
+    if(codigoAntigo && codigoAntigo!==codigo) delete imgsAtuais._mapa_catalogo[codigoAntigo];
+    if(valor) imgsAtuais._mapa_catalogo[codigo] = valor;
+    else if(valor==='') delete imgsAtuais._mapa_catalogo[codigo];
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens:imgsAtuais})});
+    _catImagens = imgsAtuais._mapa_catalogo;
+  }catch(e){ showToast("Erro ao salvar desenho técnico", true); }
+}
+function _catSalvar(){
+  const codigo = document.getElementById('catInpCod').value.trim();
+  if(!codigo){ showToast('Código é obrigatório', true); document.getElementById('catInpCod').focus(); return; }
+  const lista = _catLista();
+  const dup = lista.findIndex(p=> (p.codigo||'').toLowerCase() === codigo.toLowerCase());
+  if(dup >= 0 && dup !== _catEditIdx){ showToast('Já existe uma peça com esse código no catálogo', true); return; }
+  const codigoAntigo = _catEditIdx!==null ? lista[_catEditIdx].codigo : null;
+  const obj = {
+    codigo,
+    nome: document.getElementById('catInpNome').value.trim(),
+    cliente: document.getElementById('catInpCliente').value.trim(),
+    tempo_ciclo: document.getElementById('catInpCiclo').value.trim(),
+    tipo_solda: document.getElementById('catInpSolda').value.trim(),
+    maquina: document.getElementById('catInpMaquina').value.trim(),
+    qtd_componentes: parseInt(document.getElementById('catInpQtdComp').value)||0
+  };
+  if(_catEditIdx===null) lista.push(obj);
+  else lista[_catEditIdx] = obj;
+  mapaDados.mapa_catalogo = lista;
+  saveMapaDados();
+  if(_catImgPendente!==undefined || (codigoAntigo && codigoAntigo!==codigo)){
+    _catSalvarImagem(codigo, codigoAntigo);
+  }
+  showToast(_catEditIdx===null ? 'Peça cadastrada no catálogo ✓' : 'Peça atualizada ✓');
+  _catFecharModal();
+  renderMapaCatalogo();
+}
+function _catExcluir(idx){
+  if(!_catAuth()) return;
+  const p = _catLista()[idx]; if(!p) return;
+  if(!confirm(`Excluir a peça "${p.codigo} - ${p.nome||'sem nome'}" do catálogo?`)) return;
+  mapaDados.mapa_catalogo.splice(idx,1);
+  saveMapaDados();
+  if(_catImagens[p.codigo]){
+    _catImgPendente = '';
+    _catSalvarImagem(p.codigo, null);
+  }
+  showToast('Peça excluída do catálogo ✓');
+  renderMapaCatalogo();
+}
+function renderMapaCatalogo(){
+  const wrap = document.getElementById('mapaCanvasWrap');
+  if(!wrap) return;
+  if(!mapaDados){ wrap.innerHTML = '<div class="pec-empty">Carregando...</div>'; return; }
+  if(!_catImagensCarregadas){ _catImagensCarregadas = true; _catCarregarImagens(); }
+  const total = _catLista().length;
+  wrap.innerHTML = `
+    <div class="pec-wrap cat-catalogo">
+      <div class="pec-header">
+        <div>
+          <div class="pec-titulo">📐 Catálogo de Peças</div>
+          <div class="pec-sub">${total} peça(s) no catálogo</div>
+        </div>
+        <button class="pec-novo" onclick="_catAbrirNovo()">＋ Nova peça</button>
+      </div>
+      <div class="pec-busca">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar por código, nome, cliente ou máquina..." value="${esc(_catBusca)}" oninput="_catSetBusca(this.value)" autocomplete="off">
+        <button onclick="document.querySelector('.pec-busca input').value='';_catSetBusca('')" title="Limpar">✕</button>
+      </div>
+      <div id="catListaWrap">${_catListaHTML()}</div>
+    </div>
+    <div id="catModal" class="pec-modal" onclick="if(event.target===this)_catFecharModal()">
+      <div class="pec-modal-card">
+        <div class="pec-modal-head">
+          <span id="catModalTitulo">Nova peça</span>
+          <button onclick="_catFecharModal()">✕</button>
+        </div>
+        <div class="pec-modal-body">
+          <label class="pec-field"><span>Código <b style="color:#ff6b6b">*</b></span><input id="catInpCod" type="text" placeholder="Ex: 3680" autocomplete="off"></label>
+          <label class="pec-field"><span>Nome</span><input id="catInpNome" type="text" placeholder="Ex: Console traseiro" autocomplete="off"></label>
+          <label class="pec-field"><span>Cliente</span><input id="catInpCliente" type="text" placeholder="Ex: Ford" autocomplete="off"></label>
+          <div class="pec-field-row">
+            <label class="pec-field"><span>Tempo de ciclo</span><input id="catInpCiclo" type="text" placeholder="Ex: 7,2s"></label>
+            <label class="pec-field"><span>Tipo de solda</span><input id="catInpSolda" type="text" placeholder="Ex: MIG/MAG"></label>
+          </div>
+          <div class="pec-field-row">
+            <label class="pec-field"><span>Máquina</span><input id="catInpMaquina" type="text" placeholder="Ex: 606 - KUKA"></label>
+            <label class="pec-field"><span>Qtd. componentes</span><input id="catInpQtdComp" type="number" min="0" placeholder="Ex: 4"></label>
+          </div>
+          <div class="pec-field">
+            <span>Desenho técnico</span>
+            <div id="catImgPreviewWrap"></div>
+            <input type="file" id="catInpImg" accept="image/*" style="display:none" onchange="_catSelecionarImagem(event)">
+            <button type="button" class="pec-mbtn ghost" style="margin-top:8px" onclick="document.getElementById('catInpImg').click()">📎 Anexar imagem</button>
+          </div>
+        </div>
+        <div class="pec-modal-actions">
+          <button class="pec-mbtn ghost" onclick="_catFecharModal()">Cancelar</button>
+          <button class="pec-mbtn primary" onclick="_catSalvar()">✓ Salvar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // ═══════════════════════════ EQUIPES (mapa) ═══════════════════════════
 let _eqmTab = 'equipes'; // 'equipes' | 'funcionarios'
 let _eqmAuthOk = false;
@@ -10568,10 +10836,14 @@ function renderMapaProducao(){
     const _conteudo = document.getElementById('mapaConteudo');
     if(_conteudo && _conteudo.querySelector('.ind-wrap') && !_indPrecisaRerender) return;
   }
-  // Peças e Equipes: também evitam rebuild no polling se já renderizados
+  // Peças, Catálogo e Equipes: também evitam rebuild no polling se já renderizados
   if(mapaTelaAtual==='Peças'){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.pec-wrap')) return;
+  }
+  if(mapaTelaAtual==='Catálogo'){
+    const _c = document.getElementById('mapaConteudo');
+    if(_c && _c.querySelector('.cat-catalogo')) return;
   }
   if(mapaTelaAtual==='Equipes'){
     const _c = document.getElementById('mapaConteudo');
@@ -10638,8 +10910,8 @@ function renderMapaProducao(){
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
       <div class="mapa-sidebar" id="mapaSidebar">
-        ${['Mapa','Produção','Peças','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
-          const icones = {Mapa:'📍',Produção:'🏭',Peças:'📦',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
+        ${['Mapa','Produção','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
@@ -10647,8 +10919,8 @@ function renderMapaProducao(){
           ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
         </div>
       </div>
-      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
-        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
+        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
         <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
 
           <div style="display:flex;gap:26px;align-items:flex-start">
@@ -10690,7 +10962,7 @@ function renderMapaProducao(){
         `}
       </div>
     </div>
-    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
     <div class="mapa-toolbar">
       <button class="mapa-tool-btn ativo">⊙</button>
       <button class="mapa-tool-btn">✋</button>
@@ -10707,6 +10979,8 @@ function renderMapaProducao(){
     renderMapaIndicadores();
   } else if(mapaTelaAtual==='Peças'){
     renderMapaCadastroPecas();
+  } else if(mapaTelaAtual==='Catálogo'){
+    renderMapaCatalogo();
   } else if(mapaTelaAtual==='Equipes'){
     renderMapaEquipes();
   } else if(mapaTelaAtual==='Configurações'){

@@ -4,6 +4,10 @@ Sistema de monitoramento de 12 células de solda robótica (robôs 600 a 611 —
 
 Desenvolvido pelo Eduardo.
 
+## Idioma
+
+Sempre responder em português brasileiro.
+
 ## Arquitetura
 
 - **Frontend**: `index.html` — single-file (~9500+ linhas), HTML + CSS + JS puro
