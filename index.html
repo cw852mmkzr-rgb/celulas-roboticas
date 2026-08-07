@@ -7364,8 +7364,9 @@ function mapaUpdateApontarFab(){
   const fab = document.getElementById('apFab');
   if(!fab) return;
   const ms = document.getElementById('mapaScreen');
-  const aberto = ms && ms.style.display!=='none';
-  fab.style.display = (aberto && mapaTelaAtual==='Produção') ? 'flex' : 'none';
+  const aberto = ms && getComputedStyle(ms).display !== 'none';
+  const mostrar = aberto && mapaTelaAtual==='Produção';
+  fab.style.setProperty('display', mostrar ? 'flex' : 'none', 'important');
 }
 function mapaAbrirApontar(){
   // Se nao esta autenticado, pede a senha toda vez
