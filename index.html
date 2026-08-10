@@ -6,6 +6,31 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<script>
+// Auto-atualizacao: detecta versao nova no GitHub e recarrega sozinho.
+(function(){
+  try {
+    fetch('https://api.github.com/repos/cw852mmkzr-rgb/celulas-roboticas/commits/main?_=' + Date.now(), {cache:'no-store'})
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{
+        if(!d || !d.sha) return;
+        const salva = localStorage.getItem('__app_sha');
+        if(salva && salva !== d.sha){
+          // Versao mudou — invalida cache do navegador e recarrega
+          localStorage.setItem('__app_sha', d.sha);
+          const jaRecarregou = sessionStorage.getItem('__reloaded_'+d.sha);
+          if(!jaRecarregou){
+            sessionStorage.setItem('__reloaded_'+d.sha, '1');
+            location.reload(true);
+          }
+        } else if(!salva){
+          localStorage.setItem('__app_sha', d.sha);
+        }
+      })
+      .catch(()=>{});
+  } catch(e){}
+})();
+</script>
 <title>Células Robóticas</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
