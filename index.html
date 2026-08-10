@@ -8970,12 +8970,28 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   </table></div>`;
 }
 
-// Rola TODAS as tabelas (Dia e Noite) em sincronia. Chamado pelos botoes ao lado da legenda.
+// Rola TODAS as tabelas (Dia e Noite) em sincronia. Snap na coluna de hora mais proxima.
 function mapaTblScroll(btn, dir){
   const cont = document.getElementById('mapaProducaoScroll');
   if(!cont) return;
   cont.querySelectorAll('.metas-table-wrap').forEach(el=>{
-    el.scrollBy({left: dir*260, behavior:'smooth'});
+    // Mede a largura real de uma coluna de hora (pega a primeira que encontrar)
+    const th = el.querySelector('th.col-hora, th.col-hora-noite, th.col-hora-cafe');
+    const colW = th ? Math.round(th.getBoundingClientRect().width) : 76;
+    if(colW <= 0) return;
+    const passos = 3; // 3 horas por clique
+    // Onde queremos parar: posicao atual + delta arredondada pra multiplo de colW
+    const atual = el.scrollLeft;
+    let alvo;
+    if(dir > 0){
+      // Rola pra frente: proximo múltiplo de colW >= atual + colW*passos
+      alvo = Math.ceil((atual + colW*passos) / colW) * colW;
+    } else {
+      // Rola pra tras: múltiplo anterior <= atual - colW*passos
+      alvo = Math.floor((atual - colW*passos) / colW) * colW;
+    }
+    alvo = Math.max(0, Math.min(alvo, el.scrollWidth - el.clientWidth));
+    el.scrollTo({left: alvo, behavior:'smooth'});
   });
 }
 
