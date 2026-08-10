@@ -16,12 +16,14 @@
         if(!d || !d.sha) return;
         const salva = localStorage.getItem('__app_sha');
         if(salva && salva !== d.sha){
-          // Versao mudou — invalida cache do navegador e recarrega
+          // Versao mudou — invalida cache com query string nova (mais efetivo que reload(true) em browsers modernos)
           localStorage.setItem('__app_sha', d.sha);
           const jaRecarregou = sessionStorage.getItem('__reloaded_'+d.sha);
           if(!jaRecarregou){
             sessionStorage.setItem('__reloaded_'+d.sha, '1');
-            location.reload(true);
+            const url = new URL(location.href);
+            url.searchParams.set('_v', d.sha.slice(0,7));
+            location.replace(url.toString());
           }
         } else if(!salva){
           localStorage.setItem('__app_sha', d.sha);
