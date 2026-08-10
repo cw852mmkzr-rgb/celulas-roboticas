@@ -380,12 +380,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* METAS */
 .metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; cursor: grab; overscroll-behavior-x: contain; }
-.mapa-tbl-scroller { position: relative; }
-.mapa-tbl-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 34px; height: 44px; background: #1e2530cc; border: 1px solid #3d9eff55; color: #3d9eff; font-size: 15px; font-weight: 900; cursor: pointer; border-radius: 8px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 4px 12px #0009; transition: background .14s ease, transform .12s ease; }
-.mapa-tbl-arrow:hover { background: #3d9eff; color: #fff; }
-.mapa-tbl-arrow:active { transform: translateY(-50%) scale(.9); }
-.mapa-tbl-arrow.left { left: 4px; }
-.mapa-tbl-arrow.right { right: 4px; }
+.mapa-tbl-arrow-top { background:#3d9eff20; border:1px solid #3d9eff55; color:#3d9eff; font-size:10.5px; font-weight:900; letter-spacing:.05em; cursor:pointer; padding:5px 10px; border-radius:6px; font-family:'Courier New',monospace; transition:background .14s ease, transform .12s ease; white-space:nowrap; }
+.mapa-tbl-arrow-top:hover { background:#3d9eff; color:#fff; }
+.mapa-tbl-arrow-top:active { transform:scale(.94); }
 .metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
@@ -8956,10 +8953,7 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   const subTotalTurno=maquinas.filter(m=>m).reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalGeralRod=isNoite?maquinas.filter(m=>m).reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
 
-  return`<div class="mapa-tbl-scroller">
-    <button class="mapa-tbl-arrow left" onclick="mapaTblScroll(this,-1)" title="Rolar horas para a esquerda">◀</button>
-    <button class="mapa-tbl-arrow right" onclick="mapaTblScroll(this,1)" title="Rolar horas para a direita">▶</button>
-    <div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
+  return`<div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
     <thead><tr>
       <th class="col-robo">Máquina</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
       ${horasHeader}
@@ -8973,15 +8967,16 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
       ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
     </tr></tbody>
-  </table></div></div>`;
+  </table></div>`;
 }
 
+// Rola TODAS as tabelas (Dia e Noite) em sincronia. Chamado pelos botoes ao lado da legenda.
 function mapaTblScroll(btn, dir){
-  const scroller = btn.closest('.mapa-tbl-scroller');
-  if(!scroller) return;
-  const wrap = scroller.querySelector('.metas-table-wrap');
-  if(!wrap) return;
-  wrap.scrollBy({left: dir*260, behavior:'smooth'});
+  const cont = document.getElementById('mapaProducaoScroll');
+  if(!cont) return;
+  cont.querySelectorAll('.metas-table-wrap').forEach(el=>{
+    el.scrollBy({left: dir*260, behavior:'smooth'});
+  });
 }
 
 function mapaAtualizarTotaisProducao(){
@@ -9109,11 +9104,15 @@ function renderMapaProducaoTabela(force){
         <div style="font-size:16px;font-weight:800;color:#ffb300">${totalG.toLocaleString("pt-BR")}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;font-size:10px;color:#4a5568;margin-bottom:10px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;font-size:10px;color:#4a5568;margin-bottom:10px;flex-wrap:wrap;align-items:center">
       <span><span style="color:#00e87a">■</span> Meta atingida</span>
       <span><span style="color:#ff4d4d">■</span> Abaixo</span>
       <span><span style="color:#ffb300">■</span> Café</span>
       <span><span style="color:#3d9eff">■</span> Ajuste (43#)</span>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="mapa-tbl-arrow-top" onclick="mapaTblScroll(this,-1)" title="Rolar horas para a esquerda">◀ Horas</button>
+        <button class="mapa-tbl-arrow-top" onclick="mapaTblScroll(this,1)" title="Rolar horas para a direita">Horas ▶</button>
+      </div>
     </div>
     ${window.innerWidth<=700?`
     <div style="font-size:10px;font-weight:800;color:#ffb300;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">☀ Turno Dia</div>
