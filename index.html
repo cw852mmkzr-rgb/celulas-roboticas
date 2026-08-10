@@ -9011,7 +9011,8 @@ let mapaProducaoSubTela = 'todas'; // 'todas' | 'solda_topo'
 function mapaTrocarSubTelaProducao(sub){
   mapaProducaoSubTela = sub;
   _mapaCarIdx = 0;
-  renderMapaProducaoTabela();
+  window._mapaLastScrollX = 0; // reset guard: clique é ação do usuário, sempre renderiza
+  renderMapaProducaoTabela(true);
 }
 
 function renderMapaProducaoTabela(force){
