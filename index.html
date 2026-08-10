@@ -378,6 +378,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* METAS */
 .metas-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; cursor: grab; overscroll-behavior-x: contain; }
+.mapa-tbl-scroller { position: relative; }
+.mapa-tbl-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 34px; height: 44px; background: #1e2530cc; border: 1px solid #3d9eff55; color: #3d9eff; font-size: 15px; font-weight: 900; cursor: pointer; border-radius: 8px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); box-shadow: 0 4px 12px #0009; transition: background .14s ease, transform .12s ease; }
+.mapa-tbl-arrow:hover { background: #3d9eff; color: #fff; }
+.mapa-tbl-arrow:active { transform: translateY(-50%) scale(.9); }
+.mapa-tbl-arrow.left { left: 4px; }
+.mapa-tbl-arrow.right { right: 4px; }
 .metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
 .metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
@@ -8948,7 +8954,10 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
   const subTotalTurno=maquinas.filter(m=>m).reduce((sum,m)=>sum+HORAS.reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0);
   const totalGeralRod=isNoite?maquinas.filter(m=>m).reduce((sum,m)=>sum+[...MAPA_HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[m]||{})[campoH(h)])||'').num),0),0):null;
 
-  return`<div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
+  return`<div class="mapa-tbl-scroller">
+    <button class="mapa-tbl-arrow left" onclick="mapaTblScroll(this,-1)" title="Rolar horas para a esquerda">◀</button>
+    <button class="mapa-tbl-arrow right" onclick="mapaTblScroll(this,1)" title="Rolar horas para a direita">▶</button>
+    <div class="metas-table-wrap mapa-table-wrap"><table class="metas-table">
     <thead><tr>
       <th class="col-robo">Máquina</th><th class="col-meta">Meta/h</th><th class="col-cod">Cód. Peça</th>
       ${horasHeader}
@@ -8962,7 +8971,15 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
       <td style="color:${subColor};font-weight:800;font-size:13px;background:${isNoite?'#a78bfa10':'#00e87a10'}">${subTotalTurno>0?subTotalTurno:'—'}</td>
       ${isNoite?`<td style="color:#ffb300;font-weight:900;font-size:20px;padding:10px 12px;background:#ffb30020;border-left:2px solid #ffb30060">${totalGeralRod>0?totalGeralRod.toLocaleString("pt-BR"):'—'}</td>`:''}
     </tr></tbody>
-  </table></div>`;
+  </table></div></div>`;
+}
+
+function mapaTblScroll(btn, dir){
+  const scroller = btn.closest('.mapa-tbl-scroller');
+  if(!scroller) return;
+  const wrap = scroller.querySelector('.metas-table-wrap');
+  if(!wrap) return;
+  wrap.scrollBy({left: dir*260, behavior:'smooth'});
 }
 
 function mapaAtualizarTotaisProducao(){
@@ -9046,6 +9063,10 @@ function renderMapaProducaoTabela(force){
   const scrollAntigo = document.getElementById('mapaProducaoScroll');
   const scrollTopSalvo = scrollAntigo ? scrollAntigo.scrollTop : (window._mapaProdScrollSalvo || 0);
   window._mapaProdScrollSalvo = 0; // limpa após consumir
+  // Preserva scroll horizontal das tabelas (dia e noite) — cada .metas-table-wrap tem seu próprio scroll
+  const scrollLeftsSalvos = scrollAntigo
+    ? Array.from(scrollAntigo.querySelectorAll('.metas-table-wrap')).map(el=>el.scrollLeft)
+    : [];
   wrap.innerHTML = `
   <div style="padding:10px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch;outline:none;scrollbar-width:thick" id="mapaProducaoScroll" tabindex="0">
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
@@ -9113,6 +9134,11 @@ function renderMapaProducaoTabela(force){
   requestAnimationFrame(()=>{
     if(!scrollNovo) return;
     if(scrollTopSalvo > 0) scrollNovo.scrollTop = scrollTopSalvo;
+    // Restaura scroll horizontal das tabelas (dia e noite)
+    if(scrollLeftsSalvos.length){
+      const novosWraps = scrollNovo.querySelectorAll('.metas-table-wrap');
+      novosWraps.forEach((el,i)=>{ if(scrollLeftsSalvos[i]>0) el.scrollLeft = scrollLeftsSalvos[i]; });
+    }
     const modalAberto = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
     if(!modalAberto) scrollNovo.focus({preventScroll:true});
   });
