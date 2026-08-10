@@ -9027,6 +9027,11 @@ function renderMapaProducaoTabela(force){
     if(Date.now() - _mapaLastSave < 4000){
       return;
     }
+    // Não re-renderiza se o usuário rolou a tabela horizontalmente nos últimos 5s
+    // (evita o "flash" do scroll voltar pra esquerda durante o polling)
+    if(window._mapaLastScrollX && Date.now() - window._mapaLastScrollX < 5000){
+      return;
+    }
   }
   const maquinasSlots = mapaGetMaquinasAtivas(); // chaves fixas: t_0..t_49 ou s_0..s_7
   const podeEditar = isMapaAdmin || isMapaHost || isMapaApontar;
@@ -9133,14 +9138,29 @@ function renderMapaProducaoTabela(force){
     </div>
   </div>`;
   const scrollNovo = document.getElementById('mapaProducaoScroll');
+  // Restaura scroll horizontal SINCRONO (antes do primeiro paint pra evitar flash)
+  if(scrollNovo && scrollLeftsSalvos.length){
+    const wrapsAgora = scrollNovo.querySelectorAll('.metas-table-wrap');
+    wrapsAgora.forEach((el,i)=>{ if(scrollLeftsSalvos[i]>0) el.scrollLeft = scrollLeftsSalvos[i]; });
+  }
   requestAnimationFrame(()=>{
     if(!scrollNovo) return;
     if(scrollTopSalvo > 0) scrollNovo.scrollTop = scrollTopSalvo;
-    // Restaura scroll horizontal das tabelas (dia e noite)
+    // Reforça o scroll horizontal (garantia extra caso layout tenha calculado depois)
     if(scrollLeftsSalvos.length){
       const novosWraps = scrollNovo.querySelectorAll('.metas-table-wrap');
-      novosWraps.forEach((el,i)=>{ if(scrollLeftsSalvos[i]>0) el.scrollLeft = scrollLeftsSalvos[i]; });
+      novosWraps.forEach((el,i)=>{ if(scrollLeftsSalvos[i]>0 && el.scrollLeft !== scrollLeftsSalvos[i]) el.scrollLeft = scrollLeftsSalvos[i]; });
     }
+    // Attach listener: pausa polling enquanto usuario rola horizontalmente
+    scrollNovo.querySelectorAll('.metas-table-wrap').forEach(el=>{
+      let lastLeft = el.scrollLeft;
+      el.addEventListener('scroll', ()=>{
+        if(el.scrollLeft !== lastLeft){
+          window._mapaLastScrollX = Date.now();
+          lastLeft = el.scrollLeft;
+        }
+      }, {passive:true});
+    });
     const modalAberto = document.getElementById('modalMapaLogin')&&document.getElementById('modalMapaLogin').style.display==='flex';
     if(!modalAberto) scrollNovo.focus({preventScroll:true});
   });
