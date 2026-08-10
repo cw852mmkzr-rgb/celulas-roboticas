@@ -10936,6 +10936,10 @@ function renderMapaProducao(){
   if(focadoM && ['INPUT','SELECT','TEXTAREA'].includes(focadoM.tagName) && conteudoM && conteudoM.contains(focadoM)){
     return;
   }
+  // Se o usuario rolou horizontalmente a tabela nos ultimos 6s, NAO reconstroi (evita snap-back no tablet)
+  if(mapaTelaAtual==='Produção' && window._mapaLastScrollX && Date.now() - window._mapaLastScrollX < 6000){
+    return;
+  }
   // Se estamos na aba Produção e houve save recente, não reconstrói (evita flash preto)
   if(mapaTelaAtual==='Produção' && Date.now() - _mapaLastSave < 5000){
     renderMapaProducaoTabela();
