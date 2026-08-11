@@ -913,6 +913,46 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .cfg-item{ flex-direction:column; align-items:stretch; padding:14px; gap:12px; }
   .cfg-btn{ width:100%; text-align:center; }
 }
+/* ═══════════════════════════ PRODUÇÃO MENSAL (mapa) ═══════════════════════════ */
+.pmensal-wrap{ padding:18px 22px 40px; overflow-y:auto; flex:1; min-height:0; -webkit-overflow-scrolling:touch; animation:indFadeIn .3s cubic-bezier(.4,0,.2,1); }
+.pmensal-header{ margin-bottom:14px; }
+.pmensal-titulo{ font-size:22px; font-weight:900; color:#fff; letter-spacing:.04em; }
+.pmensal-sub{ font-size:12px; color:#7a8698; margin-top:5px; }
+.pmensal-selects{ display:flex; gap:10px; margin-bottom:16px; }
+.pmensal-selects select{ background:#0f1318; border:1px solid #1e2530; border-radius:8px; padding:8px 12px; font-family:'Courier New',monospace; font-size:14px; color:#d8dde6; cursor:pointer; outline:none; }
+.pmensal-selects select:focus{ border-color:#3d9eff; }
+.pmensal-totalbox{ background:linear-gradient(180deg,#00e87a12,#00e87a06); border:1px solid #00e87a40; border-radius:12px; padding:14px 22px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+.pmensal-lbl{ font-size:11px; color:#7a8698; text-transform:uppercase; letter-spacing:.12em; margin-bottom:4px; font-weight:700; }
+.pmensal-total-val{ font-size:32px; font-weight:800; color:#00e87a; letter-spacing:.03em; font-family:'Courier New',monospace; }
+.pmensal-media-val{ font-size:22px; font-weight:800; color:#3d9eff; font-family:'Courier New',monospace; }
+.pmensal-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:10px; }
+.pmensal-card{ background:#0f1318; border:1px solid #1b2330; border-radius:10px; padding:12px 10px; text-align:center; transition:transform .16s cubic-bezier(.4,0,.2,1), border-color .16s ease, box-shadow .16s ease; animation:indCardIn .4s cubic-bezier(.34,1.56,.64,1) both; }
+.pmensal-card:hover{ transform:translateY(-2px); border-color:#3d9eff40; box-shadow:0 8px 18px -6px #0009; }
+.pmensal-card.has-value{ border-color:#00e87a40; background:linear-gradient(180deg,#00e87a08,#0f1318); }
+.pmensal-card.today{ border-color:#3d9eff; background:linear-gradient(180deg,#3d9eff18,#0f1318); box-shadow:0 0 0 1px #3d9eff40; }
+.pmensal-card-lbl{ font-size:10px; color:#7a8698; text-transform:uppercase; letter-spacing:.1em; font-weight:700; margin-bottom:6px; }
+.pmensal-card-val{ font-size:20px; font-weight:900; color:#e6ecf5; font-family:'Courier New',monospace; line-height:1; }
+.pmensal-card.has-value .pmensal-card-val{ color:#00e87a; }
+.pmensal-card.today .pmensal-card-val{ color:#3d9eff; }
+.pmensal-bar-wrap{ height:3px; background:#1b2330; border-radius:99px; overflow:hidden; margin-top:8px; }
+.pmensal-bar{ height:100%; background:linear-gradient(90deg,#00e87a,#00c060); transform-origin:left; transition:transform .4s cubic-bezier(.4,0,.2,1); }
+.pmensal-card.today .pmensal-bar{ background:linear-gradient(90deg,#3d9eff,#1e6fdb); }
+.pmensal-footer{ margin-top:16px; text-align:center; font-size:11px; color:#4a5568; font-family:'Courier New',monospace; }
+@media (max-width:900px){
+  .pmensal-grid{ grid-template-columns:repeat(5, 1fr); }
+}
+@media (max-width:700px){
+  .pmensal-wrap{ padding:12px 12px 30px; }
+  .pmensal-titulo{ font-size:18px; }
+  .pmensal-grid{ grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .pmensal-card{ padding:9px 6px; }
+  .pmensal-card-val{ font-size:16px; }
+  .pmensal-total-val{ font-size:26px; }
+  .pmensal-media-val{ font-size:18px; }
+}
+@media (max-width:450px){
+  .pmensal-grid{ grid-template-columns:repeat(3, 1fr); }
+}
 @media (max-width:700px){
   .ind-wrap{ padding:10px 10px 30px; }
   .ind-cards{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px; padding-bottom:6px; scrollbar-width:none; -webkit-overflow-scrolling:touch; margin-left:-10px; margin-right:-10px; padding-left:10px; padding-right:10px; }
@@ -7180,7 +7220,7 @@ function toggleMapaSidebar(){
 }
 
 function mapaSidebarClick(item){
-  if(item==='Mapa' || item==='Produção' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
+  if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
@@ -10720,6 +10760,88 @@ Digite RESTAURAR (em maiúsculas) para confirmar:`;
   }
 }
 
+// ═══════════════════════════ PRODUÇÃO MENSAL/DIÁRIA ═══════════════════════════
+let _pmensalMes = new Date().getMonth();
+let _pmensalAno = new Date().getFullYear();
+function _pmensalSetMes(m){ _pmensalMes = m; window._pmensalPrecisaRerender = true; renderMapaProducaoMensal(); }
+function _pmensalSetAno(a){ _pmensalAno = a; window._pmensalPrecisaRerender = true; renderMapaProducaoMensal(); }
+function _pmensalTotalDia(chave){
+  if(!mapaDados || !mapaDados.metas_dias || !mapaDados.metas_dias[chave]) return 0;
+  const dia = mapaDados.metas_dias[chave];
+  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  let total = 0;
+  Object.values(dia).forEach(rd=>{
+    if(!rd || typeof rd !== 'object') return;
+    HORAS.forEach(h=>{ total += parseCelVal(rd[campoH(h)]||'').num; });
+  });
+  return total;
+}
+function renderMapaProducaoMensal(){
+  const wrap = document.getElementById('mapaCanvasWrap');
+  if(!wrap) return;
+  const y = _pmensalAno, m = _pmensalMes;
+  const numDias = new Date(y, m+1, 0).getDate();
+  const hoje = new Date();
+  const isMesAtual = hoje.getFullYear()===y && hoje.getMonth()===m;
+  const diaHoje = isMesAtual ? hoje.getDate() : null;
+  const totals = [];
+  for(let d=1; d<=numDias; d++){ totals.push({d, v: _pmensalTotalDia(`${y}_${m}_${d}`)}); }
+  const totalMes = totals.reduce((s,t)=>s+t.v,0);
+  const diasComValor = totals.filter(t=>t.v>0).length;
+  const mediaDiaria = diasComValor>0 ? Math.round(totalMes/diasComValor) : 0;
+  const maxVal = Math.max(...totals.map(t=>t.v), 1);
+  const anoAtual = new Date().getFullYear();
+  const anosOpts = [anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===y?'selected':''}>${a}</option>`).join('');
+  const mesesOpts = MESES.map((mn,i)=>`<option value="${i}" ${i===m?'selected':''}>${mn}</option>`).join('');
+  const diasHTML = totals.map(({d,v})=>{
+    const isHoje = d===diaHoje;
+    const pct = maxVal>0 ? (v/maxVal)*100 : 0;
+    return `<div class="pmensal-card ${isHoje?'today':''} ${v>0?'has-value':''}">
+      <div class="pmensal-card-lbl">DIA ${d}</div>
+      <div class="pmensal-card-val">${v.toLocaleString('pt-BR')}</div>
+      <div class="pmensal-bar-wrap"><div class="pmensal-bar" style="transform:scaleX(${pct/100})"></div></div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML = `
+    <div class="pmensal-wrap">
+      <div class="pmensal-header">
+        <div>
+          <div class="pmensal-titulo">📅 Produção Mensal/Diária</div>
+          <div class="pmensal-sub">Total produzido por dia — soma de todas as máquinas</div>
+        </div>
+      </div>
+      <div class="pmensal-selects">
+        <select onchange="_pmensalSetMes(+this.value)">${mesesOpts}</select>
+        <select onchange="_pmensalSetAno(+this.value)">${anosOpts}</select>
+      </div>
+      <div class="pmensal-totalbox">
+        <div>
+          <div class="pmensal-lbl">Total do mês</div>
+          <div class="pmensal-total-val">${totalMes.toLocaleString('pt-BR')}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pmensal-lbl">Média diária</div>
+          <div class="pmensal-media-val">${diasComValor>0?mediaDiaria.toLocaleString('pt-BR'):'—'}</div>
+        </div>
+      </div>
+      <div class="pmensal-grid">${diasHTML}</div>
+      <div class="pmensal-footer">Somando ${diasComValor} dia(s) com produção · Clique num dia pra abrir na aba Produção</div>
+    </div>
+  `;
+  // Click nos cards → abre Produção no dia
+  wrap.querySelectorAll('.pmensal-card').forEach((el,idx)=>{
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', ()=>{
+      const d = idx+1;
+      mapaDados.metas_dia = d; mapaDados.metas_mes = m; mapaDados.metas_ano = y;
+      mapaTelaAtual = 'Produção';
+      window._pmensalPrecisaRerender = false;
+      renderMapaProducao();
+    });
+  });
+  window._pmensalPrecisaRerender = false;
+}
+
 function renderMapaConfiguracoes(){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
@@ -10946,6 +11068,10 @@ function renderMapaProducao(){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.cfg-wrap')) return;
   }
+  if(mapaTelaAtual==='Mensal'){
+    const _c = document.getElementById('mapaConteudo');
+    if(_c && _c.querySelector('.pmensal-wrap') && !window._pmensalPrecisaRerender) return;
+  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
@@ -11007,8 +11133,8 @@ function renderMapaProducao(){
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
       <div class="mapa-sidebar" id="mapaSidebar">
-        ${['Mapa','Produção','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
-          const icones = {Mapa:'📍',Produção:'🏭',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
+        ${['Mapa','Produção','Mensal','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
@@ -11016,8 +11142,8 @@ function renderMapaProducao(){
           ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
         </div>
       </div>
-      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
-        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
+        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
         <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
 
           <div style="display:flex;gap:26px;align-items:flex-start">
@@ -11059,7 +11185,7 @@ function renderMapaProducao(){
         `}
       </div>
     </div>
-    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
     <div class="mapa-toolbar">
       <button class="mapa-tool-btn ativo">⊙</button>
       <button class="mapa-tool-btn">✋</button>
@@ -11072,6 +11198,8 @@ function renderMapaProducao(){
   `;
   if(mapaTelaAtual==='Produção'){
     renderMapaProducaoTabela();
+  } else if(mapaTelaAtual==='Mensal'){
+    renderMapaProducaoMensal();
   } else if(mapaTelaAtual==='Indicadores'){
     renderMapaIndicadores();
   } else if(mapaTelaAtual==='Peças'){
