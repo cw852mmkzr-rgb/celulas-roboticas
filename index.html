@@ -13038,12 +13038,24 @@ async function saveGabDados(){
   try{
     // Carrega imagens atuais e adiciona _gabaritagem sem mexer nas fotos
     const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=imagens",{headers:HEADERS_SB});
+    if(!r.ok) throw new Error("GET falhou "+r.status);
     const d = await r.json();
     const imagens = (d&&d[0]&&d[0].imagens)||{};
     imagens._gabaritagem = gabDados;
-    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens,atualizado_em:new Date().toISOString()})});
+    const resp = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({imagens,atualizado_em:new Date().toISOString()})});
+    if(!resp.ok){
+      const err = await resp.text().catch(()=>'');
+      showToast(`Erro salvar (${resp.status}): ${err.slice(0,80)}`, true);
+      console.error('saveGabDados PATCH falhou:', resp.status, err);
+      return false;
+    }
     showToast("Salvo ✓");
-  }catch(e){showToast("Erro ao salvar",true);}
+    return true;
+  }catch(e){
+    showToast("Erro ao salvar: "+(e.message||e), true);
+    console.error('saveGabDados exception:', e);
+    return false;
+  }
 }
 
 function getGabChave(){
@@ -14047,16 +14059,25 @@ function filtrarGab(busca){
   if(count) count.textContent = `${visiveis} código(s)`;
 }
 
-function abrirModalNovaCodGab(){
+async function abrirModalNovaCodGab(){
   const cod = prompt("Código da peça/gabarito:");
   if(!cod||!cod.trim()) return;
   const chave = getGabChave();
+  const codUp = cod.trim().toUpperCase();
   if(!gabDados[chave]) gabDados[chave]={codigos:[]};
   if(!gabDados[chave].codigos) gabDados[chave].codigos=[];
-  if(gabDados[chave].codigos.includes(cod.trim())){showToast("Código já existe",true);return;}
-  gabDados[chave].codigos.push(cod.trim().toUpperCase());
-  saveGabDados();
+  // Comparação case-insensitive pra evitar duplicatas em casos diferentes
+  if(gabDados[chave].codigos.some(c=>String(c).trim().toUpperCase()===codUp)){
+    showToast("Código já existe",true);return;
+  }
+  gabDados[chave].codigos.push(codUp);
   renderGabaritagem();
+  const ok = await saveGabDados();
+  if(!ok){
+    // Rollback local se o servidor recusou
+    gabDados[chave].codigos = gabDados[chave].codigos.filter(c=>c!==codUp);
+    renderGabaritagem();
+  }
 }
 
 function excluirCodGab(cod){
