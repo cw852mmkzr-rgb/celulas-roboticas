@@ -918,6 +918,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .pmensal-header{ margin-bottom:14px; }
 .pmensal-titulo{ font-size:22px; font-weight:900; color:#fff; letter-spacing:.04em; }
 .pmensal-sub{ font-size:12px; color:#7a8698; margin-top:5px; }
+.pmensal-toggles{ display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.pmensal-toggle{ background:linear-gradient(135deg,#1e2530,#0f1318); border:2px solid #2a3040; color:#8a95a8; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:900; letter-spacing:.08em; cursor:pointer; font-family:'Courier New',monospace; transition:transform .14s ease, box-shadow .16s ease, filter .16s ease, background .18s ease, border-color .18s ease, color .18s ease; }
+.pmensal-toggle:hover{ transform:translateY(-1px); filter:brightness(1.15); color:#d8dde6; }
+.pmensal-toggle.on{ background:linear-gradient(135deg,#3d9eff,#1e6fdb); border-color:#3d9eff; color:#fff; box-shadow:0 4px 12px -2px #3d9eff66; }
+.pmensal-toggle.solda.on{ background:linear-gradient(135deg,#ffb300,#ff8c00); border-color:#ffb300; color:#1a0f00; box-shadow:0 4px 12px -2px #ffb30066; }
 .pmensal-selects{ display:flex; gap:10px; margin-bottom:16px; }
 .pmensal-selects select{ background:#0f1318; border:1px solid #1e2530; border-radius:8px; padding:8px 12px; font-family:'Courier New',monospace; font-size:14px; color:#d8dde6; cursor:pointer; outline:none; }
 .pmensal-selects select:focus{ border-color:#3d9eff; }
@@ -10763,15 +10768,19 @@ Digite RESTAURAR (em maiúsculas) para confirmar:`;
 // ═══════════════════════════ PRODUÇÃO MENSAL/DIÁRIA ═══════════════════════════
 let _pmensalMes = new Date().getMonth();
 let _pmensalAno = new Date().getFullYear();
+let _pmensalSubTela = 'todas'; // 'todas' | 'solda_topo'
 function _pmensalSetMes(m){ _pmensalMes = m; window._pmensalPrecisaRerender = true; renderMapaProducaoMensal(); }
 function _pmensalSetAno(a){ _pmensalAno = a; window._pmensalPrecisaRerender = true; renderMapaProducaoMensal(); }
-function _pmensalTotalDia(chave){
+function _pmensalSetSubTela(s){ _pmensalSubTela = s; window._pmensalPrecisaRerender = true; renderMapaProducaoMensal(); }
+function _pmensalTotalDia(chave, sub){
   if(!mapaDados || !mapaDados.metas_dias || !mapaDados.metas_dias[chave]) return 0;
   const dia = mapaDados.metas_dias[chave];
   const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const prefixo = sub==='solda_topo' ? 's_' : 't_';
   let total = 0;
-  Object.values(dia).forEach(rd=>{
+  Object.entries(dia).forEach(([slot,rd])=>{
     if(!rd || typeof rd !== 'object') return;
+    if(!String(slot).startsWith(prefixo)) return;
     HORAS.forEach(h=>{ total += parseCelVal(rd[campoH(h)]||'').num; });
   });
   return total;
@@ -10785,7 +10794,7 @@ function renderMapaProducaoMensal(){
   const isMesAtual = hoje.getFullYear()===y && hoje.getMonth()===m;
   const diaHoje = isMesAtual ? hoje.getDate() : null;
   const totals = [];
-  for(let d=1; d<=numDias; d++){ totals.push({d, v: _pmensalTotalDia(`${y}_${m}_${d}`)}); }
+  for(let d=1; d<=numDias; d++){ totals.push({d, v: _pmensalTotalDia(`${y}_${m}_${d}`, _pmensalSubTela)}); }
   const totalMes = totals.reduce((s,t)=>s+t.v,0);
   const diasComValor = totals.filter(t=>t.v>0).length;
   const mediaDiaria = diasComValor>0 ? Math.round(totalMes/diasComValor) : 0;
@@ -10809,6 +10818,10 @@ function renderMapaProducaoMensal(){
           <div class="pmensal-titulo">📅 Produção Mensal/Diária</div>
           <div class="pmensal-sub">Total produzido por dia — soma de todas as máquinas</div>
         </div>
+      </div>
+      <div class="pmensal-toggles">
+        <button class="pmensal-toggle ${_pmensalSubTela==='todas'?'on':''}" onclick="_pmensalSetSubTela('todas')">📋 MÁQUINAS</button>
+        <button class="pmensal-toggle solda ${_pmensalSubTela==='solda_topo'?'on':''}" onclick="_pmensalSetSubTela('solda_topo')">🔩 SOLDA TOPO</button>
       </div>
       <div class="pmensal-selects">
         <select onchange="_pmensalSetMes(+this.value)">${mesesOpts}</select>
@@ -10835,6 +10848,8 @@ function renderMapaProducaoMensal(){
       const d = idx+1;
       mapaViewDia = d; mapaViewMes = m; mapaViewAno = y;
       mapaDados.metas_dia = d; mapaDados.metas_mes = m; mapaDados.metas_ano = y;
+      // Sincroniza a sub-tela do Produção com a selecionada aqui
+      if(typeof mapaProducaoSubTela !== 'undefined') mapaProducaoSubTela = _pmensalSubTela;
       mapaTelaAtual = 'Produção';
       window._pmensalPrecisaRerender = false;
       renderMapaProducao();
