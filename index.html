@@ -10828,11 +10828,12 @@ function renderMapaProducaoMensal(){
       <div class="pmensal-footer">Somando ${diasComValor} dia(s) com produção · Clique num dia pra abrir na aba Produção</div>
     </div>
   `;
-  // Click nos cards → abre Produção no dia
+  // Click nos cards → abre Produção no dia (atualiza mapaViewXxx pra persistir contra polling)
   wrap.querySelectorAll('.pmensal-card').forEach((el,idx)=>{
     el.style.cursor = 'pointer';
     el.addEventListener('click', ()=>{
       const d = idx+1;
+      mapaViewDia = d; mapaViewMes = m; mapaViewAno = y;
       mapaDados.metas_dia = d; mapaDados.metas_mes = m; mapaDados.metas_ano = y;
       mapaTelaAtual = 'Produção';
       window._pmensalPrecisaRerender = false;
