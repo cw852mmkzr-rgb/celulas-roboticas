@@ -913,6 +913,66 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .cfg-item{ flex-direction:column; align-items:stretch; padding:14px; gap:12px; }
   .cfg-btn{ width:100%; text-align:center; }
 }
+/* ═══════════════════════════ PRODUÇÃO POR PEÇA (mapa) ═══════════════════════════ */
+.ppeca-wrap{ padding:18px 22px 40px; overflow-y:auto; flex:1; min-height:0; -webkit-overflow-scrolling:touch; animation:indFadeIn .3s cubic-bezier(.4,0,.2,1); }
+.ppeca-header{ margin-bottom:14px; }
+.ppeca-titulo{ font-size:22px; font-weight:900; color:#fff; letter-spacing:.04em; }
+.ppeca-sub{ font-size:12px; color:#7a8698; margin-top:5px; }
+.ppeca-filtros{ background:#0f1318; border:1px solid #1e2530; border-radius:10px; padding:11px 16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.ppeca-sel-wrap{ display:flex; align-items:center; gap:6px; }
+.ppeca-sel-wrap label{ font-size:11px; color:#7a8698; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+.ppeca-sel-wrap select{ background:#080b0f; border:1px solid #1e2530; color:#d8dde6; border-radius:6px; padding:6px 10px; font-family:'Courier New',monospace; font-size:13px; cursor:pointer; outline:none; }
+.ppeca-btn-ano{ background:#1e2530; border:1px solid #2a3040; color:#9ca3af; border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; transition:all .14s ease; }
+.ppeca-btn-ano.on{ background:#3d9eff25; border-color:#3d9eff60; color:#3d9eff; }
+.ppeca-kpis{ margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.ppeca-kpi{ padding:5px 14px; border-radius:6px; font-size:12px; font-weight:700; font-family:'Courier New',monospace; }
+.ppeca-kpi.cods{ background:#ffb30015; border:1px solid #ffb30030; color:#ffb300; }
+.ppeca-kpi.tot{ background:#00e87a15; border:1px solid #00e87a30; color:#00e87a; }
+.ppeca-busca{ background:#0f1318; border:1px solid #1e2530; border-radius:10px; padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+.ppeca-busca span{ font-size:16px; }
+.ppeca-busca input{ flex:1; background:transparent; border:none; font-family:'Courier New',monospace; font-size:15px; color:#d8dde6; outline:none; }
+.ppeca-busca input::placeholder{ color:#3a4250; }
+.ppeca-busca button{ background:none; border:none; color:#4a5568; cursor:pointer; font-size:16px; padding:0 4px; }
+.ppeca-busca button:hover{ color:#8a95a8; }
+.ppeca-empty{ text-align:center; color:#2a3040; padding:40px 20px; font-size:13px; font-family:'Courier New',monospace; }
+.ppeca-empty b{ color:#ffb300; }
+.ppeca-card{ background:#0f1318; border:1px solid #1e2530; border-radius:12px; padding:16px 18px; margin-bottom:12px; animation:indCardIn .4s cubic-bezier(.34,1.56,.64,1) both; }
+.ppeca-head{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.ppeca-lbl{ font-size:11.5px; color:#8a95a8; text-transform:uppercase; letter-spacing:.1em; margin-bottom:4px; font-weight:700; }
+.ppeca-col-cod{ min-width:100px; }
+.ppeca-cod{ font-size:20px; font-weight:900; color:#ffb300; font-family:'Courier New',monospace; }
+.ppeca-col-spark{ flex:1; min-width:200px; }
+.ppeca-spark{ display:flex; align-items:flex-end; gap:2px; height:26px; }
+.ppeca-col-prop{ min-width:140px; }
+.ppeca-prop-bar{ background:#1e2530; border-radius:99px; height:6px; overflow:hidden; }
+.ppeca-prop-bar > div{ height:100%; border-radius:99px; transform-origin:left; transition:width .4s cubic-bezier(.4,0,.2,1); }
+.ppeca-prop-pct{ font-size:11.5px; color:#6b7788; margin-top:4px; font-family:'Courier New',monospace; }
+.ppeca-col-tot{ text-align:right; min-width:90px; }
+.ppeca-tot{ font-size:26px; font-weight:900; font-family:'Courier New',monospace; }
+.ppeca-maq-wrap{ margin-top:10px; padding-top:10px; border-top:1px solid #1e2530; }
+.ppeca-maq-title{ font-size:11.5px; color:#8a95a8; text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px; font-weight:700; }
+.ppeca-maq-grid{ display:flex; flex-wrap:wrap; gap:8px; }
+.ppeca-maq-card{ background:#080b0f; border:1px solid #1e2530; border-radius:8px; padding:8px 12px; min-width:130px; flex:1; }
+.ppeca-maq-nome{ font-size:12px; color:#00e87a; font-weight:700; margin-bottom:4px; font-family:'Courier New',monospace; }
+.ppeca-maq-val{ font-size:18px; font-weight:800; color:#d8dde6; font-family:'Courier New',monospace; }
+.ppeca-maq-bar{ margin-top:4px; background:#1e2530; border-radius:99px; height:4px; overflow:hidden; }
+.ppeca-maq-bar > div{ height:100%; background:#00e87a; border-radius:99px; }
+.ppeca-maq-pct{ font-size:11px; color:#6b7788; margin-top:4px; font-family:'Courier New',monospace; }
+.ppeca-maq-tot{ margin-top:8px; background:#00e87a15; border:1px solid #00e87a30; border-radius:8px; padding:8px 14px; display:flex; justify-content:space-between; align-items:center; font-family:'Courier New',monospace; }
+.ppeca-maq-tot span:first-child{ font-size:12px; color:#8a95a8; text-transform:uppercase; letter-spacing:.1em; }
+.ppeca-maq-tot span:last-child{ font-size:20px; font-weight:900; color:#00e87a; }
+.ppeca-maq-single{ margin-top:8px; font-size:12px; color:#6b7788; }
+.ppeca-maq-single b{ color:#00e87a; }
+@media (max-width:700px){
+  .ppeca-wrap{ padding:12px 12px 30px; }
+  .ppeca-titulo{ font-size:18px; }
+  .ppeca-cod{ font-size:17px; }
+  .ppeca-tot{ font-size:22px; }
+  .ppeca-col-spark{ min-width:0; width:100%; order:5; }
+  .ppeca-col-prop{ min-width:0; flex:1; }
+  .ppeca-maq-card{ min-width:calc(50% - 4px); }
+  .ppeca-kpis{ margin-left:0; width:100%; }
+}
 /* ═══════════════════════════ PRODUÇÃO MENSAL (mapa) ═══════════════════════════ */
 .pmensal-wrap{ padding:18px 22px 40px; overflow-y:auto; flex:1; min-height:0; -webkit-overflow-scrolling:touch; animation:indFadeIn .3s cubic-bezier(.4,0,.2,1); }
 .pmensal-header{ margin-bottom:14px; }
@@ -7225,7 +7285,7 @@ function toggleMapaSidebar(){
 }
 
 function mapaSidebarClick(item){
-  if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
+  if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Prod. Peça' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
@@ -10765,6 +10825,199 @@ Digite RESTAURAR (em maiúsculas) para confirmar:`;
   }
 }
 
+// ═══════════════════════════ PRODUÇÃO POR PEÇA ═══════════════════════════
+let _ppecaMes = new Date().getMonth();
+let _ppecaAno = new Date().getFullYear();
+let _ppecaVerAno = false;
+let _ppecaBusca = '';
+function _ppecaSetMes(m){ _ppecaMes=m; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetAno(a){ _ppecaAno=a; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaToggleVerAno(){ _ppecaVerAno=!_ppecaVerAno; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetBusca(v){
+  _ppecaBusca = (v||'').toLowerCase().trim();
+  const cont = document.getElementById('ppecaResultado');
+  if(cont) cont.innerHTML = _ppecaRenderLista();
+}
+function _ppecaCalcular(){
+  // Retorna: {cod: {total, dias:{chave:qtd}, maquinas:{nome:qtd}}}
+  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const out = {};
+  if(!mapaDados || !mapaDados.metas_dias) return out;
+  Object.entries(mapaDados.metas_dias).forEach(([chave, dia])=>{
+    if(!dia) return;
+    Object.entries(dia).forEach(([slot, rd])=>{
+      if(!rd || typeof rd!=='object') return;
+      const cod = (rd.cod||'').trim();
+      if(!cod || cod==='—') return;
+      const nome = (rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
+      let totalSlot = 0;
+      HORAS.forEach(h=>{ totalSlot += parseCelVal(rd[campoH(h)]||'').num; });
+      if(totalSlot<=0) return;
+      if(!out[cod]) out[cod] = {total:0, dias:{}, maquinas:{}};
+      out[cod].total += totalSlot;
+      out[cod].dias[chave] = (out[cod].dias[chave]||0) + totalSlot;
+      out[cod].maquinas[nome] = (out[cod].maquinas[nome]||0) + totalSlot;
+    });
+  });
+  return out;
+}
+function _ppecaRenderLista(){
+  const dados = _ppecaCalcular();
+  const y = _ppecaAno, m = _ppecaMes, verAno = _ppecaVerAno;
+  const filtrados = {};
+  Object.keys(dados).forEach(cod=>{
+    if(_ppecaBusca && !cod.toLowerCase().includes(_ppecaBusca)) return;
+    let total = 0; const diasMes = {}; const mesesAno = {};
+    Object.entries(dados[cod].dias).forEach(([chave, qtd])=>{
+      const [aa,mm,dd] = chave.split('_').map(Number);
+      if(aa !== y) return;
+      if(verAno){ mesesAno[mm] = (mesesAno[mm]||0) + qtd; total += qtd; }
+      else if(mm === m){ diasMes[dd] = (diasMes[dd]||0) + qtd; total += qtd; }
+    });
+    // Maquinas com produção nesse periodo
+    const maqPeriodo = {};
+    Object.entries(dados[cod].dias).forEach(()=>{}); // noop
+    // Refaz: agregado por maquina só do periodo escolhido
+    const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+    Object.entries(mapaDados.metas_dias||{}).forEach(([chave, dia])=>{
+      const [aa,mm,dd] = chave.split('_').map(Number);
+      if(aa !== y) return;
+      if(!verAno && mm !== m) return;
+      if(!dia) return;
+      Object.entries(dia).forEach(([slot, rd])=>{
+        if(!rd || (rd.cod||'').trim() !== cod) return;
+        const nome = (rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
+        let s = 0;
+        HORAS.forEach(h=>{ s += parseCelVal(rd[campoH(h)]||'').num; });
+        if(s>0) maqPeriodo[nome] = (maqPeriodo[nome]||0) + s;
+      });
+    });
+    if(total>0) filtrados[cod] = {total, dias:diasMes, meses:mesesAno, maquinas:maqPeriodo};
+  });
+  const codigos = Object.keys(filtrados).sort((a,b)=>filtrados[b].total - filtrados[a].total);
+  if(!codigos.length){
+    return `<div class="ppeca-empty">${_ppecaBusca ? `Nenhuma peça encontrada para "<b>${esc(_ppecaBusca)}</b>"` : 'Nenhum código com produção neste período.'}</div>`;
+  }
+  const maxTotal = Math.max(...codigos.map(c=>filtrados[c].total), 1);
+  return codigos.map(cod=>{
+    const {total, dias, meses, maquinas} = filtrados[cod];
+    const pct = Math.round(total/maxTotal*100);
+    let sparkBars, sparkLabel;
+    if(verAno){
+      const vals = Array.from({length:12}, (_,i)=>meses[i]||0);
+      const mx = Math.max(...vals, 1);
+      sparkLabel = 'Meses do ano';
+      sparkBars = vals.map((v,i)=>{
+        const h = v>0 ? Math.max(Math.round(v/mx*22),3) : 1;
+        return `<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${h}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+      }).join('');
+    } else {
+      const vals = Array.from({length:31}, (_,i)=>dias[i+1]||0);
+      const mx = Math.max(...vals, 1);
+      sparkLabel = 'Dias do mês';
+      sparkBars = vals.map((v,i)=>{
+        const h = v>0 ? Math.max(Math.round(v/mx*22),3) : 1;
+        return `<div title="Dia ${i+1}: ${v.toLocaleString('pt-BR')}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
+      }).join('');
+    }
+    const maqOrd = Object.entries(maquinas).sort((a,b)=>b[1]-a[1]);
+    const maqHTML = maqOrd.length > 1
+      ? `<div class="ppeca-maq-wrap">
+          <div class="ppeca-maq-title">Produção por máquina</div>
+          <div class="ppeca-maq-grid">
+            ${maqOrd.map(([nome,qtd])=>{
+              const pctR = Math.round(qtd/total*100);
+              return `<div class="ppeca-maq-card">
+                <div class="ppeca-maq-nome">🏭 Máq. ${esc(nome)}</div>
+                <div class="ppeca-maq-val">${qtd.toLocaleString('pt-BR')}</div>
+                <div class="ppeca-maq-bar"><div style="width:${pctR}%"></div></div>
+                <div class="ppeca-maq-pct">${pctR}% do total</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div class="ppeca-maq-tot">
+            <span>${maqOrd.length} máquina(s) · Total combinado</span>
+            <span>${total.toLocaleString('pt-BR')}</span>
+          </div>
+        </div>`
+      : maqOrd.length === 1
+        ? `<div class="ppeca-maq-single">🏭 Produzido pela Máq. <b>${esc(maqOrd[0][0])}</b></div>`
+        : '';
+    const corAcento = verAno ? '#3d9eff' : '#00e87a';
+    return `<div class="ppeca-card">
+      <div class="ppeca-head">
+        <div class="ppeca-col-cod">
+          <div class="ppeca-lbl">Código</div>
+          <div class="ppeca-cod">${esc(cod)}</div>
+        </div>
+        <div class="ppeca-col-spark">
+          <div class="ppeca-lbl">${sparkLabel}</div>
+          <div class="ppeca-spark">${sparkBars}</div>
+        </div>
+        <div class="ppeca-col-prop">
+          <div class="ppeca-lbl">Proporção</div>
+          <div class="ppeca-prop-bar"><div style="width:${pct}%;background:${corAcento}"></div></div>
+          <div class="ppeca-prop-pct">${pct}% do maior</div>
+        </div>
+        <div class="ppeca-col-tot">
+          <div class="ppeca-lbl">Total ${verAno?'no ano':''}</div>
+          <div class="ppeca-tot" style="color:${corAcento}">${total.toLocaleString('pt-BR')}</div>
+        </div>
+      </div>
+      ${maqHTML}
+    </div>`;
+  }).join('');
+}
+function renderMapaProdPeca(){
+  const wrap = document.getElementById('mapaCanvasWrap');
+  if(!wrap) return;
+  if(!mapaDados){ wrap.innerHTML = '<div class="ppeca-empty" style="padding:60px">Carregando...</div>'; return; }
+  const anoAtual = new Date().getFullYear();
+  const y = _ppecaAno, m = _ppecaMes, verAno = _ppecaVerAno;
+  const mesesOpts = MESES.map((mn,i)=>`<option value="${i}" ${i===m?'selected':''}>${mn}</option>`).join('');
+  const anosOpts = [anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===y?'selected':''}>${a}</option>`).join('');
+  const dados = _ppecaCalcular();
+  // Total geral para os KPIs
+  let totalGeral = 0; let numCodigos = 0;
+  Object.entries(dados).forEach(([cod, d])=>{
+    let sub = 0;
+    Object.entries(d.dias).forEach(([chave, qtd])=>{
+      const [aa,mm] = chave.split('_').map(Number);
+      if(aa !== y) return;
+      if(!verAno && mm !== m) return;
+      sub += qtd;
+    });
+    if(sub>0){ totalGeral += sub; numCodigos++; }
+  });
+  wrap.innerHTML = `
+    <div class="ppeca-wrap">
+      <div class="ppeca-header">
+        <div>
+          <div class="ppeca-titulo">📈 Produção por Peça</div>
+          <div class="ppeca-sub">Leitura automática da tabela de Produção${verAno?` — <b style="color:#3d9eff">ano ${y} inteiro</b>`:''}</div>
+        </div>
+      </div>
+      <div class="ppeca-filtros">
+        <span style="font-size:16px">📅</span>
+        ${!verAno?`<div class="ppeca-sel-wrap"><label>Mês</label><select onchange="_ppecaSetMes(+this.value)">${mesesOpts}</select></div>`:''}
+        <div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppecaSetAno(+this.value)">${anosOpts}</select></div>
+        <button class="ppeca-btn-ano ${verAno?'on':''}" onclick="_ppecaToggleVerAno()">${verAno?'✓ Total do Ano':'∑ Ver Total do Ano'}</button>
+        <div class="ppeca-kpis">
+          <div class="ppeca-kpi cods">${numCodigos} código(s)</div>
+          <div class="ppeca-kpi tot">∑ ${totalGeral.toLocaleString('pt-BR')} peças${verAno?` em ${y}`:''}</div>
+        </div>
+      </div>
+      <div class="ppeca-busca">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar código de peça..." value="${esc(_ppecaBusca)}" oninput="_ppecaSetBusca(this.value)" autocomplete="off">
+        <button onclick="document.querySelector('.ppeca-busca input').value='';_ppecaSetBusca('')" title="Limpar">✕</button>
+      </div>
+      <div id="ppecaResultado">${_ppecaRenderLista()}</div>
+    </div>
+  `;
+  window._ppecaPrecisaRerender = false;
+}
+
 // ═══════════════════════════ PRODUÇÃO MENSAL/DIÁRIA ═══════════════════════════
 let _pmensalMes = new Date().getMonth();
 let _pmensalAno = new Date().getFullYear();
@@ -11088,6 +11341,10 @@ function renderMapaProducao(){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.pmensal-wrap') && !window._pmensalPrecisaRerender) return;
   }
+  if(mapaTelaAtual==='Prod. Peça'){
+    const _c = document.getElementById('mapaConteudo');
+    if(_c && _c.querySelector('.ppeca-wrap') && !window._ppecaPrecisaRerender) return;
+  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
@@ -11149,8 +11406,8 @@ function renderMapaProducao(){
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
       <div class="mapa-sidebar" id="mapaSidebar">
-        ${['Mapa','Produção','Mensal','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
-          const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
+        ${['Mapa','Produção','Mensal','Prod. Peça','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅','Prod. Peça':'📈',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
@@ -11158,8 +11415,8 @@ function renderMapaProducao(){
           ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
         </div>
       </div>
-      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
-        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
+        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
         <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
 
           <div style="display:flex;gap:26px;align-items:flex-start">
@@ -11201,7 +11458,7 @@ function renderMapaProducao(){
         `}
       </div>
     </div>
-    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
+    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
     <div class="mapa-toolbar">
       <button class="mapa-tool-btn ativo">⊙</button>
       <button class="mapa-tool-btn">✋</button>
@@ -11216,6 +11473,8 @@ function renderMapaProducao(){
     renderMapaProducaoTabela();
   } else if(mapaTelaAtual==='Mensal'){
     renderMapaProducaoMensal();
+  } else if(mapaTelaAtual==='Prod. Peça'){
+    renderMapaProdPeca();
   } else if(mapaTelaAtual==='Indicadores'){
     renderMapaIndicadores();
   } else if(mapaTelaAtual==='Peças'){
