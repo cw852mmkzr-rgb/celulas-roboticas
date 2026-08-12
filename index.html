@@ -11228,15 +11228,6 @@ function renderMapaIndicadores(force){
         ${_indBarsHoriz(topMaquinas, 20, 'maquina')}
       </div>
       <div class="ind-sec">
-        <div class="ind-sec-title">📦 Produção por peça <span class="ind-sec-count">${topPecas.length}</span><span class="ind-sec-hint">toque no código p/ detalhe</span></div>
-        <div class="ind-pd-busca">
-          <span>🔍</span>
-          <input type="text" placeholder="Buscar código de peça..." value="${esc(_indBuscaPeca)}" oninput="_indBuscarPeca(this.value)" autocomplete="off">
-          <button onclick="document.querySelector('.ind-pd-busca input').value='';_indBuscarPeca('')" title="Limpar">✕</button>
-        </div>
-        <div id="indPecasDetalheContainer">${_indPecasDetalheHTML(atual)}</div>
-      </div>
-      <div class="ind-sec">
         <div class="ind-sec-title">⚖️ Comparativo lado a lado</div>
         ${_indComparativoHTML(atual)}
       </div>
