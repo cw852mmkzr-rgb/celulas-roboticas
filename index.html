@@ -7289,6 +7289,7 @@ function toggleMapaSidebar(){
 function mapaSidebarClick(item){
   if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Prod. Peça' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Relatórios' || item==='Configurações'){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
+    if(item==='Relatórios' && typeof _relAuthEntrada==='function' && !_relAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
     renderMapaProducao();
@@ -16855,6 +16856,24 @@ async function dispEncerrarTodos(){
   `;
   document.head.appendChild(s);
 })();
+
+// ── Auth ──
+const REL_PW = "3102";
+let _relAuthOk = false;
+function _relAuthEntrada(){
+  if(_relAuthOk) return true;
+  // Admin geral do sistema entra sem senha
+  try{ if(typeof isAdmin!=='undefined' && isAdmin){ _relAuthOk = true; return true; } }catch(e){}
+  try{ if(typeof isMapaHost!=='undefined' && isMapaHost){ _relAuthOk = true; return true; } }catch(e){}
+  const pw = prompt("🔒 Senha para acessar Relatórios:");
+  if(pw === null) return false;
+  const ok = pw === REL_PW
+    || (typeof ADMIN_PW==='string' && pw === ADMIN_PW)
+    || (typeof ADMIN_METAS_PW==='string' && pw === ADMIN_METAS_PW);
+  if(ok){ _relAuthOk = true; return true; }
+  showToast("Senha incorreta", true);
+  return false;
+}
 
 // ── Estado ──
 let _relPeca = null;
