@@ -16994,6 +16994,10 @@ async function _relSalvarDados(){
 }
 
 // ── Motor de cálculo por peça ──
+// Consulta as DUAS fontes de produção:
+//   (a) mapaDados.metas_dias — máquinas físicas do Mapa de Produção (slots s_/t_ com nome tipo "244","245")
+//   (b) celulas[<meta_key>].metas_dias — robôs 600-611 das Células Robóticas
+// Um código de peça pode ser apontado em qualquer uma (ou nas duas — são fisicamente diferentes, não há dupla contagem)
 function _relCalcular(codigoPeca, chaves){
   const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
   const cod = String(codigoPeca||'').trim().toUpperCase();
@@ -17004,10 +17008,20 @@ function _relCalcular(codigoPeca, chaves){
   const porRobo = {};
   const diasComProd = new Set();
   const horasComProd = new Set();
+  const acumular = (chave, nome, valor, hora) => {
+    totalPecas += valor;
+    porHora[hora] = (porHora[hora]||0) + valor;
+    horasComProd.add(chave+'_'+hora);
+    if(!porRobo[nome]) porRobo[nome] = {total:0, dias:new Set()};
+    porRobo[nome].total += valor;
+    porRobo[nome].dias.add(chave);
+    porDia[chave] = (porDia[chave]||0) + valor;
+    diasComProd.add(chave);
+  };
+  // (a) Fonte 1: Mapa de Produção — mapaDados.metas_dias
   chaves.forEach(chave => {
     const dia = mapaDados && mapaDados.metas_dias && mapaDados.metas_dias[chave];
     if(!dia) return;
-    let totDia = 0;
     Object.entries(dia).forEach(([slot, rd]) => {
       const rdCod = String((rd && rd.cod)||'').trim().toUpperCase();
       if(rdCod !== cod) return;
@@ -17015,22 +17029,34 @@ function _relCalcular(codigoPeca, chaves){
       if(!nome) return;
       HORAS.forEach(h => {
         const {num} = parseCelVal((rd && rd[campoH(h)])||'');
-        if(num>0){
-          totDia += num;
-          totalPecas += num;
-          porHora[h] = (porHora[h]||0) + num;
-          horasComProd.add(chave+'_'+h);
-          if(!porRobo[nome]) porRobo[nome] = {total:0, dias:new Set()};
-          porRobo[nome].total += num;
-          porRobo[nome].dias.add(chave);
-        }
+        if(num>0) acumular(chave, 'Máq. '+nome, num, h);
       });
     });
-    if(totDia > 0){
-      porDia[chave] = totDia;
-      diasComProd.add(chave);
-    }
   });
+  // (b) Fonte 2: Células Robóticas — celulas[metaKey].metas_dias (robôs 600-611)
+  try{
+    if(typeof celulas!=='undefined' && celulas){
+      const metaKey = (typeof getCellTipo==='function')
+        ? Object.keys(celulas).find(k => getCellTipo(k)==='metas')
+        : null;
+      const metaCel = metaKey ? celulas[metaKey] : null;
+      if(metaCel && metaCel.metas_dias){
+        chaves.forEach(chave => {
+          const dia = metaCel.metas_dias[chave];
+          if(!dia) return;
+          Object.entries(dia).forEach(([robo, rd]) => {
+            const rdCod = String((rd && rd.cod)||'').trim().toUpperCase();
+            if(rdCod !== cod) return;
+            const nomeRobo = 'Robô '+robo;
+            HORAS.forEach(h => {
+              const {num} = parseCelVal((rd && rd[campoH(h)])||'');
+              if(num>0) acumular(chave, nomeRobo, num, h);
+            });
+          });
+        });
+      }
+    }
+  }catch(e){ console.warn('rel: erro ao ler celulas[meta]', e); }
   let melhorDia = null, piorDia = null;
   Object.entries(porDia).forEach(([k, v]) => {
     if(!melhorDia || v > melhorDia.total) melhorDia = {chave:k, total:v};
