@@ -11338,6 +11338,10 @@ function renderMapaProducao(){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.ppeca-wrap') && !window._ppecaPrecisaRerender) return;
   }
+  if(mapaTelaAtual==='Relatórios'){
+    const _c = document.getElementById('mapaConteudo');
+    if(_c && _c.querySelector('.rel-wrap')) return;
+  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
