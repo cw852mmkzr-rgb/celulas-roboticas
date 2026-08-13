@@ -3775,6 +3775,15 @@ function renderSidebar(){
       <div class="dot dot-green"></div>
     </div>`;
   }
+  // Aba Relatórios — todos veem, mas exige senha ao clicar
+  html+=`<div class="cell-item ${selected==='__relatorios'?'active':''}" onclick="selectCell('__relatorios')">
+    <div class="cell-num" style="font-size:15px">📄</div>
+    <div class="cell-info">
+      <div class="cell-name">Relatórios</div>
+      <div class="cell-peca">Produção por peça</div>
+    </div>
+    <div class="dot dot-green"></div>
+  </div>`;
   if(robos.length>0){
     html+=`<div class="sidebar-group-label" style="border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
     html+=robosVisiveis.map(itemHTML).join('');
@@ -4564,6 +4573,10 @@ function renderDetail(){
 
 function _renderDetailInner(){
   if(typeof metaApUpdateFab==='function') metaApUpdateFab();
+  if(selected==='__relatorios'){
+    if(typeof _relAuthEntrada==='function' && !_relAuthEntrada()){ selected='__maparobos'; renderSidebar(); renderMapaRobos(); return; }
+    renderRelatoriosApp(); return;
+  }
   if(selected==='__equipes'){
     if(!(isAdmin||isAdminMetas)){ selected='__maparobos'; renderMapaRobos(); return; }
     renderEquipes(); return;
@@ -7287,9 +7300,8 @@ function toggleMapaSidebar(){
 }
 
 function mapaSidebarClick(item){
-  if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Prod. Peça' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Relatórios' || item==='Configurações'){
+  if(item==='Mapa' || item==='Produção' || item==='Mensal' || item==='Prod. Peça' || item==='Indicadores' || item==='Peças' || item==='Catálogo' || item==='Equipes' || item==='Configurações'){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
-    if(item==='Relatórios' && typeof _relAuthEntrada==='function' && !_relAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
     renderMapaProducao();
@@ -11339,10 +11351,6 @@ function renderMapaProducao(){
     const _c = document.getElementById('mapaConteudo');
     if(_c && _c.querySelector('.ppeca-wrap') && !window._ppecaPrecisaRerender) return;
   }
-  if(mapaTelaAtual==='Relatórios'){
-    const _c = document.getElementById('mapaConteudo');
-    if(_c && _c.querySelector('.rel-wrap')) return;
-  }
   // ── Proteção de scroll e foco ──
   const focadoM = document.activeElement;
   const conteudoM = document.getElementById("mapaConteudo");
@@ -11404,8 +11412,8 @@ function renderMapaProducao(){
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
       <div class="mapa-sidebar" id="mapaSidebar">
-        ${['Mapa','Produção','Mensal','Prod. Peça','Peças','Catálogo','Equipes','Indicadores','Relatórios','Manutenção','Planilha','Configurações'].map(it=>{
-          const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅','Prod. Peça':'📈',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Relatórios:'📄',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
+        ${['Mapa','Produção','Mensal','Prod. Peça','Peças','Catálogo','Equipes','Indicadores','Manutenção','Planilha','Configurações'].map(it=>{
+          const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅','Prod. Peça':'📈',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
         }).join('')}
         <div class="mapa-legend">
@@ -11413,8 +11421,8 @@ function renderMapaProducao(){
           ${Object.values(MAPA_STATUS_INFO).map(s=>`<div class="mapa-legend-item"><span class="mapa-legend-dot" style="background:${s.cor}"></span>${s.label}</div>`).join('')}
         </div>
       </div>
-      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Relatórios'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
-        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Relatórios'||mapaTelaAtual==='Configurações') ? '' : `
+      <div class="mapa-canvas-wrap" id="mapaCanvasWrap" style="${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações')?'padding:0;display:flex;flex-direction:column;':''}">
+        ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
         <div class="mapa-canvas" id="mapaCanvas" style="display:flex;flex-direction:column;gap:20px">
 
           <div style="display:flex;gap:26px;align-items:flex-start">
@@ -11456,7 +11464,7 @@ function renderMapaProducao(){
         `}
       </div>
     </div>
-    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Relatórios'||mapaTelaAtual==='Configurações') ? '' : `
+    ${(mapaTelaAtual==='Produção'||mapaTelaAtual==='Mensal'||mapaTelaAtual==='Prod. Peça'||mapaTelaAtual==='Indicadores'||mapaTelaAtual==='Peças'||mapaTelaAtual==='Catálogo'||mapaTelaAtual==='Equipes'||mapaTelaAtual==='Configurações') ? '' : `
     <div class="mapa-toolbar">
       <button class="mapa-tool-btn ativo">⊙</button>
       <button class="mapa-tool-btn">✋</button>
@@ -11481,8 +11489,6 @@ function renderMapaProducao(){
     renderMapaCatalogo();
   } else if(mapaTelaAtual==='Equipes'){
     renderMapaEquipes();
-  } else if(mapaTelaAtual==='Relatórios'){
-    renderMapaRelatorios();
   } else if(mapaTelaAtual==='Configurações'){
     renderMapaConfiguracoes();
   } else {
@@ -17050,24 +17056,30 @@ function _relCalcular(codigoPeca, chaves){
 }
 
 // ── Render principal ──
-async function renderMapaRelatorios(){
-  const wrap = document.getElementById('mapaCanvasWrap');
+// Retorna o container hospedeiro da aba (mainPanel no sistema principal)
+function _relHost(){ return document.getElementById('mainPanel'); }
+
+async function renderRelatoriosApp(){
+  const wrap = _relHost();
   if(!wrap) return;
-  // Se já renderizou, não rebuild no polling (evita piscar/reset de scroll)
+  // Se já renderizou, não rebuild (evita piscar/reset de scroll no polling)
   if(wrap.querySelector('.rel-wrap')) return;
-  wrap.innerHTML = `<div class="rel-wrap" id="relWrap"><div class="rel-loading"><div class="rel-loading-sp"></div><div class="rel-loading-t">Carregando dados...</div></div></div>`;
-  // Garante que celulas (cadastro antigo) esteja carregado — o Eduardo usa esse cadastro
+  wrap.innerHTML = `<div class="rel-wrap" id="relWrap"><div class="rel-loading"><div class="rel-loading-sp"></div><div class="rel-loading-t">Carregando dados de produção...</div></div></div>`;
+  // Garante que mapaDados (fonte de metas_dias e cadastro moderno) esteja carregado
   try{
-    if(typeof celulas==='undefined' || !celulas || Object.keys(celulas).length===0){
-      if(typeof loadFromAPI==='function') await loadFromAPI();
+    if(typeof mapaDados==='undefined' || !mapaDados){
+      if(typeof loadMapaDados==='function') await loadMapaDados();
     }
-  }catch(e){ console.warn('rel: loadFromAPI falhou', e); }
+  }catch(e){ console.warn('rel: loadMapaDados falhou', e); }
   await _relCarregarDados();
   _relRender();
 }
 
+// Alias legado (caso algo antigo ainda chame o nome do Mapa)
+async function renderMapaRelatorios(){ return renderRelatoriosApp(); }
+
 function _relRender(){
-  const wrap = document.getElementById('mapaCanvasWrap');
+  const wrap = _relHost();
   if(!wrap) return;
   const scrollTopSalvo = (wrap.querySelector('.rel-wrap')||{}).scrollTop || 0;
   const pecaSel = _relPeca;
