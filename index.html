@@ -16765,15 +16765,20 @@ async function dispEncerrarTodos(){
     .rel-hm::-webkit-scrollbar{ height:6px; }
     .rel-hm::-webkit-scrollbar-thumb{ background:#2a3040; border-radius:3px; }
     .rel-block{ overflow:hidden; }
-    .rel-hm-mes{ display:flex; flex-direction:column; gap:6px; }
-    .rel-hm-mes-t{ font-size:10px; color:#8a95a8; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
-    .rel-hm-grid{ display:grid; grid-template-columns:auto repeat(7, 1fr); gap:4px; align-items:center; }
-    .rel-hm-dow{ font-size:9px; color:#4a5568; text-align:center; font-family:'Courier New',monospace; letter-spacing:.05em; padding:2px 0; }
-    .rel-hm-lbl{ font-size:9px; color:#4a5568; text-align:right; padding-right:6px; font-family:'Courier New',monospace; }
-    .rel-hm-cell{ aspect-ratio:1; min-height:16px; border-radius:3px; background:#08110c; transition:transform .14s ease, box-shadow .14s ease; position:relative; cursor:default; }
-    .rel-hm-cell.has:hover{ transform:scale(1.15); box-shadow:0 4px 10px -2px #00e87a55; z-index:2; }
-    .rel-hm-cell.fora{ background:transparent; }
-    .rel-hm-tip{ position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#0f1318; border:1px solid #3d9eff40; color:#fff; padding:5px 9px; border-radius:6px; font-size:10.5px; font-weight:700; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .14s ease; font-family:'Courier New',monospace; z-index:3; }
+    .rel-hm-mes{ display:flex; flex-direction:column; gap:10px; }
+    .rel-hm-mes-t{ font-size:13px; color:#d8dde6; text-transform:uppercase; letter-spacing:.1em; font-weight:900; }
+    .rel-hm-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; align-items:stretch; }
+    .rel-hm-cell{ min-height:78px; border-radius:8px; background:#08110c; transition:transform .14s ease, box-shadow .14s ease; position:relative; cursor:default; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 4px; gap:2px; text-align:center; overflow:hidden; }
+    .rel-hm-cell.has:hover{ transform:scale(1.04); box-shadow:0 6px 16px -4px #00e87a55; z-index:2; }
+    .rel-hm-cell.fora{ background:transparent; box-shadow:none; }
+    .rel-hm-cell-dow{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; font-family:'Courier New',monospace; opacity:.85; line-height:1; }
+    .rel-hm-cell-num{ font-size:26px; font-weight:900; font-family:'Courier New',monospace; line-height:1; letter-spacing:-.01em; }
+    .rel-hm-cell-qtd{ font-size:11.5px; font-weight:800; font-family:'Courier New',monospace; line-height:1; opacity:.9; margin-top:1px; }
+    .rel-hm-cell-qtd span{ font-size:9px; font-weight:700; opacity:.75; margin-left:1px; }
+    .rel-hm-cell.dark{ color:#e8f5ec; }
+    .rel-hm-cell.light{ color:#04120a; }
+    .rel-hm-cell.zero{ color:#3a4552; }
+    .rel-hm-tip{ position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#0f1318; border:1px solid #3d9eff40; color:#fff; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .14s ease; font-family:'Courier New',monospace; z-index:3; }
     .rel-hm-cell:hover .rel-hm-tip{ opacity:1; }
     .rel-hm-leg{ display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:8px; font-size:10px; color:#6b7788; font-family:'Courier New',monospace; }
     .rel-hm-leg-cells{ display:flex; gap:2px; }
@@ -16831,7 +16836,13 @@ async function dispEncerrarTodos(){
       .rel-gerar{ width:100%; }
       .rel-peca-cod{ font-size:22px; min-width:88px; }
       .rel-kpi-val{ font-size:19px; }
-      .rel-hm-cell{ min-height:12px; }
+      .rel-hm-cell{ min-height:54px; padding:4px 2px; gap:1px; }
+      .rel-hm-cell-dow{ font-size:9px; }
+      .rel-hm-cell-num{ font-size:18px; }
+      .rel-hm-cell-qtd{ font-size:9.5px; }
+      .rel-hm-cell-qtd span{ display:none; }
+      .rel-hm-mes-t{ font-size:12px; }
+      .rel-hm-grid{ gap:4px; }
     }
 
     /* Print */
@@ -17574,33 +17585,41 @@ function _relHeatmapHTML(r){
     return '#5cff9a';
   };
   const nomeMes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const dowLabels = ['D','S','T','Q','Q','S','S'];
+  const dowNomes = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  // Verde escuro/médio precisa texto claro; verde claro precisa texto escuro
+  const corTextoClasse = (bg) => {
+    const escuros = new Set(['#08110c','#0f3d24','#127a3c']);
+    const claros = new Set(['#1abd5b','#38e77d','#5cff9a']);
+    if(escuros.has(bg)) return bg==='#08110c' ? 'zero' : 'dark';
+    if(claros.has(bg)) return 'light';
+    return 'dark';
+  };
   const mesesHTML = meses.map(mObj => {
     const {ano, mes, dias} = mObj;
     const numDias = new Date(ano, mes+1, 0).getDate();
     const primDow = new Date(ano, mes, 1).getDay();
-    // grid: 6 semanas x 7 dias
     const cells = [];
     for(let i=0; i<primDow; i++) cells.push({fora:true});
     for(let d=1; d<=numDias; d++){
       const v = dias[d]||0;
-      cells.push({dia:d, valor:v, cor:cor(v), fora:false});
+      const dow = new Date(ano, mes, d).getDay();
+      cells.push({dia:d, valor:v, cor:cor(v), fora:false, dow});
     }
     while(cells.length%7 !== 0) cells.push({fora:true});
-    const linhas = [];
-    for(let i=0; i<cells.length; i+=7) linhas.push(cells.slice(i, i+7));
     return `<div class="rel-hm-mes">
       <div class="rel-hm-mes-t">${nomeMes[mes]} / ${ano}</div>
       <div class="rel-hm-grid">
-        <div></div>
-        ${dowLabels.map(dw=>`<div class="rel-hm-dow">${dw}</div>`).join('')}
-        ${linhas.map((sem, idxSem)=>`
-          <div class="rel-hm-lbl">S${idxSem+1}</div>
-          ${sem.map(c => c.fora
-            ? `<div class="rel-hm-cell fora"></div>`
-            : `<div class="rel-hm-cell ${c.valor>0?'has':''}" style="background:${c.cor}">${c.valor>0?`<span class="rel-hm-tip">${_relFormatData(new Date(ano,mes,c.dia))} · ${_relFormatarNum(c.valor)} pç</span>`:''}</div>`
-          ).join('')}
-        `).join('')}
+        ${cells.map(c => {
+          if(c.fora) return `<div class="rel-hm-cell fora"></div>`;
+          const cls = corTextoClasse(c.cor);
+          const hasCls = c.valor>0 ? 'has' : '';
+          return `<div class="rel-hm-cell ${hasCls} ${cls}" style="background:${c.cor}">
+            <div class="rel-hm-cell-dow">${dowNomes[c.dow]}</div>
+            <div class="rel-hm-cell-num">${c.dia}</div>
+            ${c.valor>0 ? `<div class="rel-hm-cell-qtd">${_relFormatarNum(c.valor)}<span>pç</span></div>` : ''}
+            ${c.valor>0 ? `<span class="rel-hm-tip">${_relFormatData(new Date(ano,mes,c.dia))} · ${_relFormatarNum(c.valor)} peças</span>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }).join('');
