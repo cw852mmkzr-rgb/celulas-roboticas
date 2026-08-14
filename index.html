@@ -17933,8 +17933,8 @@ async function _relEnviarLinkInterativo(){
       console.error('Insert falhou:', upR.status, txt);
       throw new Error('Publicação falhou ('+upR.status+'). Verifique a tabela relatorios_publicos.');
     }
-    // Servido pelo Netlify (r.html) — necessário porque Supabase aplica CSP sandbox em HTML servido pelo próprio Supabase
-    const publicUrl = `https://candid-vacherin-8de574.netlify.app/r.html?id=${id}`;
+    // Servido pelo GitHub Pages (r.html) — necessário porque Supabase aplica CSP sandbox em HTML servido pelo próprio Supabase
+    const publicUrl = `https://cw852mmkzr-rgb.github.io/celulas-roboticas/r.html?id=${id}`;
 
     // Monta mensagem enxuta — o WhatsApp gera o preview via OG tags do HTML
     const linhas = [];
