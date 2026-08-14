@@ -17905,31 +17905,35 @@ async function _relEnviarLinkInterativo(){
     showToast('🎨 Preparando dashboard interativo...');
     const html = _relGerarHTMLAutonomo();
 
-    // Nome único e curto
+    // ID único curto (sem extensão — vai como query param)
     const hash = Math.random().toString(36).slice(2,8);
     const codSafe = String(_relPeca.codigo||'peca').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,20) || 'peca';
     const ymd = new Date().toISOString().slice(0,10);
-    const fname = `${ymd}_${codSafe}_${hash}.html`;
+    const id = `${ymd}_${codSafe}_${hash}`;
 
     showToast('☁️ Publicando…');
-    // Upload como texto/html no bucket público "relatorios"
-    const upR = await fetch(`${SUPABASE_URL}/storage/v1/object/relatorios/${fname}`, {
+    // Insere na tabela relatorios_publicos (servida pela edge function relatorio-view com Content-Type text/html)
+    const upR = await fetch(`${SUPABASE_URL}/rest/v1/relatorios_publicos`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'text/html',
-        'x-upsert': 'true',
-        'Cache-Control': 'public, max-age=2592000'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
       },
-      body: new Blob([html], {type: 'text/html; charset=utf-8'})
+      body: JSON.stringify({
+        id: id,
+        html: html,
+        peca: _relPeca.codigo || '',
+        periodo: _relPeriodoDescricao(_relPeriodo)
+      })
     });
     if(!upR.ok){
       const txt = await upR.text().catch(()=>'?');
-      console.error('Upload falhou:', upR.status, txt);
-      throw new Error('Upload no Storage falhou ('+upR.status+'). Verifique o bucket "relatorios" público.');
+      console.error('Insert falhou:', upR.status, txt);
+      throw new Error('Publicação falhou ('+upR.status+'). Verifique a tabela relatorios_publicos.');
     }
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/relatorios/${fname}`;
+    const publicUrl = `${SUPABASE_URL}/functions/v1/relatorio-view?id=${id}`;
 
     // Monta mensagem enxuta — o WhatsApp gera o preview via OG tags do HTML
     const linhas = [];
