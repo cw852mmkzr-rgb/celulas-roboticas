@@ -17330,7 +17330,7 @@ function _relWhatsPanelHTML(){
   return `<div class="rel-whats-panel rel-no-print">
     <div class="rel-whats-head ${_relWhatsToggle?'on':''}" onclick="_relToggleWhats()">
       <div class="rel-whats-toggle ${_relWhatsToggle?'on':''}"></div>
-      <div class="rel-whats-lbl">Enviar relatório via <b>WhatsApp</b> após gerar</div>
+      <div class="rel-whats-lbl">Enviar <b>link interativo</b> no WhatsApp após gerar</div>
       ${_relWhatsToggle && n ? `<div class="rel-whats-count">${n} número${n>1?'s':''}</div>` : ''}
     </div>
     <div class="rel-whats-body ${_relWhatsToggle?'on':''}">
@@ -17423,9 +17423,9 @@ async function _relGerar(){
     _relRender();
     // Análise IA em background
     _relBuscarAnaliseIA();
-    // Se toggle WhatsApp ativo, envia após gerar (texto)
+    // Se toggle WhatsApp ativo, envia link interativo após gerar
     if(_relWhatsToggle && _relWhatsNumeros.length){
-      setTimeout(()=>_relEnviarWhatsappTexto(), 300);
+      setTimeout(()=>_relEnviarLinkInterativo(), 500);
     }
   } catch(e){
     console.error("Erro _relGerar:", e);
@@ -17556,7 +17556,7 @@ function _relResultadoHTML(){
     <div class="rel-actions rel-no-print">
       <button class="rel-action" onclick="_relImprimir()" ${!podeExportar?'disabled':''}>🖨 Imprimir</button>
       <button class="rel-action primary" onclick="_relBaixarPDF()" ${!podeExportar?'disabled':''}>📄 Baixar PDF</button>
-      <button class="rel-action whats" onclick="_relEnviarWhatsappManual()" ${!podeExportar||_relEnviandoWhats?'disabled':''}>${_relEnviandoWhats?'📤 Enviando...':'📱 Enviar via WhatsApp'}</button>
+      <button class="rel-action whats" onclick="_relEnviarWhatsappManual()" ${!podeExportar||_relEnviandoWhats?'disabled':''}>${_relEnviandoWhats?'📤 Enviando...':'🔗 Enviar link interativo (WhatsApp)'}</button>
     </div>
   </div>`;
 }
@@ -17887,11 +17887,601 @@ async function _relEnviarWhatsappManual(){
     setTimeout(()=>{ const el = document.getElementById('relWhatsInput'); if(el) el.focus(); }, 200);
     return;
   }
-  const enviarPDF = confirm(`Enviar para ${_relWhatsNumeros.length} número${_relWhatsNumeros.length>1?'s':''}?\n\nOK = enviar PDF anexo (mais completo)\nCancelar = enviar só o texto resumido`);
-  if(enviarPDF){
-    await _relEnviarWhatsappPDF();
-  } else {
-    await _relEnviarWhatsappTexto();
+  // Padrão novo: LINK INTERATIVO (dashboard hospedado). Fallback pra card+PDF se upload falhar.
+  await _relEnviarLinkInterativo();
+}
+
+// ── LINK INTERATIVO ──
+// Gera HTML autônomo com Chart.js, faz upload no Supabase Storage e envia link no WhatsApp.
+// O WhatsApp gera preview automático via OG tags.
+async function _relEnviarLinkInterativo(){
+  _relEnviandoWhats = true; _relRender();
+  try {
+    // Aguarda IA se estiver em andamento (até 10s)
+    if(_relAnaliseCarregando){
+      for(let i=0; i<20 && _relAnaliseCarregando; i++){ await new Promise(r=>setTimeout(r,500)); }
+    }
+
+    showToast('🎨 Preparando dashboard interativo...');
+    const html = _relGerarHTMLAutonomo();
+
+    // Nome único e curto
+    const hash = Math.random().toString(36).slice(2,8);
+    const codSafe = String(_relPeca.codigo||'peca').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,20) || 'peca';
+    const ymd = new Date().toISOString().slice(0,10);
+    const fname = `${ymd}_${codSafe}_${hash}.html`;
+
+    showToast('☁️ Publicando…');
+    // Upload como texto/html no bucket público "relatorios"
+    const upR = await fetch(`${SUPABASE_URL}/storage/v1/object/relatorios/${fname}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'text/html',
+        'x-upsert': 'true',
+        'Cache-Control': 'public, max-age=2592000'
+      },
+      body: new Blob([html], {type: 'text/html; charset=utf-8'})
+    });
+    if(!upR.ok){
+      const txt = await upR.text().catch(()=>'?');
+      console.error('Upload falhou:', upR.status, txt);
+      throw new Error('Upload no Storage falhou ('+upR.status+'). Verifique o bucket "relatorios" público.');
+    }
+    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/relatorios/${fname}`;
+
+    // Monta mensagem enxuta — o WhatsApp gera o preview via OG tags do HTML
+    const linhas = [];
+    linhas.push(`📊 *Relatório Interativo — ${_relPeca.codigo}*`);
+    if(_relPeca.nome && _relPeca.nome !== _relPeca.codigo) linhas.push(`_${_relPeca.nome}_`);
+    if(_relPeca.cliente) linhas.push(`🏢 ${_relPeca.cliente}`);
+    linhas.push(`📅 ${_relPeriodoDescricao(_relPeriodo)}`);
+    linhas.push(``);
+    linhas.push(`▪ Total: *${_relFormatarNum(_relResultado.totalPecas)} peças*`);
+    linhas.push(`▪ Média/dia: *${_relFormatarNum(_relResultado.mediaDia)}* · ${_relResultado.numDiasProd} dias produtivos`);
+    linhas.push(``);
+    linhas.push(`👉 Toque no link abaixo para abrir o dashboard interativo:`);
+    linhas.push(publicUrl);
+    linhas.push(``);
+    linhas.push(`_Trenisp / Tremps Robotics_`);
+    const mensagem = linhas.join('\n');
+
+    // Envia texto para cada número
+    let okCount = 0;
+    for(const num of _relWhatsNumeros){
+      try{
+        const r = await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ tipo:"send_text", phone:num, mensagem })
+        });
+        if(r.ok) okCount++;
+      } catch(e){ console.error('send_text falhou:', e); }
+    }
+
+    if(okCount === _relWhatsNumeros.length){
+      showToast(`✓ Link interativo enviado para ${okCount} número${okCount>1?'s':''}`);
+    } else if(okCount > 0){
+      showToast(`Enviado para ${okCount}/${_relWhatsNumeros.length}`, true);
+    } else {
+      throw new Error('Nenhum número recebeu');
+    }
+  } catch(e){
+    console.error('Erro link interativo:', e);
+    showToast('Falha no link, caindo pra card+PDF: '+(e.message||e), true);
+    // Fallback automático
+    try { await _relEnviarWhatsappCardEPDF(); } catch(e2){ console.error(e2); }
+  } finally { _relEnviandoWhats = false; _relRender(); }
+}
+
+// Gera HTML autônomo com dados inline, Chart.js via CDN, dashboard interativo
+function _relGerarHTMLAutonomo(){
+  const r = _relResultado, p = _relPeca;
+  const periodo = _relPeriodoDescricao(_relPeriodo);
+  const ts = new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'});
+
+  // Prepara séries para os gráficos
+  const chaves = (r.chaves||[]).slice().sort();
+  const seriePorDia = chaves.map(k => {
+    const [a,m,d] = k.split('_').map(Number);
+    return { data: `${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}`, total: r.porDia[k]||0, dataCompleta: `${String(d).padStart(2,'0')}/${String(m+1).padStart(2,'0')}/${a}` };
+  });
+  const seriePorRobo = (r.porRobo||[]).map(x => ({nome: 'Máq. '+x.nome, total: x.total, pct: x.pct}));
+  const seriePorHora = r.porHora ? Object.entries(r.porHora).sort((a,b)=>a[0].localeCompare(b[0])).map(([h,v])=>({hora:h, total:v})) : [];
+
+  const analiseSanitizada = _relAnaliseIA ? String(_relAnaliseIA)
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/^#+\s+(.+)$/gm,'<h3>$1</h3>')
+    .replace(/\n{2,}/g,'</p><p>')
+    .replace(/^/,'<p>').replace(/$/,'</p>')
+    : '';
+
+  const titulo = `Relatório de Produção — ${p.codigo||'Peça'}`;
+  const descPreview = `${_relFormatarNum(r.totalPecas)} peças no período · ${r.numDiasProd} dias produtivos · Média ${_relFormatarNum(r.mediaDia)}/dia`;
+
+  const dadosJSON = JSON.stringify({
+    porDia: seriePorDia,
+    porRobo: seriePorRobo,
+    porHora: seriePorHora
+  });
+
+  const escH = s => String(s||'').replace(/[<>&"']/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'})[c]);
+
+  return `<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>${escH(titulo)}</title>
+<meta name="description" content="${escH(descPreview)}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="${escH(titulo)}">
+<meta property="og:description" content="${escH(descPreview)}">
+<meta property="og:site_name" content="Trenisp / Tremps Robotics">
+<meta name="theme-color" content="#0a0d12">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#0a0d12;color:#e8ecf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto',system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  body{min-height:100vh;padding:20px 16px 40px;background:radial-gradient(ellipse at top,#141a22 0%,#0a0d12 55%,#05070a 100%);background-attachment:fixed}
+  .wrap{max-width:920px;margin:0 auto}
+  .hd{display:flex;justify-content:space-between;align-items:center;padding:14px 0 22px;border-bottom:1px solid #1e2632;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+  .hd-marca{display:flex;gap:14px;align-items:center}
+  .hd-logo{width:52px;height:52px;background:linear-gradient(135deg,#00e87a,#3d9eff);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 20px rgba(0,232,122,.25);flex-shrink:0}
+  .hd-t{font-size:17px;font-weight:700;color:#fff}
+  .hd-s{font-size:12px;color:#7a8698;text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+  .hd-actions{display:flex;gap:8px}
+  .btn{padding:9px 16px;background:#141a22;border:1px solid #2a3444;color:#e8ecf3;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;transition:all .15s;font-family:inherit}
+  .btn:hover{background:#1e2632;border-color:#3d9eff;color:#3d9eff}
+  .btn.primary{background:linear-gradient(135deg,#00e87a,#00c766);border-color:transparent;color:#052014}
+  .btn.primary:hover{filter:brightness(1.08);color:#052014}
+
+  .peca-box{padding:18px 22px;background:linear-gradient(135deg,rgba(255,179,0,.08),rgba(255,179,0,.02));border:1px solid rgba(255,179,0,.25);border-radius:14px;margin-bottom:22px}
+  .peca-lbl{font-size:11px;color:#7a8698;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .peca-row{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+  .peca-cod{font-size:28px;font-weight:800;color:#ffb300;letter-spacing:.3px;line-height:1.1}
+  .peca-nome{font-size:14px;color:#a8b3c4;margin-top:4px}
+  .peca-cliente{color:#a78bfa}
+  .peca-per{text-align:right;flex-shrink:0}
+  .peca-per-lbl{font-size:11px;color:#7a8698;text-transform:uppercase;letter-spacing:.7px}
+  .peca-per-val{font-size:14px;color:#3d9eff;font-weight:600;margin-top:2px}
+
+  .hero{text-align:center;padding:32px 20px;background:linear-gradient(135deg,rgba(0,232,122,.10),rgba(0,232,122,.02));border:1px solid rgba(0,232,122,.28);border-radius:16px;box-shadow:0 12px 40px rgba(0,232,122,.08);margin-bottom:20px}
+  .hero-lbl{font-size:12px;color:#7a8698;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  .hero-val{font-size:80px;font-weight:800;color:#00e87a;line-height:1;letter-spacing:-1.5px;text-shadow:0 0 40px rgba(0,232,122,.35);font-variant-numeric:tabular-nums}
+  @media(max-width:600px){.hero-val{font-size:60px}}
+  .hero-sub{font-size:15px;color:#a8b3c4;margin-top:6px;font-weight:500}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  @media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{padding:14px 16px;background:rgba(20,26,34,.6);border:1px solid #1e2632;border-radius:12px;border-left:3px solid var(--cor)}
+  .kpi-lbl{font-size:11px;color:#7a8698;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .kpi-val{font-size:26px;font-weight:700;color:var(--cor);line-height:1.1;font-variant-numeric:tabular-nums}
+  .kpi-sub{font-size:11px;color:#8a95a8;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  .card{background:rgba(20,26,34,.5);border:1px solid #1e2632;border-radius:14px;padding:18px 20px;margin-bottom:16px}
+  .card-t{font-size:13px;color:#a8b3c4;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .card-t small{color:#7a8698;font-size:11px;font-weight:400;text-transform:none;letter-spacing:.3px}
+  .chart-h{height:280px;position:relative}
+  @media(max-width:600px){.chart-h{height:240px}}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:780px){.grid-2{grid-template-columns:1fr}}
+
+  .ia{background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(167,139,250,.01));border:1px solid rgba(167,139,250,.25);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .ia-t{font-size:14px;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .ia p{margin-bottom:10px;color:#c8d0dc;font-size:14.5px}
+  .ia h3{color:#e8ecf3;font-size:15px;font-weight:700;margin:14px 0 8px}
+  .ia b{color:#fff}
+
+  .foot{text-align:center;padding:20px 12px;color:#5b6474;font-size:11.5px;margin-top:20px;border-top:1px solid #141a22}
+  .foot b{color:#7a8698}
+
+  @media print{
+    body{background:#fff;color:#000;padding:0}
+    .hd-actions,.no-print{display:none!important}
+    .card,.hero,.peca-box,.kpi,.ia{border-color:#ddd;background:#fff;color:#000;box-shadow:none}
+    .hero-val,.kpi-val,.peca-cod{text-shadow:none}
+    .chart-h{height:220px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <div class="hd-marca">
+      <div class="hd-logo">📊</div>
+      <div>
+        <div class="hd-t">Trenisp / Tremps Robotics</div>
+        <div class="hd-s">Relatório de Produção · Executivo</div>
+      </div>
+    </div>
+    <div class="hd-actions no-print">
+      <button class="btn" onclick="window.print()">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+
+  <div class="peca-box">
+    <div class="peca-lbl">Peça</div>
+    <div class="peca-row">
+      <div>
+        <div class="peca-cod">${escH(p.codigo||'—')}</div>
+        <div class="peca-nome">${escH(p.nome||p.codigo||'—')}${p.cliente?` · <span class="peca-cliente">${escH(p.cliente)}</span>`:''}</div>
+      </div>
+      <div class="peca-per">
+        <div class="peca-per-lbl">Período</div>
+        <div class="peca-per-val">${escH(periodo)}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-lbl">Total no Período</div>
+    <div class="hero-val" id="heroVal">0</div>
+    <div class="hero-sub">peças produzidas</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" style="--cor:#3d9eff"><div class="kpi-lbl">⏱ Média/hora</div><div class="kpi-val">${_relFormatarNum(r.mediaHora)}</div><div class="kpi-sub">${r.horasTrabalhadas} h efetivas</div></div>
+    <div class="kpi" style="--cor:#ffb300"><div class="kpi-lbl">📅 Média/dia</div><div class="kpi-val">${_relFormatarNum(r.mediaDia)}</div><div class="kpi-sub">${r.numDiasProd} dias produtivos</div></div>
+    <div class="kpi" style="--cor:#00e87a"><div class="kpi-lbl">🏆 Melhor dia</div><div class="kpi-val">${r.melhorDia?_relFormatarNum(r.melhorDia.total):'—'}</div><div class="kpi-sub">${r.melhorDia?escH(_relFormatData(r.melhorDia.chave)):'sem produção'}</div></div>
+    <div class="kpi" style="--cor:#ff6b6b"><div class="kpi-lbl">📉 Pior dia</div><div class="kpi-val">${r.piorDia?_relFormatarNum(r.piorDia.total):'—'}</div><div class="kpi-sub">${r.piorDia?escH(_relFormatData(r.piorDia.chave)):'sem produção'}</div></div>
+  </div>
+
+  ${seriePorDia.length ? `
+  <div class="card">
+    <div class="card-t">📅 Produção por dia <small>toque nas barras</small></div>
+    <div class="chart-h"><canvas id="chDia"></canvas></div>
+  </div>` : ''}
+
+  <div class="grid-2">
+    ${seriePorRobo.length ? `
+    <div class="card">
+      <div class="card-t">🤖 Por robô</div>
+      <div class="chart-h"><canvas id="chRobo"></canvas></div>
+    </div>` : ''}
+    ${seriePorHora.length ? `
+    <div class="card">
+      <div class="card-t">🕐 Por hora do dia</div>
+      <div class="chart-h"><canvas id="chHora"></canvas></div>
+    </div>` : ''}
+  </div>
+
+  ${analiseSanitizada ? `
+  <div class="ia">
+    <div class="ia-t">🧠 Análise Executiva — MR.ROBOT</div>
+    ${analiseSanitizada}
+  </div>` : ''}
+
+  <div class="foot">
+    <b>${r.numDiasProd}/${r.totalDiasPeriodo}</b> dias produtivos · <b>${r.diasSemProd}</b> dias sem produção<br>
+    Gerado em ${ts} · <b>Trenisp / Tremps Robotics</b>
+  </div>
+</div>
+
+<script>
+  const DADOS = ${dadosJSON};
+  const TOTAL_ALVO = ${r.totalPecas || 0};
+  const fmt = v => new Intl.NumberFormat('pt-BR').format(v);
+
+  // Counter animation no hero
+  (function(){
+    const el = document.getElementById('heroVal');
+    if(!el) return;
+    const dur = 1200, start = performance.now();
+    function tick(t){
+      const p = Math.min(1, (t-start)/dur);
+      const ease = 1 - Math.pow(1-p, 3);
+      el.textContent = fmt(Math.round(TOTAL_ALVO*ease));
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  // Config comum
+  Chart.defaults.color = '#a8b3c4';
+  Chart.defaults.font.family = "-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif";
+  Chart.defaults.borderColor = '#1e2632';
+  const tooltipCfg = {
+    backgroundColor:'rgba(10,13,18,.95)', borderColor:'#2a3444', borderWidth:1,
+    titleColor:'#fff', bodyColor:'#e8ecf3', padding:12, cornerRadius:8, displayColors:true, boxPadding:4
+  };
+
+  // Bar por dia
+  if(DADOS.porDia.length && document.getElementById('chDia')){
+    const ctx = document.getElementById('chDia');
+    new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels: DADOS.porDia.map(x=>x.data),
+        datasets:[{
+          label:'Peças', data: DADOS.porDia.map(x=>x.total),
+          backgroundColor: ctx => {
+            const c = ctx.chart.ctx.createLinearGradient(0,0,0,240);
+            c.addColorStop(0,'#5cff9a'); c.addColorStop(1,'rgba(0,232,122,.4)'); return c;
+          },
+          borderRadius:6, borderSkipped:false, maxBarThickness:32
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{...tooltipCfg, callbacks:{ title: items => DADOS.porDia[items[0].dataIndex].dataCompleta, label: ctx => fmt(ctx.parsed.y) + ' peças' }}
+        },
+        scales:{
+          x:{grid:{display:false}, ticks:{color:'#7a8698',font:{size:11}}},
+          y:{grid:{color:'#141a22'}, ticks:{color:'#7a8698',font:{size:11}, callback: v=>fmt(v)}, beginAtZero:true}
+        },
+        animation:{duration:900, easing:'easeOutQuart'}
+      }
+    });
+  }
+
+  // Doughnut por robô
+  if(DADOS.porRobo.length && document.getElementById('chRobo')){
+    const cores = ['#00e87a','#3d9eff','#ffb300','#a78bfa','#ff6b6b','#38e77d','#5cff9a','#7dd3fc','#fbbf24','#f472b6','#22d3ee','#ef4444'];
+    new Chart(document.getElementById('chRobo'), {
+      type:'doughnut',
+      data:{
+        labels: DADOS.porRobo.map(x=>x.nome),
+        datasets:[{
+          data: DADOS.porRobo.map(x=>x.total),
+          backgroundColor: DADOS.porRobo.map((_,i)=>cores[i%cores.length]),
+          borderColor:'#0a0d12', borderWidth:3, hoverOffset:8
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{
+          legend:{position:'bottom', labels:{color:'#a8b3c4',font:{size:11},padding:10,boxWidth:12,boxHeight:12}},
+          tooltip:{...tooltipCfg, callbacks:{ label: ctx => ctx.label + ': ' + fmt(ctx.parsed) + ' pç (' + DADOS.porRobo[ctx.dataIndex].pct + '%)' }}
+        },
+        animation:{duration:900, easing:'easeOutQuart', animateRotate:true}
+      }
+    });
+  }
+
+  // Linha por hora
+  if(DADOS.porHora.length && document.getElementById('chHora')){
+    const ctx = document.getElementById('chHora');
+    new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: DADOS.porHora.map(x=>x.hora),
+        datasets:[{
+          label:'Peças', data: DADOS.porHora.map(x=>x.total),
+          borderColor:'#3d9eff', backgroundColor: c => {
+            const g = c.chart.ctx.createLinearGradient(0,0,0,240);
+            g.addColorStop(0,'rgba(61,158,255,.4)'); g.addColorStop(1,'rgba(61,158,255,0)'); return g;
+          },
+          fill:true, tension:.35, borderWidth:2.5, pointRadius:3, pointHoverRadius:6,
+          pointBackgroundColor:'#3d9eff', pointBorderColor:'#0a0d12', pointBorderWidth:2
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{...tooltipCfg, callbacks:{ label: ctx => fmt(ctx.parsed.y) + ' pç às ' + ctx.label }}
+        },
+        scales:{
+          x:{grid:{display:false}, ticks:{color:'#7a8698',font:{size:10}, maxRotation:0}},
+          y:{grid:{color:'#141a22'}, ticks:{color:'#7a8698',font:{size:11}, callback:v=>fmt(v)}, beginAtZero:true}
+        },
+        animation:{duration:900, easing:'easeOutQuart'}
+      }
+    });
+  }
+</script>
+</body>
+</html>`;
+}
+
+// Envia CARD visual (imagem) + PDF em sequência — o card aparece grande no chat, o PDF vai anexo
+async function _relEnviarWhatsappCardEPDF(){
+  _relEnviandoWhats = true; _relRender();
+  try {
+    // Aguarda IA (até 10s)
+    if(_relAnaliseCarregando){
+      for(let i=0; i<20 && _relAnaliseCarregando; i++){ await new Promise(r=>setTimeout(r,500)); }
+    }
+
+    showToast('🎨 Renderizando card visual...');
+    let cardDataURL = null;
+    try { cardDataURL = await _relGerarCardImagemDataURL(); }
+    catch(e){ console.error('Falha ao gerar card:', e); }
+
+    // 1) Envia o card como IMAGEM (aparece no chat direto)
+    let cardOk = 0;
+    if(cardDataURL){
+      const capCard = `📊 *Relatório de Produção*\n🔧 Peça: *${_relPeca.codigo}*${_relPeca.nome && _relPeca.nome!==_relPeca.codigo ? ' — '+_relPeca.nome : ''}\n📅 Período: ${_relPeriodoDescricao(_relPeriodo)}\n\n_Trenisp / Tremps Robotics_`;
+      try {
+        const r = await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            tipo: "send_media",
+            phones: _relWhatsNumeros,
+            file: cardDataURL,
+            filename: `resumo_${_relPeca.codigo||'peca'}_${new Date().toISOString().slice(0,10)}.png`,
+            caption: capCard,
+            mediaType: "image"
+          })
+        });
+        const d = await r.json();
+        if(d && d.ok){ cardOk = _relWhatsNumeros.length; }
+        else if(d && d.resultados){ cardOk = d.resultados.filter(x=>x.ok).length; }
+      } catch(e){ console.error('Erro envio card:', e); }
+    }
+
+    // 2) Envia o PDF como documento anexo
+    showToast('📄 Enviando PDF anexo...');
+    let pdfOk = 0;
+    try {
+      const pdfDataURL = await _relGerarPDFDataURL();
+      const capPdf = `📎 PDF completo — ${_relPeca.codigo}`;
+      const filename = `relatorio_${_relPeca.codigo||'peca'}_${new Date().toISOString().slice(0,10)}.pdf`;
+      const r = await fetch(SUPABASE_URL+"/functions/v1/whatsapp-bot", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          tipo: "send_media",
+          phones: _relWhatsNumeros,
+          file: pdfDataURL,
+          filename: filename,
+          caption: capPdf,
+          mediaType: "document"
+        })
+      });
+      const d = await r.json();
+      if(d && d.ok){ pdfOk = _relWhatsNumeros.length; }
+      else if(d && d.resultados){ pdfOk = d.resultados.filter(x=>x.ok).length; }
+    } catch(e){ console.error('Erro envio PDF:', e); }
+
+    // Feedback final
+    const total = _relWhatsNumeros.length;
+    if(cardOk === total && pdfOk === total){
+      showToast(`✓ Card + PDF enviados para ${total} número${total>1?'s':''}`);
+    } else if(cardOk > 0 || pdfOk > 0){
+      showToast(`Enviado parcialmente — card:${cardOk}/${total} · pdf:${pdfOk}/${total}`, true);
+      // Se nem card nem pdf saíram totalmente, garante texto como fallback
+      if(cardOk === 0 && pdfOk === 0) await _relEnviarWhatsappTexto();
+    } else {
+      showToast('Falha no envio visual, tentando texto...', true);
+      await _relEnviarWhatsappTexto();
+    }
+  } catch(e){
+    console.error('Erro geral card+pdf:', e);
+    showToast('Erro no envio: '+(e.message||e), true);
+  } finally { _relEnviandoWhats = false; _relRender(); }
+}
+
+// Gera CARD visual (1080x1350) como PNG dataURL — layout premium estilo dashboard mobile
+async function _relGerarCardImagemDataURL(){
+  if(typeof window.html2canvas === 'undefined') throw new Error('html2canvas indisponível');
+  if(!_relResultado || !_relPeca) throw new Error('Sem dados');
+  const r = _relResultado, p = _relPeca;
+  const periodo = _relPeriodoDescricao(_relPeriodo);
+  const ts = new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'});
+
+  const fmt = (v)=> _relFormatarNum(v);
+  const melhor = r.melhorDia ? {v: fmt(r.melhorDia.total), d: _relFormatData(r.melhorDia.chave)} : {v:'—', d:'sem produção'};
+  const pior   = r.piorDia   ? {v: fmt(r.piorDia.total),   d: _relFormatData(r.piorDia.chave)}   : {v:'—', d:'sem produção'};
+
+  // Top 5 robôs
+  const robos = (r.porRobo||[]).slice(0,5);
+  const maxRobo = robos.length ? Math.max(...robos.map(x=>x.total),1) : 1;
+  const robosHTML = robos.length ? robos.map(x => {
+    const w = Math.max(6, Math.round(x.total/maxRobo*100));
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-family:'Segoe UI',system-ui,sans-serif">
+        <span style="color:#e8ecf3;font-size:22px;font-weight:600;letter-spacing:.2px">🤖 Máq. ${esc(x.nome)}</span>
+        <span style="color:#00e87a;font-size:22px;font-weight:700">${fmt(x.total)} <span style="color:#7a8698;font-size:16px;font-weight:500">pç · ${x.pct}%</span></span>
+      </div>
+      <div style="height:14px;background:#141a22;border-radius:8px;overflow:hidden;border:1px solid #1e2632">
+        <div style="height:100%;width:${w}%;background:linear-gradient(90deg,#00e87a 0%,#38e77d 60%,#5cff9a 100%);border-radius:8px;box-shadow:0 0 12px rgba(0,232,122,.4)"></div>
+      </div>
+    </div>`;
+  }).join('') : `<div style="color:#6b7788;font-size:20px;text-align:center;padding:30px 0;font-family:'Segoe UI',system-ui,sans-serif">Sem produção registrada por robô no período.</div>`;
+
+  const cardHTML = `
+    <div id="_relCardTmp" style="
+      position:fixed;left:-9999px;top:0;
+      width:1080px;height:1350px;
+      background:radial-gradient(ellipse at top,#141a22 0%,#0a0d12 60%,#05070a 100%);
+      color:#e8ecf3;
+      font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'Roboto',system-ui,sans-serif;
+      padding:56px 60px;
+      box-sizing:border-box;
+      overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+    ">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;border-bottom:1px solid #1e2632">
+        <div style="display:flex;gap:18px;align-items:center">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,#00e87a 0%,#3d9eff 100%);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 8px 24px rgba(0,232,122,.25)">📊</div>
+          <div>
+            <div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:.3px">Trenisp / Tremps Robotics</div>
+            <div style="font-size:15px;color:#7a8698;margin-top:2px;letter-spacing:.5px;text-transform:uppercase">Relatório de Produção</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="display:inline-block;padding:6px 14px;background:rgba(61,158,255,.12);border:1px solid rgba(61,158,255,.3);border-radius:20px;color:#3d9eff;font-size:13px;font-weight:600;letter-spacing:.4px">EXECUTIVO</div>
+        </div>
+      </div>
+
+      <!-- Peça em destaque -->
+      <div style="margin-top:28px;padding:22px 26px;background:linear-gradient(135deg,rgba(255,179,0,.08) 0%,rgba(255,179,0,.02) 100%);border:1px solid rgba(255,179,0,.25);border-radius:16px">
+        <div style="font-size:13px;color:#7a8698;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Peça</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:24px">
+          <div style="min-width:0;flex:1">
+            <div style="font-size:38px;font-weight:800;color:#ffb300;letter-spacing:.3px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.codigo||'—')}</div>
+            <div style="font-size:16px;color:#a8b3c4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nome||p.codigo||'—')}${p.cliente?` · <span style="color:#a78bfa">${esc(p.cliente)}</span>`:''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:12px;color:#7a8698;text-transform:uppercase;letter-spacing:.8px">Período</div>
+            <div style="font-size:15px;color:#3d9eff;font-weight:600;margin-top:2px">${esc(periodo)}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Número principal -->
+      <div style="margin-top:32px;text-align:center;padding:28px 20px;background:linear-gradient(135deg,rgba(0,232,122,.10) 0%,rgba(0,232,122,.02) 100%);border:1px solid rgba(0,232,122,.28);border-radius:18px;box-shadow:0 12px 40px rgba(0,232,122,.08)">
+        <div style="font-size:14px;color:#7a8698;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px">Total no Período</div>
+        <div style="font-size:110px;font-weight:800;color:#00e87a;line-height:1;letter-spacing:-2px;text-shadow:0 0 40px rgba(0,232,122,.35);font-variant-numeric:tabular-nums">${fmt(r.totalPecas)}</div>
+        <div style="font-size:18px;color:#a8b3c4;margin-top:4px;font-weight:500">peças produzidas</div>
+      </div>
+
+      <!-- Grid 2x2 KPIs -->
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        ${[
+          {ic:'⏱', lbl:'Média por hora', val:fmt(r.mediaHora), sub:r.horasTrabalhadas+' h efetivas', cor:'#3d9eff'},
+          {ic:'📅', lbl:'Média por dia', val:fmt(r.mediaDia), sub:r.numDiasProd+' dias produtivos', cor:'#ffb300'},
+          {ic:'🏆', lbl:'Melhor dia', val:melhor.v, sub:melhor.d, cor:'#00e87a'},
+          {ic:'📉', lbl:'Pior dia', val:pior.v, sub:pior.d, cor:'#ff6b6b'}
+        ].map(k => `
+          <div style="padding:18px 20px;background:rgba(20,26,34,.6);border:1px solid #1e2632;border-left:3px solid ${k.cor};border-radius:12px">
+            <div style="font-size:13px;color:#7a8698;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.ic} ${k.lbl}</div>
+            <div style="font-size:34px;font-weight:700;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div>
+            <div style="font-size:13px;color:#8a95a8;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k.sub)}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <!-- Barras por robô -->
+      <div style="margin-top:26px;padding:22px 24px;background:rgba(20,26,34,.5);border:1px solid #1e2632;border-radius:14px">
+        <div style="font-size:15px;color:#a8b3c4;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;font-weight:600">🤖 Distribuição por robô ${robos.length?`<span style="color:#7a8698;font-size:12px;font-weight:400;text-transform:none;letter-spacing:.3px">(top ${robos.length})</span>`:''}</div>
+        ${robosHTML}
+      </div>
+
+      <!-- Rodapé -->
+      <div style="position:absolute;bottom:28px;left:60px;right:60px;display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #1e2632">
+        <div style="font-size:12px;color:#6b7788;letter-spacing:.4px">📊 ${r.numDiasProd}/${r.totalDiasPeriodo} dias produtivos · ${r.diasSemProd} sem produção</div>
+        <div style="font-size:12px;color:#6b7788;letter-spacing:.4px">Gerado em ${ts}</div>
+      </div>
+    </div>`;
+
+  // Insere no DOM off-screen
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = cardHTML;
+  document.body.appendChild(wrapper);
+  const el = document.getElementById('_relCardTmp');
+  try {
+    const canvas = await window.html2canvas(el, {
+      backgroundColor: '#05070a',
+      scale: 1.5,
+      useCORS: true,
+      logging: false,
+      width: 1080,
+      height: 1350,
+      windowWidth: 1080,
+      windowHeight: 1350
+    });
+    return canvas.toDataURL('image/png', 0.95);
+  } finally {
+    wrapper.remove();
   }
 }
 
