@@ -7349,6 +7349,8 @@ function saveMapaDados(){
 function abrirMapaProducao(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("mapaScreen").style.display="flex";
+  // Esconde FAB do sistema principal (só o do mapa deve aparecer aqui)
+  if(typeof metaApUpdateFab==='function') metaApUpdateFab();
   loadMapaDados().then(()=>{
     renderMapaProducao();
     clearInterval(mapaPollTimer);
@@ -7688,8 +7690,10 @@ function metaApKey(){ return Object.keys(celulas).find(k=>getCellTipo(k)==='meta
 function metaApUpdateFab(){
   const fab=document.getElementById('metaApFab');
   if(!fab) return;
+  // Esconde se o Mapa da Produção estiver aberto (ele tem seu próprio FAB apFab)
+  const mapaAberto = document.getElementById('mapaScreen') && getComputedStyle(document.getElementById('mapaScreen')).display !== 'none';
   // Só na aba Metas E com permissão de edição (admin geral ou host de metas)
-  const ativo = selected && celulas[selected] && getCellTipo(selected)==='metas' && (isAdmin || isAdminMetas);
+  const ativo = !mapaAberto && selected && celulas[selected] && getCellTipo(selected)==='metas' && (isAdmin || isAdminMetas);
   fab.style.display = ativo ? 'flex' : 'none';
 }
 function metaApAbrir(){
