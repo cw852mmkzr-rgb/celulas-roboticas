@@ -3963,14 +3963,16 @@ function renderProducaoDiaria(){
 }
 
 // ── METAS ────────────────────────────────────
-function aplicarCor(inp,rawVal,meta,isCafe){
+// hora opcional: se passada, ajusta meta pra meia hora (:30 = meta/2)
+function aplicarCor(inp,rawVal,meta,isCafe,hora){
   inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
   if(isCafe){inp.classList.add('cafe');return;} // 10:00 SEMPRE amarelo
   const{num,tipo}=parseCelVal(rawVal);
   if(tipo==='ajuste'){inp.classList.add('cell-adj');return;}
+  const metaAtual = hora ? metaEfetivaHora(hora, meta) : meta;
   if(num>0){
-    if(meta>0&&num>=meta){inp.classList.add('cell-ok');return;}
-    if(meta>0&&num<meta){inp.classList.add('cell-fail');return;}
+    if(metaAtual>0&&num>=metaAtual){inp.classList.add('cell-ok');return;}
+    if(metaAtual>0&&num<metaAtual){inp.classList.add('cell-fail');return;}
     inp.classList.add('cell-ok');return;
   }
 }
@@ -4033,13 +4035,13 @@ function updateMetasCell(key,robo,campo,valor){
     const horaOrigem=[...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
     const isCafe=HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp)aplicarCor(inp,valor,meta,isCafe);
+    if(inp)aplicarCor(inp,valor,meta,isCafe,horaOrigem);
   }
   if(campo==='meta'){
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
       const c=campoH(h);const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe);
+      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe,h);
     });
   }
   avaliarStatusAutomatico();
@@ -6747,12 +6749,13 @@ function handleMetasInputEl(el, key, robo, campo){
   const {num, tipo} = parseCelVal(valorFinal);
   const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
   const isCafe = HORAS_CAFE.includes(horaOrigem);
+  const metaAtual = metaEfetivaHora(horaOrigem, meta); // meia hora = meta/2
   el.className = 'hora-inp';
   if(isCafe) el.classList.add('cafe');
   else if(tipo==='ajuste') el.classList.add('cell-adj');
   else if(num>0){
-    if(meta>0&&num>=meta) el.classList.add('cell-ok');
-    else if(meta>0&&num<meta) el.classList.add('cell-fail');
+    if(metaAtual>0&&num>=metaAtual) el.classList.add('cell-ok');
+    else if(metaAtual>0&&num<metaAtual) el.classList.add('cell-fail');
     else el.classList.add('cell-ok');
   }
   updateMetasCell(key, robo, campo, valorFinal);
@@ -7003,7 +7006,9 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       const campo = campoH(h);
       const rawVal = (rd[campo])||'';
       const {num,isAjuste} = parseCelVal(rawVal);
-      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      // Meta ajustada: café = 60% da meta, meia hora (:30) = 50% da meta
+      const metaBase = metaEfetivaHora(h, meta);
+      const metaH = isCafe ? Math.round(metaBase*0.6) : metaBase;
       let bg='', cor='#d8dde6';
       if(isAjuste){cor='#3d9eff';}
       else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
