@@ -1712,6 +1712,19 @@ let lastServerSync = 0; // timestamp do último sync bem-sucedido com servidor
 let offline = false; // se está sem internet
 let mapaSidebarAberta = false; // estado da sidebar do mapa de produção
 
+// ── VIGIA GLOBAL DE INTERAÇÃO ─────────────────────────────
+// Qualquer click, touch, tecla ou mudança do usuário pausa polling por 2s
+// automaticamente. Evita polling reverter edições em qualquer botão/campo.
+(function installUserActionWatcher(){
+  const marcar = () => { lastUserAction = Date.now(); };
+  const eventos = ['pointerdown','touchstart','keydown','change','input'];
+  const install = () => {
+    eventos.forEach(ev => document.addEventListener(ev, marcar, {passive:true, capture:true}));
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install);
+  else install();
+})();
+
 // ── CONTROLE DE COMPONENTES (motor N:N via tabelas componentes / componentes_pecas / componentes_historico) ──
 let componentesEstoque = { config: { auto_producao_ativa: true, host_senha: "1234" }, pecas_meta: {} }; // só config + metadados de peça (nome/descrição) no jsonb
 let compMasters = [];       // linhas da tabela componentes (estoque único por componente)
