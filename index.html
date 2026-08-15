@@ -1748,6 +1748,11 @@ function metaEfetivaHora(h, meta){
   if(!meta || meta <= 0) return 0;
   return h.endsWith(':30') ? Math.round(meta / 2) : meta;
 }
+// Meta total esperada do turno dia (soma todas as horas com pesos corretos)
+function metaTotalDia(meta){
+  if(!meta || meta <= 0) return 0;
+  return HORAS_DIA.reduce((s,h) => s + metaEfetivaHora(h, meta), 0);
+}
 // Horário do turno dia só para a planilha de Produção (Mapa → Produção, 50 máquinas) — com 09:30 e 14:30 extras
 const MAPA_HORAS_DIA = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
@@ -4873,13 +4878,13 @@ function renderHistoricoRobo(key) {
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
   const registrosComProd = registros.filter(r => r.totalGeral > 0);
   const mediaDiaria = registrosComProd.length>0 ? Math.round(totalAcumulado / registrosComProd.length) : 0;
-  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= r.meta * 9).length; // ~9h produtivas/dia
+  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= metaTotalDia(r.meta)).length;
   const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
 
   const linhas = registros.map(r => {
     const pct = Math.round(r.totalGeral / maxTotal * 100);
     const dataFmt = `${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}`;
-    const metaTotal = r.meta > 0 ? r.meta * 9 : 0; // estimativa dia completo
+    const metaTotal = metaTotalDia(r.meta);
     const atingiu = metaTotal > 0 && r.totalGeral >= metaTotal;
     const corTotal = atingiu ? '#00e87a' : (metaTotal > 0 ? '#ff4d4d' : '#d8dde6');
     return `<tr style="border-bottom:1px solid #1e2530">
@@ -5209,7 +5214,7 @@ function renderRelatorio(){
       const r = (diasDoMes[d].robos[robo])||{};
       if(r.total>0){totalProd+=r.total;diasAtivo++;}
       if(r.meta>0){metaMedia+=r.meta;metaCount++;}
-      const metaEstimada = r.meta>0?r.meta*9:0;
+      const metaEstimada = metaTotalDia(r.meta);
       if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
     });
     const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
@@ -6305,7 +6310,7 @@ function exportarPDFDia() {
     const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const total    = subDia + subNoite;
-    const metaEstimada = meta > 0 ? meta * 9 : 0;
+    const metaEstimada = metaTotalDia(meta);
     const efic = metaEstimada > 0 ? Math.round(total / metaEstimada * 100) : null;
     const corEfic = efic === null ? '#888' : efic >= 100 ? '#00b84a' : efic >= 80 ? '#ff8c00' : '#cc0000';
     if (total === 0 && !meta) return '';
@@ -8122,7 +8127,7 @@ function _eqDesRecords(){
         if(Array.isArray(eq.presentes) && eq.presentes.length===0) return;
         const qtd=parseCelVal(rd[campoH(h)]||'').num;
         if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:parseInt(rd.meta)||0,eq});
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:metaEfetivaHora(h, parseInt(rd.meta)||0),eq});
       });
     });
   });
