@@ -3800,7 +3800,7 @@ function renderSidebar(){
   document.getElementById("sidebarList").innerHTML=html;
 }
 
-function toggleSidebarExpand(){ sidebarExpandida=!sidebarExpandida; renderSidebar(); }
+function toggleSidebarExpand(){ lastUserAction = Date.now(); sidebarExpandida=!sidebarExpandida; renderSidebar(); }
 // Dispara as animações de entrada (só na navegação, nunca no poll)
 function gabNavEnter(){
   const mp=document.getElementById("mainPanel");
