@@ -1708,6 +1708,8 @@ function baixarBackupLocal() {
 let celulas = {}, selected = null, isAdmin = false, isAdminMetas = false, pollTimer = null, xlsxPendingData = null;
 let sidebarExpandida = false;
 let lastUserAction = 0; // timestamp da última ação do usuário — debounce do polling
+let lastServerSync = 0; // timestamp do último sync bem-sucedido com servidor
+let offline = false; // se está sem internet
 
 // ── CONTROLE DE COMPONENTES (motor N:N via tabelas componentes / componentes_pecas / componentes_historico) ──
 let componentesEstoque = { config: { auto_producao_ativa: true, host_senha: "1234" }, pecas_meta: {} }; // só config + metadados de peça (nome/descrição) no jsonb
@@ -3652,6 +3654,8 @@ async function loadFromAPI(){
       headers:HEADERS_SB, signal:controller.signal
     });
     clearTimeout(timeout);
+    offline = false; // Conexão restaurada
+    lastServerSync = Date.now();
     const d=await r.json();
     if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
       const anterior=JSON.stringify(celulas);
@@ -3668,6 +3672,7 @@ async function loadFromAPI(){
     }
     else{celulas=defaultData;await saveToAPI(celulas);}
   }catch(e){
+    offline = true; // Sem conexão
     if(!Object.keys(celulas).length) celulas=defaultData;
     if(e.name==='AbortError') showToast("Conexão lenta — usando dados locais",true);
   }
@@ -3689,6 +3694,30 @@ async function loadFromAPI(){
 
 async function saveToAPI(data){
   try{
+    // Anti-conflito: se esteve offline por mais de 10s, recarregar dados do servidor antes de salvar
+    if(offline || (lastServerSync && Date.now() - lastServerSync > 10000)){
+      try{
+        const rCheck = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo",{
+          headers:HEADERS_SB, signal: AbortSignal.timeout(5000)
+        });
+        if(rCheck.ok){
+          const dCheck = await rCheck.json();
+          if(dCheck && dCheck[0] && dCheck[0].conteudo){
+            const serverStr = JSON.stringify(dCheck[0].conteudo);
+            const localStr = JSON.stringify(data);
+            // Se servidor tem dados DIFERENTES (e provavelmente MAIS NOVOS), recarregar
+            if(serverStr !== localStr){
+              showToast("⚠ Dados do servidor são mais recentes — usando eles",true);
+              celulas = dCheck[0].conteudo;
+              lastServerSync = Date.now();
+              offline = false;
+              return; // Não salva — usa os dados do servidor
+            }
+          }
+        }
+      }catch(e){ console.error("Check de conflito falhou:", e); }
+    }
+
     const semImg = JSON.parse(JSON.stringify(data));
     const imgs = {};
     Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
