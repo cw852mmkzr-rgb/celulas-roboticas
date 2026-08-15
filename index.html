@@ -7185,7 +7185,9 @@ function _mapaRenderCarrossel(HORAS, data, maquinas, isNoite, chave){
       const campo = campoH(h);
       const rawVal = (rd[campo])||'';
       const {num,tipo} = parseCelVal(rawVal);
-      const metaH = isCafe ? Math.round(meta*0.6) : meta;
+      // Meta ajustada: café = 60%, meia hora (:30) = 50%
+      const metaBase = metaEfetivaHora(h, meta);
+      const metaH = isCafe ? Math.round(metaBase*0.6) : metaBase;
       let bg='', cor='#d8dde6';
       if(tipo==='ajuste'){cor='#3d9eff';}
       else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
