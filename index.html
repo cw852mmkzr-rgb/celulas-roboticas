@@ -6787,11 +6787,12 @@ function handleMetasInput(key,robo,campo,valor){
     inp.className = 'hora-inp';
     const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
     const isCafe = HORAS_CAFE.includes(horaOrigem);
+    const metaAtual = metaEfetivaHora(horaOrigem, meta); // meia hora = meta/2
     if(isCafe) inp.classList.add('cafe');
     else if(tipo==='ajuste') inp.classList.add('cell-adj');
     else if(num>0){
-      if(meta>0&&num>=meta) inp.classList.add('cell-ok');
-      else if(meta>0&&num<meta) inp.classList.add('cell-fail');
+      if(metaAtual>0&&num>=metaAtual) inp.classList.add('cell-ok');
+      else if(metaAtual>0&&num<metaAtual) inp.classList.add('cell-fail');
       else inp.classList.add('cell-ok');
     }
   }
@@ -7543,9 +7544,10 @@ function mapaRecolorirLinha(chaveM){
     if(!inp) return;
     if(cafeCampos.includes(campo)) return; // célula de café mantém a cor amarela
     const {num,tipo}=parseCelVal(rd[campo]||'');
+    const metaAtual = metaEfetivaHora(h, meta); // meia hora = meta/2
     inp.classList.remove('cell-ok','cell-fail','cell-adj');
     if(tipo==='ajuste') inp.classList.add('cell-adj');
-    else if(num>0) inp.classList.add(meta>0 && num<meta ? 'cell-fail' : 'cell-ok');
+    else if(num>0) inp.classList.add(metaAtual>0 && num<metaAtual ? 'cell-fail' : 'cell-ok');
   });
 }
 
