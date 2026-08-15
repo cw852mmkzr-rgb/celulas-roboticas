@@ -7360,6 +7360,8 @@ function mapaSidebarClick(item){
     if(item==='Configurações' && typeof _cfgAuthEntrada==='function' && !_cfgAuthEntrada()) return;
     mapaTelaAtual = item;
     if(item==='Indicadores') _indPrecisaRerender = true;
+    // Fecha sidebar mobile ao selecionar aba (só no mobile — desktop mantém aberta)
+    if(window.innerWidth <= 768) mapaSidebarAberta = false;
     renderMapaProducao();
     mapaUpdateApontarFab();
     return;
