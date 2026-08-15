@@ -3713,28 +3713,26 @@ async function loadFromAPI(){
 
 async function saveToAPI(data){
   try{
-    // Anti-conflito: se esteve offline por mais de 10s, recarregar dados do servidor antes de salvar
-    if(offline || (lastServerSync && Date.now() - lastServerSync > 10000)){
+    // Anti-conflito: SÓ ativa quando realmente teve queda de internet detectada
+    // (não pelo tempo de sync — polling pode estar pausado por debounce do usuário)
+    if(offline){
       try{
         const rCheck = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo",{
           headers:HEADERS_SB, signal: AbortSignal.timeout(5000)
         });
         if(rCheck.ok){
+          offline = false;
+          lastServerSync = Date.now();
+          // Ao voltar de offline, apenas sincroniza o estado local com servidor pra próxima leitura
+          // Não bloqueia o save atual — usuário quer que a mudança dele valha
           const dCheck = await rCheck.json();
           if(dCheck && dCheck[0] && dCheck[0].conteudo){
-            const serverStr = JSON.stringify(dCheck[0].conteudo);
-            const localStr = JSON.stringify(data);
-            // Se servidor tem dados DIFERENTES (e provavelmente MAIS NOVOS), recarregar
-            if(serverStr !== localStr){
-              showToast("⚠ Dados do servidor são mais recentes — usando eles",true);
-              celulas = dCheck[0].conteudo;
-              lastServerSync = Date.now();
-              offline = false;
-              return; // Não salva — usa os dados do servidor
-            }
+            // Merge: aplica mudanças do servidor por cima do que temos, EXCETO os campos que
+            // o usuário está mudando agora (dados de 'data' são a fonte da verdade pro save)
+            // Simplificação: só marca que voltamos online, save prossegue normal
           }
         }
-      }catch(e){ console.error("Check de conflito falhou:", e); }
+      }catch(e){ /* ainda offline, tenta salvar de qualquer forma */ }
     }
 
     const semImg = JSON.parse(JSON.stringify(data));
