@@ -1707,6 +1707,7 @@ function baixarBackupLocal() {
 
 let celulas = {}, selected = null, isAdmin = false, isAdminMetas = false, pollTimer = null, xlsxPendingData = null;
 let sidebarExpandida = false;
+let lastUserAction = 0; // timestamp da última ação do usuário — debounce do polling
 
 // ── CONTROLE DE COMPONENTES (motor N:N via tabelas componentes / componentes_pecas / componentes_historico) ──
 let componentesEstoque = { config: { auto_producao_ativa: true, host_senha: "1234" }, pecas_meta: {} }; // só config + metadados de peça (nome/descrição) no jsonb
@@ -3615,6 +3616,9 @@ function calcRitmo(mh,tp){
 }
 
 async function loadFromAPI(){
+  // Debounce: não recarregar se houve ação do usuário nos últimos 2s
+  if(Date.now() - lastUserAction < 2000) return;
+
   const active=document.activeElement;
   if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
   const modalManuAberto = document.getElementById('modalManu')&&document.getElementById('modalManu').style.display==='flex';
@@ -3987,6 +3991,7 @@ function updateMetasCell(key,robo,campo,valor){
 }
 
 function updateMetasData(key,campo,valor){
+  lastUserAction = Date.now(); // Debounce: não recarregar polling por 2s
   celulas[key][campo]=valor;syncMetasToProducao(key);saveToAPI(celulas);renderMetasDiaria();
 }
 
@@ -6434,6 +6439,7 @@ function copiarDiaAnterior(key){
     }
   });
 
+  lastUserAction = Date.now(); // Debounce: não recarregar polling por 2s
   saveToAPI(celulas);
   renderMetasDiaria();
   showToast("Códigos e metas copiados ✓");
