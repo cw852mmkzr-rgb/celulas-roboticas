@@ -1710,6 +1710,7 @@ let sidebarExpandida = false;
 let lastUserAction = 0; // timestamp da última ação do usuário — debounce do polling
 let lastServerSync = 0; // timestamp do último sync bem-sucedido com servidor
 let offline = false; // se está sem internet
+let mapaSidebarAberta = false; // estado da sidebar do mapa de produção
 
 // ── CONTROLE DE COMPONENTES (motor N:N via tabelas componentes / componentes_pecas / componentes_historico) ──
 let componentesEstoque = { config: { auto_producao_ativa: true, host_senha: "1234" }, pecas_meta: {} }; // só config + metadados de peça (nome/descrição) no jsonb
@@ -7331,6 +7332,8 @@ function fecharMapaProducao(){
 }
 
 function toggleMapaSidebar(){
+  lastUserAction = Date.now(); // Debounce: não recarregar polling por 2s
+  mapaSidebarAberta = !mapaSidebarAberta; // Preserva estado mesmo após re-render
   document.getElementById("mapaSidebar").classList.toggle("aberta");
 }
 
@@ -11446,7 +11449,7 @@ function renderMapaProducao(){
       </div>
     </div>
     <div style="flex:1;display:flex;overflow:hidden;min-height:0">
-      <div class="mapa-sidebar" id="mapaSidebar">
+      <div class="mapa-sidebar ${mapaSidebarAberta?'aberta':''}" id="mapaSidebar">
         ${['Mapa','Produção','Mensal','Prod. Peça','Peças','Catálogo','Equipes','Indicadores','Manutenção','Planilha','Configurações'].map(it=>{
           const icones = {Mapa:'📍',Produção:'🏭',Mensal:'📅','Prod. Peça':'📈',Peças:'📦',Catálogo:'📐',Equipes:'👥',Indicadores:'📊',Manutenção:'🔧',Planilha:'📑',Configurações:'⚙'};
           return `<div class="mapa-sidebar-item ${it===mapaTelaAtual?'ativo':''}" onclick="mapaSidebarClick('${it}')">${icones[it]} ${it}</div>`;
