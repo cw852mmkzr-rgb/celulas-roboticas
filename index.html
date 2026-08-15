@@ -3619,11 +3619,16 @@ function calcRitmo(mh,tp){
 }
 
 async function loadFromAPI(){
-  // Debounce: não recarregar se houve ação do usuário nos últimos 2s
-  if(Date.now() - lastUserAction < 2000) return;
+  // Debounce: não recarregar se houve ação do usuário nos últimos 2s, OU se há input com foco
+  const agora = Date.now();
+  if(agora - lastUserAction < 2000) return;
 
+  // Se há input com foco, SEMPRE marca lastUserAction pra manter debounce ativo
   const active=document.activeElement;
-  if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT'))return;
+  if(active&&(active.tagName==='INPUT'||active.tagName==='TEXTAREA'||active.tagName==='SELECT')){
+    lastUserAction = agora; // Renova debounce enquanto tiver foco
+    return;
+  }
   const modalManuAberto = document.getElementById('modalManu')&&document.getElementById('modalManu').style.display==='flex';
   const modalConcAberto = document.getElementById('modalConcluirManu')&&document.getElementById('modalConcluirManu').style.display==='flex';
   const modalEditAberto = document.getElementById('modalEditManu')&&document.getElementById('modalEditManu').style.display==='flex';
