@@ -1742,7 +1742,12 @@ let _compRenderSig = "";                // assinatura do que está renderizado (
 let _compLastLoad = 0;                  // timestamp da última leitura dos dados de componentes (para revalidar antes de descontar)
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
-const HORAS_DIA   = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00"];
+const HORAS_DIA   = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
+// Retorna a meta ajustada para o horário: meia hora (:30) → metade da meta_h
+function metaEfetivaHora(h, meta){
+  if(!meta || meta <= 0) return 0;
+  return h.endsWith(':30') ? Math.round(meta / 2) : meta;
+}
 // Horário do turno dia só para a planilha de Produção (Mapa → Produção, 50 máquinas) — com 09:30 e 14:30 extras
 const MAPA_HORAS_DIA = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","20:00","21:00","22:00"];
@@ -4062,10 +4067,11 @@ function buildTurnoTable(c,turno,chave){
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
+      const metaAtual = metaEfetivaHora(h, meta); // meia hora = meta/2
       let cc='';
       if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
-      else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
+      else if(num>0){if(metaAtual>0&&num>=metaAtual)cc='cell-ok';else if(metaAtual>0&&num<metaAtual)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
       return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)"></td>`;
@@ -9095,10 +9101,11 @@ function mapaBuildTurnoTableProducao(turno,chave,maquinas){
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=(rd[campo])||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
+      const metaAtual = metaEfetivaHora(h, meta); // meia hora = meta/2
       let cc='';
       if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
-      else if(num>0){if(meta>0&&num>=meta)cc='cell-ok';else if(meta>0&&num<meta)cc='cell-fail';else cc='cell-ok';}
+      else if(num>0){if(metaAtual>0&&num>=metaAtual)cc='cell-ok';else if(metaAtual>0&&num<metaAtual)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
       return`<td ${tdStyle}><input id="mapa-inp-${chaveM}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="mapaHandleMetasInput('${chaveM}','${campo}',this.value)"></td>`;
