@@ -5833,14 +5833,23 @@ let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null;
 let _dashIdx=0, _dashGeral=false, _dashRobos=[];
 
 function _dashGetHoraCheia(){
-  const h = new Date().getHours();
+  // Retorna o slot correto considerando meias horas (:30)
+  // Se agora é 09:35 e existe slot 09:30, retorna 09:30. Senão, 09:00.
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
   const s = `${String(h).padStart(2,'0')}:00`;
+  const s30 = `${String(h).padStart(2,'0')}:30`;
   const all = [...HORAS_DIA,...HORAS_NOITE];
+  // Se passou de :30 na hora atual E existe slot :30, usa o slot :30
+  if(m >= 30 && all.includes(s30)) return s30;
   if(all.includes(s)) return s;
-  // Se hora atual não está no array, pega a mais próxima anterior
+  // Fallback: pega a hora mais próxima anterior (considerando também minutos)
   for(let i = all.length-1; i >= 0; i--){
-    const hNum = parseInt(all[i].split(':')[0]);
-    if(hNum < h) return all[i];
+    const parts = all[i].split(':');
+    const hNum = parseInt(parts[0]);
+    const mNum = parseInt(parts[1]);
+    if(hNum < h || (hNum === h && mNum <= m)) return all[i];
   }
   return all[0];
 }
@@ -5964,8 +5973,9 @@ function _dashRenderRobo(k){
   const dados=_dashGetDados();
   const rn=k.replace(/\D/g,'');
   const rd=dados[rn]||{};
-  const meta=parseInt(rd.meta)||0;
+  const metaBase=parseInt(rd.meta)||0;
   const hora=_dashGetHoraCheia();
+  const meta=metaEfetivaHora(hora, metaBase); // meia hora = meta/2
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
   const pct = meta>0 ? Math.round(prod/meta*100) : 0;
   const bateu = meta>0 && prod>=meta;
@@ -6076,18 +6086,20 @@ function _dashRenderGeral(){
   const linhas=_dashRobos.map(k=>{
     const rn=k.replace(/\D/g,'');
     const rd=dados[rn]||{};
-    const meta=parseInt(rd.meta)||0;
+    const metaBase=parseInt(rd.meta)||0;
+    const metaAtual=metaEfetivaHora(horaAtual, metaBase); // meia hora = meta/2
     const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
-    const bateu=meta>0&&prodAtual>=meta;
-    const corAtual=meta===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    const bateu=metaAtual>0&&prodAtual>=metaAtual;
+    const corAtual=metaAtual===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     const totalRobo=todasHoras.reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
     totalGeral+=totalRobo;
     const hCells=todasHoras.map(h=>{
       const v=parseCelVal((rd[campoH(h)])||'').num;
       const isCafe=HORAS_CAFE.includes(h);
       const isAtual=h===horaAtual;
-      const ok=!isCafe&&meta>0&&v>=meta;
-      const fail=!isCafe&&meta>0&&v>0&&v<meta;
+      const metaH=metaEfetivaHora(h, metaBase); // meta ajustada por hora
+      const ok=!isCafe&&metaH>0&&v>=metaH;
+      const fail=!isCafe&&metaH>0&&v>0&&v<metaH;
       const cor=isCafe?'#8a6200':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
     const fontSize=isAtual?'32px':'24px';
       return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
@@ -6153,7 +6165,8 @@ function _dashRenderFooter(){
     const isCafe=HORAS_CAFE.includes(h);
     const isAtual=h===horaAtual;
     const total=ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campo])||'').num,0);
-    const metaT=ROBOS.reduce((s,rn)=>s+(parseInt((dados[rn]||{}).meta)||0),0);
+    // Meta total dessa hora: soma das metas efetivas de cada robô (meia hora = meta/2)
+    const metaT=ROBOS.reduce((s,rn)=>s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0),0);
     const bateu=total>0&&metaT>0&&total>=metaT;
     const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
