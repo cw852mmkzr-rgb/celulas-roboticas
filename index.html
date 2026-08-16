@@ -7806,10 +7806,9 @@ function metaApEnviar(){
   const campo=campoH(_metaApHora);
   const pontos=parseInt(rd.pontos)||0;
   // divisão automática — MESMA lógica de handleMetasInput (divide por pontos de solda)
-  // ATENÇÃO: não divide quando é ajuste técnico (mesma regra do handleMetasInput)
   let novasPecas=totalDigitado;
   let dividiu=false;
-  if(pontos>1 && totalDigitado>0 && !isAjuste){
+  if(pontos>1 && totalDigitado>0){
     const dividido=Math.round(totalDigitado/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==totalDigitado){ novasPecas=dividido; dividiu=true; }
   }
