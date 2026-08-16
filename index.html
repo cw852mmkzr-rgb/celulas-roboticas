@@ -7697,12 +7697,14 @@ function mapaApontarEnviar(){
   if(!numero){ showToast('Informe o número da máquina',true); maqEl.focus(); return; }
   if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
   if(!_apHora){ showToast('Escolha a hora primeiro',true); return; }
+  const isAjuste = qtdRaw.includes('#'); // preserva marcador de ajuste técnico
   const qtd=parseInt(qtdRaw);
+  const valorSalvar = isAjuste ? String(qtd)+'#' : String(qtd);
   const meta=metaEl.value.trim();
   const cod=codEl.value.trim();
   const chaveL=mapaFindOrCreateChave(numero);
   if(!chaveL){ showToast('Sem slot livre para nova máquina',true); return; }
-  mapaUpdateMetasCell(chaveL, campoH(_apHora), String(qtd));
+  mapaUpdateMetasCell(chaveL, campoH(_apHora), valorSalvar);
   if(meta) mapaUpdateMetasCell(chaveL, 'meta', meta);
   if(cod)  mapaUpdateMetasCell(chaveL, 'cod', cod);
   _apLog.unshift({maquina:numero, qtd:qtd, hora:_apHora, meta:meta, cod:cod});
@@ -7794,6 +7796,7 @@ function metaApEnviar(){
   const qtdRaw=qtdEl.value.trim();
   if(!robo){ showToast('Escolha o robô',true); return; }
   if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<=0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
+  const isAjuste = qtdRaw.includes('#'); // preserva marcador de ajuste técnico
   const totalDigitado=parseInt(qtdRaw);
   const chave=getMetasChave(key);
   if(!celulas[key].metas_dias) celulas[key].metas_dias={};
@@ -7803,9 +7806,10 @@ function metaApEnviar(){
   const campo=campoH(_metaApHora);
   const pontos=parseInt(rd.pontos)||0;
   // divisão automática — MESMA lógica de handleMetasInput (divide por pontos de solda)
+  // ATENÇÃO: não divide quando é ajuste técnico (mesma regra do handleMetasInput)
   let novasPecas=totalDigitado;
   let dividiu=false;
-  if(pontos>1 && totalDigitado>0){
+  if(pontos>1 && totalDigitado>0 && !isAjuste){
     const dividido=Math.round(totalDigitado/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==totalDigitado){ novasPecas=dividido; dividiu=true; }
   }
@@ -7820,7 +7824,8 @@ function metaApEnviar(){
     _metaApLastPorRobo[robo] = { equipeId:_metaApEquipeSel.id, membros:_metaApMembrosSel.slice() }; // por robô
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
-  updateMetasCell(key,robo,campo,String(somado));
+  // Se for ajuste técnico, mantém o marcador # no valor salvo
+  updateMetasCell(key,robo,campo,isAjuste?String(somado)+'#':String(somado));
   if(equipesData.vincular_metas && _metaApEquipeSel) _eqAlertaCheck(_metaApEquipeSel, _metaApHora);
   _metaApEditIdx=null;
   _metaApLog.unshift({robo, hora:_metaApHora, campo, totalDigitado, pontos, pecas:novasPecas, dividiu});
