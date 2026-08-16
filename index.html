@@ -18695,19 +18695,29 @@ function _relHistoricoHTML(){
 </div>
 
 <script>
-// Registra lembrete de apontamento de gabaritagem via WhatsApp (seg-sex 06:50)
+// Registra lembretes via WhatsApp
 (async ()=>{
-  // Aguarda um pouco pra loadLembretes carregar, depois verifica se já existe
   setTimeout(async ()=>{
+    // Lembrete de apontamento de gabaritagem (seg-sex 06:50)
     if(!lembretes.gabaritagem){
-      const config = {
+      await saveLembrete("gabaritagem", {
         ativo: true,
         phone: "5511963262732",
         horario: "06:50",
         dias: [1,2,3,4,5],
         mensagem: "Lembrete: apontar produção do dia da gabaritagem 📊"
-      };
-      await saveLembrete("gabaritagem", config);
+      });
+    }
+    // Lembrete de beber água (todos os dias 07:52-23:52 a cada hora)
+    if(!lembretes.agua){
+      await saveLembrete("agua", {
+        ativo: true,
+        phone: "5511963262732",
+        horario: "hourly(:52)",
+        dias: [0,1,2,3,4,5,6],
+        intervalo_horario: {inicio: 7, fim: 23},
+        mensagem: "💧 Beba água! Mantenha-se hidratado durante o turno"
+      });
     }
   }, 2000);
 })();
