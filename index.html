@@ -7725,6 +7725,14 @@ let _metaApLog = [];
 let _metaApEditIdx = null;
 let _metaApBlockClose = false, _metaApBlockTimer = null;
 function _metaApSetBlockClose(){ clearTimeout(_metaApBlockTimer); _metaApBlockClose=true; _metaApBlockTimer=setTimeout(()=>{ _metaApBlockClose=false; },500); }
+// Adiciona # ao final do valor do input (marca ajuste técnico); se já terminar em #, remove
+function _apAddHash(inputId){
+  const el = document.getElementById(inputId);
+  if(!el) return;
+  const v = String(el.value||'');
+  el.value = v.endsWith('#') ? v.slice(0,-1) : (v + '#');
+  el.focus();
+}
 function metaApKey(){ return Object.keys(celulas).find(k=>getCellTipo(k)==='metas'); }
 // Mostra/esconde o FAB (só na aba Metas; CSS esconde no desktop)
 function metaApUpdateFab(){
@@ -15593,7 +15601,10 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
           </div>
         </div>
         <div class="ap-label" style="margin-top:15px">Quantidade de peças</div>
-        <input id="apQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <input id="apQtd" class="ap-input" type="text" inputmode="numeric" pattern="[0-9#]*" placeholder="Ex: 128" style="flex:1" onfocus="_apSetBlockClose()" onblur="_apSetBlockClose()" onkeydown="if(event.key==='Enter')mapaApontarEnviar()">
+          <button type="button" onclick="_apAddHash('apQtd')" title="Ajuste técnico" style="flex-shrink:0;min-width:56px;padding:0 16px;background:#3d9eff20;border:1px solid #3d9eff60;color:#3d9eff;font-size:22px;font-weight:900;border-radius:10px;cursor:pointer;font-family:'Courier New',monospace">#</button>
+        </div>
         <button class="ap-btn primary" style="margin-top:18px" onclick="mapaApontarEnviar()">✓ Enviar</button>
         <div class="ap-log" id="apLogWrap" style="display:none">
           <div class="ap-log-title">Enviados nesta sessão (<span id="apLogCount">0</span>)</div>
@@ -15633,7 +15644,10 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <div class="ap-label">Robô</div>
       <select id="metaApRobo" class="ap-select" onchange="_metaApSetBlockClose();_metaApPreselEquipe();metaApRenderEquipes()" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()"></select>
       <div class="ap-label" style="margin-top:15px">Quantidade total produzida</div>
-      <input id="metaApQtd" class="ap-input" type="number" inputmode="numeric" min="0" placeholder="Ex: 128" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
+      <div style="display:flex;gap:8px;align-items:stretch">
+        <input id="metaApQtd" class="ap-input" type="text" inputmode="numeric" pattern="[0-9#]*" placeholder="Ex: 128" style="flex:1" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
+        <button type="button" onclick="_apAddHash('metaApQtd')" title="Ajuste técnico" style="flex-shrink:0;min-width:56px;padding:0 16px;background:#3d9eff20;border:1px solid #3d9eff60;color:#3d9eff;font-size:22px;font-weight:900;border-radius:10px;cursor:pointer;font-family:'Courier New',monospace">#</button>
+      </div>
       <div style="font-size:11px;color:#5a6678;margin-top:6px">Se o robô tiver pontos de solda cadastrados, o valor é dividido automaticamente.</div>
       <div id="metaApEquipeBox" style="display:none;margin-top:16px"></div>
       <button class="ap-btn primary" style="margin-top:18px" onclick="metaApEnviar()">✓ Enviar</button>
