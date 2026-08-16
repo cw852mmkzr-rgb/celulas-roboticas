@@ -5975,12 +5975,14 @@ function _dashRenderRobo(k){
   const rd=dados[rn]||{};
   const metaBase=parseInt(rd.meta)||0;
   const hora=_dashGetHoraCheia();
+  const isCafe=HORAS_CAFE.includes(hora);
   const meta=metaEfetivaHora(hora, metaBase); // meia hora = meta/2
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
   const pct = meta>0 ? Math.round(prod/meta*100) : 0;
   const bateu = meta>0 && prod>=meta;
   const faltam = meta>0 ? Math.max(meta-prod,0) : 0;
-  const cor = prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff6a00';
+  // Horário de café (10:00) — sempre amarelo (meta reduzida naturalmente)
+  const cor = isCafe?'#ffb300':(prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff6a00');
   const idx=_dashRobos.indexOf(k);
 
   // Robô neutro — sempre dançando sem expressão
@@ -6100,9 +6102,10 @@ function _dashRenderGeral(){
       const metaH=metaEfetivaHora(h, metaBase); // meta ajustada por hora
       const ok=!isCafe&&metaH>0&&v>=metaH;
       const fail=!isCafe&&metaH>0&&v>0&&v<metaH;
-      const cor=isCafe?'#8a6200':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
+      const cor=isCafe?'#ffb300':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
     const fontSize=isAtual?'32px':'24px';
-      return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':''}">${v>0?v:'—'}</td>`;
+      const bgCafe=isCafe?'background:#ffb30012;':'';
+      return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':bgCafe}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
       <td style="padding:7px 10px;font-size:22px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
@@ -6116,7 +6119,7 @@ function _dashRenderGeral(){
   const hHeaders=todasHoras.map(h=>{
     const isAtual=h===horaAtual;
     const isCafe=HORAS_CAFE.includes(h);
-    return`<th style="padding:8px 6px;font-size:22px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#8a6200':'#4a5568'};${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}</th>`;
+    return`<th style="padding:8px 6px;font-size:22px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':isCafe?'#ffb300':'#4a5568'};${isCafe?'background:#ffb30015;':''}${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}${isCafe?' ☕':''}</th>`;
   }).join('');
 
   const hTotais=todasHoras.map(h=>{
