@@ -3642,6 +3642,9 @@ function calcRitmo(mh,tp){
 }
 
 async function loadFromAPI(){
+  // Carrega lembretes agendados do banco (async, não bloqueia load)
+  loadLembretes().catch(e=>console.error("Erro ao carregar lembretes:",e));
+
   // Debounce: não recarregar se houve ação do usuário nos últimos 2s, OU se há input com foco
   const agora = Date.now();
   if(agora - lastUserAction < 2000) return;
@@ -3766,6 +3769,27 @@ async function saveToAPI(data){
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
   }catch(e){showToast("Erro ao salvar",true);}
+}
+
+// ──── Gerenciamento de Lembretes WhatsApp ────
+let lembretes = {};
+async function loadLembretes(){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=lembretes",{headers:HEADERS_SB});
+    const d = await r.json();
+    lembretes = (d&&d[0]&&d[0].lembretes)||{};
+  }catch(e){console.error("Erro ao carregar lembretes:",e);}
+}
+async function saveLembrete(chave, config){
+  lembretes[chave] = config;
+  try{
+    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{
+      method:"PATCH",
+      headers:HEADERS_SB,
+      body:JSON.stringify({lembretes})
+    });
+    showToast("Lembrete salvo ✓");
+  }catch(e){showToast("Erro ao salvar lembrete",true);}
 }
 
 function update(key,field,value){celulas[key][field]=value;if(field==='status')celulas[key].status_manual=true;saveToAPI(celulas);}
@@ -18669,6 +18693,25 @@ function _relHistoricoHTML(){
     </div>
   </div>
 </div>
+
+<script>
+// Registra lembrete de apontamento de gabaritagem via WhatsApp (seg-sex 06:50)
+(async ()=>{
+  // Aguarda um pouco pra loadLembretes carregar, depois verifica se já existe
+  setTimeout(async ()=>{
+    if(!lembretes.gabaritagem){
+      const config = {
+        ativo: true,
+        phone: "5511963262732",
+        horario: "06:50",
+        dias: [1,2,3,4,5],
+        mensagem: "Lembrete: apontar produção do dia da gabaritagem 📊"
+      };
+      await saveLembrete("gabaritagem", config);
+    }
+  }, 2000);
+})();
+</script>
 
 </body>
 </html>
