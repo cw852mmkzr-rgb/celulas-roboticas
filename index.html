@@ -1743,10 +1743,12 @@ let _compLastLoad = 0;                  // timestamp da última leitura dos dado
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
-// Retorna a meta ajustada para o horário: meia hora (:30) → metade da meta_h
+// Horários que devem contar meia meta (:30 naturalmente + horas especiais com produção reduzida)
+const HORAS_MEIA_META = ["15:00"];
+// Retorna a meta ajustada para o horário: meia hora (:30) ou hora especial → metade da meta_h
 function metaEfetivaHora(h, meta){
   if(!meta || meta <= 0) return 0;
-  return h.endsWith(':30') ? Math.round(meta / 2) : meta;
+  return (h.endsWith(':30') || HORAS_MEIA_META.includes(h)) ? Math.round(meta / 2) : meta;
 }
 // Meta total esperada do turno dia (soma todas as horas com pesos corretos)
 function metaTotalDia(meta){
