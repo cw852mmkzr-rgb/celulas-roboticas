@@ -5904,51 +5904,48 @@ function _dashGetHoraRef(){
   return h.replace(':30', ':00');
 }
 let _dashSeqRobos = []; // sequência de robôs com produção pra iterar no carrossel
-let _dashSeqIdx = 0;    // posição na sequência
+let _dashSeqIdx = -1;   // posição na sequência (-1 = sequência não iniciada)
+
+// Vai pra tela geral e reprograma timer pra 60s
+function _dashIrParaGeral(){
+  _dashGeral = true;
+  _dashIdx = 0;
+  _dashSeqRobos = [];
+  _dashSeqIdx = -1;
+  clearInterval(_dashSlideTimer);
+  _dashSlideTimer = setInterval(_dashNextSlide, 60000);
+  _dashRender(); _dashRenderFooter();
+}
+
+// Inicia carrossel de robôs com produção
+function _dashIniciarCarrossel(dados, hora){
+  const seq = _dashRobos.filter(k=>!_dashRoboSemValor(k, dados, hora));
+  if(seq.length <= 1){ _dashIrParaGeral(); return; }
+  _dashGeral = false;
+  _dashSeqRobos = seq;
+  _dashSeqIdx = 0;
+  _dashIdx = _dashRobos.indexOf(seq[0]);
+  clearInterval(_dashSlideTimer);
+  _dashSlideTimer = setInterval(_dashNextSlide, 6000);
+  _dashRender(); _dashRenderFooter();
+}
+
 function _dashNextSlide(){
   const dados = _dashGetDados();
   const hora  = _dashGetHoraRef();
 
-  // Se está na tela geral → sai dela e reinicia sequência
-  if(_dashGeral){
-    _dashGeral = false;
-    _dashSeqRobos = _dashRobos.filter(k=>!_dashRoboSemValor(k, dados, hora));
-    _dashSeqIdx = 0;
-    if(_dashSeqRobos.length <= 1){
-      // Não vale a pena carrossel — volta pra geral
-      _dashGeral = true;
-      clearInterval(_dashSlideTimer);
-      _dashSlideTimer = setInterval(_dashNextSlide, 60000);
-      _dashRender(); _dashRenderFooter();
-      return;
-    }
-    _dashIdx = _dashRobos.indexOf(_dashSeqRobos[0]);
-    clearInterval(_dashSlideTimer);
-    _dashSlideTimer = setInterval(_dashNextSlide, 6000);
-    _dashRender(); _dashRenderFooter();
+  // Se está na tela geral → sai dela e reinicia sequência de robôs
+  if(_dashGeral){ _dashIniciarCarrossel(dados, hora); return; }
+
+  // Sequência não iniciada — começa
+  if(_dashSeqIdx < 0 || _dashSeqRobos.length === 0){
+    _dashIniciarCarrossel(dados, hora);
     return;
   }
 
-  // Se a sequência acabou ou nunca foi montada, monta agora
-  if(!_dashSeqRobos.length || _dashSeqIdx >= _dashSeqRobos.length - 1){
-    // Reconstroi a sequência (produção pode ter mudado desde o último ciclo)
-    _dashSeqRobos = _dashRobos.filter(k=>!_dashRoboSemValor(k, dados, hora));
-    _dashSeqIdx = 0;
-    // Se tem 1 ou menos robôs com produção, vai direto pra geral
-    if(_dashSeqRobos.length <= 1){
-      _dashGeral = true;
-      _dashIdx = 0;
-      clearInterval(_dashSlideTimer);
-      _dashSlideTimer = setInterval(_dashNextSlide, 60000);
-      _dashRender(); _dashRenderFooter();
-      return;
-    }
-    // Se estamos após terminar o último robô da sequência → vai pra geral
-    _dashGeral = true;
-    _dashIdx = 0;
-    clearInterval(_dashSlideTimer);
-    _dashSlideTimer = setInterval(_dashNextSlide, 60000);
-    _dashRender(); _dashRenderFooter();
+  // Se chegou no último robô da sequência → vai pra geral
+  if(_dashSeqIdx >= _dashSeqRobos.length - 1){
+    _dashIrParaGeral();
     return;
   }
 
