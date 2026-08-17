@@ -5985,8 +5985,14 @@ function _dashGetDados(){
 }
 
 function _dashRender(){
-  if(_dashGeral) _dashRenderGeral();
-  else _dashRenderRobo(_dashRobos[_dashIdx]);
+  // try/catch defensivo: um erro no render NUNCA pode travar o carrossel
+  // (se propagar pra dentro do setInterval, o slide congela no robô atual)
+  try{
+    if(_dashGeral) _dashRenderGeral();
+    else _dashRenderRobo(_dashRobos[_dashIdx]);
+  }catch(e){
+    console.error('Erro ao renderizar dashboard:', e);
+  }
 }
 
 function _dashRenderRobo(k){
