@@ -5818,6 +5818,10 @@ function startDashboard(){
   document.getElementById("dashboardScreen").style.display="flex";
   isAdmin=false; isAdminMetas=false;
   _dashIdx=0; _dashGeral=false;
+  _dashRobos=[]; _dashSeqRobos=[]; _dashSeqIdx=-1;
+  // Estado de carregando enquanto o primeiro fetch não chega
+  const _dm=document.getElementById("dashMain");
+  if(_dm) _dm.innerHTML=`<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#4a5568"><div style="width:54px;height:54px;border:4px solid #1e2530;border-top-color:#00e87a;border-radius:50%;animation:sp 1s linear infinite"></div><div style="font-size:18px;letter-spacing:.1em;text-transform:uppercase">Carregando produção…</div></div><style>@keyframes sp{to{transform:rotate(360deg)}}</style>`;
   _dashLoad();
   _dashLoadTimer = setInterval(_dashLoad, 3000);
   _dashClockTimer = setInterval(_dashTickClock, 1000);
@@ -5878,15 +5882,11 @@ async function _dashLoad(){
   // Atualiza lista de robôs sem resetar o índice atual
   const robosAntes = _dashRobos.length;
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
-  // Só reseta índice se a lista mudou
-  if(robosAntes === 0) {
+  // Primeira carga com robôs → renderiza IMEDIATAMENTE (não espera o timer de 6s)
+  if(robosAntes === 0 && _dashRobos.length > 0){
     const d2=_dashGetDados(); const h2=_dashGetHoraRef();
-    _dashIdx=0;
-    let t=0;
-    while(t<_dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx],d2,h2)){
-      _dashIdx++; t++;
-      if(_dashIdx>=_dashRobos.length){_dashIdx=0;break;}
-    }
+    _dashIniciarCarrossel(d2, h2); // já renderiza main + rodapé e reinicia o timer
+    return;
   }
   // Apenas atualiza o rodapé — não rerenderiza o slide atual
   _dashRenderFooter();
