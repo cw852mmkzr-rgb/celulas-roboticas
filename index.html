@@ -5878,7 +5878,7 @@ async function _dashLoad(){
   _dashRobos=Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort();
   // Só reseta índice se a lista mudou
   if(robosAntes === 0) {
-    const d2=_dashGetDados(); const h2=_dashGetHoraCheia();
+    const d2=_dashGetDados(); const h2=_dashGetHoraRef();
     _dashIdx=0;
     let t=0;
     while(t<_dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx],d2,h2)){
@@ -5890,11 +5890,22 @@ async function _dashLoad(){
   _dashRenderFooter();
 }
 
+// Retorna a hora de referência pra escolher robôs no carrossel.
+// Se estamos numa hora :30 mas NINGUÉM apontou nela ainda, usa a hora cheia anterior.
+function _dashGetHoraRef(){
+  const h = _dashGetHoraCheia();
+  if(!h.endsWith(':30')) return h;
+  const dados = _dashGetDados();
+  const algumTem = _dashRobos.some(k=>!_dashRoboSemValor(k, dados, h));
+  if(algumTem) return h;
+  // Nenhum robô apontou na :30 — usa a hora cheia anterior (mesma hora, minuto 00)
+  return h.replace(':30', ':00');
+}
 function _dashNextSlide(){
   if(_dashGeral){
     _dashGeral=false; _dashIdx=0;
     // Acha primeiro robô com produção
-    const d=_dashGetDados(); const h=_dashGetHoraCheia();
+    const d=_dashGetDados(); const h=_dashGetHoraRef();
     let t=0;
     while(t<_dashRobos.length && _dashRoboSemValor(_dashRobos[_dashIdx],d,h)){
       _dashIdx++; t++;
@@ -5906,14 +5917,14 @@ function _dashNextSlide(){
     return;
   }
   const dados=_dashGetDados();
-  const hora=_dashGetHoraCheia();
+  const hora=_dashGetHoraRef();
   // Conta quantos robôs têm produção
   const robosComProd = _dashRobos.filter(k=>!_dashRoboSemValor(k,dados,hora));
   // Se só tem 1 ou nenhum com produção, vai direto pra tela geral
   if(robosComProd.length <= 1){
     _dashGeral=true; _dashIdx=0;
     clearInterval(_dashSlideTimer);
-    _dashSlideTimer=setInterval(_dashNextSlide,40000);
+    _dashSlideTimer=setInterval(_dashNextSlide,30000);
     _dashRender(); _dashRenderFooter();
     return;
   }
@@ -5924,7 +5935,7 @@ function _dashNextSlide(){
     if(_dashIdx>=_dashRobos.length){
       _dashGeral=true; _dashIdx=0;
       clearInterval(_dashSlideTimer);
-      _dashSlideTimer=setInterval(_dashNextSlide,40000);
+      _dashSlideTimer=setInterval(_dashNextSlide,30000);
       _dashRender(); _dashRenderFooter();
       return;
     }
