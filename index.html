@@ -965,6 +965,44 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .ppeca-maq-tot span:last-child{ font-size:20px; font-weight:900; color:#00e87a; }
 .ppeca-maq-single{ margin-top:8px; font-size:12px; color:#6b7788; }
 .ppeca-maq-single b{ color:#00e87a; }
+/* Seletor de modo de período */
+.ppeca-modos{ display:flex; gap:6px; flex-wrap:wrap; background:#080b0f; border:1px solid #1e2530; border-radius:10px; padding:5px; margin-bottom:10px; }
+.ppeca-modo{ flex:1; min-width:80px; background:transparent; border:none; color:#8a95a8; padding:9px 10px; border-radius:7px; font-size:12.5px; font-weight:800; cursor:pointer; font-family:'Courier New',monospace; letter-spacing:.03em; transition:all .16s cubic-bezier(.4,0,.2,1); white-space:nowrap; }
+.ppeca-modo:hover{ color:#d8dde6; }
+.ppeca-modo.on{ background:linear-gradient(135deg,#00e87a,#00c060); color:#04120a; box-shadow:0 4px 12px -3px #00e87a66; }
+.ppeca-sel-wrap input[type=date]{ background:#080b0f; border:1px solid #1e2530; color:#d8dde6; border-radius:6px; padding:6px 10px; font-family:'Courier New',monospace; font-size:13px; cursor:pointer; outline:none; color-scheme:dark; }
+.ppeca-sel-wrap input[type=date]:focus{ border-color:#3d9eff; }
+.ppeca-cod-sub{ font-size:11px; color:#6b7788; margin-top:3px; font-family:'Courier New',monospace; }
+.ppeca-clickable{ cursor:pointer; transition:transform .14s ease, border-color .16s ease, box-shadow .18s ease; }
+.ppeca-clickable:hover{ transform:translateY(-2px); border-color:#00e87a55; box-shadow:0 10px 24px -10px #00e87a44; }
+.ppeca-clickable:active{ transform:scale(.995); }
+.ppeca-ver{ font-size:10.5px; color:#00e87a; margin-top:3px; font-family:'Courier New',monospace; opacity:.7; }
+/* Modal de detalhes da peça */
+.ppd-ov{ position:fixed; inset:0; background:#000000e0; z-index:9750; display:none; align-items:center; justify-content:center; padding:18px; -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+.ppd-ov.open{ display:flex; animation:indFadeIn .2s ease; }
+.ppd-card{ background:#0b0f14; border:1px solid #00e87a35; border-radius:18px; width:100%; max-width:720px; max-height:90vh; display:flex; flex-direction:column; animation:indModalIn .32s cubic-bezier(.34,1.4,.6,1); box-shadow:0 30px 80px -20px #000; }
+.ppd-head{ display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid #1e2530; }
+.ppd-head-cod{ font-size:26px; font-weight:900; color:#ffb300; font-family:'Courier New',monospace; line-height:1; }
+.ppd-head-sub{ font-size:12px; color:#7a8698; margin-top:4px; }
+.ppd-head-x{ margin-left:auto; background:#1e2530; border:none; color:#8a95a8; width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:15px; flex-shrink:0; transition:all .14s ease; }
+.ppd-head-x:hover{ background:#ff4d4d22; color:#ff6b6b; }
+.ppd-body{ padding:18px 22px 24px; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.ppd-hero{ text-align:center; padding:18px; background:linear-gradient(135deg,#00e87a12,#00e87a03); border:1px solid #00e87a28; border-radius:14px; margin-bottom:16px; }
+.ppd-hero-v{ font-size:52px; font-weight:900; color:#00e87a; font-family:'Courier New',monospace; line-height:1; text-shadow:0 0 30px #00e87a44; }
+.ppd-hero-l{ font-size:12px; color:#7a8698; text-transform:uppercase; letter-spacing:.12em; margin-top:6px; }
+.ppd-kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:18px; }
+.ppd-kpi{ background:#0f1318; border:1px solid #1e2530; border-left:3px solid var(--kc,#3d9eff); border-radius:11px; padding:12px 14px; }
+.ppd-kpi-l{ font-size:10.5px; color:#8a95a8; text-transform:uppercase; letter-spacing:.06em; font-weight:800; margin-bottom:5px; }
+.ppd-kpi-v{ font-size:24px; font-weight:900; color:var(--kc,#3d9eff); font-family:'Courier New',monospace; line-height:1; }
+.ppd-kpi-s{ font-size:11px; color:#6b7788; margin-top:4px; font-family:'Courier New',monospace; }
+.ppd-sec-t{ font-size:12px; color:#8a95a8; text-transform:uppercase; letter-spacing:.1em; font-weight:800; margin:18px 0 10px; }
+.ppd-hbars{ display:flex; align-items:flex-end; gap:3px; height:90px; padding:8px 0; background:#080b0f; border:1px solid #1e2530; border-radius:10px; padding:12px 10px; overflow-x:auto; }
+.ppd-hbar{ display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; min-width:26px; }
+.ppd-hbar-fill{ width:100%; max-width:20px; background:linear-gradient(180deg,#00e87a,#00a854); border-radius:3px 3px 0 0; min-height:2px; transition:height .4s cubic-bezier(.4,0,.2,1); }
+.ppd-hbar-fill.cafe{ background:linear-gradient(180deg,#ffb300,#c88a00); }
+.ppd-hbar-v{ font-size:10px; color:#8a95a8; font-family:'Courier New',monospace; }
+.ppd-hbar-h{ font-size:9.5px; color:#4a5568; font-family:'Courier New',monospace; }
+.ppd-empty{ text-align:center; color:#4a5568; padding:30px; font-size:13px; }
 @media (max-width:700px){
   .ppeca-wrap{ padding:12px 12px 30px; }
   .ppeca-titulo{ font-size:18px; }
@@ -974,6 +1012,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .ppeca-col-prop{ min-width:0; flex:1; }
   .ppeca-maq-card{ min-width:calc(50% - 4px); }
   .ppeca-kpis{ margin-left:0; width:100%; }
+  .ppeca-modo{ min-width:calc(33% - 6px); font-size:11.5px; padding:9px 4px; }
+  .ppd-ov{ padding:0; align-items:flex-end; }
+  .ppd-card{ max-width:100%; border-radius:18px 18px 0 0; max-height:94vh; animation:indSheetUp .3s cubic-bezier(.34,1.3,.6,1); }
+  .ppd-hero-v{ font-size:42px; }
 }
 /* ═══════════════════════════ PRODUÇÃO MENSAL (mapa) ═══════════════════════════ */
 .pmensal-wrap{ padding:18px 22px 40px; overflow-y:auto; flex:1; min-height:0; -webkit-overflow-scrolling:touch; animation:indFadeIn .3s cubic-bezier(.4,0,.2,1); }
@@ -11003,129 +11045,121 @@ Digite RESTAURAR (em maiúsculas) para confirmar:`;
 }
 
 // ═══════════════════════════ PRODUÇÃO POR PEÇA ═══════════════════════════
+const _ppDIAMS = 86400000;
+function _ppHojeStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function _ppParseInput(str){ const [a,m,d]=String(str||'').split('-').map(Number); return new Date(a||new Date().getFullYear(),(m||1)-1,d||1); }
+function _ppFmtData(d){ return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+function _ppSegunda(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const dow=(x.getDay()+6)%7; x.setDate(x.getDate()-dow); return x; }
+
 let _ppecaMes = new Date().getMonth();
 let _ppecaAno = new Date().getFullYear();
-let _ppecaVerAno = false;
+let _ppecaModo = 'mes'; // 'dia' | 'semana' | 'mes' | 'ano' | 'intervalo'
+let _ppecaDataDia = _ppHojeStr();
+let _ppecaDataSemana = _ppHojeStr();
+let _ppecaDataIni = _ppHojeStr();
+let _ppecaDataFim = _ppHojeStr();
 let _ppecaBusca = '';
+
+function _ppecaSetModo(mo){ _ppecaModo=mo; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetMes(m){ _ppecaMes=m; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetAno(a){ _ppecaAno=a; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
-function _ppecaToggleVerAno(){ _ppecaVerAno=!_ppecaVerAno; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetDataDia(v){ if(v)_ppecaDataDia=v; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetDataSemana(v){ if(v)_ppecaDataSemana=v; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetDataIni(v){ if(v)_ppecaDataIni=v; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
+function _ppecaSetDataFim(v){ if(v)_ppecaDataFim=v; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetBusca(v){
   _ppecaBusca = (v||'').toLowerCase().trim();
   const cont = document.getElementById('ppecaResultado');
   if(cont) cont.innerHTML = _ppecaRenderLista();
 }
-function _ppecaCalcular(){
-  // Retorna: {cod: {total, dias:{chave:qtd}, maquinas:{nome:qtd}}}
-  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
-  const out = {};
+
+// Define o período atual conforme o modo → {modo, iniMs, fimMs, label, numDias, gran}
+function _ppecaPeriodo(){
+  const y=_ppecaAno, m=_ppecaMes; let ini, fim, label, gran;
+  if(_ppecaModo==='ano'){ ini=new Date(y,0,1); fim=new Date(y,11,31); label=`Ano ${y} inteiro`; gran='mes'; }
+  else if(_ppecaModo==='dia'){ ini=_ppParseInput(_ppecaDataDia); fim=new Date(ini); label=_ppFmtData(ini); gran='hora'; }
+  else if(_ppecaModo==='semana'){ ini=_ppSegunda(_ppParseInput(_ppecaDataSemana)); fim=new Date(ini); fim.setDate(fim.getDate()+6); label=`Semana ${_ppFmtData(ini)} – ${_ppFmtData(fim)}`; gran='dia'; }
+  else if(_ppecaModo==='intervalo'){ ini=_ppParseInput(_ppecaDataIni); fim=_ppParseInput(_ppecaDataFim); if(fim<ini){ const t=ini; ini=fim; fim=t; } label=`${_ppFmtData(ini)} – ${_ppFmtData(fim)}`; gran='dia'; }
+  else { ini=new Date(y,m,1); fim=new Date(y,m+1,0); label=`${MESES[m]} de ${y}`; gran='dia'; }
+  const iniMs=new Date(ini.getFullYear(),ini.getMonth(),ini.getDate()).getTime();
+  const fimMs=new Date(fim.getFullYear(),fim.getMonth(),fim.getDate()).getTime();
+  const numDias=Math.round((fimMs-iniMs)/_ppDIAMS)+1;
+  return {modo:_ppecaModo, iniMs, fimMs, label, numDias, gran};
+}
+function _ppecaEmPeriodo(chave, per){
+  const p=chave.split('_').map(Number);
+  const t=new Date(p[0],p[1],p[2]).getTime();
+  return t>=per.iniMs && t<=per.fimMs;
+}
+
+// Agrega tudo por código no período: total, porDia, porHora, maquinas, meta, horas-máquina
+function _ppecaAgregar(per){
+  const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const out={};
   if(!mapaDados || !mapaDados.metas_dias) return out;
   Object.entries(mapaDados.metas_dias).forEach(([chave, dia])=>{
-    if(!dia) return;
+    if(!dia || !_ppecaEmPeriodo(chave, per)) return;
     Object.entries(dia).forEach(([slot, rd])=>{
       if(!rd || typeof rd!=='object') return;
-      const cod = (rd.cod||'').trim();
+      const cod=(rd.cod||'').trim();
       if(!cod || cod==='—') return;
-      const nome = (rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
-      let totalSlot = 0;
-      HORAS.forEach(h=>{ totalSlot += parseCelVal(rd[campoH(h)]||'').num; });
+      const nome=(rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
+      const meta=parseInt(rd.meta)||0;
+      const o=out[cod] || (out[cod]={total:0, porDia:{}, porHora:{}, maquinas:{}, metaVotes:{}, horasMaq:0});
+      let totalSlot=0;
+      HORAS.forEach(h=>{
+        const v=parseCelVal(rd[campoH(h)]||'').num;
+        if(v>0){ totalSlot+=v; o.porHora[h]=(o.porHora[h]||0)+v; o.horasMaq++; }
+      });
       if(totalSlot<=0) return;
-      if(!out[cod]) out[cod] = {total:0, dias:{}, maquinas:{}};
-      out[cod].total += totalSlot;
-      out[cod].dias[chave] = (out[cod].dias[chave]||0) + totalSlot;
-      out[cod].maquinas[nome] = (out[cod].maquinas[nome]||0) + totalSlot;
+      o.total+=totalSlot;
+      o.porDia[chave]=(o.porDia[chave]||0)+totalSlot;
+      o.maquinas[nome]=(o.maquinas[nome]||0)+totalSlot;
+      if(meta>0) o.metaVotes[meta]=(o.metaVotes[meta]||0)+1;
     });
   });
   return out;
 }
+function _ppecaMetaMais(metaVotes){ let best=0,bc=0; Object.entries(metaVotes||{}).forEach(([mt,c])=>{ if(c>bc){bc=c;best=+mt;} }); return best; }
+
 function _ppecaRenderLista(){
-  const dados = _ppecaCalcular();
-  const y = _ppecaAno, m = _ppecaMes, verAno = _ppecaVerAno;
-  const filtrados = {};
-  Object.keys(dados).forEach(cod=>{
-    if(_ppecaBusca && !cod.toLowerCase().includes(_ppecaBusca)) return;
-    let total = 0; const diasMes = {}; const mesesAno = {};
-    Object.entries(dados[cod].dias).forEach(([chave, qtd])=>{
-      const [aa,mm,dd] = chave.split('_').map(Number);
-      if(aa !== y) return;
-      if(verAno){ mesesAno[mm] = (mesesAno[mm]||0) + qtd; total += qtd; }
-      else if(mm === m){ diasMes[dd] = (diasMes[dd]||0) + qtd; total += qtd; }
-    });
-    // Maquinas com produção nesse periodo
-    const maqPeriodo = {};
-    Object.entries(dados[cod].dias).forEach(()=>{}); // noop
-    // Refaz: agregado por maquina só do periodo escolhido
-    const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
-    Object.entries(mapaDados.metas_dias||{}).forEach(([chave, dia])=>{
-      const [aa,mm,dd] = chave.split('_').map(Number);
-      if(aa !== y) return;
-      if(!verAno && mm !== m) return;
-      if(!dia) return;
-      Object.entries(dia).forEach(([slot, rd])=>{
-        if(!rd || (rd.cod||'').trim() !== cod) return;
-        const nome = (rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
-        let s = 0;
-        HORAS.forEach(h=>{ s += parseCelVal(rd[campoH(h)]||'').num; });
-        if(s>0) maqPeriodo[nome] = (maqPeriodo[nome]||0) + s;
-      });
-    });
-    if(total>0) filtrados[cod] = {total, dias:diasMes, meses:mesesAno, maquinas:maqPeriodo};
-  });
-  const codigos = Object.keys(filtrados).sort((a,b)=>filtrados[b].total - filtrados[a].total);
+  const per=_ppecaPeriodo();
+  const dados=_ppecaAgregar(per);
+  const codigos=Object.keys(dados)
+    .filter(c=>!_ppecaBusca || c.toLowerCase().includes(_ppecaBusca))
+    .sort((a,b)=>dados[b].total-dados[a].total);
   if(!codigos.length){
     return `<div class="ppeca-empty">${_ppecaBusca ? `Nenhuma peça encontrada para "<b>${esc(_ppecaBusca)}</b>"` : 'Nenhum código com produção neste período.'}</div>`;
   }
-  const maxTotal = Math.max(...codigos.map(c=>filtrados[c].total), 1);
+  const maxTotal=Math.max(...codigos.map(c=>dados[c].total),1);
+  const corAcento = per.modo==='ano' ? '#3d9eff' : '#00e87a';
+  const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
   return codigos.map(cod=>{
-    const {total, dias, meses, maquinas} = filtrados[cod];
-    const pct = Math.round(total/maxTotal*100);
-    let sparkBars, sparkLabel;
-    if(verAno){
-      const vals = Array.from({length:12}, (_,i)=>meses[i]||0);
-      const mx = Math.max(...vals, 1);
-      sparkLabel = 'Meses do ano';
-      sparkBars = vals.map((v,i)=>{
-        const h = v>0 ? Math.max(Math.round(v/mx*22),3) : 1;
-        return `<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${h}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
-      }).join('');
+    const d=dados[cod]; const total=d.total; const pct=Math.round(total/maxTotal*100);
+    let sparkBars='', sparkLabel='';
+    if(per.gran==='mes'){
+      const vals=Array.from({length:12},()=>0);
+      Object.entries(d.porDia).forEach(([ch,q])=>{ vals[ch.split('_').map(Number)[1]]+=q; });
+      const mx=Math.max(...vals,1); sparkLabel='Meses do ano';
+      sparkBars=vals.map((v,i)=>`<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`).join('');
+    } else if(per.gran==='hora'){
+      const mx=Math.max(...HORAS.map(h=>d.porHora[h]||0),1); sparkLabel='Horas do dia';
+      sparkBars=HORAS.map(h=>{ const v=d.porHora[h]||0; return `<div title="${h}: ${v.toLocaleString('pt-BR')}" style="width:8px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`; }).join('');
     } else {
-      const vals = Array.from({length:31}, (_,i)=>dias[i+1]||0);
-      const mx = Math.max(...vals, 1);
-      sparkLabel = 'Dias do mês';
-      sparkBars = vals.map((v,i)=>{
-        const h = v>0 ? Math.max(Math.round(v/mx*22),3) : 1;
-        return `<div title="Dia ${i+1}: ${v.toLocaleString('pt-BR')}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
-      }).join('');
+      const dias=[]; for(let t=per.iniMs;t<=per.fimMs;t+=_ppDIAMS){ const dt=new Date(t); dias.push(`${dt.getFullYear()}_${dt.getMonth()}_${dt.getDate()}`); }
+      const mx=Math.max(...dias.map(k=>d.porDia[k]||0),1); sparkLabel = per.modo==='semana'?'Dias da semana':'Dias do período';
+      const w = dias.length>31?4:(dias.length>14?5:9);
+      sparkBars=dias.map(k=>{ const v=d.porDia[k]||0; const dd=k.split('_')[2]; return `<div title="Dia ${dd}: ${v.toLocaleString('pt-BR')}" style="width:${w}px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`; }).join('');
     }
-    const maqOrd = Object.entries(maquinas).sort((a,b)=>b[1]-a[1]);
-    const maqHTML = maqOrd.length > 1
-      ? `<div class="ppeca-maq-wrap">
-          <div class="ppeca-maq-title">Produção por máquina</div>
-          <div class="ppeca-maq-grid">
-            ${maqOrd.map(([nome,qtd])=>{
-              const pctR = Math.round(qtd/total*100);
-              return `<div class="ppeca-maq-card">
-                <div class="ppeca-maq-nome">🏭 Máq. ${esc(nome)}</div>
-                <div class="ppeca-maq-val">${qtd.toLocaleString('pt-BR')}</div>
-                <div class="ppeca-maq-bar"><div style="width:${pctR}%"></div></div>
-                <div class="ppeca-maq-pct">${pctR}% do total</div>
-              </div>`;
-            }).join('')}
-          </div>
-          <div class="ppeca-maq-tot">
-            <span>${maqOrd.length} máquina(s) · Total combinado</span>
-            <span>${total.toLocaleString('pt-BR')}</span>
-          </div>
-        </div>`
-      : maqOrd.length === 1
-        ? `<div class="ppeca-maq-single">🏭 Produzido pela Máq. <b>${esc(maqOrd[0][0])}</b></div>`
-        : '';
-    const corAcento = verAno ? '#3d9eff' : '#00e87a';
-    return `<div class="ppeca-card">
+    const maqOrd=Object.entries(d.maquinas).sort((a,b)=>b[1]-a[1]);
+    const maqResumo = maqOrd.length>1 ? `${maqOrd.length} máquinas` : (maqOrd.length===1?`Máq. ${esc(maqOrd[0][0])}`:'');
+    const codEsc = String(cod).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="ppeca-card ppeca-clickable" onclick="_ppecaAbrirDetalhe('${codEsc}')" title="Ver detalhes de ${esc(cod)}">
       <div class="ppeca-head">
         <div class="ppeca-col-cod">
           <div class="ppeca-lbl">Código</div>
           <div class="ppeca-cod">${esc(cod)}</div>
+          ${maqResumo?`<div class="ppeca-cod-sub">${maqResumo}</div>`:''}
         </div>
         <div class="ppeca-col-spark">
           <div class="ppeca-lbl">${sparkLabel}</div>
@@ -11137,51 +11171,139 @@ function _ppecaRenderLista(){
           <div class="ppeca-prop-pct">${pct}% do maior</div>
         </div>
         <div class="ppeca-col-tot">
-          <div class="ppeca-lbl">Total ${verAno?'no ano':''}</div>
+          <div class="ppeca-lbl">Total</div>
           <div class="ppeca-tot" style="color:${corAcento}">${total.toLocaleString('pt-BR')}</div>
+          <div class="ppeca-ver">ver detalhes ›</div>
         </div>
       </div>
-      ${maqHTML}
     </div>`;
   }).join('');
 }
+
+// ── Card de detalhes (modal) ──
+function _ppecaFecharDetalhe(){ const ov=document.getElementById('ppdOv'); if(ov) ov.classList.remove('open'); }
+function _ppecaAbrirDetalhe(cod){
+  const per=_ppecaPeriodo();
+  const d=_ppecaAgregar(per)[cod];
+  if(!d){ showToast('Sem dados para '+cod,true); return; }
+  const total=d.total;
+  const diasProd=Object.keys(d.porDia).length;
+  const horasMaq=d.horasMaq;
+  const mediaDia = diasProd>0?Math.round(total/diasProd):0;
+  const mediaHora = horasMaq>0?Math.round(total/horasMaq):0;
+  const mediaMin = horasMaq>0? +(total/(horasMaq*60)).toFixed(2):0;
+  const meta=_ppecaMetaMais(d.metaVotes);
+  const pctMeta = meta>0? Math.round(mediaHora/meta*100):null;
+  let melhorDia=null,piorDia=null;
+  Object.entries(d.porDia).forEach(([k,v])=>{ if(!melhorDia||v>melhorDia.v)melhorDia={k,v}; if(!piorDia||v<piorDia.v)piorDia={k,v}; });
+  let melhorHora=null;
+  Object.entries(d.porHora).forEach(([h,v])=>{ if(!melhorHora||v>melhorHora.v)melhorHora={h,v}; });
+  const fmtK=k=>{ const p=k.split('_').map(Number); return `${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}`; };
+  const maqOrd=Object.entries(d.maquinas).sort((a,b)=>b[1]-a[1]);
+
+  const kpi=(l,v,s,c)=>`<div class="ppd-kpi" style="--kc:${c}"><div class="ppd-kpi-l">${l}</div><div class="ppd-kpi-v">${v}</div><div class="ppd-kpi-s">${s}</div></div>`;
+  const kpis=[
+    kpi('Média por dia', mediaDia.toLocaleString('pt-BR'), `${diasProd} dia${diasProd!==1?'s':''} produtivo${diasProd!==1?'s':''}`, '#ffb300'),
+    kpi('Média por hora', mediaHora.toLocaleString('pt-BR'), 'por máquina ativa', '#3d9eff'),
+    kpi('Média por minuto', String(mediaMin).replace('.',','), 'peça/min por máquina', '#a78bfa'),
+    kpi('Meta/hora', meta>0?meta.toLocaleString('pt-BR'):'—', pctMeta!=null?`${pctMeta}% da meta atingido`:'sem meta cadastrada', pctMeta==null?'#6b7788':(pctMeta>=100?'#00e87a':'#ff6a00')),
+    melhorDia?kpi('Melhor dia', melhorDia.v.toLocaleString('pt-BR'), fmtK(melhorDia.k), '#00e87a'):'',
+    (piorDia&&diasProd>1)?kpi('Menor dia', piorDia.v.toLocaleString('pt-BR'), fmtK(piorDia.k), '#ff6b6b'):'',
+    melhorHora?kpi('Melhor hora', melhorHora.v.toLocaleString('pt-BR'), `às ${melhorHora.h}`, '#00e87a'):'',
+    kpi('Dias produtivos', `${diasProd}/${per.numDias}`, 'dias com produção', '#3d9eff'),
+    kpi('Máquinas', String(maqOrd.length), maqOrd.length===1?'única célula':'células envolvidas', '#a78bfa')
+  ].filter(Boolean).join('');
+
+  // Distribuição por hora
+  const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const mxH=Math.max(...HORAS.map(h=>d.porHora[h]||0),1);
+  const hbars=HORAS.map(h=>{
+    const v=d.porHora[h]||0;
+    const isCafe=(typeof HORAS_CAFE!=='undefined') && HORAS_CAFE.includes(h);
+    return `<div class="ppd-hbar"><div class="ppd-hbar-v">${v>0?v.toLocaleString('pt-BR'):''}</div><div class="ppd-hbar-fill${isCafe?' cafe':''}" style="height:${v>0?Math.max(Math.round(v/mxH*54),3):2}px"></div><div class="ppd-hbar-h">${h.replace(':00','h').replace(':30','h½')}</div></div>`;
+  }).join('');
+
+  // Distribuição por máquina
+  const maqHTML = maqOrd.length ? `<div class="ppeca-maq-grid">${maqOrd.map(([nome,qtd])=>{
+    const pctR=Math.round(qtd/total*100);
+    return `<div class="ppeca-maq-card"><div class="ppeca-maq-nome">🏭 Máq. ${esc(nome)}</div><div class="ppeca-maq-val">${qtd.toLocaleString('pt-BR')}</div><div class="ppeca-maq-bar"><div style="width:${pctR}%"></div></div><div class="ppeca-maq-pct">${pctR}% do total</div></div>`;
+  }).join('')}</div>` : '<div class="ppd-empty">Sem máquinas.</div>';
+
+  let ov=document.getElementById('ppdOv');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='ppdOv'; ov.className='ppd-ov';
+    ov.addEventListener('click',e=>{ if(e.target===ov) _ppecaFecharDetalhe(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape' && ov.classList.contains('open')) _ppecaFecharDetalhe(); });
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML=`
+    <div class="ppd-card">
+      <div class="ppd-head">
+        <div>
+          <div class="ppd-head-cod">${esc(cod)}</div>
+          <div class="ppd-head-sub">📅 ${per.label}</div>
+        </div>
+        <button class="ppd-head-x" onclick="_ppecaFecharDetalhe()">✕</button>
+      </div>
+      <div class="ppd-body">
+        <div class="ppd-hero">
+          <div class="ppd-hero-v">${total.toLocaleString('pt-BR')}</div>
+          <div class="ppd-hero-l">peças produzidas no período</div>
+        </div>
+        <div class="ppd-kpis">${kpis}</div>
+        <div class="ppd-sec-t">⏱ Distribuição por hora</div>
+        <div class="ppd-hbars">${hbars}</div>
+        <div class="ppd-sec-t">🏭 Produção por máquina</div>
+        ${maqHTML}
+      </div>
+    </div>`;
+  ov.classList.add('open');
+}
+
 function renderMapaProdPeca(){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
   if(!mapaDados){ wrap.innerHTML = '<div class="ppeca-empty" style="padding:60px">Carregando...</div>'; return; }
   const anoAtual = new Date().getFullYear();
-  const y = _ppecaAno, m = _ppecaMes, verAno = _ppecaVerAno;
+  const y = _ppecaAno, m = _ppecaMes;
   const mesesOpts = MESES.map((mn,i)=>`<option value="${i}" ${i===m?'selected':''}>${mn}</option>`).join('');
-  const anosOpts = [anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===y?'selected':''}>${a}</option>`).join('');
-  const dados = _ppecaCalcular();
-  // Total geral para os KPIs
-  let totalGeral = 0; let numCodigos = 0;
-  Object.entries(dados).forEach(([cod, d])=>{
-    let sub = 0;
-    Object.entries(d.dias).forEach(([chave, qtd])=>{
-      const [aa,mm] = chave.split('_').map(Number);
-      if(aa !== y) return;
-      if(!verAno && mm !== m) return;
-      sub += qtd;
-    });
-    if(sub>0){ totalGeral += sub; numCodigos++; }
-  });
+  const anosOpts = [anoAtual-2, anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===y?'selected':''}>${a}</option>`).join('');
+  const per = _ppecaPeriodo();
+  const agg = _ppecaAgregar(per);
+  let totalGeral=0, numCodigos=0;
+  Object.values(agg).forEach(d=>{ totalGeral+=d.total; numCodigos++; });
+
+  const modos=[['dia','📆 Dia'],['semana','🗓️ Semana'],['mes','📅 Mês'],['ano','📊 Ano'],['intervalo','↔️ Período']];
+  const modoPills=modos.map(([mo,lbl])=>`<button class="ppeca-modo ${_ppecaModo===mo?'on':''}" onclick="_ppecaSetModo('${mo}')">${lbl}</button>`).join('');
+
+  let controles='';
+  if(_ppecaModo==='dia'){
+    controles=`<div class="ppeca-sel-wrap"><label>Escolha o dia</label><input type="date" value="${_ppecaDataDia}" onchange="_ppecaSetDataDia(this.value)"></div>`;
+  } else if(_ppecaModo==='semana'){
+    controles=`<div class="ppeca-sel-wrap"><label>Um dia da semana</label><input type="date" value="${_ppecaDataSemana}" onchange="_ppecaSetDataSemana(this.value)"></div>`;
+  } else if(_ppecaModo==='intervalo'){
+    controles=`<div class="ppeca-sel-wrap"><label>De</label><input type="date" value="${_ppecaDataIni}" onchange="_ppecaSetDataIni(this.value)"></div><div class="ppeca-sel-wrap"><label>Até</label><input type="date" value="${_ppecaDataFim}" onchange="_ppecaSetDataFim(this.value)"></div>`;
+  } else if(_ppecaModo==='ano'){
+    controles=`<div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppecaSetAno(+this.value)">${anosOpts}</select></div>`;
+  } else {
+    controles=`<div class="ppeca-sel-wrap"><label>Mês</label><select onchange="_ppecaSetMes(+this.value)">${mesesOpts}</select></div><div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppecaSetAno(+this.value)">${anosOpts}</select></div>`;
+  }
+
   wrap.innerHTML = `
     <div class="ppeca-wrap">
       <div class="ppeca-header">
         <div>
           <div class="ppeca-titulo">📈 Produção por Peça</div>
-          <div class="ppeca-sub">Leitura automática da tabela de Produção${verAno?` — <b style="color:#3d9eff">ano ${y} inteiro</b>`:''}</div>
+          <div class="ppeca-sub">Período: <b style="color:#00e87a">${per.label}</b> · toque numa peça para ver todos os detalhes</div>
         </div>
       </div>
+      <div class="ppeca-modos">${modoPills}</div>
       <div class="ppeca-filtros">
         <span style="font-size:16px">📅</span>
-        ${!verAno?`<div class="ppeca-sel-wrap"><label>Mês</label><select onchange="_ppecaSetMes(+this.value)">${mesesOpts}</select></div>`:''}
-        <div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppecaSetAno(+this.value)">${anosOpts}</select></div>
-        <button class="ppeca-btn-ano ${verAno?'on':''}" onclick="_ppecaToggleVerAno()">${verAno?'✓ Total do Ano':'∑ Ver Total do Ano'}</button>
+        ${controles}
         <div class="ppeca-kpis">
           <div class="ppeca-kpi cods">${numCodigos} código(s)</div>
-          <div class="ppeca-kpi tot">∑ ${totalGeral.toLocaleString('pt-BR')} peças${verAno?` em ${y}`:''}</div>
+          <div class="ppeca-kpi tot">∑ ${totalGeral.toLocaleString('pt-BR')} peças</div>
         </div>
       </div>
       <div class="ppeca-busca">
