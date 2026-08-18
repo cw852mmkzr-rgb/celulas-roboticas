@@ -17074,6 +17074,10 @@ async function dispEncerrarTodos(){
     .rel-peca-remover:hover{ background:#ff4d4d22; color:#ff4d4d; }
     .rel-periodo-wrap{ display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
     .rel-periodo-wrap::-webkit-scrollbar{ display:none; }
+    .rel-fonte-wrap{ display:flex; gap:6px; align-items:center; margin-bottom:10px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; }
+    .rel-fonte-wrap::-webkit-scrollbar{ display:none; }
+    .rel-fonte-lbl{ flex:0 0 auto; font-size:10.5px; color:#7a8698; text-transform:uppercase; letter-spacing:.08em; font-weight:800; margin-right:2px; }
+    .rel-fonte-wrap .rel-periodo-btn.on{ background:linear-gradient(135deg,#a78bfa,#7c5cf0); border-color:transparent; color:#fff; }
     .rel-periodo-btn{ flex:0 0 auto; background:#0f1318; border:1px solid #1e2530; color:#8a95a8; padding:8px 16px; border-radius:99px; font-size:12px; font-weight:800; letter-spacing:.05em; cursor:pointer; font-family:'Courier New',monospace; transition:all .18s cubic-bezier(.4,0,.2,1); }
     .rel-periodo-btn:hover{ border-color:#3d9eff40; color:#d8dde6; }
     .rel-periodo-btn.on{ background:linear-gradient(135deg,#3d9eff,#1e6fdb); border-color:#3d9eff; color:#fff; box-shadow:0 3px 12px -2px #3d9eff66; }
@@ -17274,6 +17278,7 @@ let _relPeca = null;
 let _relPecaBusca = '';
 let _relPecaDropdownAberto = false;
 let _relPeriodo = 'ult30';
+let _relFonte = 'mapa'; // 'mapa' | 'celulas' | 'ambos' — fonte dos dados de produção
 let _relDataIni = '';
 let _relDataFim = '';
 let _relResultado = null;
@@ -17432,8 +17437,8 @@ function _relCalcular(codigoPeca, chaves){
     porDia[chave] = (porDia[chave]||0) + valor;
     diasComProd.add(chave);
   };
-  // (a) Fonte 1: Mapa de Produção — mapaDados.metas_dias
-  chaves.forEach(chave => {
+  // (a) Fonte 1: Mapa de Produção — mapaDados.metas_dias (só se a fonte incluir o Mapa)
+  if(_relFonte !== 'celulas') chaves.forEach(chave => {
     const dia = mapaDados && mapaDados.metas_dias && mapaDados.metas_dias[chave];
     if(!dia) return;
     Object.entries(dia).forEach(([slot, rd]) => {
@@ -17447,9 +17452,9 @@ function _relCalcular(codigoPeca, chaves){
       });
     });
   });
-  // (b) Fonte 2: Células Robóticas — celulas[metaKey].metas_dias (robôs 600-611)
+  // (b) Fonte 2: Células Robóticas — celulas[metaKey].metas_dias (robôs 600-611) (só se a fonte incluir Células)
   try{
-    if(typeof celulas!=='undefined' && celulas){
+    if(_relFonte !== 'mapa' && typeof celulas!=='undefined' && celulas){
       const metaKey = (typeof getCellTipo==='function')
         ? Object.keys(celulas).find(k => getCellTipo(k)==='metas')
         : null;
@@ -17550,6 +17555,13 @@ function _relRender(){
       </div>
 
       ${pecaSel ? _relPecaCardHTML(pecaSel) : ''}
+
+      <div class="rel-fonte-wrap rel-no-print">
+        <span class="rel-fonte-lbl">📊 Fonte dos dados</span>
+        ${[['mapa','🏭 Mapa de Produção'],['celulas','🤖 Células Robóticas'],['ambos','🔀 Combinado']].map(([f,l])=>
+          `<button class="rel-periodo-btn ${_relFonte===f?'on':''}" onclick="_relSetFonte('${f}')">${l}</button>`
+        ).join('')}
+      </div>
 
       <div class="rel-periodo-wrap rel-no-print">
         ${['hoje','ult7','ult30','mes','mesAnt','custom'].map(p =>
@@ -17721,6 +17733,12 @@ function _relPecaCardHTML(p){
 // ── Handlers de período ──
 function _relSetPeriodo(p){
   _relPeriodo = p;
+  _relResultado = null; _relAnaliseIA = null; _relAnaliseErro = null;
+  _relRender();
+}
+function _relFonteLabel(f){ return ({mapa:'Mapa de Produção', celulas:'Células Robóticas', ambos:'Mapa + Células (combinado)'})[f||_relFonte]||'—'; }
+function _relSetFonte(f){
+  _relFonte = f;
   _relResultado = null; _relAnaliseIA = null; _relAnaliseErro = null;
   _relRender();
 }
@@ -17903,6 +17921,7 @@ function _relResultadoHTML(){
         <div class="rel-ident-i"><div class="rel-ident-i-l">Descrição</div><div class="rel-ident-i-v pequeno">${esc(p.nome||p.codigo||'—')}</div></div>
         <div class="rel-ident-i"><div class="rel-ident-i-l">Cliente</div><div class="rel-ident-i-v pequeno" style="color:#a78bfa">${esc(p.cliente||'—')}</div></div>
         <div class="rel-ident-i"><div class="rel-ident-i-l">Período</div><div class="rel-ident-i-v pequeno" style="color:#3d9eff">${esc(periodoDesc)}</div></div>
+        <div class="rel-ident-i"><div class="rel-ident-i-l">Fonte</div><div class="rel-ident-i-v pequeno" style="color:#c9a6ff">${esc(_relFonteLabel())}</div></div>
       </div>
     </div>
 
@@ -18092,6 +18111,7 @@ async function _relBuscarAnaliseIA(){
       codigo: p.codigo, nome: p.nome||p.codigo, cliente: p.cliente||'—',
       meta_hora: p.meta_hora||null, tempo_peca: p.tempo_peca||null, pontos_solda: p.pontos_solda||null
     },
+    fonte_dados: _relFonteLabel(),
     periodo: {label: _relPeriodoLabel(_relPeriodo), descricao: periodoDesc, dias_no_periodo: r.totalDiasPeriodo, dias_com_producao: r.numDiasProd, dias_sem_producao: r.diasSemProd},
     resultado: {
       total_pecas: r.totalPecas, media_por_hora: r.mediaHora, media_por_minuto: r.mediaMin,
@@ -18242,6 +18262,7 @@ function _relResumoWhatsappTexto(){
   linhas.push(`🔧 *Peça:* ${p.codigo}${p.nome && p.nome!==p.codigo ? ' — '+p.nome : ''}`);
   if(p.cliente) linhas.push(`🏢 *Cliente:* ${p.cliente}`);
   linhas.push(`📅 *Período:* ${periodo}`);
+  linhas.push(`📊 *Fonte:* ${_relFonteLabel()}`);
   linhas.push(``);
   linhas.push(`▪ Total produzido: *${_relFormatarNum(r.totalPecas)} peças*`);
   linhas.push(`▪ Média/hora: *${_relFormatarNum(r.mediaHora)}* · Média/dia: *${_relFormatarNum(r.mediaDia)}*`);
