@@ -17086,6 +17086,22 @@ function _relChaveDia(d){ return `${d.getFullYear()}_${d.getMonth()}_${d.getDate
 function _relParseChave(k){ const [a,m,di]=k.split('_').map(Number); return new Date(a,m,di); }
 function _relFormatData(d){ if(!d) return '—'; const dt = d instanceof Date ? d : (typeof d==='string'? _relParseChave(d) : new Date(d)); return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`; }
 function _relFormatarNum(n){ return (n||0).toLocaleString('pt-BR'); }
+// Detecta dias úteis (seg-sex) sem produção ou com produção muito baixa (< 50% da média) — indício de falta de mão de obra
+function _relDiasCriticos(r){
+  const nomesDiaSemana = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const mediaDiaRef = r.mediaDia || 0;
+  const limiteBaixa = mediaDiaRef > 0 ? Math.round(mediaDiaRef * 0.5) : 0;
+  const semProducao = [], baixaProducao = [];
+  (r.chaves||[]).forEach(chave => {
+    const dt = _relParseChave(chave);
+    const dow = dt.getDay();
+    if(dow===0 || dow===6) return; // ignora fim de semana
+    const total = (r.porDia && r.porDia[chave]) || 0;
+    if(total === 0) semProducao.push({ chave, data:_relFormatData(chave), dia_semana:nomesDiaSemana[dow] });
+    else if(limiteBaixa > 0 && total < limiteBaixa) baixaProducao.push({ chave, data:_relFormatData(chave), dia_semana:nomesDiaSemana[dow], pecas:total });
+  });
+  return { mediaDiaRef, limiteBaixa, semProducao, baixaProducao };
+}
 function _relPeriodoLabel(p){ return ({hoje:'Hoje',ult7:'Últimos 7 dias',ult30:'Últimos 30 dias',mes:'Mês atual',mesAnt:'Mês anterior',custom:'Personalizado'})[p]||p; }
 function _relValidaNumero(num){ const s = String(num||'').replace(/\D/g,''); if(s.length<10 || s.length>15) return null; return s; }
 
@@ -17710,6 +17726,18 @@ function _relResultadoHTML(){
     </div>
     `}
 
+    ${(()=>{
+      const dc = _relDiasCriticos(r);
+      if(!dc.semProducao.length && !dc.baixaProducao.length) return '';
+      const item = (d, extra) => `<span style="display:inline-block;background:#b06cff18;border:1px solid #b06cff44;color:#c9a6ff;border-radius:8px;padding:4px 10px;margin:3px 4px 0 0;font-size:13px;font-weight:700;white-space:nowrap">${d.data}${extra||''}</span>`;
+      return `<div class="rel-block" style="border:1px solid #b06cff40;background:linear-gradient(135deg,#b06cff10,#b06cff03)">
+        <div class="rel-block-title" style="color:#c9a6ff">🚫 Paradas por Falta de Mão de Obra</div>
+        <div style="font-size:13px;color:#a8b3c4;margin-bottom:12px;line-height:1.5">Dias úteis (seg–sex) em que a célula ficou parada ou com produção muito abaixo da média (< 50% de ${_relFormatarNum(dc.mediaDiaRef)} pç/dia) por ausência de operador para a peça ${esc(p.codigo)}.</div>
+        ${dc.semProducao.length ? `<div style="margin-bottom:10px"><div style="font-size:12px;color:#7a8698;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Sem produção (${dc.semProducao.length} dia${dc.semProducao.length!==1?'s':''})</div>${dc.semProducao.map(d=>item(d)).join('')}</div>` : ''}
+        ${dc.baixaProducao.length ? `<div><div style="font-size:12px;color:#7a8698;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Produção baixa (${dc.baixaProducao.length} dia${dc.baixaProducao.length!==1?'s':''})</div>${dc.baixaProducao.map(d=>item(d,` · ${_relFormatarNum(d.pecas)} pç`)).join('')}</div>` : ''}
+      </div>`;
+    })()}
+
     <div class="rel-block rel-block-ia">
       <div class="rel-block-title">🧠 Análise Executiva — MR.ROBOT</div>
       <div id="relAnaliseTexto">
@@ -17855,8 +17883,17 @@ async function _relBuscarAnaliseIA(){
       producao_por_hora: Object.fromEntries(Object.entries(r.porHora).sort((a,b)=>a[0].localeCompare(b[0])))
     }
   };
+  // ── Dias críticos: sem produção ou produção muito baixa em dia útil (indício de falta de mão de obra) ──
+  const _dc = _relDiasCriticos(r);
+  contexto.dias_criticos = {
+    media_diaria_referencia: _dc.mediaDiaRef,
+    limite_producao_baixa: _dc.limiteBaixa,
+    dias_sem_producao: _dc.semProducao.map(d=>({data:d.data, dia_semana:d.dia_semana})),
+    dias_producao_baixa: _dc.baixaProducao.map(d=>({data:d.data, dia_semana:d.dia_semana, pecas:d.pecas})),
+    observacao: 'Dias úteis (segunda a sexta) sem produção ou com produção muito abaixo da média foram causados por FALTA DE MÃO DE OBRA — ausência de operador/soldador para operar a célula robótica. Sábados e domingos foram excluídos por não serem dias úteis padrão.'
+  };
   _relUltimoContexto = contexto;
-  const pergunta = `Escreva uma análise executiva formal em português brasileiro sobre a produção da peça ${p.codigo} (${p.nome||p.codigo}) no período ${periodoDesc}. Estruture em 3 a 5 parágrafos cobrindo: (1) performance geral do período com números-chave; (2) tendências e padrões observados (dias produtivos vs improdutivos, horários de pico, robôs mais eficientes); (3) comparação entre o melhor e o pior dia produtivo; (4) sugestões concretas de otimização com base nos dados; (5) alertas caso haja queda de produção evidente ou padrões preocupantes. Tom estritamente corporativo — sem emojis, sem gírias, sem coloquialismos. Linguagem de relatório executivo para gestor industrial e cliente final. Não invente dados que não estejam no contexto. Se algum indicador for zero ou nulo, mencione objetivamente. Não use listas com marcadores nem títulos de seção — apenas parágrafos corridos.`;
+  const pergunta = `Escreva uma análise executiva formal em português brasileiro sobre a produção da peça ${p.codigo} (${p.nome||p.codigo}) no período ${periodoDesc}. Estruture em 4 a 6 parágrafos cobrindo: (1) performance geral do período com números-chave; (2) tendências e padrões observados (dias produtivos vs improdutivos, horários de pico, robôs mais eficientes); (3) UM PARÁGRAFO DEDICADO E EXPLÍCITO sobre os dias críticos — use os dados de "dias_criticos" do contexto para listar, com as DATAS EXATAS, os dias úteis em que a peça NÃO teve produção e os dias em que a produção ficou muito abaixo da média. Deixe CLARO e sem ambiguidade que essas paradas e quedas ocorreram por FALTA DE MÃO DE OBRA (ausência de operador para a célula robótica), pois o robô estava disponível mas não havia colaborador para operá-lo. Se as listas de dias_criticos estiverem vazias, afirme objetivamente que não houve paradas por falta de mão de obra no período; (4) comparação entre o melhor e o pior dia produtivo; (5) sugestões concretas de otimização com base nos dados, incluindo a necessidade de garantir mão de obra nos dias úteis quando houver paradas por esse motivo; (6) alertas caso haja queda de produção evidente. Tom estritamente corporativo — sem emojis, sem gírias, sem coloquialismos. Linguagem de relatório executivo para gestor industrial e cliente final. Não invente dados que não estejam no contexto. Se algum indicador for zero ou nulo, mencione objetivamente. Não use listas com marcadores nem títulos de seção — apenas parágrafos corridos, mas cite as datas exatas dentro do texto.`;
   try{
     const r2 = await fetch(SUPABASE_URL+"/functions/v1/ia-fabrica", {
       method:"POST",
@@ -17990,6 +18027,18 @@ function _relResumoWhatsappTexto(){
   linhas.push(`▪ Total produzido: *${_relFormatarNum(r.totalPecas)} peças*`);
   linhas.push(`▪ Média/hora: *${_relFormatarNum(r.mediaHora)}* · Média/dia: *${_relFormatarNum(r.mediaDia)}*`);
   linhas.push(`▪ Dias produtivos: *${r.numDiasProd}* de ${r.totalDiasPeriodo} (${r.diasSemProd} sem prod.)`);
+  // Dias úteis parados ou com produção baixa por falta de mão de obra
+  const _dc = _relDiasCriticos(r);
+  if(_dc.semProducao.length || _dc.baixaProducao.length){
+    linhas.push(``);
+    linhas.push(`🚫 *Paradas por falta de mão de obra:*`);
+    if(_dc.semProducao.length){
+      linhas.push(`   • Sem produção: ${_dc.semProducao.map(d=>d.data).join(', ')}`);
+    }
+    if(_dc.baixaProducao.length){
+      linhas.push(`   • Produção baixa: ${_dc.baixaProducao.map(d=>`${d.data} (${_relFormatarNum(d.pecas)} pç)`).join(', ')}`);
+    }
+  }
   if(r.melhorDia) linhas.push(`🏆 Melhor dia: ${_relFormatData(r.melhorDia.chave)} — ${_relFormatarNum(r.melhorDia.total)} pç`);
   if(r.piorDia && (!r.melhorDia || r.piorDia.chave!==r.melhorDia.chave)) linhas.push(`📉 Pior dia produtivo: ${_relFormatData(r.piorDia.chave)} — ${_relFormatarNum(r.piorDia.total)} pç`);
   if(r.porRobo.length){
