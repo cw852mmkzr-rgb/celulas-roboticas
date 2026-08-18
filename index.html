@@ -4302,184 +4302,258 @@ function calcProducaoPorPeca(){
 }
 
 let pecaBusca='';
+// ── Produção por Peça (sistema principal — célula Metas, robôs 600-611) ──
+let _ppmModo='mes'; // 'dia' | 'semana' | 'mes' | 'ano' | 'intervalo'
+let _ppmMes=new Date().getMonth();
+let _ppmAno=new Date().getFullYear();
+let _ppmDataDia=_ppHojeStr();
+let _ppmDataSemana=_ppHojeStr();
+let _ppmDataIni=_ppHojeStr();
+let _ppmDataFim=_ppHojeStr();
+
+function _ppmSetModo(mo){ _ppmModo=mo; renderProducaoPorPeca(); }
+function _ppmSetMes(m){ _ppmMes=m; renderProducaoPorPeca(); }
+function _ppmSetAno(a){ _ppmAno=a; renderProducaoPorPeca(); }
+function _ppmSetDataDia(v){ if(v)_ppmDataDia=v; renderProducaoPorPeca(); }
+function _ppmSetDataSemana(v){ if(v)_ppmDataSemana=v; renderProducaoPorPeca(); }
+function _ppmSetDataIni(v){ if(v)_ppmDataIni=v; renderProducaoPorPeca(); }
+function _ppmSetDataFim(v){ if(v)_ppmDataFim=v; renderProducaoPorPeca(); }
 
 function buscarPeca(termo){
-  pecaBusca=termo.trim().toLowerCase();
-  renderProducaoPorPecaResultado();
+  pecaBusca=(termo||'').trim().toLowerCase();
+  const cont=document.getElementById('peca-resultado');
+  if(cont) cont.innerHTML=_ppmRenderLista();
 }
 
-function renderProducaoPorPecaResultado(){
-  const c=celulas[selected];
-  const dados=calcProducaoPorPeca();
-  const anoAtual=new Date().getFullYear();
-  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
-  const anoSel=c.peca_ano||anoAtual;
-  const verAno=!!c.peca_ver_ano;
-  const dadosFiltrados={};
-  Object.keys(dados).forEach(cod=>{
-    if(pecaBusca&&!cod.toLowerCase().includes(pecaBusca))return;
-    let totalMes=0;const diasMes={};const robosMes={};const mesesAno={};
-    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
-      const[a,m,d]=chave.split('_');
-      if(parseInt(a)!==anoSel)return;
-      if(verAno){
-        mesesAno[parseInt(m)]=(mesesAno[parseInt(m)]||0)+qtd;
-        totalMes+=qtd;
-      } else if(parseInt(m)===mesIdx){
-        diasMes[parseInt(d)]=(diasMes[parseInt(d)]||0)+qtd;
-        totalMes+=qtd;
-      }
+// Período conforme o modo → {modo, iniMs, fimMs, label, numDias, gran}
+function _ppmPeriodo(){
+  const y=_ppmAno, m=_ppmMes; let ini, fim, label, gran;
+  if(_ppmModo==='ano'){ ini=new Date(y,0,1); fim=new Date(y,11,31); label=`Ano ${y} inteiro`; gran='mes'; }
+  else if(_ppmModo==='dia'){ ini=_ppParseInput(_ppmDataDia); fim=new Date(ini); label=_ppFmtData(ini); gran='hora'; }
+  else if(_ppmModo==='semana'){ ini=_ppSegunda(_ppParseInput(_ppmDataSemana)); fim=new Date(ini); fim.setDate(fim.getDate()+6); label=`Semana ${_ppFmtData(ini)} – ${_ppFmtData(fim)}`; gran='dia'; }
+  else if(_ppmModo==='intervalo'){ ini=_ppParseInput(_ppmDataIni); fim=_ppParseInput(_ppmDataFim); if(fim<ini){ const t=ini; ini=fim; fim=t; } label=`${_ppFmtData(ini)} – ${_ppFmtData(fim)}`; gran='dia'; }
+  else { ini=new Date(y,m,1); fim=new Date(y,m+1,0); label=`${MESES[m]} de ${y}`; gran='dia'; }
+  const iniMs=new Date(ini.getFullYear(),ini.getMonth(),ini.getDate()).getTime();
+  const fimMs=new Date(fim.getFullYear(),fim.getMonth(),fim.getDate()).getTime();
+  const numDias=Math.round((fimMs-iniMs)/_ppDIAMS)+1;
+  return {modo:_ppmModo, iniMs, fimMs, label, numDias, gran};
+}
+
+// Agrega por código no período: total, porDia, porHora, robos, meta, horas-robô
+function _ppmAgregar(per){
+  const metasKey=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const out={};
+  if(!metasKey || !celulas[metasKey].metas_dias) return out;
+  const HORAS=[...HORAS_DIA,...HORAS_NOITE];
+  Object.entries(celulas[metasKey].metas_dias).forEach(([chave,diaData])=>{
+    if(!diaData || !_ppecaEmPeriodo(chave, per)) return;
+    ROBOS.forEach(robo=>{
+      const rd=diaData[robo]||{};
+      const cod=(rd.cod||'').trim();
+      if(!cod || cod==='—') return;
+      const meta=parseInt(rd.meta)||0;
+      const o=out[cod] || (out[cod]={total:0, porDia:{}, porHora:{}, robos:{}, metaVotes:{}, horasRobo:0});
+      let ts=0;
+      HORAS.forEach(h=>{ const v=parseCelVal(rd[campoH(h)]||'').num; if(v>0){ ts+=v; o.porHora[h]=(o.porHora[h]||0)+v; o.horasRobo++; } });
+      if(ts<=0) return;
+      o.total+=ts; o.porDia[chave]=(o.porDia[chave]||0)+ts; o.robos[robo]=(o.robos[robo]||0)+ts;
+      if(meta>0) o.metaVotes[meta]=(o.metaVotes[meta]||0)+1;
     });
-    Object.entries(dados[cod].robos).forEach(([robo,rdata])=>{
-      let totalRoboMes=0;
-      Object.entries(rdata.dias).forEach(([chave,qtd])=>{
-        const[a,m,d]=chave.split('_');
-        if(parseInt(a)!==anoSel)return;
-        if(verAno||parseInt(m)===mesIdx)totalRoboMes+=qtd;
-      });
-      if(totalRoboMes>0)robosMes[robo]=totalRoboMes;
-    });
-    if(totalMes>0)dadosFiltrados[cod]={total:totalMes,dias:diasMes,robos:robosMes,meses:mesesAno};
   });
-  const codigosFiltrados=Object.keys(dadosFiltrados).sort((a,b)=>dadosFiltrados[b].total-dadosFiltrados[a].total);
-  const maxTotal=Math.max(...codigosFiltrados.map(cod=>dadosFiltrados[cod].total),1);
-  const container=document.getElementById('peca-resultado');
-  if(!container)return;
-  if(codigosFiltrados.length===0){
-    container.innerHTML=`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
-      ${pecaBusca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(pecaBusca)}</b>"`:'Nenhum dado para este período.'}
-      <br><span style="font-size:11px;color:#1e2530">Os dados vêm automaticamente da célula Metas.</span>
-    </div>`;
-    return;
+  return out;
+}
+
+function _ppmRenderLista(){
+  const per=_ppmPeriodo();
+  const dados=_ppmAgregar(per);
+  const codigos=Object.keys(dados)
+    .filter(c=>!pecaBusca || c.toLowerCase().includes(pecaBusca))
+    .sort((a,b)=>dados[b].total-dados[a].total);
+  if(!codigos.length){
+    return `<div class="ppeca-empty">${pecaBusca ? `Nenhuma peça encontrada para "<b>${esc(pecaBusca)}</b>"` : 'Nenhum código com produção neste período.'}<br><span style="font-size:11px;color:#3a4250">Os dados vêm automaticamente da célula Metas.</span></div>`;
   }
-  container.innerHTML=codigosFiltrados.map(cod=>{
-    const{total,dias,robos,meses}=dadosFiltrados[cod];
-    const pct=Math.round(total/maxTotal*100);
-    let sparkBars, sparkLabel;
-    if(verAno){
-      // Barras por mês (Jan a Dez)
-      const mesesVals=Array.from({length:12},(_,i)=>meses[i]||0);
-      const maxMes=Math.max(...mesesVals,1);
-      sparkLabel='Meses do ano';
-      sparkBars=mesesVals.map((v,i)=>{
-        const h=v>0?Math.max(Math.round(v/maxMes*22),3):1;
-        return`<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${h}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
-      }).join('');
+  const maxTotal=Math.max(...codigos.map(c=>dados[c].total),1);
+  const corAcento = per.modo==='ano' ? '#3d9eff' : '#00e87a';
+  const HORAS=[...HORAS_DIA,...HORAS_NOITE];
+  return codigos.map(cod=>{
+    const d=dados[cod]; const total=d.total; const pct=Math.round(total/maxTotal*100);
+    let sparkBars='', sparkLabel='';
+    if(per.gran==='mes'){
+      const vals=Array.from({length:12},()=>0);
+      Object.entries(d.porDia).forEach(([ch,q])=>{ vals[ch.split('_').map(Number)[1]]+=q; });
+      const mx=Math.max(...vals,1); sparkLabel='Meses do ano';
+      sparkBars=vals.map((v,i)=>`<div title="${MESES[i]}: ${v.toLocaleString('pt-BR')}" style="width:12px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#3d9eff':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`).join('');
+    } else if(per.gran==='hora'){
+      const mx=Math.max(...HORAS.map(h=>d.porHora[h]||0),1); sparkLabel='Horas do dia';
+      sparkBars=HORAS.map(h=>{ const v=d.porHora[h]||0; return `<div title="${h}: ${v.toLocaleString('pt-BR')}" style="width:8px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`; }).join('');
     } else {
-      const diasOrdenados=Array.from({length:31},(_,i)=>i+1).map(d=>dias[d]||0);
-      const maxDia=Math.max(...diasOrdenados,1);
-      sparkLabel='Dias do mês';
-      sparkBars=diasOrdenados.map((v,i)=>{
-        const h=v>0?Math.max(Math.round(v/maxDia*22),3):1;
-        return`<div title="Dia ${i+1}: ${v}" style="width:5px;height:${h}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`;
-      }).join('');
+      const dias=[]; for(let t=per.iniMs;t<=per.fimMs;t+=_ppDIAMS){ const dt=new Date(t); dias.push(`${dt.getFullYear()}_${dt.getMonth()}_${dt.getDate()}`); }
+      const mx=Math.max(...dias.map(k=>d.porDia[k]||0),1); sparkLabel = per.modo==='semana'?'Dias da semana':'Dias do período';
+      const w = dias.length>31?4:(dias.length>14?5:9);
+      sparkBars=dias.map(k=>{ const v=d.porDia[k]||0; const dd=k.split('_')[2]; return `<div title="Dia ${dd}: ${v.toLocaleString('pt-BR')}" style="width:${w}px;height:${v>0?Math.max(Math.round(v/mx*22),3):1}px;background:${v>0?'#00e87a':'#1e2530'};border-radius:2px;flex-shrink:0"></div>`; }).join('');
     }
-    const robosOrdenados=Object.entries(robos).sort((a,b)=>b[1]-a[1]);
-    const robosHTML=robosOrdenados.length>1
-      ?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e2530">
-          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-weight:700">Produção por robô</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            ${robosOrdenados.map(([robo,qtd])=>{
-              const pctR=Math.round(qtd/total*100);
-              return`<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:8px 12px;min-width:100px;flex:1">
-                <div style="font-size:12.5px;color:#00e87a;font-weight:700;margin-bottom:4px">⚙ Robô ${robo}</div>
-                <div style="font-size:18px;font-weight:800;color:#d8dde6">${qtd.toLocaleString("pt-BR")}</div>
-                <div style="margin-top:4px;background:#1e2530;border-radius:99px;height:4px;overflow:hidden">
-                  <div style="height:100%;width:${pctR}%;background:#00e87a;border-radius:99px"></div>
-                </div>
-                <div style="font-size:11.5px;color:#6b7788;margin-top:4px">${pctR}% do total</div>
-              </div>`;
-            }).join('')}
-          </div>
-          <div style="margin-top:8px;background:#00e87a15;border:1px solid #00e87a30;border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em">${robosOrdenados.length} robô(s) · Total combinado</span>
-            <span style="font-size:20px;font-weight:900;color:#00e87a">${total.toLocaleString("pt-BR")}</span>
-          </div>
-        </div>`
-      :robosOrdenados.length===1
-        ?`<div style="margin-top:8px;font-size:12px;color:#6b7788">⚙ Produzido pelo Robô <b style="color:#00e87a">${robosOrdenados[0][0]}</b></div>`
-        :'';
-    return`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <div style="min-width:100px">
-          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Código</div>
-          <div style="font-size:20px;font-weight:900;color:#ffb300">${esc(cod)}</div>
+    const robosOrd=Object.entries(d.robos).sort((a,b)=>b[1]-a[1]);
+    const robResumo = robosOrd.length>1 ? `${robosOrd.length} robôs` : (robosOrd.length===1?`Robô ${robosOrd[0][0]}`:'');
+    const codEsc = String(cod).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="ppeca-card ppeca-clickable" onclick="_ppmAbrirDetalhe('${codEsc}')" title="Ver detalhes de ${esc(cod)}">
+      <div class="ppeca-head">
+        <div class="ppeca-col-cod">
+          <div class="ppeca-lbl">Código</div>
+          <div class="ppeca-cod">${esc(cod)}</div>
+          ${robResumo?`<div class="ppeca-cod-sub">${robResumo}</div>`:''}
         </div>
-        <div style="flex:1;min-width:200px">
-          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${sparkLabel}</div>
-          <div style="display:flex;align-items:flex-end;gap:2px;height:26px">${sparkBars}</div>
+        <div class="ppeca-col-spark">
+          <div class="ppeca-lbl">${sparkLabel}</div>
+          <div class="ppeca-spark">${sparkBars}</div>
         </div>
-        <div style="min-width:140px">
-          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Proporção</div>
-          <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
-            <div style="height:100%;width:100%;background:${verAno?'#3d9eff':'#00e87a'};border-radius:99px;transform-origin:left;transform:scaleX(${pct/100});transition:transform 360ms var(--ease-out)"></div>
-          </div>
-          <div style="font-size:11.5px;color:#6b7788;margin-top:4px">${pct}% do maior</div>
+        <div class="ppeca-col-prop">
+          <div class="ppeca-lbl">Proporção</div>
+          <div class="ppeca-prop-bar"><div style="width:${pct}%;background:${corAcento}"></div></div>
+          <div class="ppeca-prop-pct">${pct}% do maior</div>
         </div>
-        <div style="text-align:right;min-width:90px">
-          <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:3px">Total ${verAno?'no ano':''}</div>
-          <div style="font-size:26px;font-weight:900;color:${verAno?'#3d9eff':'#00e87a'}">${total.toLocaleString("pt-BR")}</div>
+        <div class="ppeca-col-tot">
+          <div class="ppeca-lbl">Total</div>
+          <div class="ppeca-tot" style="color:${corAcento}">${total.toLocaleString('pt-BR')}</div>
+          <div class="ppeca-ver">ver detalhes ›</div>
         </div>
       </div>
-      ${robosHTML}
     </div>`;
   }).join('');
 }
 
+function _ppmAbrirDetalhe(cod){
+  const per=_ppmPeriodo();
+  const d=_ppmAgregar(per)[cod];
+  if(!d){ showToast('Sem dados para '+cod,true); return; }
+  const total=d.total;
+  const diasProd=Object.keys(d.porDia).length;
+  const horasRobo=d.horasRobo;
+  const mediaDia = diasProd>0?Math.round(total/diasProd):0;
+  const mediaHora = horasRobo>0?Math.round(total/horasRobo):0;
+  const mediaMin = horasRobo>0? +(total/(horasRobo*60)).toFixed(2):0;
+  const meta=_ppecaMetaMais(d.metaVotes);
+  const pctMeta = meta>0? Math.round(mediaHora/meta*100):null;
+  let melhorDia=null,piorDia=null;
+  Object.entries(d.porDia).forEach(([k,v])=>{ if(!melhorDia||v>melhorDia.v)melhorDia={k,v}; if(!piorDia||v<piorDia.v)piorDia={k,v}; });
+  let melhorHora=null;
+  Object.entries(d.porHora).forEach(([h,v])=>{ if(!melhorHora||v>melhorHora.v)melhorHora={h,v}; });
+  const fmtK=k=>{ const p=k.split('_').map(Number); return `${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}`; };
+  const robosOrd=Object.entries(d.robos).sort((a,b)=>b[1]-a[1]);
+
+  const kpi=(l,v,s,c)=>`<div class="ppd-kpi" style="--kc:${c}"><div class="ppd-kpi-l">${l}</div><div class="ppd-kpi-v">${v}</div><div class="ppd-kpi-s">${s}</div></div>`;
+  const kpis=[
+    kpi('Média por dia', mediaDia.toLocaleString('pt-BR'), `${diasProd} dia${diasProd!==1?'s':''} produtivo${diasProd!==1?'s':''}`, '#ffb300'),
+    kpi('Média por hora', mediaHora.toLocaleString('pt-BR'), 'por robô ativo', '#3d9eff'),
+    kpi('Média por minuto', String(mediaMin).replace('.',','), 'peça/min por robô', '#a78bfa'),
+    kpi('Meta/hora', meta>0?meta.toLocaleString('pt-BR'):'—', pctMeta!=null?`${pctMeta}% da meta atingido`:'sem meta cadastrada', pctMeta==null?'#6b7788':(pctMeta>=100?'#00e87a':'#ff6a00')),
+    melhorDia?kpi('Melhor dia', melhorDia.v.toLocaleString('pt-BR'), fmtK(melhorDia.k), '#00e87a'):'',
+    (piorDia&&diasProd>1)?kpi('Menor dia', piorDia.v.toLocaleString('pt-BR'), fmtK(piorDia.k), '#ff6b6b'):'',
+    melhorHora?kpi('Melhor hora', melhorHora.v.toLocaleString('pt-BR'), `às ${melhorHora.h}`, '#00e87a'):'',
+    kpi('Dias produtivos', `${diasProd}/${per.numDias}`, 'dias com produção', '#3d9eff'),
+    kpi('Robôs', String(robosOrd.length), robosOrd.length===1?'único robô':'robôs envolvidos', '#a78bfa')
+  ].filter(Boolean).join('');
+
+  const HORAS=[...HORAS_DIA,...HORAS_NOITE];
+  const mxH=Math.max(...HORAS.map(h=>d.porHora[h]||0),1);
+  const hbars=HORAS.map(h=>{
+    const v=d.porHora[h]||0;
+    const isCafe=(typeof HORAS_CAFE!=='undefined') && HORAS_CAFE.includes(h);
+    return `<div class="ppd-hbar"><div class="ppd-hbar-v">${v>0?v.toLocaleString('pt-BR'):''}</div><div class="ppd-hbar-fill${isCafe?' cafe':''}" style="height:${v>0?Math.max(Math.round(v/mxH*54),3):2}px"></div><div class="ppd-hbar-h">${h.replace(':00','h').replace(':30','h½')}</div></div>`;
+  }).join('');
+
+  const robHTML = robosOrd.length ? `<div class="ppeca-maq-grid">${robosOrd.map(([robo,qtd])=>{
+    const pctR=Math.round(qtd/total*100);
+    return `<div class="ppeca-maq-card"><div class="ppeca-maq-nome">⚙ Robô ${esc(robo)}</div><div class="ppeca-maq-val">${qtd.toLocaleString('pt-BR')}</div><div class="ppeca-maq-bar"><div style="width:${pctR}%"></div></div><div class="ppeca-maq-pct">${pctR}% do total</div></div>`;
+  }).join('')}</div>` : '<div class="ppd-empty">Sem robôs.</div>';
+
+  let ov=document.getElementById('ppdOv');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='ppdOv'; ov.className='ppd-ov';
+    ov.addEventListener('click',e=>{ if(e.target===ov) _ppecaFecharDetalhe(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape' && ov.classList.contains('open')) _ppecaFecharDetalhe(); });
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML=`
+    <div class="ppd-card">
+      <div class="ppd-head">
+        <div>
+          <div class="ppd-head-cod">${esc(cod)}</div>
+          <div class="ppd-head-sub">📅 ${per.label}</div>
+        </div>
+        <button class="ppd-head-x" onclick="_ppecaFecharDetalhe()">✕</button>
+      </div>
+      <div class="ppd-body">
+        <div class="ppd-hero">
+          <div class="ppd-hero-v">${total.toLocaleString('pt-BR')}</div>
+          <div class="ppd-hero-l">peças produzidas no período</div>
+        </div>
+        <div class="ppd-kpis">${kpis}</div>
+        <div class="ppd-sec-t">⏱ Distribuição por hora</div>
+        <div class="ppd-hbars">${hbars}</div>
+        <div class="ppd-sec-t">⚙ Produção por robô</div>
+        ${robHTML}
+      </div>
+    </div>`;
+  ov.classList.add('open');
+}
+
+function renderProducaoPorPecaResultado(){
+  const cont=document.getElementById('peca-resultado');
+  if(cont) cont.innerHTML=_ppmRenderLista();
+}
+
 function renderProducaoPorPeca(){
   const c=celulas[selected];
+  if(!c) return;
   const anoAtual=new Date().getFullYear();
-  const mesIdx=c.peca_mes!==undefined?c.peca_mes:new Date().getMonth();
-  const anoSel=c.peca_ano||anoAtual;
-  const verAno=!!c.peca_ver_ano; // modo "total do ano inteiro"
-  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mesIdx?'selected':''}>${m}</option>`).join('');
-  const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===anoSel?'selected':''}>${a}</option>`).join('');
-  const dados=calcProducaoPorPeca();
-  const dadosFiltrados={};
-  Object.keys(dados).forEach(cod=>{
-    let total=0;
-    Object.entries(dados[cod].dias).forEach(([chave,qtd])=>{
-      const[a,m,d]=chave.split('_');
-      if(parseInt(a)!==anoSel)return;
-      if(!verAno && parseInt(m)!==mesIdx)return;
-      total+=qtd;
-    });
-    if(total>0)dadosFiltrados[cod]=total;
-  });
-  const totalGeral=Object.values(dadosFiltrados).reduce((s,v)=>s+v,0);
+  const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===_ppmMes?'selected':''}>${m}</option>`).join('');
+  const anosOpts=[anoAtual-2,anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===_ppmAno?'selected':''}>${a}</option>`).join('');
+  const per=_ppmPeriodo();
+  const agg=_ppmAgregar(per);
+  let totalGeral=0, numCodigos=0;
+  Object.values(agg).forEach(d=>{ totalGeral+=d.total; numCodigos++; });
+
+  const modos=[['dia','📆 Dia'],['semana','🗓️ Semana'],['mes','📅 Mês'],['ano','📊 Ano'],['intervalo','↔️ Período']];
+  const modoPills=modos.map(([mo,lbl])=>`<button class="ppeca-modo ${_ppmModo===mo?'on':''}" onclick="_ppmSetModo('${mo}')">${lbl}</button>`).join('');
+
+  let controles='';
+  if(_ppmModo==='dia'){
+    controles=`<div class="ppeca-sel-wrap"><label>Escolha o dia</label><input type="date" value="${_ppmDataDia}" onchange="_ppmSetDataDia(this.value)"></div>`;
+  } else if(_ppmModo==='semana'){
+    controles=`<div class="ppeca-sel-wrap"><label>Um dia da semana</label><input type="date" value="${_ppmDataSemana}" onchange="_ppmSetDataSemana(this.value)"></div>`;
+  } else if(_ppmModo==='intervalo'){
+    controles=`<div class="ppeca-sel-wrap"><label>De</label><input type="date" value="${_ppmDataIni}" onchange="_ppmSetDataIni(this.value)"></div><div class="ppeca-sel-wrap"><label>Até</label><input type="date" value="${_ppmDataFim}" onchange="_ppmSetDataFim(this.value)"></div>`;
+  } else if(_ppmModo==='ano'){
+    controles=`<div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppmSetAno(+this.value)">${anosOpts}</select></div>`;
+  } else {
+    controles=`<div class="ppeca-sel-wrap"><label>Mês</label><select onchange="_ppmSetMes(+this.value)">${mesesOpts}</select></div><div class="ppeca-sel-wrap"><label>Ano</label><select onchange="_ppmSetAno(+this.value)">${anosOpts}</select></div>`;
+  }
+
   document.getElementById("mainPanel").innerHTML=`
-  <div>
+  <div class="ppeca-wrap" style="padding:0">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📦 ${esc(c.nome)}</div>
-        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Leitura automática da célula Metas${verAno?` — <b style="color:#3d9eff">exibindo o ano ${anoSel} inteiro</b>`:''}</div>
+        <div class="ppeca-sub">Período: <b style="color:#00e87a">${per.label}</b> · leitura da célula Metas · toque numa peça para todos os detalhes</div>
       </div>
       ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div class="ppeca-modos">${modoPills}</div>
+    <div class="ppeca-filtros">
       <span style="font-size:16px">📅</span>
-      ${!verAno?`<div class="date-sel"><label>Mês</label><select onchange="updatePecaFiltro('${selected}','peca_mes',+this.value)">${mesesOpts}</select></div>`:''}
-      <div class="date-sel"><label>Ano</label><select onchange="updatePecaFiltro('${selected}','peca_ano',+this.value)">${anosOpts}</select></div>
-      <button onclick="updatePecaFiltro('${selected}','peca_ver_ano',${verAno?'false':'true'})"
-        style="background:${verAno?'#3d9eff25':'#1e2530'};border:1px solid ${verAno?'#3d9eff60':'#2a3040'};color:${verAno?'#3d9eff':'#9ca3af'};border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Courier New',monospace;font-weight:700">
-        ${verAno?'✓ Total do Ano':'∑ Ver Total do Ano'}
-      </button>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div style="background:#ffb30015;border:1px solid #ffb30030;border-radius:6px;padding:5px 14px;font-size:12px;color:#ffb300;font-weight:700">${Object.keys(dadosFiltrados).length} código(s)</div>
-        <div style="background:#00e87a15;border:1px solid #00e87a30;border-radius:6px;padding:5px 14px;font-size:12px;color:#00e87a;font-weight:700">∑ ${totalGeral.toLocaleString("pt-BR")} peças ${verAno?`em ${anoSel}`:''}</div>
+      ${controles}
+      <div class="ppeca-kpis">
+        <div class="ppeca-kpi cods">${numCodigos} código(s)</div>
+        <div class="ppeca-kpi tot">∑ ${totalGeral.toLocaleString('pt-BR')} peças</div>
       </div>
     </div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
-      <span style="font-size:16px">🔍</span>
-      <input id="buscaPeca" placeholder="Buscar código de peça..." oninput="buscarPeca(this.value)"
-        value="${esc(pecaBusca)}"
-        style="flex:1;background:transparent;border:none;font-family:'Courier New',monospace;font-size:16px;color:#d8dde6;outline:none" autocomplete="off">
-      <button onclick="document.getElementById('buscaPeca').value='';buscarPeca('')"
-        style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:0 2px;line-height:1">✕</button>
+    <div class="ppeca-busca">
+      <span>🔍</span>
+      <input id="buscaPeca" placeholder="Buscar código de peça..." value="${esc(pecaBusca)}" oninput="buscarPeca(this.value)" autocomplete="off">
+      <button onclick="document.getElementById('buscaPeca').value='';buscarPeca('')" title="Limpar">✕</button>
     </div>
-    <div id="peca-resultado"></div>
+    <div id="peca-resultado">${_ppmRenderLista()}</div>
   </div>`;
-  renderProducaoPorPecaResultado();
 }
 
 function updatePecaFiltro(key,campo,valor){celulas[key][campo]=valor;saveToAPI(celulas);renderProducaoPorPeca();}
