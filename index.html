@@ -4310,6 +4310,12 @@ let _ppmDataDia=_ppHojeStr();
 let _ppmDataSemana=_ppHojeStr();
 let _ppmDataIni=_ppHojeStr();
 let _ppmDataFim=_ppHojeStr();
+let _ppmSig='', _ppmPanelCell=''; // anti-flicker: só re-renderiza o painel quando muda de verdade
+function _ppmCalcSig(per, agg){
+  let s=selected+'|'+per.modo+'|'+per.label+'|'+pecaBusca+'|';
+  Object.keys(agg).sort().forEach(c=>{ s+=c+':'+agg[c].total+','; });
+  return s;
+}
 
 function _ppmSetModo(mo){ _ppmModo=mo; renderProducaoPorPeca(); }
 function _ppmSetMes(m){ _ppmMes=m; renderProducaoPorPeca(); }
@@ -4323,6 +4329,8 @@ function buscarPeca(termo){
   pecaBusca=(termo||'').trim().toLowerCase();
   const cont=document.getElementById('peca-resultado');
   if(cont) cont.innerHTML=_ppmRenderLista();
+  // Mantém a assinatura em dia pra o polling não re-renderizar o painel inteiro (evita piscar)
+  const per=_ppmPeriodo(); _ppmSig=_ppmCalcSig(per,_ppmAgregar(per)); _ppmPanelCell=selected;
 }
 
 // Período conforme o modo → {modo, iniMs, fimMs, label, numDias, gran}
@@ -4510,6 +4518,10 @@ function renderProducaoPorPeca(){
   const anosOpts=[anoAtual-2,anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===_ppmAno?'selected':''}>${a}</option>`).join('');
   const per=_ppmPeriodo();
   const agg=_ppmAgregar(per);
+  // Anti-flicker: se nada mudou (mesmo período, mesma busca, mesmos totais) e o painel já
+  // está montado, não re-renderiza — evita a tela piscar a cada polling de 3s.
+  const sig=_ppmCalcSig(per, agg);
+  if(_ppmPanelCell===selected && _ppmSig===sig && document.getElementById('peca-resultado')) return;
   let totalGeral=0, numCodigos=0;
   Object.values(agg).forEach(d=>{ totalGeral+=d.total; numCodigos++; });
 
@@ -4554,6 +4566,7 @@ function renderProducaoPorPeca(){
     </div>
     <div id="peca-resultado">${_ppmRenderLista()}</div>
   </div>`;
+  _ppmSig=sig; _ppmPanelCell=selected;
 }
 
 function updatePecaFiltro(key,campo,valor){celulas[key][campo]=valor;saveToAPI(celulas);renderProducaoPorPeca();}
