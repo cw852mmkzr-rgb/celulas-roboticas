@@ -17301,8 +17301,18 @@ function _relDiasCriticos(r){
   const mediaDiaRef = r.mediaDia || 0;
   const limiteBaixa = mediaDiaRef > 0 ? Math.round(mediaDiaRef * 0.5) : 0;
   const semProducao = [], baixaProducao = [];
+  // IMPORTANTE: só considera dias DENTRO do intervalo em que a peça esteve em produção
+  // (do 1º ao último dia com produção). Dias antes de a peça começar — ou depois de terminar —
+  // têm zero porque a peça não estava sendo feita, NÃO por falta de mão de obra. Sem isso,
+  // o relatório "inventaria" paradas em dias em que a peça nem existia ainda.
+  const diasComProd = Object.keys(r.porDia||{}).filter(k => ((r.porDia[k])||0) > 0);
+  if(!diasComProd.length) return { mediaDiaRef, limiteBaixa, semProducao, baixaProducao };
+  const msProd = diasComProd.map(k => _relParseChave(k).getTime());
+  const primeiroMs = Math.min(...msProd), ultimoMs = Math.max(...msProd);
   (r.chaves||[]).forEach(chave => {
     const dt = _relParseChave(chave);
+    const t = dt.getTime();
+    if(t < primeiroMs || t > ultimoMs) return; // fora do período ativo da peça
     const dow = dt.getDay();
     if(dow===0 || dow===6) return; // ignora fim de semana
     const total = (r.porDia && r.porDia[chave]) || 0;
