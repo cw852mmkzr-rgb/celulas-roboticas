@@ -4213,6 +4213,7 @@ function renderMetasDiaria(){
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
         ${podeEditar?`<button class="btn metas-apontar-desktop" style="padding:5px 14px;font-size:11px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="metaApAbrir()">📊 Apontar Produção</button>`:""}
+        ${podeEditar?(()=>{ const on=c.divisao_pontos!==false; return `<button class="btn" style="padding:5px 12px;font-size:10px;background:${on?'#00e87a20':'#ff4d4d20'};border:1px solid ${on?'#00e87a50':'#ff4d4d50'};color:${on?'#00e87a':'#ff6b6b'};font-weight:800" onclick="toggleDivisaoPontos()" title="Liga/desliga a divisão automática pela quantidade de pontos de solda">➗ Divisão pts: ${on?'ON':'OFF'}</button>`; })():""}
         <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
         ${isAdmin?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="copiarDiaAnterior('${selected}')">📋 Copiar dia anterior</button>`:""}
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
@@ -6934,7 +6935,7 @@ function handleMetasInputEl(el, key, robo, campo){
   let valorFinal = valor;
 
   // Divide por pontos se aplicável
-  if(pontos>1 && numVal>0 && !String(valor).includes('#')){
+  if(_divisaoPontosAtiva() && pontos>1 && numVal>0 && !String(valor).includes('#')){
     const dividido = Math.round(numVal/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==numVal){
       valorFinal = String(dividido);
@@ -6959,6 +6960,24 @@ function handleMetasInputEl(el, key, robo, campo){
   updateMetasCell(key, robo, campo, valorFinal);
 }
 
+// Divisão automática por pontos de solda: ligada por padrão (comportamento antigo).
+// Só fica desligada se a célula Metas tiver divisao_pontos === false explicitamente.
+function _divisaoPontosAtiva(){
+  try{
+    const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+    return !(mk && celulas[mk] && celulas[mk].divisao_pontos===false);
+  }catch(e){ return true; }
+}
+function toggleDivisaoPontos(){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!mk){ showToast('Aba de Metas não encontrada',true); return; }
+  const ativaAgora = celulas[mk].divisao_pontos!==false;
+  celulas[mk].divisao_pontos = !ativaAgora; // inverte
+  saveToAPI(celulas);
+  if(getCellTipo(selected)==='metas') renderMetasDiaria();
+  showToast(celulas[mk].divisao_pontos===false ? '➗ Divisão de pontos DESATIVADA' : '➗ Divisão de pontos ATIVADA');
+}
+
 function handleMetasInput(key,robo,campo,valor){
   const c = celulas[key];
   const chave = getMetasChave(key);
@@ -6971,7 +6990,7 @@ function handleMetasInput(key,robo,campo,valor){
   let valorFinal = valor;
 
   // Só divide se não tiver # (ajuste técnico)
-  if(pontos>1 && numVal>0 && !String(valor).includes('#')){
+  if(_divisaoPontosAtiva() && pontos>1 && numVal>0 && !String(valor).includes('#')){
     const dividido = Math.round(numVal/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==numVal){
       valorFinal = String(dividido);
@@ -7966,7 +7985,7 @@ function metaApEnviar(){
   // divisão automática — MESMA lógica de handleMetasInput (divide por pontos de solda)
   let novasPecas=totalDigitado;
   let dividiu=false;
-  if(pontos>1 && totalDigitado>0){
+  if(_divisaoPontosAtiva() && pontos>1 && totalDigitado>0){
     const dividido=Math.round(totalDigitado/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==totalDigitado){ novasPecas=dividido; dividiu=true; }
   }
@@ -8038,7 +8057,7 @@ function metaApSalvarEdicao(i){
   const pontos=entry.pontos;
   // recalcula peças com a MESMA lógica de divisão
   let novasPecas=novoTotal, dividiu=false;
-  if(pontos>1 && novoTotal>0){
+  if(_divisaoPontosAtiva() && pontos>1 && novoTotal>0){
     const dividido=Math.round(novoTotal/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==novoTotal){ novasPecas=dividido; dividiu=true; }
   }
