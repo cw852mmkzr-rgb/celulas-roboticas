@@ -11165,7 +11165,9 @@ let _ppecaDataSemana = _ppHojeStr();
 let _ppecaDataIni = _ppHojeStr();
 let _ppecaDataFim = _ppHojeStr();
 let _ppecaBusca = '';
+let _ppecaGrupo = 'todos'; // 'todos' | 'topo' (Solda Topo = código) | 'maq' (Máquinas planilha = peça)
 
+function _ppecaSetGrupo(g){ _ppecaGrupo=g; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetModo(mo){ _ppecaModo=mo; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetMes(m){ _ppecaMes=m; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
 function _ppecaSetAno(a){ _ppecaAno=a; window._ppecaPrecisaRerender=true; renderMapaProdPeca(); }
@@ -11199,6 +11201,10 @@ function _ppecaEmPeriodo(chave, per){
 }
 
 // Agrega tudo por código no período: total, porDia, porHora, maquinas, meta, horas-máquina
+// Separa a produção por GRUPO: Solda Topo (slots s_) x Máquinas/planilha (slots t_).
+// Não soma os dois juntos — cada (grupo+código) é uma entrada própria.
+// Chave de saída: grupo + '' + código. Cada entrada guarda .cod e .grupo.
+function _ppecaGrupoDoSlot(slot){ return String(slot).startsWith('s_') ? 'topo' : 'maq'; }
 function _ppecaAgregar(per){
   const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
   const out={};
@@ -11209,9 +11215,11 @@ function _ppecaAgregar(per){
       if(!rd || typeof rd!=='object') return;
       const cod=(rd.cod||'').trim();
       if(!cod || cod==='—') return;
+      const grupo=_ppecaGrupoDoSlot(slot);
+      const gkey=grupo+''+cod;
       const nome=(rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
       const meta=parseInt(rd.meta)||0;
-      const o=out[cod] || (out[cod]={total:0, porDia:{}, porHora:{}, maquinas:{}, metaVotes:{}, horasMaq:0});
+      const o=out[gkey] || (out[gkey]={cod, grupo, total:0, porDia:{}, porHora:{}, maquinas:{}, metaVotes:{}, horasMaq:0});
       let totalSlot=0;
       HORAS.forEach(h=>{
         const v=parseCelVal(rd[campoH(h)]||'').num;
@@ -11226,22 +11234,29 @@ function _ppecaAgregar(per){
   });
   return out;
 }
+// Metadados de exibição por grupo
+const _PPECA_GRUPO_INFO = {
+  topo: { badge:'🔩 Solda Topo', lbl:'Código',  cor:'#ff9f43', bg:'#ff9f4318', bd:'#ff9f4355' },
+  maq:  { badge:'📋 Máquina',    lbl:'Peça',    cor:'#3d9eff', bg:'#3d9eff18', bd:'#3d9eff55' }
+};
 function _ppecaMetaMais(metaVotes){ let best=0,bc=0; Object.entries(metaVotes||{}).forEach(([mt,c])=>{ if(c>bc){bc=c;best=+mt;} }); return best; }
 
 function _ppecaRenderLista(){
   const per=_ppecaPeriodo();
   const dados=_ppecaAgregar(per);
-  const codigos=Object.keys(dados)
-    .filter(c=>!_ppecaBusca || c.toLowerCase().includes(_ppecaBusca))
+  const chaves=Object.keys(dados)
+    .filter(k=>_ppecaGrupo==='todos' || dados[k].grupo===_ppecaGrupo)
+    .filter(k=>!_ppecaBusca || dados[k].cod.toLowerCase().includes(_ppecaBusca))
     .sort((a,b)=>dados[b].total-dados[a].total);
-  if(!codigos.length){
+  if(!chaves.length){
     return `<div class="ppeca-empty">${_ppecaBusca ? `Nenhuma peça encontrada para "<b>${esc(_ppecaBusca)}</b>"` : 'Nenhum código com produção neste período.'}</div>`;
   }
-  const maxTotal=Math.max(...codigos.map(c=>dados[c].total),1);
+  const maxTotal=Math.max(...chaves.map(k=>dados[k].total),1);
   const corAcento = per.modo==='ano' ? '#3d9eff' : '#00e87a';
   const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
-  return codigos.map(cod=>{
-    const d=dados[cod]; const total=d.total; const pct=Math.round(total/maxTotal*100);
+  return chaves.map(gkey=>{
+    const d=dados[gkey]; const cod=d.cod; const total=d.total; const pct=Math.round(total/maxTotal*100);
+    const gi=_PPECA_GRUPO_INFO[d.grupo]||_PPECA_GRUPO_INFO.maq;
     let sparkBars='', sparkLabel='';
     if(per.gran==='mes'){
       const vals=Array.from({length:12},()=>0);
@@ -11260,10 +11275,11 @@ function _ppecaRenderLista(){
     const maqOrd=Object.entries(d.maquinas).sort((a,b)=>b[1]-a[1]);
     const maqResumo = maqOrd.length>1 ? `${maqOrd.length} máquinas` : (maqOrd.length===1?`Máq. ${esc(maqOrd[0][0])}`:'');
     const codEsc = String(cod).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<div class="ppeca-card ppeca-clickable" onclick="_ppecaAbrirDetalhe('${codEsc}')" title="Ver detalhes de ${esc(cod)}">
+    return `<div class="ppeca-card ppeca-clickable" onclick="_ppecaAbrirDetalhe('${d.grupo}','${codEsc}')" title="Ver detalhes de ${esc(cod)}">
       <div class="ppeca-head">
         <div class="ppeca-col-cod">
-          <div class="ppeca-lbl">Código</div>
+          <div style="display:inline-block;background:${gi.bg};border:1px solid ${gi.bd};color:${gi.cor};font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:99px;margin-bottom:5px;letter-spacing:.03em">${gi.badge}</div>
+          <div class="ppeca-lbl">${gi.lbl}</div>
           <div class="ppeca-cod">${esc(cod)}</div>
           ${maqResumo?`<div class="ppeca-cod-sub">${maqResumo}</div>`:''}
         </div>
@@ -11288,10 +11304,17 @@ function _ppecaRenderLista(){
 
 // ── Card de detalhes (modal) ──
 function _ppecaFecharDetalhe(){ const ov=document.getElementById('ppdOv'); if(ov) ov.classList.remove('open'); }
-function _ppecaAbrirDetalhe(cod){
+function _ppecaAbrirDetalhe(grupo, cod){
   const per=_ppecaPeriodo();
-  const d=_ppecaAgregar(per)[cod];
+  // Se chamado só com um argumento, ele é o código (busca em qualquer grupo)
+  if(cod===undefined){ cod=grupo; grupo=null; }
+  const agg=_ppecaAgregar(per);
+  // Lookup robusto por campos (não depende do formato da chave interna)
+  let d=null;
+  Object.values(agg).forEach(x=>{ if(x.cod===cod && (grupo===null || x.grupo===grupo)) { if(!d || x.total>d.total) d=x; } });
   if(!d){ showToast('Sem dados para '+cod,true); return; }
+  cod = d.cod; grupo = d.grupo;
+  const gi=_PPECA_GRUPO_INFO[grupo]||_PPECA_GRUPO_INFO.maq;
   const total=d.total;
   const diasProd=Object.keys(d.porDia).length;
   const horasMaq=d.horasMaq;
@@ -11346,6 +11369,7 @@ function _ppecaAbrirDetalhe(cod){
     <div class="ppd-card">
       <div class="ppd-head">
         <div>
+          <div style="display:inline-block;background:${gi.bg};border:1px solid ${gi.bd};color:${gi.cor};font-size:10px;font-weight:800;padding:2px 9px;border-radius:99px;margin-bottom:5px;letter-spacing:.03em">${gi.badge} · ${gi.lbl}</div>
           <div class="ppd-head-cod">${esc(cod)}</div>
           <div class="ppd-head-sub">📅 ${per.label}</div>
         </div>
@@ -11377,10 +11401,12 @@ function renderMapaProdPeca(){
   const per = _ppecaPeriodo();
   const agg = _ppecaAgregar(per);
   let totalGeral=0, numCodigos=0;
-  Object.values(agg).forEach(d=>{ totalGeral+=d.total; numCodigos++; });
+  Object.values(agg).forEach(d=>{ if(_ppecaGrupo==='todos'||d.grupo===_ppecaGrupo){ totalGeral+=d.total; numCodigos++; } });
 
   const modos=[['dia','📆 Dia'],['semana','🗓️ Semana'],['mes','📅 Mês'],['ano','📊 Ano'],['intervalo','↔️ Período']];
   const modoPills=modos.map(([mo,lbl])=>`<button class="ppeca-modo ${_ppecaModo===mo?'on':''}" onclick="_ppecaSetModo('${mo}')">${lbl}</button>`).join('');
+  const grupos=[['todos','🔀 Todas'],['topo','🔩 Solda Topo (código)'],['maq','📋 Máquinas (peça)']];
+  const grupoPills=grupos.map(([g,lbl])=>`<button class="ppeca-modo ${_ppecaGrupo===g?'on':''}" onclick="_ppecaSetGrupo('${g}')">${lbl}</button>`).join('');
 
   let controles='';
   if(_ppecaModo==='dia'){
@@ -11403,12 +11429,13 @@ function renderMapaProdPeca(){
           <div class="ppeca-sub">Período: <b style="color:#00e87a">${per.label}</b> · toque numa peça para ver todos os detalhes</div>
         </div>
       </div>
+      <div class="ppeca-modos">${grupoPills}</div>
       <div class="ppeca-modos">${modoPills}</div>
       <div class="ppeca-filtros">
         <span style="font-size:16px">📅</span>
         ${controles}
         <div class="ppeca-kpis">
-          <div class="ppeca-kpi cods">${numCodigos} código(s)</div>
+          <div class="ppeca-kpi cods">${numCodigos} item(ns)</div>
           <div class="ppeca-kpi tot">∑ ${totalGeral.toLocaleString('pt-BR')} peças</div>
         </div>
       </div>
