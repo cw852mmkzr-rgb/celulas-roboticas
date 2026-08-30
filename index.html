@@ -13949,22 +13949,23 @@ function renderGabaritagem(){
   const nFixed = 4;
 
   // Monta thead
-  let thead = `<tr style="background:#080b0f">
-    <th style="padding:10px 14px;font-size:12px;color:#4a5568;text-align:left;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f;min-width:120px">CÓDIGO</th>
-    <th style="padding:10px 8px;font-size:11px;color:#a78bfa;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:72px;background:#080b0f">PROG.<br>MÊS</th>
-    <th style="padding:10px 8px;font-size:11px;color:#00e87a;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">TOTAL</th>
-    <th style="padding:10px 8px;font-size:11px;color:#ff6a00;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:65px;background:#080b0f">FALTA</th>
-    <th style="padding:10px 8px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-right:2px solid #1e2530;min-width:55px;background:#080b0f">%</th>
+  let thead = `<tr>
+    <th class="gb-th gb-th-cod">Código</th>
+    <th class="gb-th c-prog">Prog.<br>mês</th>
+    <th class="gb-th c-total">Total</th>
+    <th class="gb-th c-falta">Falta</th>
+    <th class="gb-th c-pct">%</th>
     ${dias.map(d=>{
       const dow=new Date(ano,mes,d).getDay();
       const isHoje=d===diaHoje;
-      return`<th style="padding:8px 4px;font-size:11px;text-align:center;border-bottom:1px solid #1e2530;border-right:1px solid #1e2530;min-width:56px;color:${isHoje?'#ffb300':'#4a5568'};background:${isHoje?'#ffb30015':'#080b0f'}">
-        <div style="font-size:12px">${diasNomes[dow]}</div>
-        <div style="font-size:14px;font-weight:700;color:${isHoje?'#ffb300':'#d8dde6'}">${String(d).padStart(2,'0')}</div>
+      const cls = isHoje?' today':(dow===6?' sat':'');
+      return`<th class="gb-th gb-th-day${cls}">
+        <div class="dn">${diasNomes[dow]}</div>
+        <div class="dd">${String(d).padStart(2,'0')}</div>
       </th>`;
     }).join('')}
-    <th style="padding:10px 10px;font-size:11px;color:#3d9eff;text-align:center;border-bottom:1px solid #1e2530;border-left:2px solid #00e87a30;min-width:65px;background:#080b0f">MÉDIA<br>DIA</th>
-    ${isGabAdmin?`<th style="padding:10px 4px;border-bottom:1px solid #1e2530;background:#080b0f;min-width:76px;font-size:10px;color:#4a5568;text-align:center">AÇÕES</th>`:''}
+    <th class="gb-th c-media">Média<br>dia</th>
+    ${isGabAdmin?`<th class="gb-th">Ações</th>`:''}
   </tr>`;
 
   // Monta tbody
@@ -13974,56 +13975,53 @@ function renderGabaritagem(){
     const falta=prog>0?prog-totais[cod]:null;
     const pct=prog>0?Math.round(totais[cod]/prog*100):null;
     const corPct=pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
-    const bg=ri%2===0?'#0a0d12':'#080b0f';
-    return`<tr data-cod="${esc(cod)}" style="background:${bg};border-bottom:1px solid #0a0d12">
-      <td style="padding:8px 10px;border-right:2px solid #1e2530;position:sticky;left:0;background:${bg}">
+    const bgPct=pct>=100?'#00e87a18':pct>=70?'#ffb30016':'#ff4d4d16';
+    const alt=ri%2!==0?' alt':'';
+    const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
+    const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
+    return`<tr class="gb-row${alt}" data-cod="${esc(cod)}">
+      <td class="gb-cell-cod">
         ${isGabAdmin
           ?`<input type="text" value="${esc(cod)}"
              style="width:104px;background:transparent;border:1px solid #00e87a30;border-radius:5px;outline:none;color:#00e87a;font-family:'Courier New',monospace;font-size:15px;font-weight:900;text-align:center;padding:5px 2px"
              onchange="renomearCodGab('${esc(cod)}',this.value)"
              onfocus="this.style.borderColor='#00e87a80';this.style.background='#00e87a10'"
              onblur="this.style.borderColor='#00e87a30';this.style.background='transparent'">`
-          :`<div style="font-size:16px;font-weight:900;color:#00e87a;text-align:center">${esc(cod)}</div>`
+          :`<div class="gb-code">${esc(cod)}</div>`
         }
       </td>
-      <td style="padding:4px 8px;text-align:center;border-right:1px solid #1e2530">
+      <td style="padding:4px 8px;text-align:center">
         ${isGabAdmin
           ?`<input type="number" min="0" value="${prog||''}" placeholder="—"
              style="width:60px;background:transparent;border:1px solid #a78bfa40;border-radius:4px;outline:none;color:#a78bfa;font-family:'Courier New',monospace;font-size:14px;font-weight:700;text-align:center;padding:4px"
              onchange="updateGabProg('${esc(cod)}',this.value)">`
-          :`<span style="font-size:14px;font-weight:700;color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
+          :`<span class="gb-num" style="color:#a78bfa">${prog>0?prog.toLocaleString('pt-BR'):'—'}</span>`
         }
       </td>
-      ${(()=>{
-        const diasComVal = dias.filter(d=>parseInt((vals[d]||0))>0);
-        const media = diasComVal.length>0?Math.round(totais[cod]/diasComVal.length):0;
-        return`<td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:#00e87a" id="gabtotal-${cod}">${totais[cod]>0?totais[cod].toLocaleString('pt-BR'):'—'}</td>`;
-      })()}
-      <td style="padding:5px 6px;text-align:center;border-right:1px solid #1e2530;font-size:13px;font-weight:900;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00'}" id="gabfalta-${cod}">
-        ${falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR')}
+      <td class="gb-num" style="padding:5px 6px;text-align:center;color:#00e87a" id="gabtotal-${cod}">${totais[cod]>0?totais[cod].toLocaleString('pt-BR'):'—'}</td>
+      <td class="gb-num" style="padding:5px 6px;text-align:center;color:${falta===null?'#2a3040':falta<=0?'#00e87a':'#ff8c42'}" id="gabfalta-${cod}">
+        ${falta===null?'—':falta<=0?'<span class="gb-okbadge">✓</span>':falta.toLocaleString('pt-BR')}
       </td>
-      <td style="padding:5px 6px;text-align:center;border-right:2px solid #1e2530;font-size:13px;font-weight:900;color:${pct===null?'#2a3040':corPct}" id="gabpct-${cod}">
-        ${pct===null?'—':pct+'%'}
+      <td style="padding:5px 6px;text-align:center" id="gabpct-${cod}">
+        ${pct===null?'<span class="gb-num" style="color:#2a3040">—</span>':`<span class="gb-pct" style="color:${corPct};background:${bgPct}">${pct}%</span>`}
       </td>
       ${dias.map(d=>{
         const v=parseInt(vals[d])||0;
         const isHoje=d===diaHoje;
-        return`<td style="padding:2px;text-align:center;border-right:1px solid #0d1117;background:${isHoje?'#ffb30008':''}">
+        const dow=new Date(ano,mes,d).getDay();
+        const cls=isHoje?' today':(dow===6?' sat':'');
+        return`<td class="gb-daycell${cls}">
           ${isGabAdmin
             ?`<input type="number" min="0" value="${v||''}" placeholder="—"
-               style="width:48px;background:transparent;border:none;outline:none;color:${v>0?'#d8dde6':'#2a3040'};font-family:'Courier New',monospace;font-size:15px;font-weight:700;text-align:center;padding:5px 0"
+               style="width:48px;background:transparent;border:none;outline:none;color:${v>0?'#e6edf5':'#2a3040'};font-family:'Courier New',monospace;font-size:15px;font-weight:700;text-align:center;padding:5px 0"
                onchange="updateGab('${esc(cod)}',${d},this.value)"
-               onfocus="this.style.background='#ffffff10';this.style.borderRadius='4px'"
+               onfocus="this.style.background='#ffffff12';this.style.borderRadius='4px'"
                onblur="this.style.background='transparent'">`
-            :`<span style="font-size:15px;font-weight:700;color:${v>0?'#d8dde6':'#2a3040'}">${v>0?v:'—'}</span>`
+            :`<span class="gb-dayval" style="color:${v>0?'#e6edf5':'#2a3040'}">${v>0?v:'—'}</span>`
           }
         </td>`;
       }).join('')}
-      ${(()=>{
-        const diasComVal2 = dias.filter(d=>parseInt((vals[d]||0))>0);
-        const media2 = diasComVal2.length>0?Math.round(totais[cod]/diasComVal2.length):0;
-        return`<td style="padding:8px 10px;font-size:14px;font-weight:900;color:#3d9eff;text-align:center;border-left:2px solid #3d9eff30">${media2>0?media2.toLocaleString('pt-BR'):'—'}</td>`;
-      })()}
+      <td class="gb-num" style="padding:8px 10px;text-align:center;color:#3d9eff;border-left:2px solid #3d9eff28;font-size:14px">${media>0?media.toLocaleString('pt-BR'):'—'}</td>
       ${isGabAdmin?`<td style="padding:4px;text-align:center;white-space:nowrap">
         <button class="gb-rowbtn" onclick="moverCodGab('${esc(cod)}',-1)" ${ri===0?'disabled':''} title="Subir" style="background:none;border:none;color:${ri===0?'#2a3040':'#3d9eff'};cursor:${ri===0?'default':'pointer'};font-size:15px;padding:2px 3px">▲</button>
         <button class="gb-rowbtn" onclick="moverCodGab('${esc(cod)}',1)" ${ri===codigos.length-1?'disabled':''} title="Descer" style="background:none;border:none;color:${ri===codigos.length-1?'#2a3040':'#3d9eff'};cursor:${ri===codigos.length-1?'default':'pointer'};font-size:15px;padding:2px 3px">▼</button>
@@ -14033,17 +14031,20 @@ function renderGabaritagem(){
   }).join('');
 
   // Linha de totais por dia
-  let tfooter = `<tr style="background:#080b0f;border-top:2px solid #1e2530">
-    <td style="padding:10px 14px;font-size:11px;font-weight:700;color:#4a5568;text-transform:uppercase;letter-spacing:0.1em;border-right:2px solid #1e2530;position:sticky;left:0;background:#080b0f">TOTAL</td>
-    <td style="border-right:1px solid #1e2530"></td>
-    <td style="border-right:1px solid #1e2530"></td>
-    <td style="border-right:1px solid #1e2530"></td>
-    <td style="border-right:2px solid #1e2530"></td>
+  let tfooter = `<tr class="gb-foot">
+    <td class="gb-cell-cod" style="font-size:11px;font-weight:800;color:#6b7789;text-transform:uppercase;letter-spacing:0.1em;padding:11px 14px">Σ Total dia</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
     ${dias.map(d=>{
+      const dow=new Date(ano,mes,d).getDay();
+      const isHoje=d===diaHoje;
+      const cls=isHoje?' today':(dow===6?' sat':'');
       const tot=codigos.reduce((s,cod)=>s+(parseInt((dados[cod]||{})[d])||0),0);
-      return`<td id="gabtotaldia-${d}" style="padding:8px 4px;text-align:center;border-right:1px solid #0d1117;font-size:14px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
+      return`<td id="gabtotaldia-${d}" class="gb-daycell${cls}" style="padding:9px 4px;font-size:14px;font-weight:900;color:${tot>0?'#ffb300':'#2a3040'}">${tot>0?tot:'—'}</td>`;
     }).join('')}
-    <td id="gabtotalgeral" style="padding:8px 10px;font-size:18px;font-weight:900;color:#ffb300;text-align:center;border-left:2px solid #00e87a30">${totalGeral>0?totalGeral.toLocaleString('pt-BR'):'—'}</td>
+    <td id="gabtotalgeral" style="padding:9px 10px;font-size:18px;font-weight:900;color:#ffb300;text-align:center;border-left:2px solid #3d9eff28">${totalGeral>0?totalGeral.toLocaleString('pt-BR'):'—'}</td>
     ${isGabAdmin?`<td></td>`:''}
   </tr>`;
 
@@ -14053,20 +14054,25 @@ function renderGabaritagem(){
   document.getElementById("gabSubtitle").innerHTML = `${meses[mes]} ${ano} &nbsp;·&nbsp; <span style="color:#d8dde6;font-weight:700">${dias.length}</span> dias úteis &nbsp;·&nbsp; Média: <span style="color:#00e87a;font-weight:700">${mediaReal.toLocaleString('pt-BR')}</span> peças/dia <span style="color:#4a5568;font-size:11px">(${diasComRegistro.length} dia(s) registrado(s))</span>`;
 
   document.getElementById("gabPanel").innerHTML=`
-  <!-- Busca + resumo -->
-  <div style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  <!-- Cartões de resumo -->
+  <div class="gb-kpis">
+    <div class="gb-kpi" style="--kc:#ffb300"><div class="gb-kpi-top"><span class="gb-kpi-ic">📦</span>Códigos ativos</div><div class="gb-kpi-v">${codigos.length}</div><div class="gb-kpi-s">peças cadastradas no mês</div></div>
+    <div class="gb-kpi" style="--kc:#00e87a"><div class="gb-kpi-top"><span class="gb-kpi-ic">Σ</span>Total do mês</div><div class="gb-kpi-v">${totalGeral.toLocaleString('pt-BR')}</div><div class="gb-kpi-s">peças gabaritadas</div></div>
+    <div class="gb-kpi" style="--kc:#3d9eff"><div class="gb-kpi-top"><span class="gb-kpi-ic">📈</span>Média por dia</div><div class="gb-kpi-v">${mediaReal.toLocaleString('pt-BR')}</div><div class="gb-kpi-s">${diasComRegistro.length} dia(s) com registro</div></div>
+    <div class="gb-kpi" style="--kc:#a78bfa"><div class="gb-kpi-top"><span class="gb-kpi-ic">📅</span>Dias úteis</div><div class="gb-kpi-v">${dias.length}</div><div class="gb-kpi-s">${meses[mes]} de ${ano}</div></div>
+  </div>
+  <!-- Busca -->
+  <div class="gb-toolbar">
     <input id="gabBusca" placeholder="🔍  Buscar código..." value="${dados._busca||''}"
-      style="background:#0a0e15;border:1px solid #1b2330;color:#eaf0f8;padding:11px 15px;border-radius:11px;font-family:'Courier New',monospace;font-size:14px;flex:1;min-width:200px;max-width:320px;outline:none;transition:border-color .18s"
-      oninput="filtrarGab(this.value)"
-      onfocus="this.style.borderColor='#ffb30060'" onblur="this.style.borderColor='#1b2330'">
+      oninput="filtrarGab(this.value)">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto">
-      <span id="gabBuscaCount" style="font-size:12px;font-weight:700;color:#7a8698;background:#0e131b;border:1px solid #1b2330;padding:8px 13px;border-radius:9px">${codigos.length} código(s)</span>
-      <span style="font-size:12px;font-weight:700;color:#00e87a;background:#00e87a10;border:1px solid #00e87a30;padding:8px 13px;border-radius:9px">Σ ${totalGeral.toLocaleString('pt-BR')} peças</span>
+      <span id="gabBuscaCount" class="gb-chip mut">${codigos.length} código(s)</span>
+      <span class="gb-chip grn">Σ ${totalGeral.toLocaleString('pt-BR')} peças</span>
     </div>
   </div>
-  <div class="gab-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;border-radius:14px;border:1px solid #1b2330;box-shadow:0 8px 30px -12px #000000a0">
-    <table style="border-collapse:collapse;width:100%;font-family:'Courier New',monospace" id="gabTabela">
-      <thead style="position:sticky;top:0;z-index:3">${thead}</thead>
+  <div class="gb-tablewrap gab-table-wrap">
+    <table id="gabTabela">
+      <thead>${thead}</thead>
       <tbody id="gabTbody">${tbody}${tfooter}</tbody>
     </table>
   </div>`;
@@ -14098,21 +14104,7 @@ function updateGab(cod, dia, val){
   const prog = parseInt(gabDados[chave][cod]?._prog||0);
   const falta = prog>0?prog-totalLinha:null;
   const pct = prog>0?Math.round(totalLinha/prog*100):null;
-  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
-
-  const elTotal = document.getElementById(`gabtotal-${cod}`);
-  if(elTotal) elTotal.textContent = totalLinha>0?totalLinha.toLocaleString('pt-BR'):'—';
-
-  const elFalta = document.getElementById(`gabfalta-${cod}`);
-  if(elFalta){
-    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
-    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
-  }
-  const elPct = document.getElementById(`gabpct-${cod}`);
-  if(elPct){
-    elPct.style.color = pct===null?'#2a3040':corPct;
-    elPct.textContent = pct===null?'—':pct+'%';
-  }
+  _gabAtualizarLinha(cod, totalLinha, falta, pct);
 
   // Atualiza total da coluna do dia
   const totalDia = codigos.reduce((s,c)=>s+(parseInt((gabDados[chave][c]||{})[dia])||0),0);
@@ -14146,19 +14138,25 @@ function updateGabProg(cod, val){
   const prog = n;
   const falta = prog>0?prog-total:null;
   const pct = prog>0?Math.round(total/prog*100):null;
-  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+  _gabAtualizarLinha(cod, total, falta, pct);
+  saveGabDados();
+}
 
+// Atualiza os campos Total / Falta / % de uma linha preservando os badges do novo design
+function _gabAtualizarLinha(cod, total, falta, pct){
+  const corPct = pct>=100?'#00e87a':pct>=70?'#ffb300':'#ff4d4d';
+  const bgPct  = pct>=100?'#00e87a18':pct>=70?'#ffb30016':'#ff4d4d16';
+  const elTotal = document.getElementById(`gabtotal-${cod}`);
+  if(elTotal) elTotal.textContent = total>0?total.toLocaleString('pt-BR'):'—';
   const elFalta = document.getElementById(`gabfalta-${cod}`);
   if(elFalta){
-    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff6a00';
-    elFalta.textContent = falta===null?'—':falta<=0?'✓':falta.toLocaleString('pt-BR');
+    elFalta.style.color = falta===null?'#2a3040':falta<=0?'#00e87a':'#ff8c42';
+    elFalta.innerHTML = falta===null?'—':falta<=0?'<span class="gb-okbadge">✓</span>':falta.toLocaleString('pt-BR');
   }
   const elPct = document.getElementById(`gabpct-${cod}`);
   if(elPct){
-    elPct.style.color = pct===null?'#2a3040':corPct;
-    elPct.textContent = pct===null?'—':pct+'%';
+    elPct.innerHTML = pct===null?'<span class="gb-num" style="color:#2a3040">—</span>':`<span class="gb-pct" style="color:${corPct};background:${bgPct}">${pct}%</span>`;
   }
-  saveGabDados();
 }
 
 let _gabFotoBase64 = null;
@@ -15715,6 +15713,56 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
   #gabScreen #gabBusca{ font-size:16px !important; max-width:none; }
   #gabScreen #gabTbody input{ font-size:16px !important; padding-top:10px !important; padding-bottom:10px !important; }
   #gabScreen .gb-rowbtn{ font-size:20px; min-width:40px; min-height:40px; }
+}
+/* ===== Redesign v2: KPIs, toolbar e tabela ===== */
+.gb-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; margin-bottom:16px; }
+.gb-kpi{ position:relative; background:linear-gradient(160deg,#0d1220,#090c13); border:1px solid var(--gb-bd); border-radius:15px; padding:14px 16px; overflow:hidden; transition:transform .16s cubic-bezier(0.23,1,0.32,1), border-color .16s; }
+.gb-kpi:hover{ transform:translateY(-2px); border-color:var(--gb-bd2); }
+.gb-kpi::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--kc,#ffb300); }
+.gb-kpi-top{ display:flex; align-items:center; gap:7px; font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--gb-mut); font-family:'Montserrat',sans-serif; margin-bottom:8px; }
+.gb-kpi-ic{ font-size:13px; }
+.gb-kpi-v{ font-size:27px; font-weight:900; color:var(--kc,#ffb300); font-family:'Montserrat',sans-serif; line-height:1; letter-spacing:-0.02em; }
+.gb-kpi-s{ font-size:11px; color:#5c6675; margin-top:5px; font-family:'Courier New',monospace; }
+.gb-toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+#gabBusca{ background:#0a0e15; border:1px solid var(--gb-bd); color:var(--gb-tx); padding:12px 16px; border-radius:12px; font-family:'Courier New',monospace; font-size:14px; flex:1; min-width:200px; max-width:340px; outline:none; transition:border-color .18s, box-shadow .18s; }
+#gabBusca:focus{ border-color:#ffb30070; box-shadow:0 0 0 3px #ffb30015; }
+.gb-chip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; padding:9px 14px; border-radius:10px; font-family:'Montserrat',sans-serif; white-space:nowrap; }
+.gb-chip.mut{ color:var(--gb-mut); background:#0c111a; border:1px solid var(--gb-bd); }
+.gb-chip.grn{ color:#00e87a; background:#00e87a0f; border:1px solid #00e87a30; }
+/* Tabela */
+.gb-tablewrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; overscroll-behavior-x:contain; border-radius:16px; border:1px solid var(--gb-bd); box-shadow:0 12px 40px -16px #000000c0; background:#0a0e14; }
+#gabTabela{ border-collapse:separate; border-spacing:0; width:100%; font-family:'Courier New',monospace; }
+#gabTabela thead th{ position:sticky; top:0; z-index:3; background:#0c1119; }
+.gb-th{ padding:9px 8px; font-size:10px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#6b7789; border-bottom:1px solid #1a2230; white-space:nowrap; font-family:'Montserrat',sans-serif; text-align:center; }
+.gb-th-cod{ text-align:left; padding-left:14px; position:sticky; left:0; z-index:4; min-width:118px; color:#8a94a3; box-shadow:7px 0 14px -10px #000; }
+.gb-th.c-prog{ color:#b9a6fb; } .gb-th.c-total{ color:#4fe59a; } .gb-th.c-falta{ color:#ffa564; } .gb-th.c-pct{ color:#78bcff; } .gb-th.c-media{ color:#78bcff; border-left:2px solid #3d9eff28; }
+.gb-th-day{ min-width:54px; padding:7px 4px; }
+.gb-th-day .dn{ font-size:11px; color:#5c6675; font-weight:700; }
+.gb-th-day .dd{ font-size:14px; font-weight:900; color:#c3ccd8; font-family:'Courier New',monospace; margin-top:1px; }
+.gb-th-day.sat{ background:#0e1017; }
+.gb-th-day.today{ background:#ffb3001c; border-bottom:2px solid var(--gb-amber); }
+.gb-th-day.today .dn{ color:#ffcb52; } .gb-th-day.today .dd{ color:var(--gb-amber); }
+/* linhas */
+.gb-row{ background:#0a0e14; transition:background .12s; }
+.gb-row.alt{ background:#080b11; }
+.gb-row:hover td{ background:#151c28 !important; }
+.gb-row td{ border-bottom:1px solid #0d1219; }
+.gb-cell-cod{ position:sticky; left:0; z-index:2; padding:7px 10px; box-shadow:7px 0 14px -10px #000; background:#0a0e14; }
+.gb-row.alt .gb-cell-cod{ background:#080b11; }
+.gb-code{ font-size:16px; font-weight:900; color:#00e87a; text-align:center; letter-spacing:.02em; }
+.gb-num{ font-size:13px; font-weight:900; font-family:'Courier New',monospace; }
+.gb-daycell{ padding:2px; text-align:center; border-right:1px solid #0c1119; }
+.gb-daycell.sat{ background:#0000001f; }
+.gb-daycell.today{ background:#ffb3000a; }
+.gb-dayval{ font-size:15px; font-weight:700; }
+.gb-pct{ display:inline-block; min-width:46px; padding:3px 6px; border-radius:99px; font-size:12px; font-weight:900; font-family:'Montserrat',sans-serif; }
+.gb-okbadge{ display:inline-block; padding:2px 8px; border-radius:99px; background:#00e87a18; color:#00e87a; font-size:12px; font-weight:900; }
+.gb-foot td{ background:#0c1119; border-top:2px solid #1a2230; border-bottom:none; }
+.gb-foot .gb-cell-cod{ background:#0c1119; }
+@media (max-width:640px){
+  .gb-kpis{ grid-template-columns:repeat(2,1fr); gap:9px; }
+  .gb-kpi-v{ font-size:22px; }
+  #gabBusca{ max-width:none; }
 }
 </style>
 <div id="gabScreen" style="display:none;position:fixed;inset:0;background:#04070d;z-index:9000;flex-direction:column">
