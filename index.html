@@ -1787,6 +1787,21 @@ const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
 const HORAS_DIA   = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 // Horários que devem contar meia meta (:30 naturalmente + horas especiais com produção reduzida)
 const HORAS_MEIA_META = ["15:00"];
+// Sextas-feiras A PARTIR desta data não têm o horário 14:30 (turno encerra às 14:00).
+// Sextas ANTERIORES a este corte mantêm o 14:30 já lançado, sem qualquer alteração.
+const SEXTA_SEM_1430_DESDE = new Date(2026, 8, 11); // 11/09/2026 — sexta desta semana
+function _ehSextaSem1430(ano, mes, dia){
+  const d = new Date(ano, mes, dia);
+  return d.getDay() === 5 && d.getTime() >= SEXTA_SEM_1430_DESDE.getTime();
+}
+// Horas do turno dia para uma data específica (chave "ano_mes_dia"): remove 14:30 nas sextas a partir do corte
+function horasDiaPara(chave){
+  if(typeof chave === 'string'){
+    const p = chave.split('_').map(Number);
+    if(p.length === 3 && !p.some(isNaN) && _ehSextaSem1430(p[0], p[1], p[2])) return HORAS_DIA.filter(h => h !== '14:30');
+  }
+  return HORAS_DIA;
+}
 // Retorna a meta ajustada para o horário: meia hora (:30) ou hora especial → metade da meta_h
 function metaEfetivaHora(h, meta){
   if(!meta || meta <= 0) return 0;
@@ -4125,7 +4140,7 @@ function buildTurnoTable(c,turno,chave){
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
   const podeEditar = isAdmin || isAdminMetas;
   const ro=!podeEditar?'readonly':'';
-  const HORAS=turno==='dia'?HORAS_DIA:HORAS_NOITE;
+  const HORAS=turno==='dia'?horasDiaPara(chave):HORAS_NOITE;
   const isNoite=turno==='noite';
   const subLabel=isNoite?'Sub Noite':'Sub Dia';
   const subClass=isNoite?'sub-noite-val':'sub-dia-val';
@@ -4244,7 +4259,7 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'dia',chave)}
       <div class="metas-carousel" id="carDia">
-        ${_renderCarrossel(HORAS_DIA,(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected)}
+        ${_renderCarrossel(horasDiaPara(chave),(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected)}
       </div>
     </div>
     <div style="margin-top:24px">
