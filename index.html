@@ -1802,15 +1802,25 @@ function horasDiaPara(chave){
   }
   return HORAS_DIA;
 }
-// Retorna a meta ajustada para o horário: meia hora (:30) ou hora especial → metade da meta_h
-function metaEfetivaHora(h, meta){
+// True quando a chave "ano_mes_dia" é uma sexta a partir do corte (sem 14:30)
+function _sexta1430Chave(chave){
+  if(typeof chave !== 'string') return false;
+  const p = chave.split('_').map(Number);
+  return p.length === 3 && !p.some(isNaN) && _ehSextaSem1430(p[0], p[1], p[2]);
+}
+// Retorna a meta ajustada para o horário: meia hora (:30) ou hora especial → metade da meta_h.
+// chave (opcional "ano_mes_dia"): nas sextas sem 14:30, o 15:00 conta meta CHEIA.
+function metaEfetivaHora(h, meta, chave){
   if(!meta || meta <= 0) return 0;
+  if(h === '15:00' && _sexta1430Chave(chave)) return meta; // sexta: 15:00 meta inteira
   return (h.endsWith(':30') || HORAS_MEIA_META.includes(h)) ? Math.round(meta / 2) : meta;
 }
-// Meta total esperada do turno dia (soma todas as horas com pesos corretos)
-function metaTotalDia(meta){
+// Meta total esperada do turno dia (soma todas as horas com pesos corretos).
+// chave (opcional): nas sextas remove o 14:30 e conta 15:00 cheio.
+function metaTotalDia(meta, chave){
   if(!meta || meta <= 0) return 0;
-  return HORAS_DIA.reduce((s,h) => s + metaEfetivaHora(h, meta), 0);
+  const horas = chave ? horasDiaPara(chave) : HORAS_DIA;
+  return horas.reduce((s,h) => s + metaEfetivaHora(h, meta, chave), 0);
 }
 // Horário do turno dia só para a planilha de Produção (Mapa → Produção, 50 máquinas) — com 09:30 e 14:30 extras
 const MAPA_HORAS_DIA = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
@@ -4047,12 +4057,12 @@ function renderProducaoDiaria(){
 
 // ── METAS ────────────────────────────────────
 // hora opcional: se passada, ajusta meta pra meia hora (:30 = meta/2)
-function aplicarCor(inp,rawVal,meta,isCafe,hora){
+function aplicarCor(inp,rawVal,meta,isCafe,hora,chave){
   inp.classList.remove('cell-ok','cell-fail','cell-adj','cafe');
   if(isCafe){inp.classList.add('cafe');return;} // 10:00 SEMPRE amarelo
   const{num,tipo}=parseCelVal(rawVal);
   if(tipo==='ajuste'){inp.classList.add('cell-adj');return;}
-  const metaAtual = hora ? metaEfetivaHora(hora, meta) : meta;
+  const metaAtual = hora ? metaEfetivaHora(hora, meta, chave) : meta;
   if(num>0){
     if(metaAtual>0&&num>=metaAtual){inp.classList.add('cell-ok');return;}
     if(metaAtual>0&&num<metaAtual){inp.classList.add('cell-fail');return;}
@@ -4118,13 +4128,13 @@ function updateMetasCell(key,robo,campo,valor){
     const horaOrigem=[...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
     const isCafe=HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp)aplicarCor(inp,valor,meta,isCafe,horaOrigem);
+    if(inp)aplicarCor(inp,valor,meta,isCafe,horaOrigem,chave);
   }
   if(campo==='meta'){
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
       const c=campoH(h);const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe,h);
+      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe,h,chave);
     });
   }
   avaliarStatusAutomatico();
@@ -4157,7 +4167,7 @@ function buildTurnoTable(c,turno,chave){
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
-      const metaAtual = metaEfetivaHora(h, meta); // meia hora = meta/2
+      const metaAtual = metaEfetivaHora(h, meta, chave); // meia hora = meta/2; sexta 15:00 = cheia
       let cc='';
       if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
@@ -4259,7 +4269,7 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'dia',chave)}
       <div class="metas-carousel" id="carDia">
-        ${_renderCarrossel(horasDiaPara(chave),(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected)}
+        ${_renderCarrossel(horasDiaPara(chave),(c.metas_dias&&c.metas_dias[chave])||{},false,'Sub Dia','#00e87a','sub-dia',isAdmin,podeEditar,selected,chave)}
       </div>
     </div>
     <div style="margin-top:24px">
@@ -4269,7 +4279,7 @@ function renderMetasDiaria(){
       </div>
       ${buildTurnoTable(c,'noite',chave)}
       <div class="metas-carousel" id="carNoite">
-        ${_renderCarrossel(HORAS_NOITE,(c.metas_dias&&c.metas_dias[chave])||{},true,'Sub Noite','#a78bfa','sub-noite',isAdmin,podeEditar,selected)}
+        ${_renderCarrossel(HORAS_NOITE,(c.metas_dias&&c.metas_dias[chave])||{},true,'Sub Noite','#a78bfa','sub-noite',isAdmin,podeEditar,selected,chave)}
       </div>
     </div>
     <div style="margin-top:20px;background:#ffb30015;border:2px solid #ffb30050;border-radius:14px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -5051,13 +5061,13 @@ function renderHistoricoRobo(key) {
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
   const registrosComProd = registros.filter(r => r.totalGeral > 0);
   const mediaDiaria = registrosComProd.length>0 ? Math.round(totalAcumulado / registrosComProd.length) : 0;
-  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= metaTotalDia(r.meta)).length;
+  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= metaTotalDia(r.meta, r.chave)).length;
   const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
 
   const linhas = registros.map(r => {
     const pct = Math.round(r.totalGeral / maxTotal * 100);
     const dataFmt = `${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}`;
-    const metaTotal = metaTotalDia(r.meta);
+    const metaTotal = metaTotalDia(r.meta, r.chave);
     const atingiu = metaTotal > 0 && r.totalGeral >= metaTotal;
     const corTotal = atingiu ? '#00e87a' : (metaTotal > 0 ? '#ff4d4d' : '#d8dde6');
     return `<tr style="border-bottom:1px solid #1e2530">
@@ -5387,7 +5397,7 @@ function renderRelatorio(){
       const r = (diasDoMes[d].robos[robo])||{};
       if(r.total>0){totalProd+=r.total;diasAtivo++;}
       if(r.meta>0){metaMedia+=r.meta;metaCount++;}
-      const metaEstimada = metaTotalDia(r.meta);
+      const metaEstimada = metaTotalDia(r.meta, `${anoSel}_${mesIdx}_${d}`);
       if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
     });
     const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
@@ -6109,6 +6119,8 @@ function _dashRoboSemValor(k, dados, hora){
   return prod===0;
 }
 
+// Chave "ano_mes_dia" de HOJE (mês 0-indexed) — para regras dependentes da data (ex: sexta sem 14:30)
+function _dashGetChave(){ const n=new Date(); return `${n.getFullYear()}_${n.getMonth()}_${n.getDate()}`; }
 function _dashGetDados(){
   const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   if(!mk) return {};
@@ -6150,7 +6162,7 @@ function _dashRenderRobo(k){
   const metaBase=parseInt(rd.meta)||0;
   const hora=_dashGetHoraCheia();
   const isCafe=HORAS_CAFE.includes(hora);
-  const meta=metaEfetivaHora(hora, metaBase); // meia hora = meta/2
+  const meta=metaEfetivaHora(hora, metaBase, _dashGetChave()); // meia hora = meta/2; sexta 15:00 = cheia
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
   const pct = meta>0 ? Math.round(prod/meta*100) : 0;
   const bateu = meta>0 && prod>=meta;
@@ -6263,7 +6275,7 @@ function _dashRenderGeral(){
     const rn=k.replace(/\D/g,'');
     const rd=dados[rn]||{};
     const metaBase=parseInt(rd.meta)||0;
-    const metaAtual=metaEfetivaHora(horaAtual, metaBase); // meia hora = meta/2
+    const metaAtual=metaEfetivaHora(horaAtual, metaBase, _dashGetChave()); // meia hora = meta/2; sexta 15:00 = cheia
     const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
     const bateu=metaAtual>0&&prodAtual>=metaAtual;
     const corAtual=metaAtual===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
@@ -6273,7 +6285,7 @@ function _dashRenderGeral(){
       const v=parseCelVal((rd[campoH(h)])||'').num;
       const isCafe=HORAS_CAFE.includes(h);
       const isAtual=h===horaAtual;
-      const metaH=metaEfetivaHora(h, metaBase); // meta ajustada por hora
+      const metaH=metaEfetivaHora(h, metaBase, _dashGetChave()); // meta ajustada por hora; sexta 15:00 = cheia
       const ok=!isCafe&&metaH>0&&v>=metaH;
       const fail=!isCafe&&metaH>0&&v>0&&v<metaH;
       const cor=isCafe?'#ffb300':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
@@ -6343,7 +6355,7 @@ function _dashRenderFooter(){
     const isAtual=h===horaAtual;
     const total=ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campo])||'').num,0);
     // Meta total dessa hora: soma das metas efetivas de cada robô (meia hora = meta/2)
-    const metaT=ROBOS.reduce((s,rn)=>s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0),0);
+    const metaT=ROBOS.reduce((s,rn)=>s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0, _dashGetChave()),0);
     const bateu=total>0&&metaT>0&&total>=metaT;
     const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
@@ -6526,7 +6538,7 @@ function exportarPDFDia() {
     const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const total    = subDia + subNoite;
-    const metaEstimada = metaTotalDia(meta);
+    const metaEstimada = metaTotalDia(meta, chave);
     const efic = metaEstimada > 0 ? Math.round(total / metaEstimada * 100) : null;
     const corEfic = efic === null ? '#888' : efic >= 100 ? '#00b84a' : efic >= 80 ? '#ff8c00' : '#cc0000';
     if (total === 0 && !meta) return '';
@@ -6542,7 +6554,7 @@ function exportarPDFDia() {
   }).join('');
 
   // monta horas turno dia
-  const horasDiaHTML = HORAS_DIA.map(h => {
+  const horasDiaHTML = horasDiaPara(chave).map(h => {
     const isCafe = HORAS_CAFE.includes(h);
     const soma = ROBOS.reduce((s,r)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0);
     return `<td style="padding:6px 8px;text-align:center;font-weight:700;background:${isCafe?'#fff3cd':'#fff'};color:${isCafe?'#8a6200':'#000'}">${soma||'—'}</td>`;
@@ -6636,7 +6648,7 @@ function exportarPDFDia() {
   <div class="sec-title">☀ Totais por Hora — Turno Dia</div>
   <table>
     <thead><tr>
-      ${HORAS_DIA.map(h=>`<th style="${HORAS_CAFE.includes(h)?'background:#8a6200':''}">${h}</th>`).join('')}
+      ${horasDiaPara(chave).map(h=>`<th style="${HORAS_CAFE.includes(h)?'background:#8a6200':''}">${h}</th>`).join('')}
     </tr></thead>
     <tbody><tr>${horasDiaHTML}</tr></tbody>
   </table>
@@ -6963,7 +6975,7 @@ function handleMetasInputEl(el, key, robo, campo){
   const {num, tipo} = parseCelVal(valorFinal);
   const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
   const isCafe = HORAS_CAFE.includes(horaOrigem);
-  const metaAtual = metaEfetivaHora(horaOrigem, meta); // meia hora = meta/2
+  const metaAtual = metaEfetivaHora(horaOrigem, meta, chave); // meia hora = meta/2; sexta 15:00 = cheia
   el.className = 'hora-inp';
   if(isCafe) el.classList.add('cafe');
   else if(tipo==='ajuste') el.classList.add('cell-adj');
@@ -7022,7 +7034,7 @@ function handleMetasInput(key,robo,campo,valor){
     inp.className = 'hora-inp';
     const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
     const isCafe = HORAS_CAFE.includes(horaOrigem);
-    const metaAtual = metaEfetivaHora(horaOrigem, meta); // meia hora = meta/2
+    const metaAtual = metaEfetivaHora(horaOrigem, meta, chave); // meia hora = meta/2; sexta 15:00 = cheia
     if(isCafe) inp.classList.add('cafe');
     else if(tipo==='ajuste') inp.classList.add('cell-adj');
     else if(num>0){
@@ -7222,7 +7234,7 @@ function animarGrafico(){
 let _carIdx = 0;
 const _carStep = 3; // horas por vez
 
-function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdmin, podeEditar, selected){
+function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdmin, podeEditar, selected, chave){
   const total = HORAS.length;
   const grupo = HORAS.slice(_carIdx, _carIdx + _carStep);
   const horaAtual = new Date().getHours();
@@ -7238,8 +7250,8 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       const campo = campoH(h);
       const rawVal = (rd[campo])||'';
       const {num,isAjuste} = parseCelVal(rawVal);
-      // Meta ajustada: café = 60% da meta, meia hora (:30) = 50% da meta
-      const metaBase = metaEfetivaHora(h, meta);
+      // Meta ajustada: café = 60% da meta, meia hora (:30) = 50% da meta; sexta 15:00 = cheia
+      const metaBase = metaEfetivaHora(h, meta, chave);
       const metaH = isCafe ? Math.round(metaBase*0.6) : metaBase;
       let bg='', cor='#d8dde6';
       if(isAjuste){cor='#3d9eff';}
@@ -8384,7 +8396,7 @@ function _eqDesRecords(){
         if(Array.isArray(eq.presentes) && eq.presentes.length===0) return;
         const qtd=parseCelVal(rd[campoH(h)]||'').num;
         if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:metaEfetivaHora(h, parseInt(rd.meta)||0),eq});
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:metaEfetivaHora(h, parseInt(rd.meta)||0, chave),eq});
       });
     });
   });
