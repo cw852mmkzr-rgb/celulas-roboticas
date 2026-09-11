@@ -6001,7 +6001,7 @@ function _dashGetHoraCheia(){
   const m = now.getMinutes();
   const s = `${String(h).padStart(2,'0')}:00`;
   const s30 = `${String(h).padStart(2,'0')}:30`;
-  const all = [...HORAS_DIA,...HORAS_NOITE];
+  const all = [...horasDiaPara(_dashGetChave()),...HORAS_NOITE]; // sexta: sem 14:30
   // Se passou de :30 na hora atual E existe slot :30, usa o slot :30
   if(m >= 30 && all.includes(s30)) return s30;
   if(all.includes(s)) return s;
@@ -6268,7 +6268,7 @@ function _dashRenderGeral(){
   if(!main) return;
   const dados=_dashGetDados();
   const horaAtual=_dashGetHoraCheia();
-  const todasHoras=[...HORAS_DIA,...HORAS_NOITE];
+  const todasHoras=[...horasDiaPara(_dashGetChave()),...HORAS_NOITE]; // sexta: sem 14:30
   let totalGeral=0;
 
   const linhas=_dashRobos.map(k=>{
@@ -6349,7 +6349,7 @@ function _dashRenderFooter(){
   if(!footer) return;
   const dados=_dashGetDados();
   const horaAtual=_dashGetHoraCheia();
-  footer.innerHTML=[...HORAS_DIA,...HORAS_NOITE].map(h=>{
+  footer.innerHTML=[...horasDiaPara(_dashGetChave()),...HORAS_NOITE].map(h=>{ // sexta: sem 14:30
     const campo=campoH(h);
     const isCafe=HORAS_CAFE.includes(h);
     const isAtual=h===horaAtual;
