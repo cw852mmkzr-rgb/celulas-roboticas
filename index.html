@@ -4251,6 +4251,16 @@ function addFuncionarioT(){
   if(lista.some(x=>x.toLowerCase()===n.toLowerCase())){ showToast('Esse funcionário já existe',true); return; }
   lista.push(n); saveToAPI(celulas); renderFuncionarios(); showToast('Funcionário adicionado ✓');
 }
+function importarEquipesFuncT(){
+  if(!_funcPodeEditar()){ showToast('Apenas host pode cadastrar',true); return; }
+  const mk=metaApKey(); if(!mk){ showToast('Aba de Metas não encontrada',true); return; }
+  const nomesEquipes=[...new Set(((typeof equipesData!=='undefined'&&equipesData.lista)||[]).flatMap(e=>(e.membros||[]).map(m=>String(m).trim()).filter(Boolean)))];
+  if(!nomesEquipes.length){ showToast('Nenhum nome encontrado nas equipes',true); return; }
+  const lista=funcT(); const existentes=new Set(lista.map(n=>n.toLowerCase())); let add=0;
+  nomesEquipes.forEach(n=>{ if(!existentes.has(n.toLowerCase())){ lista.push(n); existentes.add(n.toLowerCase()); add++; } });
+  if(add===0){ showToast('Todos os nomes das equipes já estavam cadastrados'); return; }
+  saveToAPI(celulas); renderFuncionarios(); showToast(add+' funcionário(s) importado(s) das equipes ✓');
+}
 function renomearFuncionarioT(nomeAntigo){
   if(!_funcPodeEditar()) return;
   const novo=prompt('Novo nome:',nomeAntigo); if(novo===null) return;
@@ -4326,7 +4336,10 @@ function renderFuncionarios(){
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">👷 Funcionários</div>
         <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Desempenho da equipe — ${periodoTxt}</div>
       </div>
-      ${podeEditar?`<button class="btn" style="padding:6px 14px;font-size:12px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>`:''}
+      ${podeEditar?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="padding:6px 14px;font-size:12px;background:#a78bfa20;border:1px solid #a78bfa50;color:#a78bfa;font-weight:800" onclick="importarEquipesFuncT()" title="Cadastra todos os membros das equipes como funcionários">⬇ Importar das Equipes</button>
+        <button class="btn" style="padding:6px 14px;font-size:12px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>
+      </div>`:''}
     </div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div class="date-sel"><label>Período</label><select onchange="_funcSetPeriodoT('modo',this.value)"><option value="mes" ${!_funcTodoAnoT?'selected':''}>Mês selecionado</option><option value="ano" ${_funcTodoAnoT?'selected':''}>Ano inteiro</option></select></div>
@@ -4338,8 +4351,11 @@ function renderFuncionarios(){
     html+=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center">
       <div style="font-size:38px;margin-bottom:10px;opacity:.6">👷</div>
       <div style="font-size:15px;font-weight:700;color:#8a95a8;margin-bottom:14px">Nenhum funcionário cadastrado</div>
-      ${podeEditar?`<button class="btn" style="padding:8px 18px;background:#00e87a20;border:1px solid #00e87a50;color:#00e87a;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>
-      <div style="font-size:12px;color:#4a5568;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.5">Depois de cadastrar, na aba <b style="color:#00e87a">Metas Diárias</b> aparece um campo por hora pra escolher quem fez a produção. O desempenho aparece aqui automaticamente.</div>`:'<div style="font-size:12.5px;color:#4a5568">Entre como host para cadastrar funcionários.</div>'}</div>`;
+      ${podeEditar?`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn" style="padding:8px 18px;background:#a78bfa20;border:1px solid #a78bfa50;color:#a78bfa;font-weight:800" onclick="importarEquipesFuncT()">⬇ Importar das Equipes</button>
+        <button class="btn" style="padding:8px 18px;background:#00e87a20;border:1px solid #00e87a50;color:#00e87a;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>
+      </div>
+      <div style="font-size:12px;color:#4a5568;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.5">Use <b style="color:#a78bfa">Importar das Equipes</b> pra cadastrar todo mundo de uma vez. Depois, na aba <b style="color:#00e87a">Metas Diárias</b> aparece um campo por hora pra escolher quem fez a produção. O desempenho aparece aqui automaticamente.</div>`:'<div style="font-size:12.5px;color:#4a5568">Entre como host para cadastrar funcionários.</div>'}</div>`;
     document.getElementById("mainPanel").innerHTML=html+`</div>`;
     return;
   }
