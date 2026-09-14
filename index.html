@@ -4182,14 +4182,10 @@ function buildTurnoTable(c,turno,chave){
       else if(num>0){if(metaAtual>0&&num>=metaAtual)cc='cell-ok';else if(metaAtual>0&&num<metaAtual)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
-      // campo de funcionário por hora (aparece quando a hora tem valor e há funcionários cadastrados)
-      const func=rd['func_'+campo]||''; const temFuncT=funcT().length>0; const showF=displayVal!=='';
-      let funcHtml='';
-      if(temFuncT){
-        if(podeEditar) funcHtml=`<input class="func-hora-inp" list="funcDatalistT" value="${esc(func)}" placeholder="quem fez?" onchange="setFuncHoraT('${selected}',${robo},'${campo}',this.value,this)" style="display:${showF?'block':'none'};width:88px;margin:5px auto 0;padding:4px 6px;text-align:left;border-radius:5px;border:1px ${func?'solid #00e87a99':'dashed #00e87a55'};background:#00e87a0d;color:#7fe3b0;font-size:10px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box">`;
-        else if(func&&showF) funcHtml=`<div style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace">${esc(func)}</div>`;
-      }
-      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} oninput="onMetaHoraInputT(this)" onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
+      // nome do funcionário embaixo do número (do apontamento por equipe ou do campo direto)
+      const nomeEx=_funcHoraExibT(rd,campo); const showF=displayVal!=='';
+      const funcHtml=(nomeEx&&showF)?`<div title="${esc(nomeEx)}" style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace;line-height:1.15;max-width:72px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -4240,6 +4236,19 @@ let _funcAnoT=new Date().getFullYear(), _funcMesT=new Date().getMonth(), _funcTo
 function _funcPodeEditar(){ return isAdmin || isAdminMetas; }
 function _funcJs(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function funcT(){ const mk=metaApKey(); if(!mk) return []; if(!Array.isArray(celulas[mk].funcionarios)) celulas[mk].funcionarios=[]; return celulas[mk].funcionarios; }
+// Funcionário responsável por uma hora: campo direto func_ OU pessoa presente no apontamento por equipe (eqp_)
+function _funcHoraCredT(rd,campo){
+  const f=rd['func_'+campo]; if(f) return f;
+  const eq=rd['eqp_'+campo];
+  if(eq && Array.isArray(eq.presentes) && eq.presentes.length===1) return eq.presentes[0];
+  return null;
+}
+function _funcHoraExibT(rd,campo){
+  const f=rd['func_'+campo]; if(f) return f;
+  const eq=rd['eqp_'+campo];
+  if(eq){ const pres=Array.isArray(eq.presentes)?eq.presentes:[]; if(pres.length) return pres.join(', '); }
+  return '';
+}
 function _funcSetPeriodoT(tipo,v){ if(tipo==='mes')_funcMesT=+v; else if(tipo==='ano')_funcAnoT=+v; else if(tipo==='modo')_funcTodoAnoT=(v==='ano'); renderFuncionarios(); }
 
 function addFuncionarioT(){
@@ -4288,7 +4297,7 @@ function desempenhoFuncT(ano,mes){
     ROBOS.forEach(r=>{ const rd=dia[r]; if(!rd) return; const meta=parseInt(rd.meta)||0;
       [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{ const campo=campoH(h);
         const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
-        const nome=rd['func_'+campo]; if(!nome) return;
+        const nome=_funcHoraCredT(rd,campo); if(!nome) return;
         const o=garante(nome);
         o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
         o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
@@ -4432,7 +4441,7 @@ function desempenhoFuncDetalheT(nome,ano,mes){
     if(p[0]!==ano) return; if(mes!=null && p[1]!==mes) return;
     ROBOS.forEach(r=>{ const rd=dia[r]; if(!rd) return; const meta=parseInt(rd.meta)||0;
       [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{ const campo=campoH(h);
-        if(rd['func_'+campo]!==nome) return;
+        if(_funcHoraCredT(rd,campo)!==nome) return;
         const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
         pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
         if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0};
@@ -4543,7 +4552,6 @@ function renderMetasDiaria(){
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
   document.getElementById("mainPanel").innerHTML=`
   <div>
-    <datalist id="funcDatalistT">${funcT().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
