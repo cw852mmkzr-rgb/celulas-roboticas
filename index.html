@@ -3916,6 +3916,14 @@ function renderSidebar(){
       </div>
       <div class="dot dot-green"></div>
     </div>`;
+    html+=`<div class="cell-item ${selected==='__funcionarios'?'active':''}" onclick="selectCell('__funcionarios')">
+      <div class="cell-num" style="font-size:15px">👷</div>
+      <div class="cell-info">
+        <div class="cell-name">Funcionários</div>
+        <div class="cell-peca">Desempenho da equipe</div>
+      </div>
+      <div class="dot dot-green"></div>
+    </div>`;
   }
   // Aba Gerenciar — só host
   if(isAdmin){
@@ -4174,7 +4182,14 @@ function buildTurnoTable(c,turno,chave){
       else if(num>0){if(metaAtual>0&&num>=metaAtual)cc='cell-ok';else if(metaAtual>0&&num<metaAtual)cc='cell-fail';else cc='cell-ok';}
       const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
-      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)"></td>`;
+      // campo de funcionário por hora (aparece quando a hora tem valor e há funcionários cadastrados)
+      const func=rd['func_'+campo]||''; const temFuncT=funcT().length>0; const showF=displayVal!=='';
+      let funcHtml='';
+      if(temFuncT){
+        if(podeEditar) funcHtml=`<input class="func-hora-inp" list="funcDatalistT" value="${esc(func)}" placeholder="quem fez?" onchange="setFuncHoraT('${selected}',${robo},'${campo}',this.value,this)" style="display:${showF?'block':'none'};width:88px;margin:5px auto 0;padding:4px 6px;text-align:left;border-radius:5px;border:1px ${func?'solid #00e87a99':'dashed #00e87a55'};background:#00e87a0d;color:#7fe3b0;font-size:10px;font-family:'Courier New',monospace;outline:none;box-sizing:border-box">`;
+        else if(func&&showF) funcHtml=`<div style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace">${esc(func)}</div>`;
+      }
+      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} oninput="onMetaHoraInputT(this)" onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -4216,6 +4231,284 @@ function buildTurnoTable(c,turno,chave){
   </table></div>`;
 }
 
+/* ============================================================
+   FUNCIONÁRIOS — desempenho da equipe (individual, por hora)
+   Lista em celulas[metasKey].funcionarios; atribuição em
+   metas_dias[chave][robo]["func_"+campoHora]
+   ============================================================ */
+let _funcAnoT=new Date().getFullYear(), _funcMesT=new Date().getMonth(), _funcTodoAnoT=false;
+function _funcPodeEditar(){ return isAdmin || isAdminMetas; }
+function _funcJs(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function funcT(){ const mk=metaApKey(); if(!mk) return []; if(!Array.isArray(celulas[mk].funcionarios)) celulas[mk].funcionarios=[]; return celulas[mk].funcionarios; }
+function _funcSetPeriodoT(tipo,v){ if(tipo==='mes')_funcMesT=+v; else if(tipo==='ano')_funcAnoT=+v; else if(tipo==='modo')_funcTodoAnoT=(v==='ano'); renderFuncionarios(); }
+
+function addFuncionarioT(){
+  if(!_funcPodeEditar()){ showToast('Apenas host pode cadastrar',true); return; }
+  const mk=metaApKey(); if(!mk){ showToast('Aba de Metas não encontrada',true); return; }
+  const nome=prompt('Nome do funcionário:',''); if(nome===null) return;
+  const n=nome.trim(); if(!n){ showToast('Informe um nome',true); return; }
+  const lista=funcT();
+  if(lista.some(x=>x.toLowerCase()===n.toLowerCase())){ showToast('Esse funcionário já existe',true); return; }
+  lista.push(n); saveToAPI(celulas); renderFuncionarios(); showToast('Funcionário adicionado ✓');
+}
+function renomearFuncionarioT(nomeAntigo){
+  if(!_funcPodeEditar()) return;
+  const novo=prompt('Novo nome:',nomeAntigo); if(novo===null) return;
+  const n=novo.trim(); if(!n) return;
+  const lista=funcT(); const i=lista.indexOf(nomeAntigo); if(i<0) return;
+  if(lista.some((x,j)=>j!==i && x.toLowerCase()===n.toLowerCase())){ showToast('Já existe um funcionário com esse nome',true); return; }
+  lista[i]=n;
+  const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
+  Object.values(md).forEach(dia=>Object.values(dia).forEach(rd=>{ if(rd&&typeof rd==='object') Object.keys(rd).forEach(k=>{ if(k.startsWith('func_')&&rd[k]===nomeAntigo) rd[k]=n; }); }));
+  saveToAPI(celulas); renderFuncionarios(); showToast('Nome atualizado ✓');
+}
+function removerFuncionarioT(nome){
+  if(!_funcPodeEditar()) return;
+  if(!confirm('Remover "'+nome+'"? Os apontamentos já feitos mantêm o nome no histórico.')) return;
+  const lista=funcT(); const i=lista.indexOf(nome); if(i>=0) lista.splice(i,1);
+  saveToAPI(celulas); renderFuncionarios(); showToast('Funcionário removido');
+}
+function desempenhoFuncT(ano,mes){
+  const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
+  funcT().forEach(n=>garante(n));
+  const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
+  Object.entries(md).forEach(([chave,dia])=>{
+    const p=chave.split('_').map(Number); if(p.length!==3) return;
+    if(p[0]!==ano) return; if(mes!=null && p[1]!==mes) return;
+    ROBOS.forEach(r=>{ const rd=dia[r]; if(!rd) return; const meta=parseInt(rd.meta)||0;
+      [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{ const campo=campoH(h);
+        const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
+        const nome=rd['func_'+campo]; if(!nome) return;
+        const o=garante(nome);
+        o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
+        o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
+        if(meta>0){ o.horasMeta+=1; if(val>=meta) o.metasOk+=1; }
+      });
+    });
+  });
+  return Object.values(res).map(o=>{
+    const media=o.horas>0?Math.round(o.pecas/o.horas):0;
+    const taxa=o.horasMeta>0?Math.round(o.metasOk/o.horasMeta*100):0;
+    let melhorDia=null,melhorP=0; Object.entries(o.diaPecas).forEach(([ch,v])=>{ if(v>melhorP){melhorP=v;melhorDia=ch;} });
+    return {...o, dias:o.dias.size, robos:o.robos.size, media, taxa, melhorDia, melhorP};
+  });
+}
+function _funcStatusT(f){
+  if(!f.horas) return {txt:'Sem dados',cor:'#8a95a8'};
+  if(f.horasMeta===0) return {txt:'Sem meta definida',cor:'#3d9eff'};
+  if(f.taxa>=85) return {txt:'Excelente',cor:'#00e87a'};
+  if(f.taxa>=65) return {txt:'Muito bom',cor:'#3d9eff'};
+  if(f.taxa>=45) return {txt:'Regular',cor:'#ffb300'};
+  return {txt:'Precisa melhorar',cor:'#ff4d4d'};
+}
+function _funcStatT(label,valor,cor,big){
+  const ls=big?12:9.5, vs=big?24:16, pad=big?'13px 15px':'9px 11px';
+  return `<div style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:${pad}">
+    <div style="font-size:${ls}px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">${label}</div>
+    <div style="font-size:${vs}px;font-weight:800;color:${cor}">${valor}</div></div>`;
+}
+function _funcAnosOptsT(){ const y=new Date().getFullYear(); let o=''; for(let a=y-2;a<=y+1;a++) o+=`<option value="${a}" ${a===_funcAnoT?'selected':''}>${a}</option>`; return o; }
+function renderFuncionarios(){
+  const podeEditar=_funcPodeEditar();
+  const lista=funcT();
+  const mesFiltro=_funcTodoAnoT?null:_funcMesT;
+  const dadosF=desempenhoFuncT(_funcAnoT,mesFiltro);
+  const comDados=dadosF.filter(f=>f.horas>0).sort((a,b)=> b.taxa-a.taxa || b.metasOk-a.metasOk || b.pecas-a.pecas);
+  const periodoTxt=_funcTodoAnoT?(_funcAnoT+' (ano todo)'):(MESES[_funcMesT]+' / '+_funcAnoT);
+  const totalPecas=comDados.reduce((s,f)=>s+f.pecas,0);
+  const totalHoras=comDados.reduce((s,f)=>s+f.horas,0);
+  const mediaEquipe=totalHoras>0?Math.round(totalPecas/totalHoras):0;
+  const lider=comDados[0];
+
+  let html=`<div style="padding-bottom:40px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">👷 Funcionários</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-top:5px">Desempenho da equipe — ${periodoTxt}</div>
+      </div>
+      ${podeEditar?`<button class="btn" style="padding:6px 14px;font-size:12px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>`:''}
+    </div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:10px;padding:11px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div class="date-sel"><label>Período</label><select onchange="_funcSetPeriodoT('modo',this.value)"><option value="mes" ${!_funcTodoAnoT?'selected':''}>Mês selecionado</option><option value="ano" ${_funcTodoAnoT?'selected':''}>Ano inteiro</option></select></div>
+      <div class="date-sel" ${_funcTodoAnoT?'style="opacity:.4;pointer-events:none"':''}><label>Mês</label><select onchange="_funcSetPeriodoT('mes',this.value)">${MESES.map((m,i)=>`<option value="${i}" ${i===_funcMesT?'selected':''}>${m}</option>`).join('')}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="_funcSetPeriodoT('ano',this.value)">${_funcAnosOptsT()}</select></div>
+    </div>`;
+
+  if(!lista.length){
+    html+=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center">
+      <div style="font-size:38px;margin-bottom:10px;opacity:.6">👷</div>
+      <div style="font-size:15px;font-weight:700;color:#8a95a8;margin-bottom:14px">Nenhum funcionário cadastrado</div>
+      ${podeEditar?`<button class="btn" style="padding:8px 18px;background:#00e87a20;border:1px solid #00e87a50;color:#00e87a;font-weight:800" onclick="addFuncionarioT()">+ Adicionar funcionário</button>
+      <div style="font-size:12px;color:#4a5568;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.5">Depois de cadastrar, na aba <b style="color:#00e87a">Metas Diárias</b> aparece um campo por hora pra escolher quem fez a produção. O desempenho aparece aqui automaticamente.</div>`:'<div style="font-size:12.5px;color:#4a5568">Entre como host para cadastrar funcionários.</div>'}</div>`;
+    document.getElementById("mainPanel").innerHTML=html+`</div>`;
+    return;
+  }
+
+  // KPIs
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px">
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Funcionários</div><div style="font-size:26px;font-weight:900;color:#3d9eff">${lista.length}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${comDados.length} com produção</div></div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Peças no período</div><div style="font-size:26px;font-weight:900;color:#00e87a">${totalPecas.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">creditadas à equipe</div></div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média/hora da equipe</div><div style="font-size:26px;font-weight:900;color:#a78bfa">${mediaEquipe.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">peças por hora</div></div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Destaque</div><div style="font-size:20px;font-weight:900;color:#ffb300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lider?esc(lider.nome):'—'}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${lider?(lider.horasMeta>0?lider.taxa+'% das metas ('+lider.metasOk+'/'+lider.horasMeta+')':lider.pecas.toLocaleString("pt-BR")+' peças'):'sem dados'}</div></div>
+  </div>`;
+
+  // Ranking (cards clicáveis)
+  if(comDados.length){
+    html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:16px">`+comDados.map((f,i)=>{
+      const st=_funcStatusT(f); const medalha=['🥇','🥈','🥉'][i]||`${i+1}º`;
+      const barPct=f.horasMeta>0?Math.min(100,f.taxa):0;
+      return `<div class="func-card" onclick="abrirFuncDetalheT('${encodeURIComponent(f.nome)}')" style="background:#0f1318;border:1px solid ${st.cor}44;border-radius:12px;padding:18px;cursor:pointer;transition:transform .15s,border-color .15s" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='${st.cor}88'" onmouseout="this.style.transform='';this.style.borderColor='${st.cor}44'">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:20px;min-width:30px;text-align:center">${medalha}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:18px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(f.nome)}</div>
+            <div style="font-size:11px;color:${st.cor};font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px">${st.txt}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:28px;font-weight:900;color:${st.cor};line-height:1">${f.pecas.toLocaleString("pt-BR")}</div>
+            <div style="font-size:10px;color:#6b7788;letter-spacing:0.1em">PEÇAS</div>
+          </div>
+        </div>
+        <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${barPct}%;background:${st.cor};border-radius:99px"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${_funcStatT('Média/hora',f.media.toLocaleString("pt-BR"),'#3d9eff')}
+          ${_funcStatT('Metas batidas',f.horasMeta>0?`${f.metasOk}/${f.horasMeta} · ${f.taxa}%`:'—','#00e87a')}
+          ${_funcStatT('Horas',f.horas.toLocaleString("pt-BR"),'#a78bfa')}
+          ${_funcStatT('Dias / Robôs',`${f.dias} / ${f.robos}`,'#ffb300')}
+          ${_funcStatT('Melhor dia',f.melhorDia?`${f.melhorP} pç`:'—','#00e87a')}
+          ${_funcStatT('% da meta',f.horasMeta>0?f.taxa+'%':'—',st.cor)}
+        </div>
+      </div>`;
+    }).join('')+`</div>`;
+  }
+
+  // Sem produção
+  const semDados=dadosF.filter(f=>f.horas===0);
+  if(semDados.length){
+    html+=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:12px">Sem produção no período</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${semDados.map(f=>`<span style="background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:6px 12px;font-size:12.5px;color:#8a95a8">${esc(f.nome)}</span>`).join('')}</div></div>`;
+  }
+
+  // Gestão
+  if(podeEditar){
+    html+=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;font-weight:700">Gerenciar funcionários (${lista.length})</div><button class="btn" style="margin-left:auto;padding:5px 12px;font-size:11px;background:#00e87a20;border:1px solid #00e87a50;color:#00e87a;font-weight:800" onclick="addFuncionarioT()">+ Adicionar</button></div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${lista.slice().sort((a,b)=>a.localeCompare(b)).map(n=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#080b0f;border:1px solid #1e2530;border-radius:8px">
+            <span style="font-size:14px">👤</span>
+            <span style="flex:1;font-size:14px;color:#d8dde6">${esc(n)}</span>
+            <button class="btn btn-gray" style="padding:5px 12px;font-size:11px" onclick="renomearFuncionarioT('${_funcJs(n)}')">✏ Renomear</button>
+            <button class="btn" style="padding:5px 12px;font-size:11px;background:#ff4d4d15;border:1px solid #ff4d4d40;color:#ff4d4d;font-weight:700" onclick="removerFuncionarioT('${_funcJs(n)}')">🗑 Excluir</button>
+          </div>`).join('')}
+      </div></div>`;
+  }
+
+  document.getElementById("mainPanel").innerHTML=html+`</div>`;
+}
+function desempenhoFuncDetalheT(nome,ano,mes){
+  const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
+  const porRobo={}; ROBOS.forEach(r=>porRobo[r]={pecas:0,horas:0,metasOk:0,horasMeta:0});
+  const porDia={}; let pecas=0,horas=0,metasOk=0,horasMeta=0;
+  Object.entries(md).forEach(([chave,dia])=>{
+    const p=chave.split('_').map(Number); if(p.length!==3) return;
+    if(p[0]!==ano) return; if(mes!=null && p[1]!==mes) return;
+    ROBOS.forEach(r=>{ const rd=dia[r]; if(!rd) return; const meta=parseInt(rd.meta)||0;
+      [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{ const campo=campoH(h);
+        if(rd['func_'+campo]!==nome) return;
+        const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
+        pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
+        if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0};
+        porDia[chave].pecas+=val; porDia[chave].horas+=1;
+        if(meta>0){ horasMeta+=1; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=meta){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
+      });
+    });
+  });
+  const media=horas>0?Math.round(pecas/horas):0; const taxa=horasMeta>0?Math.round(metasOk/horasMeta*100):0;
+  const robosList=Object.entries(porRobo).filter(([k,v])=>v.horas>0).map(([k,v])=>({robo:k,...v})).sort((a,b)=>b.pecas-a.pecas);
+  const diasList=Object.keys(porDia).map(ch=>{const p=ch.split('_').map(Number);return {chave:ch,ano:p[0],mes:p[1],dia:p[2],...porDia[ch]};}).sort((a,b)=>b.ano-a.ano||b.mes-a.mes||b.dia-a.dia);
+  let melhorDia=null,melhorP=0; diasList.forEach(d=>{ if(d.pecas>melhorP){melhorP=d.pecas;melhorDia=d;} });
+  return {nome,pecas,horas,media,metasOk,horasMeta,taxa,dias:diasList.length,robos:robosList.length,robosList,diasList,melhorDia,melhorP};
+}
+function fecharFuncDet(){ const ov=document.getElementById('funcDetOv'); if(ov) ov.style.display='none'; document.body.style.overflow=''; }
+function abrirFuncDetalheT(nomeEnc){
+  const nome=decodeURIComponent(nomeEnc);
+  const mesFiltro=_funcTodoAnoT?null:_funcMesT;
+  const d=desempenhoFuncDetalheT(nome,_funcAnoT,mesFiltro);
+  const st=_funcStatusT({horas:d.horas,horasMeta:d.horasMeta,taxa:d.taxa});
+  const periodoTxt=_funcTodoAnoT?(_funcAnoT+' (ano todo)'):(MESES[_funcMesT]+' / '+_funcAnoT);
+  let inner=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:6px">
+      <div style="width:60px;height:60px;border-radius:14px;background:${st.cor}1f;border:1px solid ${st.cor}66;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:30px">👤</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:28px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nome)}</div>
+        <div style="font-size:13px;color:${st.cor};font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-top:3px">${st.txt} · ${periodoTxt}</div>
+      </div>
+      <button class="btn btn-gray" style="flex-shrink:0;padding:8px 14px;font-size:16px" onclick="fecharFuncDet()">✕</button>
+    </div>`;
+  if(d.horas===0){
+    inner+=`<div style="padding:40px 10px;text-align:center;color:#8a95a8;font-size:15px">Sem produção registrada para ${esc(nome)} neste período.</div>`;
+  } else {
+    inner+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0">
+      ${_funcStatT('Peças',d.pecas.toLocaleString("pt-BR"),'#00e87a',true)}
+      ${_funcStatT('Média/hora',d.media.toLocaleString("pt-BR"),'#3d9eff',true)}
+      ${_funcStatT('% da meta',d.horasMeta>0?d.taxa+'%':'—',st.cor,true)}
+      ${_funcStatT('Metas batidas',d.horasMeta>0?`${d.metasOk}/${d.horasMeta}`:'—','#00e87a',true)}
+      ${_funcStatT('Horas',d.horas.toLocaleString("pt-BR"),'#a78bfa',true)}
+      ${_funcStatT('Dias / Robôs',`${d.dias} / ${d.robos}`,'#ffb300',true)}
+    </div>`;
+    if(d.melhorDia){ const m=d.melhorDia; const df=`${String(m.dia).padStart(2,'0')}/${String(m.mes+1).padStart(2,'0')}/${m.ano}`;
+      inner+=`<div style="background:#00e87a0d;border:1px solid #00e87a4d;border-radius:8px;padding:13px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px"><span style="font-size:22px">⭐</span><span style="font-size:16px;color:#d8dde6"><b style="color:#00e87a">Melhor dia:</b> ${df} — ${m.pecas.toLocaleString("pt-BR")} peças</span></div>`;
+    }
+    const maxR=d.robosList.length?d.robosList[0].pecas:1;
+    inner+=`<div style="font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Produção por robô</div>`;
+    inner+=d.robosList.map(r=>{ const pct=Math.round(r.pecas/maxR*100); const tx=r.horasMeta>0?Math.round(r.metasOk/r.horasMeta*100):null;
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font-size:15px;color:#3d9eff;font-weight:800;min-width:50px">${esc(String(r.robo))}</span>
+        <div style="flex:1;background:#1e2530;border-radius:99px;height:9px;overflow:hidden"><div style="height:100%;width:${pct}%;background:#3d9eff;border-radius:99px"></div></div>
+        <span style="font-size:15px;font-weight:800;color:#d8dde6;min-width:72px;text-align:right">${r.pecas.toLocaleString("pt-BR")}</span>
+        <span style="font-size:12px;color:#6b7788;min-width:78px;text-align:right">${r.horas}h${tx!=null?` · ${tx}%`:''}</span>
+      </div>`; }).join('');
+    inner+=`<div style="font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;margin:22px 0 12px">Histórico por dia (${d.diasList.length})</div>
+      <div style="overflow-x:auto;border:1px solid #1e2530;border-radius:10px;max-height:340px;overflow-y:auto">
+        <table style="border-collapse:collapse;width:100%;min-width:400px;font-family:'Courier New',monospace">
+          <thead><tr style="background:#0a0d11;position:sticky;top:0">
+            <th style="padding:11px 12px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;text-align:left">Data</th>
+            <th style="padding:11px 12px;font-size:12px;color:#00e87a;text-transform:uppercase;letter-spacing:0.1em;text-align:center">Peças</th>
+            <th style="padding:11px 12px;font-size:12px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.1em;text-align:center">Horas</th>
+            <th style="padding:11px 12px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.1em;text-align:center">Metas</th>
+          </tr></thead><tbody>
+          ${d.diasList.map(x=>{ const df=`${String(x.dia).padStart(2,'0')}/${String(x.mes+1).padStart(2,'0')}/${x.ano}`; const tx=x.horasMeta>0?Math.round(x.metasOk/x.horasMeta*100):null;
+            const cor=tx==null?'#8a95a8':(tx>=85?'#00e87a':tx>=45?'#ffb300':'#ff4d4d');
+            return `<tr style="border-bottom:1px solid #1e2530">
+              <td style="padding:11px 12px;font-size:14px;color:#d8dde6">${df}</td>
+              <td style="padding:11px 12px;font-size:16px;color:#00e87a;text-align:center;font-weight:700">${x.pecas.toLocaleString("pt-BR")}</td>
+              <td style="padding:11px 12px;font-size:14px;color:#6b7788;text-align:center">${x.horas}</td>
+              <td style="padding:11px 12px;font-size:14px;color:${cor};text-align:center;font-weight:700">${x.horasMeta>0?`${x.metasOk}/${x.horasMeta} · ${tx}%`:'—'}</td>
+            </tr>`; }).join('')}
+          </tbody></table></div>
+      <div style="margin-top:18px;text-align:right"><button class="btn" style="padding:11px 22px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="fecharFuncDet()">Fechar</button></div>`;
+  }
+  let ov=document.getElementById('funcDetOv');
+  if(!ov){ ov=document.createElement('div'); ov.id='funcDetOv'; ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#000000dd;display:flex;align-items:center;justify-content:center;padding:16px'; ov.onclick=e=>{ if(e.target===ov) fecharFuncDet(); }; document.body.appendChild(ov); }
+  ov.innerHTML=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:100%;max-width:840px;max-height:90vh;overflow-y:auto">${inner}</div>`;
+  ov.style.display='flex'; document.body.style.overflow='hidden';
+}
+// campo de funcionário por hora na tabela de metas
+function setFuncHoraT(key,robo,campo,nome,el){
+  if(!_funcPodeEditar()) return;
+  const chave=getMetasChave(key);
+  if(!celulas[key].metas_dias) celulas[key].metas_dias={};
+  if(!celulas[key].metas_dias[chave]) celulas[key].metas_dias[chave]={};
+  if(!celulas[key].metas_dias[chave][robo]) celulas[key].metas_dias[chave][robo]={};
+  const rd=celulas[key].metas_dias[chave][robo]; const k='func_'+campo; nome=String(nome||'').trim();
+  if(!nome){ delete rd[k]; if(el){ el.style.borderStyle='dashed'; el.style.borderColor='#00e87a55'; } saveToAPI(celulas); return; }
+  const match=funcT().find(n=>n.toLowerCase()===nome.toLowerCase());
+  if(!match){ showToast('"'+nome+'" não é um funcionário cadastrado — adicione na aba Funcionários',true); delete rd[k]; if(el){ el.value=''; el.style.borderStyle='dashed'; el.style.borderColor='#00e87a55'; } saveToAPI(celulas); return; }
+  rd[k]=match; if(el){ el.value=match; el.style.borderStyle='solid'; el.style.borderColor='#00e87a99'; } saveToAPI(celulas);
+}
+function onMetaHoraInputT(el){ const td=el.closest('td'); if(!td) return; const f=td.querySelector('.func-hora-inp'); if(f) f.style.display = el.value.trim()===''?'none':'block'; }
+
 function renderMetasDiaria(){
   const c=celulas[selected];
   const podeEditar = isAdmin || isAdminMetas;
@@ -4234,6 +4527,7 @@ function renderMetasDiaria(){
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
   document.getElementById("mainPanel").innerHTML=`
   <div>
+    <datalist id="funcDatalistT">${funcT().map(n=>`<option value="${esc(n)}"></option>`).join('')}</datalist>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
@@ -4825,6 +5119,10 @@ function _renderDetailInner(){
   if(selected==='__equipes'){
     if(!(isAdmin||isAdminMetas)){ selected='__maparobos'; renderMapaRobos(); return; }
     renderEquipes(); return;
+  }
+  if(selected==='__funcionarios'){
+    if(!(isAdmin||isAdminMetas)){ selected='__maparobos'; renderMapaRobos(); return; }
+    renderFuncionarios(); return;
   }
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
