@@ -7307,6 +7307,11 @@ function handleMetasInputEl(el, key, robo, campo){
     else el.classList.add('cell-ok');
   }
   updateMetasCell(key, robo, campo, valorFinal);
+  // Mobile: ao preencher a hora com valor > 0 e vínculo de equipes ativo,
+  // abre a tela "Quem estava no robô?" (igual ao desktop/tablet)
+  if((isAdmin||isAdminMetas) && equipesData && equipesData.vincular_metas && campo.startsWith('h') && parseCelVal(valorFinal).num>0){
+    metaEqAbrir(key,robo,campo);
+  }
 }
 
 // Divisão automática por pontos de solda: ligada por padrão (comportamento antigo).
@@ -7366,9 +7371,9 @@ function handleMetasInput(key,robo,campo,valor){
     }
   }
   updateMetasCell(key,robo,campo,valorFinal);
-  // Desktop: ao preencher a hora com valor > 0 e com vínculo de equipes ativo,
-  // abre o seletor de equipe/pessoa daquela hora (mobile usa o sheet de apontamento)
-  if((isAdmin||isAdminMetas) && equipesData && equipesData.vincular_metas && campo.startsWith('h') && parseCelVal(valorFinal).num>0 && window.innerWidth>700){
+  // Ao preencher a hora com valor > 0 e com vínculo de equipes ativo,
+  // abre o seletor de equipe/pessoa daquela hora (mesmo comportamento em PC, tablet e celular)
+  if((isAdmin||isAdminMetas) && equipesData && equipesData.vincular_metas && campo.startsWith('h') && parseCelVal(valorFinal).num>0){
     metaEqAbrir(key,robo,campo);
   }
 }
