@@ -7580,9 +7580,11 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       else if(num>0&&meta>0){bg=num>=metaH?'#00e87a18':'#ff4d4d18';cor=num>=metaH?'#00e87a':'#ff4d4d';}
       if(isCafe&&!isAjuste){bg='#ffb30018';cor='#ffb300';}
       const isAtual = parseInt(h)===horaAtual;
+      const nomeEx=_funcHoraExibT(rd,campo);
+      const funcTag=(num>0&&nomeEx)?`<div title="${esc(nomeEx)}" style="font-size:9px;color:#00e87a;margin-top:3px;line-height:1.1;max-width:62px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
       return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
         ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
-        :`${num>0?num:'—'}`}</td>`;
+        :`${num>0?num:'—'}`}${funcTag}</td>`;
     }).join('');
 
     const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
