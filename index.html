@@ -19763,7 +19763,7 @@ function tdRenderColab(){
       <div class="td-box">&#10003;</div>
       <div style="flex:1">
         <div class="td-txt">${esc(t.texto)}${t.fixa?'':'<span class="td-tag hoje">de hoje</span>'}</div>
-        ${f&&f.ts?`<div class="td-hora">concluido as ${tdHora(f.ts)}</div>`:''}
+        ${f&&f.ts?`<div class="td-hora">concluído às ${tdHora(f.ts)}</div>`:''}
       </div>
     </div>`;
   }).join("") : `<div style="color:#6b7788;font-size:13px;padding:10px 2px">Nenhuma tarefa cadastrada para hoje ainda.</div>`;
@@ -19796,19 +19796,19 @@ function tdRenderColab(){
         <div class="td-card-t">&#127919; Seu foco</div>
         <ul class="td-foco">${cfg.focoFazer.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")}</ul>
         ${cfg.focoNaoFazer.length?`
-          <div class="td-card-t" style="margin-top:16px">Nao faz mais parte da sua rotina</div>
+          <div class="td-card-t" style="margin-top:16px">Não faz mais parte da sua rotina</div>
           <ul class="td-foco td-nao">${cfg.focoNaoFazer.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")}</ul>`:''}
         ${cfg.notaFoco?`<div class="td-nota">${esc(cfg.notaFoco)}</div>`:''}
       </div>
 
       <div class="td-card">
-        <div class="td-card-t">&#9997; Observacoes do dia</div>
+        <div class="td-card-t">&#9997; Observações do dia</div>
         <div style="font-size:12.5px;color:#7a8698;margin-bottom:9px;line-height:1.5">Aconteceu algo que atrapalhou? Teve alguma ideia para melhorar? Escreva aqui.</div>
         <textarea class="td-ta" id="tdObs" placeholder="Ex: a linha 3 parou 40 min esperando material...">${esc(dd.obs)}</textarea>
-        <button type="button" class="td-btn" onclick="tdSalvarObs()">Salvar observacoes</button>
+        <button type="button" class="td-btn" onclick="tdSalvarObs()">Salvar observações</button>
       </div>
 
-      <div class="td-fim">Obrigado pelo seu trabalho de hoje</div>
+      <div class="td-fim">Bom trabalho hoje!</div>
     </div>`;
 }
 
@@ -19834,7 +19834,7 @@ async function tdSalvarObs(){
     const d = o.dias[hoje] || (o.dias[hoje]={extras:[],feitas:{},obs:"",recado:""});
     d.obs = txt;
   }, true);
-  if(ok) showToast("Observacoes enviadas");
+  if(ok) showToast("Observações enviadas");
 }
 
 /* abre a tela pelo link secreto #tarefas */
