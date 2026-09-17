@@ -1508,6 +1508,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   </div>
 </div>
 
+<!-- TAREFAS DIÁRIAS (aba oculta — acesso pelo link secreto #tarefas) -->
+<div id="tarefasScreen"></div>
+
 <div id="appScreen" style="display:none">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:8px">
@@ -3936,6 +3939,16 @@ function renderSidebar(){
       <div class="dot dot-green"></div>
     </div>`;
   }
+  if(isAdmin){
+    html+=`<div class="cell-item ${selected==='__tarefas'?'active':''}" onclick="selectCell('__tarefas')">
+      <div class="cell-num" style="font-size:15px">📋</div>
+      <div class="cell-info">
+        <div class="cell-name">Tarefas Diárias</div>
+        <div class="cell-peca">Rotina da colaboradora</div>
+      </div>
+      <div class="dot dot-green"></div>
+    </div>`;
+  }
   // Aba Relatórios — todos veem, mas exige senha ao clicar
   html+=`<div class="cell-item ${selected==='__relatorios'?'active':''}" onclick="selectCell('__relatorios')">
     <div class="cell-num" style="font-size:15px">📄</div>
@@ -5147,6 +5160,10 @@ function _renderDetailInner(){
   if(selected==='__funcionarios'){
     if(!(isAdmin||isAdminMetas)){ selected='__maparobos'; renderMapaRobos(); return; }
     renderFuncionarios(); return;
+  }
+  if(selected==='__tarefas'){
+    if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
+    renderTarefas(); return;
   }
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
@@ -19523,6 +19540,582 @@ function _relHistoricoHTML(){
     }
   }, 2000);
 })();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ── TAREFAS DIÁRIAS (aba oculta) ────────────────────────────────────────────
+// Gestor (admin) monta a rotina fixa + as tarefas do dia.
+// A colaboradora entra pelo link secreto #tarefas com senha própria e conclui.
+// Dados: coluna jsonb dados.tarefas_diarias
+// ═══════════════════════════════════════════════════════════════════════════
+let tdData = null;              // objeto da coluna
+let tdDiaSel = null;            // dia selecionado no painel do gestor
+let tdAuthColab = false;        // colaboradora autenticada nesta sessão
+let tdCarregando = false;
+const TD_SENHA_PADRAO = "1234";
+
+function tdHoje(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function tdFmtData(iso){ if(!iso) return "—"; const p=String(iso).split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
+function tdDiaSemana(iso){ const p=String(iso).split("-").map(Number); const d=new Date(p[0],p[1]-1,p[2]);
+  return ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"][d.getDay()]; }
+function tdNovoId(){ return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function tdHora(ts){ try{ return new Date(ts).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+
+function tdPadrao(){
+  return {
+    config:{
+      colaboradora:"",
+      senha:TD_SENHA_PADRAO,
+      mensagem:"Esta é a sua rotina do dia. Vá marcando conforme for concluindo. Se algo travar ou não der para fazer, escreva nas observações — eu acompanho por aqui e a gente resolve junto.",
+      focoFazer:[
+        "Organização do setor — cada coisa no seu lugar, bancadas e corredores livres",
+        "Limpeza mantida ao longo de todo o turno, não só no final",
+        "Processo — garantir que cada operadora tenha material, gabarito e condição de produzir",
+        "Acompanhar a meta de hora em hora e destravar o que estiver atrapalhando",
+        "Propor formas mais rápidas e eficientes de bater a meta"
+      ],
+      focoNaoFazer:[
+        "Reposição de componentes",
+        "Conferência de qualidade das peças"
+      ],
+      notaFoco:"Essas duas atividades saíram da sua rotina para que você possa concentrar sua energia na organização do setor e no apoio às operadoras, que é onde seu trabalho tem mais impacto."
+    },
+    rotina:[
+      {id:"r1", texto:"Início do turno: passar em todos os postos e confirmar material, gabarito e ferramenta"},
+      {id:"r2", texto:"Conferir organização e limpeza do setor (bancadas, corredores, caixas e lixeiras)"},
+      {id:"r3", texto:"Acompanhar a meta de hora em hora e anotar o que atrapalhou"},
+      {id:"r4", texto:"Falar com cada operadora sobre dificuldades e resolver os travamentos"},
+      {id:"r5", texto:"Registrar uma ideia ou melhoria para ganhar tempo no processo"},
+      {id:"r6", texto:"Fim do turno: deixar o setor organizado para a próxima equipe"}
+    ],
+    dias:{}
+  };
+}
+
+function tdNormalizar(o){
+  const p = tdPadrao();
+  const d = (o && typeof o==="object") ? o : {};
+  const c = (d.config && typeof d.config==="object") ? d.config : {};
+  return {
+    config:{
+      colaboradora: c.colaboradora || "",
+      senha: c.senha || p.config.senha,
+      mensagem: c.mensagem !== undefined ? c.mensagem : p.config.mensagem,
+      focoFazer: Array.isArray(c.focoFazer) ? c.focoFazer : p.config.focoFazer,
+      focoNaoFazer: Array.isArray(c.focoNaoFazer) ? c.focoNaoFazer : p.config.focoNaoFazer,
+      notaFoco: c.notaFoco !== undefined ? c.notaFoco : p.config.notaFoco
+    },
+    rotina: Array.isArray(d.rotina) ? d.rotina : p.rotina,
+    dias: (d.dias && typeof d.dias==="object") ? d.dias : {}
+  };
+}
+
+function tdDia(iso, criar){
+  if(!tdData) return {extras:[],feitas:{},obs:"",recado:""};
+  let dd = tdData.dias[iso];
+  if(!dd){ dd = {extras:[],feitas:{},obs:"",recado:""}; if(criar) tdData.dias[iso]=dd; }
+  dd.extras = Array.isArray(dd.extras)?dd.extras:[];
+  dd.feitas = (dd.feitas&&typeof dd.feitas==="object")?dd.feitas:{};
+  if(typeof dd.obs!=="string") dd.obs="";
+  if(typeof dd.recado!=="string") dd.recado="";
+  return dd;
+}
+
+/* lista completa do dia = rotina fixa + tarefas específicas daquele dia */
+function tdTarefasDoDia(iso){
+  const dd = tdDia(iso);
+  const fixas = (tdData?tdData.rotina:[]).map(t=>({id:t.id, texto:t.texto, fixa:true}));
+  const extras = dd.extras.map(t=>({id:t.id, texto:t.texto, fixa:false}));
+  return fixas.concat(extras);
+}
+function tdProgresso(iso){
+  const lista = tdTarefasDoDia(iso), dd = tdDia(iso);
+  const feitas = lista.filter(t=>dd.feitas[t.id]).length;
+  return { total:lista.length, feitas, pct: lista.length? Math.round(feitas/lista.length*100) : 0 };
+}
+
+async function tdCarregar(force){
+  if(tdData && !force) return tdData;
+  if(tdCarregando) return tdData;
+  tdCarregando = true;
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=tarefas_diarias",{headers:HEADERS_SB});
+    const d = await r.json();
+    tdData = tdNormalizar(d && d[0] && d[0].tarefas_diarias);
+  }catch(e){ if(!tdData) tdData = tdPadrao(); }
+  tdCarregando = false;
+  return tdData;
+}
+
+/* Leitura-alteração-gravação: relê antes de gravar para o gestor e a
+   colaboradora não sobrescreverem o trabalho um do outro. */
+async function tdSalvar(mutar, silencioso){
+  try{
+    const r = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=tarefas_diarias",{headers:HEADERS_SB});
+    const d = await r.json();
+    const atual = tdNormalizar(d && d[0] && d[0].tarefas_diarias);
+    if(typeof mutar === "function") mutar(atual);
+    const resp = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{
+      method:"PATCH", headers:HEADERS_SB, body: JSON.stringify({ tarefas_diarias: atual })
+    });
+    if(!resp.ok) throw new Error("HTTP "+resp.status);
+    tdData = atual;
+    if(!silencioso) showToast("Salvo ✓");
+    return true;
+  }catch(e){ showToast("Erro ao salvar: "+(e.message||e), true); return false; }
+}
+
+/* ---------- CSS (injetado uma vez) ---------- */
+(function tdInjectCSS(){
+  if(document.getElementById("td-styles")) return;
+  const s=document.createElement("style"); s.id="td-styles";
+  s.textContent = `
+  #tarefasScreen{position:fixed;inset:0;z-index:70;background:#0a0d12;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+  .td-wrap{max-width:680px;margin:0 auto;padding:22px 16px 60px}
+  .td-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .td-ola{font-size:21px;font-weight:900;color:#fff;letter-spacing:.01em}
+  .td-data{font-size:12.5px;color:#7a8698;font-family:'Courier New',monospace;margin-top:3px;text-transform:capitalize}
+  .td-card{background:linear-gradient(135deg,#0f1318,#0a0d12);border:1px solid #1e2530;border-radius:14px;padding:16px 18px;margin-top:14px}
+  .td-card-t{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8a95a8;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .td-msg{font-size:13.5px;line-height:1.6;color:#c5cdd8}
+  .td-foco{margin:0;padding-left:20px}
+  .td-foco li{font-size:13.5px;line-height:1.55;color:#d8dde6;margin-bottom:7px}
+  .td-nao li{color:#9aa6b4}
+  .td-nota{margin-top:10px;font-size:12.5px;line-height:1.55;color:#7a8698;border-left:2px solid #2a3040;padding-left:10px}
+  .td-prog{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .td-prog-track{flex:1;height:10px;background:#04070d;border:1px solid #1e2530;border-radius:99px;overflow:hidden}
+  .td-prog-fill{height:100%;background:linear-gradient(90deg,#00e87a,#00c060);border-radius:99px;transition:width .3s ease}
+  .td-prog-n{font-family:'Courier New',monospace;font-weight:900;font-size:14px;color:#00e87a;min-width:92px;text-align:right}
+  .td-item{display:flex;align-items:flex-start;gap:13px;padding:14px 12px;border-radius:11px;border:1px solid #161c26;background:#080b0f;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent}
+  .td-item:active{background:#0f1520}
+  .td-item.ok{border-color:#00e87a44;background:#00e87a0d}
+  .td-box{flex:0 0 auto;width:26px;height:26px;border-radius:8px;border:2px solid #2a3040;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:transparent;transition:all .15s}
+  .td-item.ok .td-box{background:#00e87a;border-color:#00e87a;color:#04120a}
+  .td-txt{font-size:14px;line-height:1.5;color:#d8dde6}
+  .td-item.ok .td-txt{color:#8a95a8;text-decoration:line-through}
+  .td-tag{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#6b7788;border:1px solid #2a3040;border-radius:99px;padding:2px 7px;margin-left:8px;white-space:nowrap}
+  .td-tag.hoje{color:#ffb300;border-color:#ffb30055}
+  .td-hora{font-size:10.5px;color:#00e87a;font-family:'Courier New',monospace;margin-top:4px}
+  .td-ta{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:10px;padding:11px 13px;font-size:14px;font-family:inherit;line-height:1.5;outline:none;resize:vertical;min-height:88px}
+  .td-ta:focus{border-color:#3d9eff}
+  .td-btn{width:100%;margin-top:12px;background:linear-gradient(135deg,#00e87a,#00c060);border:none;color:#04120a;padding:14px;border-radius:11px;font-weight:900;font-size:14px;letter-spacing:.03em;cursor:pointer}
+  .td-btn:active{transform:translateY(1px)}
+  .td-lock{max-width:340px;margin:16vh auto 0;text-align:center;padding:0 18px}
+  .td-lock h2{color:#fff;font-size:19px;margin:16px 0 6px}
+  .td-lock p{color:#7a8698;font-size:13px;margin:0 0 18px;line-height:1.5}
+  .td-lock input{width:100%;box-sizing:border-box;background:#0f1318;border:1px solid #1e2530;color:#fff;border-radius:11px;padding:14px;font-size:17px;text-align:center;letter-spacing:.3em;outline:none}
+  .td-lock input:focus{border-color:#3d9eff}
+  .td-lock button{width:100%;margin-top:12px;background:linear-gradient(135deg,#3d9eff,#1e6fdb);border:none;color:#fff;padding:13px;border-radius:11px;font-weight:800;font-size:14px;cursor:pointer}
+  .td-erro{color:#ff6b6b;font-size:12.5px;margin-top:10px;min-height:16px}
+  .td-fim{text-align:center;color:#4a5568;font-size:11px;margin-top:26px;font-family:'Courier New',monospace}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ---------- Tela da colaboradora (link secreto #tarefas) ---------- */
+function tdTela(){ return document.getElementById("tarefasScreen"); }
+
+async function tdAbrirColaboradora(){
+  const tela = tdTela(); if(!tela) return;
+  const lg=document.getElementById("loginScreen"), ap=document.getElementById("appScreen");
+  if(lg) lg.style.display="none";
+  if(ap) ap.style.display="none";
+  tela.style.display="block";
+  await tdCarregar(true);
+  if(tdAuthColab) tdRenderColab(); else tdRenderTrava();
+}
+
+function tdRenderTrava(erro){
+  tdTela().innerHTML = `
+    <div class="td-lock">
+      <div style="font-size:42px">&#128203;</div>
+      <h2>Tarefas do dia</h2>
+      <p>Digite sua senha de acesso para ver a rotina de hoje.</p>
+      <input id="tdPw" type="password" inputmode="numeric" placeholder="senha" autocomplete="off"
+             onkeydown="if(event.key==='Enter')tdEntrarColab()">
+      <button type="button" onclick="tdEntrarColab()">Entrar</button>
+      <div class="td-erro">${erro?esc(erro):""}</div>
+    </div>`;
+  setTimeout(function(){ const i=document.getElementById("tdPw"); if(i) i.focus(); },120);
+}
+
+function tdEntrarColab(){
+  const el=document.getElementById("tdPw"); if(!el) return;
+  const pw=(el.value||"").trim();
+  const ok = (tdData && pw === tdData.config.senha) || pw===ADMIN_PW || pw===ADMIN_METAS_PW;
+  if(!ok){ tdRenderTrava("Senha incorreta. Tente novamente."); return; }
+  tdAuthColab = true;
+  tdRenderColab();
+}
+
+function tdRenderColab(){
+  const hoje = tdHoje();
+  const cfg = tdData.config;
+  const dd = tdDia(hoje);
+  const lista = tdTarefasDoDia(hoje);
+  const pr = tdProgresso(hoje);
+  const nome = cfg.colaboradora ? cfg.colaboradora.trim().split(" ")[0] : "";
+  const h = new Date().getHours();
+  const saud = h<12 ? "Bom dia" : (h<18 ? "Boa tarde" : "Boa noite");
+
+  const itens = lista.length ? lista.map(function(t){
+    const f = dd.feitas[t.id];
+    return `<div class="td-item ${f?'ok':''}" onclick="tdMarcar('${t.id}')">
+      <div class="td-box">&#10003;</div>
+      <div style="flex:1">
+        <div class="td-txt">${esc(t.texto)}${t.fixa?'':'<span class="td-tag hoje">de hoje</span>'}</div>
+        ${f&&f.ts?`<div class="td-hora">concluido as ${tdHora(f.ts)}</div>`:''}
+      </div>
+    </div>`;
+  }).join("") : `<div style="color:#6b7788;font-size:13px;padding:10px 2px">Nenhuma tarefa cadastrada para hoje ainda.</div>`;
+
+  tdTela().innerHTML = `
+    <div class="td-wrap">
+      <div class="td-head">
+        <div style="font-size:30px">&#128203;</div>
+        <div>
+          <div class="td-ola">${saud}${nome?', '+esc(nome):''}!</div>
+          <div class="td-data">${tdDiaSemana(hoje)} &middot; ${tdFmtData(hoje)}</div>
+        </div>
+      </div>
+
+      ${cfg.mensagem?`<div class="td-card"><div class="td-msg">${esc(cfg.mensagem)}</div></div>`:''}
+      ${dd.recado?`<div class="td-card" style="border-color:#ffb30040;background:linear-gradient(135deg,#ffb3000f,#0a0d12)">
+        <div class="td-card-t" style="color:#ffb300">&#128204; Recado de hoje</div>
+        <div class="td-msg">${esc(dd.recado)}</div></div>`:''}
+
+      <div class="td-card">
+        <div class="td-card-t">&#9989; Suas tarefas de hoje</div>
+        <div class="td-prog">
+          <div class="td-prog-track"><div class="td-prog-fill" style="width:${pr.pct}%"></div></div>
+          <div class="td-prog-n">${pr.feitas}/${pr.total} &middot; ${pr.pct}%</div>
+        </div>
+        <div style="margin-top:14px">${itens}</div>
+      </div>
+
+      <div class="td-card">
+        <div class="td-card-t">&#127919; Seu foco</div>
+        <ul class="td-foco">${cfg.focoFazer.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")}</ul>
+        ${cfg.focoNaoFazer.length?`
+          <div class="td-card-t" style="margin-top:16px">Nao faz mais parte da sua rotina</div>
+          <ul class="td-foco td-nao">${cfg.focoNaoFazer.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")}</ul>`:''}
+        ${cfg.notaFoco?`<div class="td-nota">${esc(cfg.notaFoco)}</div>`:''}
+      </div>
+
+      <div class="td-card">
+        <div class="td-card-t">&#9997; Observacoes do dia</div>
+        <div style="font-size:12.5px;color:#7a8698;margin-bottom:9px;line-height:1.5">Aconteceu algo que atrapalhou? Teve alguma ideia para melhorar? Escreva aqui.</div>
+        <textarea class="td-ta" id="tdObs" placeholder="Ex: a linha 3 parou 40 min esperando material...">${esc(dd.obs)}</textarea>
+        <button type="button" class="td-btn" onclick="tdSalvarObs()">Salvar observacoes</button>
+      </div>
+
+      <div class="td-fim">Obrigado pelo seu trabalho de hoje</div>
+    </div>`;
+}
+
+async function tdMarcar(id){
+  const hoje = tdHoje();
+  const dd = tdDia(hoje, true);
+  const marcado = !!dd.feitas[id];
+  if(marcado) delete dd.feitas[id]; else dd.feitas[id] = {ts: new Date().toISOString()};
+  tdRenderColab();
+  await tdSalvar(function(o){
+    const d = o.dias[hoje] || (o.dias[hoje]={extras:[],feitas:{},obs:"",recado:""});
+    d.feitas = d.feitas || {};
+    if(marcado) delete d.feitas[id]; else d.feitas[id] = {ts: new Date().toISOString()};
+  }, true);
+}
+
+async function tdSalvarObs(){
+  const el=document.getElementById("tdObs"); if(!el) return;
+  const txt = el.value;
+  const hoje = tdHoje();
+  tdDia(hoje,true).obs = txt;
+  const ok = await tdSalvar(function(o){
+    const d = o.dias[hoje] || (o.dias[hoje]={extras:[],feitas:{},obs:"",recado:""});
+    d.obs = txt;
+  }, true);
+  if(ok) showToast("Observacoes enviadas");
+}
+
+/* abre a tela pelo link secreto #tarefas */
+(function tdHashBoot(){
+  function checar(){
+    if(String(location.hash||"").toLowerCase() === "#tarefas") tdAbrirColaboradora();
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", checar);
+  else checar();
+  window.addEventListener("hashchange", checar);
+})();
+
+/* ---------- CSS do painel do gestor ---------- */
+(function tdInjectCSSGestor(){
+  if(document.getElementById("tdg-styles")) return;
+  const s=document.createElement("style"); s.id="tdg-styles";
+  s.textContent = `
+  .tdg-wrap{padding:20px 26px 46px;overflow-y:auto;flex:1;min-height:0}
+  .tdg-head{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #161c26}
+  .tdg-t{font-size:21px;font-weight:900;color:#fff;display:flex;align-items:center;gap:10px}
+  .tdg-badge{background:#2a3040;color:#8a95a8;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:99px;letter-spacing:.09em;text-transform:uppercase}
+  .tdg-sub{font-size:12.5px;color:#7a8698;margin-top:6px}
+  .tdg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .tdg-card{background:linear-gradient(135deg,#0f1318,#0a0d12);border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .tdg-grid .tdg-card{margin-bottom:0}
+  .tdg-ct{font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#d8dde6;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .tdg-hint2{font-size:10px;color:#4a5568;text-transform:none;letter-spacing:0;font-weight:600}
+  .tdg-hint{font-size:11px;color:#7a8698;margin-top:8px;font-family:'Courier New',monospace}
+  .tdg-hint b{color:#ffb300}
+  .tdg-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .tdg-st{flex:0 0 auto;width:24px;height:24px;border-radius:7px;border:1px solid #2a3040;display:flex;align-items:center;justify-content:center;font-size:12px;color:#4a5568;font-family:'Courier New',monospace}
+  .tdg-st.ok{background:#00e87a;border-color:#00e87a;color:#04120a;font-weight:900}
+  .tdg-st.fix{color:#7a8698;font-weight:800}
+  .tdg-inp{flex:1;min-width:0;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
+  .tdg-inp:focus{border-color:#3d9eff}
+  .tdg-x{flex:0 0 auto;background:#1e2530;border:none;color:#8a95a8;width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:12px}
+  .tdg-x:hover{background:#ff4d4d22;color:#ff4d4d}
+  .tdg-add{display:flex;gap:9px;margin-top:12px;padding-top:12px;border-top:1px dashed #1e2530}
+  .tdg-btn{background:linear-gradient(135deg,#3d9eff,#1e6fdb);border:none;color:#fff;padding:9px 16px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap}
+  .tdg-btn.ghost{background:#1e2530;color:#d8dde6;margin-top:10px;width:100%}
+  .tdg-ta{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:9px;padding:11px 13px;font-size:13px;font-family:inherit;line-height:1.55;outline:none;resize:vertical;min-height:76px}
+  .tdg-ta:focus{border-color:#3d9eff}
+  .tdg-vazio{font-size:12.5px;color:#4a5568;padding:6px 2px;font-style:italic}
+  .tdg-date{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Courier New',monospace;outline:none;color-scheme:dark}
+  .tdg-prog{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12.5px;color:#8a95a8;font-family:'Courier New',monospace}
+  .tdg-prog b{color:#fff}
+  .tdg-prog-track{flex:1;height:8px;background:#04070d;border:1px solid #1e2530;border-radius:99px;overflow:hidden}
+  .tdg-prog-fill{height:100%;background:linear-gradient(90deg,#00e87a,#00c060)}
+  .tdg-hoje{margin-top:10px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#00e87a}
+  .tdg-link{background:#04070d;border:1px solid #1e2530;border-radius:8px;padding:9px 11px;font-size:11px;color:#3d9eff;font-family:'Courier New',monospace;word-break:break-all;margin-bottom:10px}
+  .tdg-li{font-size:12.5px;color:#c5cdd8;padding:7px 0;border-bottom:1px solid #12171f;line-height:1.45}
+  .tdg-li:last-child{border-bottom:none}
+  .tdg-li.ok{color:#8a95a8}
+  .tdg-li.ok span{color:#00e87a;font-family:'Courier New',monospace;font-size:10.5px;margin-left:6px}
+  .tdg-obs{font-size:13px;line-height:1.6;color:#d8dde6;white-space:pre-wrap}
+  .tdg-hist{display:flex;align-items:center;gap:10px;padding:5px 0;cursor:pointer}
+  .tdg-hist:hover .tdg-hist-d{color:#3d9eff}
+  .tdg-hist-d{font-size:11.5px;color:#7a8698;font-family:'Courier New',monospace;min-width:74px}
+  .tdg-hist-bar{flex:1;height:7px;background:#04070d;border-radius:99px;overflow:hidden}
+  .tdg-hist-bar div{height:100%;border-radius:99px}
+  .tdg-hist-p{font-size:11px;font-weight:800;font-family:'Courier New',monospace;min-width:38px;text-align:right}
+  .tdg-cfg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+  .tdg-cfg label,.tdg-lbl{display:block;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7a8698;margin-bottom:5px}
+  .tdg-lbl{margin-top:12px}
+  @media(max-width:900px){.tdg-wrap{padding:14px 14px 40px}.tdg-add{flex-direction:column}.tdg-btn{width:100%}}
+  `;
+  document.head.appendChild(s);
+})();
+
+/* ---------- Painel do gestor (aba oculta, só admin) ---------- */
+async function renderTarefas(){
+  await tdCarregar();
+  if(!tdDiaSel) tdDiaSel = tdHoje();
+  tdRenderGestor();
+}
+
+function tdRenderGestor(){
+  const cfg = tdData.config;
+  const dd = tdDia(tdDiaSel);
+  const pr = tdProgresso(tdDiaSel);
+  const ehHoje = tdDiaSel === tdHoje();
+  const link = location.origin + location.pathname + "#tarefas";
+
+  const extras = dd.extras.length ? dd.extras.map(function(t,i){
+    const f = dd.feitas[t.id];
+    return `<div class="tdg-row">
+      <div class="tdg-st ${f?'ok':''}">${f?'&#10003;':'&#9675;'}</div>
+      <input class="tdg-inp" value="${esc(t.texto)}" onchange="tdEditarExtra(${i},this.value)">
+      <button type="button" class="tdg-x" onclick="tdRemoverExtra(${i})" title="Remover">&#10005;</button>
+    </div>`;
+  }).join("") : `<div class="tdg-vazio">Nenhuma tarefa específica para este dia. A rotina fixa abaixo já aparece para ela.</div>`;
+
+  const rotina = tdData.rotina.map(function(t,i){
+    return `<div class="tdg-row">
+      <div class="tdg-st fix">${i+1}</div>
+      <input class="tdg-inp" value="${esc(t.texto)}" onchange="tdEditarRotina(${i},this.value)">
+      <button type="button" class="tdg-x" onclick="tdRemoverRotina(${i})" title="Remover">&#10005;</button>
+    </div>`;
+  }).join("");
+
+  const lista = tdTarefasDoDia(tdDiaSel);
+  const pendentes = lista.filter(function(t){ return !dd.feitas[t.id]; });
+  const concluidas = lista.filter(function(t){ return dd.feitas[t.id]; });
+
+  document.getElementById("mainPanel").innerHTML = `
+  <div class="tdg-wrap">
+    <div class="tdg-head">
+      <div>
+        <div class="tdg-t">&#128203; Tarefas Diárias <span class="tdg-badge">oculta</span></div>
+        <div class="tdg-sub">Rotina da colaboradora — você define o dia, ela conclui pelo link secreto.</div>
+      </div>
+    </div>
+
+    <div class="tdg-grid">
+      <div class="tdg-card">
+        <div class="tdg-ct">&#128197; Dia</div>
+        <input type="date" class="tdg-date" value="${tdDiaSel}" onchange="tdTrocarDia(this.value)">
+        <div class="tdg-prog">
+          <div class="tdg-prog-track"><div class="tdg-prog-fill" style="width:${pr.pct}%"></div></div>
+          <b>${pr.feitas}/${pr.total}</b> <span>(${pr.pct}%)</span>
+        </div>
+        ${ehHoje?'<div class="tdg-hoje">hoje</div>':`<button type="button" class="tdg-btn ghost" onclick="tdTrocarDia('${tdHoje()}')">Ir para hoje</button>`}
+      </div>
+
+      <div class="tdg-card">
+        <div class="tdg-ct">&#128279; Link secreto dela</div>
+        <div class="tdg-link" id="tdLink">${esc(link)}</div>
+        <button type="button" class="tdg-btn" onclick="tdCopiarLink()">Copiar link</button>
+        <div class="tdg-hint">Senha atual: <b>${esc(cfg.senha)}</b></div>
+      </div>
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#128204; Recado de hoje <span class="tdg-hint2">aparece em destaque para ela</span></div>
+      <textarea class="tdg-ta" placeholder="Ex: hoje priorize a organização do estoque de gabaritos." onchange="tdSalvarRecado(this.value)">${esc(dd.recado)}</textarea>
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#9989; Tarefas específicas de ${tdFmtData(tdDiaSel)}</div>
+      ${extras}
+      <div class="tdg-add">
+        <input class="tdg-inp" id="tdNovaExtra" placeholder="Nova tarefa para este dia..." onkeydown="if(event.key==='Enter')tdAddExtra()">
+        <button type="button" class="tdg-btn" onclick="tdAddExtra()">Adicionar</button>
+      </div>
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#128260; Rotina fixa <span class="tdg-hint2">repete todos os dias</span></div>
+      ${rotina}
+      <div class="tdg-add">
+        <input class="tdg-inp" id="tdNovaRotina" placeholder="Nova tarefa fixa da rotina..." onkeydown="if(event.key==='Enter')tdAddRotina()">
+        <button type="button" class="tdg-btn" onclick="tdAddRotina()">Adicionar</button>
+      </div>
+    </div>
+
+    <div class="tdg-grid">
+      <div class="tdg-card">
+        <div class="tdg-ct">&#9203; Pendentes (${pendentes.length})</div>
+        ${pendentes.length?pendentes.map(function(t){return '<div class="tdg-li">'+esc(t.texto)+'</div>';}).join(""):'<div class="tdg-vazio">Tudo concluído.</div>'}
+      </div>
+      <div class="tdg-card">
+        <div class="tdg-ct">&#10003; Concluídas (${concluidas.length})</div>
+        ${concluidas.length?concluidas.map(function(t){return '<div class="tdg-li ok">'+esc(t.texto)+' <span>'+tdHora(dd.feitas[t.id].ts)+'</span></div>';}).join(""):'<div class="tdg-vazio">Nada concluído ainda.</div>'}
+      </div>
+    </div>
+
+    ${dd.obs?`<div class="tdg-card" style="border-color:#3d9eff40">
+      <div class="tdg-ct" style="color:#3d9eff">&#9997; Observações dela em ${tdFmtData(tdDiaSel)}</div>
+      <div class="tdg-obs">${esc(dd.obs)}</div></div>`:''}
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#128202; Últimos 14 dias</div>
+      ${tdHistoricoHTML()}
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#9881; Configuração</div>
+      <div class="tdg-cfg">
+        <label>Nome da colaboradora
+          <input class="tdg-inp" value="${esc(cfg.colaboradora)}" placeholder="Ex: Maria" onchange="tdSetCfg('colaboradora',this.value)"></label>
+        <label>Senha de acesso dela
+          <input class="tdg-inp" value="${esc(cfg.senha)}" onchange="tdSetCfg('senha',this.value)"></label>
+      </div>
+      <label class="tdg-lbl">Mensagem de abertura</label>
+      <textarea class="tdg-ta" onchange="tdSetCfg('mensagem',this.value)">${esc(cfg.mensagem)}</textarea>
+      <label class="tdg-lbl">Foco da função (uma por linha)</label>
+      <textarea class="tdg-ta" onchange="tdSetLista('focoFazer',this.value)">${esc(cfg.focoFazer.join("\n"))}</textarea>
+      <label class="tdg-lbl">Não faz mais parte da rotina (uma por linha)</label>
+      <textarea class="tdg-ta" onchange="tdSetLista('focoNaoFazer',this.value)">${esc(cfg.focoNaoFazer.join("\n"))}</textarea>
+      <label class="tdg-lbl">Observação sobre a mudança de foco</label>
+      <textarea class="tdg-ta" onchange="tdSetCfg('notaFoco',this.value)">${esc(cfg.notaFoco)}</textarea>
+    </div>
+  </div>`;
+}
+
+function tdHistoricoHTML(){
+  const linhas=[];
+  const base=new Date();
+  for(let i=0;i<14;i++){
+    const d=new Date(base); d.setDate(d.getDate()-i);
+    const iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    const dd=tdData.dias[iso];
+    const pr=tdProgresso(iso);
+    const houve = dd && (Object.keys(dd.feitas||{}).length || (dd.extras||[]).length || dd.obs);
+    const cor = pr.pct>=100?"#00e87a":(pr.pct>=60?"#ffb300":(pr.pct>0?"#ff8a4d":"#4a5568"));
+    linhas.push(`<div class="tdg-hist" onclick="tdTrocarDia('${iso}')">
+      <div class="tdg-hist-d">${tdFmtData(iso)}</div>
+      <div class="tdg-hist-bar"><div style="width:${pr.pct}%;background:${cor}"></div></div>
+      <div class="tdg-hist-p" style="color:${cor}">${houve?pr.pct+"%":"—"}</div>
+    </div>`);
+  }
+  return linhas.join("");
+}
+
+/* ações do gestor */
+function tdTrocarDia(iso){ tdDiaSel=iso; tdRenderGestor(); }
+async function tdSalvarRecado(v){
+  const dia=tdDiaSel; tdDia(dia,true).recado=v;
+  await tdSalvar(function(o){ const d=o.dias[dia]||(o.dias[dia]={extras:[],feitas:{},obs:"",recado:""}); d.recado=v; });
+  tdRenderGestor();
+}
+async function tdAddExtra(){
+  const el=document.getElementById("tdNovaExtra"); if(!el) return;
+  const txt=(el.value||"").trim(); if(!txt) return;
+  const dia=tdDiaSel, item={id:tdNovoId(), texto:txt};
+  tdDia(dia,true).extras.push(item); el.value="";
+  await tdSalvar(function(o){ const d=o.dias[dia]||(o.dias[dia]={extras:[],feitas:{},obs:"",recado:""}); d.extras=d.extras||[]; d.extras.push(item); });
+  tdRenderGestor();
+}
+async function tdEditarExtra(i,v){
+  const dia=tdDiaSel, txt=(v||"").trim(); if(!txt) return;
+  const dd=tdDia(dia,true); if(!dd.extras[i]) return;
+  dd.extras[i].texto=txt;
+  await tdSalvar(function(o){ const d=o.dias[dia]; if(d&&d.extras&&d.extras[i]) d.extras[i].texto=txt; });
+}
+async function tdRemoverExtra(i){
+  const dd=tdDia(tdDiaSel,true); const item=dd.extras[i]; if(!item) return;
+  if(!confirm("Remover esta tarefa do dia?")) return;
+  const dia=tdDiaSel;
+  dd.extras.splice(i,1); delete dd.feitas[item.id];
+  await tdSalvar(function(o){ const d=o.dias[dia]; if(!d) return;
+    d.extras=(d.extras||[]).filter(function(x){return x.id!==item.id;}); if(d.feitas) delete d.feitas[item.id]; });
+  tdRenderGestor();
+}
+async function tdAddRotina(){
+  const el=document.getElementById("tdNovaRotina"); if(!el) return;
+  const txt=(el.value||"").trim(); if(!txt) return;
+  const item={id:tdNovoId(), texto:txt};
+  tdData.rotina.push(item); el.value="";
+  await tdSalvar(function(o){ o.rotina=o.rotina||[]; o.rotina.push(item); });
+  tdRenderGestor();
+}
+async function tdEditarRotina(i,v){
+  const txt=(v||"").trim(); if(!txt||!tdData.rotina[i]) return;
+  const id=tdData.rotina[i].id; tdData.rotina[i].texto=txt;
+  await tdSalvar(function(o){ const t=(o.rotina||[]).find(function(x){return x.id===id;}); if(t) t.texto=txt; });
+}
+async function tdRemoverRotina(i){
+  const item=tdData.rotina[i]; if(!item) return;
+  if(!confirm("Remover da rotina fixa? Ela deixa de aparecer todos os dias.")) return;
+  tdData.rotina.splice(i,1);
+  await tdSalvar(function(o){ o.rotina=(o.rotina||[]).filter(function(x){return x.id!==item.id;}); });
+  tdRenderGestor();
+}
+async function tdSetCfg(campo,v){
+  tdData.config[campo]=v;
+  await tdSalvar(function(o){ o.config[campo]=v; });
+  if(campo==="senha"||campo==="colaboradora") tdRenderGestor();
+}
+async function tdSetLista(campo,v){
+  const arr=String(v||"").split("\n").map(function(x){return x.trim();}).filter(Boolean);
+  tdData.config[campo]=arr;
+  await tdSalvar(function(o){ o.config[campo]=arr; });
+}
+function tdCopiarLink(){
+  const txt=(document.getElementById("tdLink")||{}).textContent||"";
+  try{ navigator.clipboard.writeText(txt); showToast("Link copiado"); }
+  catch(e){ showToast("Copie manualmente: "+txt, true); }
+}
+
+// ── FIM TAREFAS DIÁRIAS ──
 </script>
 
 </body>
