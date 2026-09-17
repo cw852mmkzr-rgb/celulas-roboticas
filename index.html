@@ -19557,6 +19557,23 @@ function tdHoje(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMo
 function tdFmtData(iso){ if(!iso) return "—"; const p=String(iso).split("-"); return p[2]+"/"+p[1]+"/"+p[0]; }
 function tdDiaSemana(iso){ const p=String(iso).split("-").map(Number); const d=new Date(p[0],p[1]-1,p[2]);
   return ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"][d.getDay()]; }
+/* nomes dos robôs cadastrados (só existe no lado do gestor, que tem `celulas`) */
+function tdRobos(){
+  try{
+    return Object.keys(celulas)
+      .filter(function(k){ return getCellTipo(k)==="robo"; })
+      .map(function(k){ return celulas[k].nome; })
+      .sort(function(a,b){ return String(a).localeCompare(String(b),"pt",{numeric:true}); });
+  }catch(e){ return []; }
+}
+function tdChipsHTML(sel, acao){
+  const robos = tdRobos();
+  if(!robos.length) return '<div class="tdg-vazio">Nenhum robô cadastrado.</div>';
+  return '<div class="tdg-chips">'+robos.map(function(n){
+    const on = sel.indexOf(n)>=0;
+    return '<button type="button" class="tdg-chip'+(on?' on':'')+'" onclick="'+acao+'(\''+String(n).replace(/'/g,"\\'")+'\')">'+esc(n)+'</button>';
+  }).join("")+'</div>';
+}
 function tdNovoId(){ return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function tdHora(ts){ try{ return new Date(ts).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
 
@@ -19617,15 +19634,25 @@ function tdDia(iso, criar){
   dd.feitas = (dd.feitas&&typeof dd.feitas==="object")?dd.feitas:{};
   if(typeof dd.obs!=="string") dd.obs="";
   if(typeof dd.recado!=="string") dd.recado="";
+  if(!dd.limpeza || typeof dd.limpeza!=="object") dd.limpeza={robos:[],materiais:""};
+  if(!Array.isArray(dd.limpeza.robos)) dd.limpeza.robos=[];
+  if(typeof dd.limpeza.materiais!=="string") dd.limpeza.materiais="";
+  if(!dd.escala || typeof dd.escala!=="object") dd.escala={pos17:[],almoco:[],posAlmoco:[]};
+  ["pos17","almoco","posAlmoco"].forEach(function(g){ if(!Array.isArray(dd.escala[g])) dd.escala[g]=[]; });
   return dd;
 }
 
 /* lista completa do dia = rotina fixa + tarefas específicas daquele dia */
 function tdTarefasDoDia(iso){
   const dd = tdDia(iso);
-  const fixas = (tdData?tdData.rotina:[]).map(t=>({id:t.id, texto:t.texto, fixa:true}));
-  const extras = dd.extras.map(t=>({id:t.id, texto:t.texto, fixa:false}));
-  return fixas.concat(extras);
+  const out = [];
+  if(dd.limpeza.robos.length){
+    out.push({ id:"__limpeza", limpeza:true, materiais:dd.limpeza.materiais,
+               texto:"Limpeza completa: "+dd.limpeza.robos.join(", ") });
+  }
+  (tdData?tdData.rotina:[]).forEach(function(t){ out.push({id:t.id, texto:t.texto, fixa:true}); });
+  dd.extras.forEach(function(t){ out.push({id:t.id, texto:t.texto, fixa:false}); });
+  return out;
 }
 function tdProgresso(iso){
   const lista = tdTarefasDoDia(iso), dd = tdDia(iso);
@@ -19694,6 +19721,16 @@ async function tdSalvar(mutar, silencioso){
   .td-item.ok .td-txt{color:#8a95a8;text-decoration:line-through}
   .td-tag{font-size:9.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#6b7788;border:1px solid #2a3040;border-radius:99px;padding:2px 7px;margin-left:8px;white-space:nowrap}
   .td-tag.hoje{color:#ffb300;border-color:#ffb30055}
+  .td-tag.limp{color:#3d9eff;border-color:#3d9eff55}
+  .td-item.limp{border-color:#3d9eff44;background:#3d9eff0d}
+  .td-item.limp.ok{border-color:#00e87a44;background:#00e87a0d}
+  .td-mat{margin-top:7px;font-size:12.5px;line-height:1.5;color:#a8b3c4;background:#04070d;border:1px solid #1e2530;border-radius:8px;padding:8px 10px}
+  .td-mat b{color:#3d9eff;font-weight:800}
+  .td-esc{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid #12171f;flex-wrap:wrap}
+  .td-esc:last-child{border-bottom:none}
+  .td-esc-l{font-size:12.5px;color:#8a95a8;min-width:168px;font-weight:700}
+  .td-esc-v{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+  .td-esc-v span{background:#3d9eff18;border:1px solid #3d9eff44;color:#8cc4ff;border-radius:99px;padding:3px 11px;font-size:12px;font-weight:700}
   .td-hora{font-size:10.5px;color:#00e87a;font-family:'Courier New',monospace;margin-top:4px}
   .td-ta{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:10px;padding:11px 13px;font-size:14px;font-family:inherit;line-height:1.5;outline:none;resize:vertical;min-height:88px}
   .td-ta:focus{border-color:#3d9eff}
@@ -19759,10 +19796,11 @@ function tdRenderColab(){
 
   const itens = lista.length ? lista.map(function(t){
     const f = dd.feitas[t.id];
-    return `<div class="td-item ${f?'ok':''}" onclick="tdMarcar('${t.id}')">
+    return `<div class="td-item ${f?'ok':''} ${t.limpeza?'limp':''}" onclick="tdMarcar('${t.id}')">
       <div class="td-box">&#10003;</div>
       <div style="flex:1">
-        <div class="td-txt">${esc(t.texto)}${t.fixa?'':'<span class="td-tag hoje">de hoje</span>'}</div>
+        <div class="td-txt">${t.limpeza?'&#129531; ':''}${esc(t.texto)}${t.limpeza?'<span class="td-tag limp">limpeza</span>':(t.fixa?'':'<span class="td-tag hoje">de hoje</span>')}</div>
+        ${t.limpeza&&t.materiais?`<div class="td-mat"><b>O que usar:</b> ${esc(t.materiais)}</div>`:''}
         ${f&&f.ts?`<div class="td-hora">concluído às ${tdHora(f.ts)}</div>`:''}
       </div>
     </div>`;
@@ -19792,6 +19830,8 @@ function tdRenderColab(){
         <div style="margin-top:14px">${itens}</div>
       </div>
 
+      ${tdEscalaColabHTML(dd)}
+
       <div class="td-card">
         <div class="td-card-t">&#127919; Seu foco</div>
         <ul class="td-foco">${cfg.focoFazer.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")}</ul>
@@ -19810,6 +19850,22 @@ function tdRenderColab(){
 
       <div class="td-fim">Bom trabalho hoje!</div>
     </div>`;
+}
+
+function tdEscalaColabHTML(dd){
+  const e = dd.escala;
+  const grupos = [
+    ["&#127765; Depois das 17:00", e.pos17],
+    ["&#127860; Rodando no almoço", e.almoco],
+    ["&#9203; Pós-almoço", e.posAlmoco]
+  ].filter(function(g){ return g[1].length; });
+  if(!grupos.length) return "";
+  return `<div class="td-card">
+    <div class="td-card-t">&#128337; Escala dos robôs hoje</div>
+    ${grupos.map(function(g){
+      return '<div class="td-esc"><div class="td-esc-l">'+g[0]+'</div><div class="td-esc-v">'+g[1].map(function(n){return '<span>'+esc(n)+'</span>';}).join("")+'</div></div>';
+    }).join("")}
+  </div>`;
 }
 
 async function tdMarcar(id){
@@ -19878,6 +19934,13 @@ async function tdSalvarObs(){
   .tdg-ta{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:9px;padding:11px 13px;font-size:13px;font-family:inherit;line-height:1.55;outline:none;resize:vertical;min-height:76px}
   .tdg-ta:focus{border-color:#3d9eff}
   .tdg-vazio{font-size:12.5px;color:#4a5568;padding:6px 2px;font-style:italic}
+  .tdg-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .tdg-chip{background:#04070d;border:1px solid #2a3040;color:#8a95a8;border-radius:99px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;transition:all .14s;font-family:inherit}
+  .tdg-chip:hover{border-color:#3d9eff66;color:#d8dde6}
+  .tdg-chip.on{background:linear-gradient(135deg,#3d9eff,#1e6fdb);border-color:#3d9eff;color:#fff}
+  .tdg-esc-g{margin-bottom:14px}
+  .tdg-esc-g:last-child{margin-bottom:0}
+  .tdg-esc-t{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7a8698;margin-bottom:7px}
   .tdg-date{width:100%;box-sizing:border-box;background:#04070d;border:1px solid #1e2530;color:#d8dde6;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Courier New',monospace;outline:none;color-scheme:dark}
   .tdg-prog{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12.5px;color:#8a95a8;font-family:'Courier New',monospace}
   .tdg-prog b{color:#fff}
@@ -19970,6 +20033,30 @@ function tdRenderGestor(){
     <div class="tdg-card">
       <div class="tdg-ct">&#128204; Recado de hoje <span class="tdg-hint2">aparece em destaque para ela</span></div>
       <textarea class="tdg-ta" placeholder="Ex: hoje priorize a organização do estoque de gabaritos." onchange="tdSalvarRecado(this.value)">${esc(dd.recado)}</textarea>
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#129531; Limpeza de célula <span class="tdg-hint2">vira a primeira tarefa do dia dela</span></div>
+      <div class="tdg-esc-t">Robô(s) para limpeza completa</div>
+      ${tdChipsHTML(dd.limpeza.robos, "tdToggleLimpeza")}
+      <div class="tdg-esc-t" style="margin-top:14px">O que usar na limpeza</div>
+      <textarea class="tdg-ta" placeholder="Ex: pano microfibra, álcool isopropílico, pincel macio, ar comprimido. Não usar solvente na lente do sensor." onchange="tdSetLimpezaMateriais(this.value)">${esc(dd.limpeza.materiais)}</textarea>
+    </div>
+
+    <div class="tdg-card">
+      <div class="tdg-ct">&#128337; Escala dos robôs de ${tdFmtData(tdDiaSel)}</div>
+      <div class="tdg-esc-g">
+        <div class="tdg-esc-t">&#127765; Trabalham depois das 17:00</div>
+        ${tdChipsHTML(dd.escala.pos17, "tdToggleEscalaPos17")}
+      </div>
+      <div class="tdg-esc-g">
+        <div class="tdg-esc-t">&#127860; Rodam durante o almoço</div>
+        ${tdChipsHTML(dd.escala.almoco, "tdToggleEscalaAlmoco")}
+      </div>
+      <div class="tdg-esc-g">
+        <div class="tdg-esc-t">&#9203; Ficam pós-almoço</div>
+        ${tdChipsHTML(dd.escala.posAlmoco, "tdToggleEscalaPosAlmoco")}
+      </div>
     </div>
 
     <div class="tdg-card">
@@ -20109,6 +20196,40 @@ async function tdSetLista(campo,v){
   tdData.config[campo]=arr;
   await tdSalvar(function(o){ o.config[campo]=arr; });
 }
+function tdGarantirDia(o,dia){
+  const d = o.dias[dia] || (o.dias[dia]={extras:[],feitas:{},obs:"",recado:""});
+  if(!d.limpeza||typeof d.limpeza!=="object") d.limpeza={robos:[],materiais:""};
+  if(!Array.isArray(d.limpeza.robos)) d.limpeza.robos=[];
+  if(typeof d.limpeza.materiais!=="string") d.limpeza.materiais="";
+  if(!d.escala||typeof d.escala!=="object") d.escala={pos17:[],almoco:[],posAlmoco:[]};
+  ["pos17","almoco","posAlmoco"].forEach(function(g){ if(!Array.isArray(d.escala[g])) d.escala[g]=[]; });
+  return d;
+}
+function tdAlterna(arr,nome){
+  const i=arr.indexOf(nome);
+  if(i>=0) arr.splice(i,1); else arr.push(nome);
+  return arr;
+}
+async function tdToggleLimpeza(nome){
+  const dia=tdDiaSel, dd=tdDia(dia,true);
+  tdAlterna(dd.limpeza.robos, nome);
+  tdRenderGestor();
+  await tdSalvar(function(o){ tdAlterna(tdGarantirDia(o,dia).limpeza.robos, nome); }, true);
+}
+async function tdSetLimpezaMateriais(v){
+  const dia=tdDiaSel; tdDia(dia,true).limpeza.materiais=v;
+  await tdSalvar(function(o){ tdGarantirDia(o,dia).limpeza.materiais=v; });
+}
+async function tdToggleEscala(grupo,nome){
+  const dia=tdDiaSel, dd=tdDia(dia,true);
+  tdAlterna(dd.escala[grupo], nome);
+  tdRenderGestor();
+  await tdSalvar(function(o){ tdAlterna(tdGarantirDia(o,dia).escala[grupo], nome); }, true);
+}
+function tdToggleEscalaPos17(n){ return tdToggleEscala("pos17",n); }
+function tdToggleEscalaAlmoco(n){ return tdToggleEscala("almoco",n); }
+function tdToggleEscalaPosAlmoco(n){ return tdToggleEscala("posAlmoco",n); }
+
 function tdCopiarLink(){
   const txt=(document.getElementById("tdLink")||{}).textContent||"";
   try{ navigator.clipboard.writeText(txt); showToast("Link copiado"); }
