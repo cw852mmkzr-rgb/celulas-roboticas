@@ -19669,7 +19669,7 @@ async function tdSalvar(mutar, silencioso){
   if(document.getElementById("td-styles")) return;
   const s=document.createElement("style"); s.id="td-styles";
   s.textContent = `
-  #tarefasScreen{position:fixed;inset:0;z-index:70;background:#0a0d12;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+  #tarefasScreen{position:fixed;inset:0;z-index:100001;background:#0a0d12;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
   .td-wrap{max-width:680px;margin:0 auto;padding:22px 16px 60px}
   .td-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
   .td-ola{font-size:21px;font-weight:900;color:#fff;letter-spacing:.01em}
@@ -19716,9 +19716,9 @@ function tdTela(){ return document.getElementById("tarefasScreen"); }
 
 async function tdAbrirColaboradora(){
   const tela = tdTela(); if(!tela) return;
-  const lg=document.getElementById("loginScreen"), ap=document.getElementById("appScreen");
-  if(lg) lg.style.display="none";
-  if(ap) ap.style.display="none";
+  ["loginScreen","appScreen","playScreen"].forEach(function(id){
+    const el=document.getElementById(id); if(el) el.style.display="none";
+  });
   tela.style.display="block";
   await tdCarregar(true);
   if(tdAuthColab) tdRenderColab(); else tdRenderTrava();
