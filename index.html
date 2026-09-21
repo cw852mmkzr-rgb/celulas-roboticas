@@ -9596,7 +9596,7 @@ function _eqRenderTransf(){
     : '<div class="eqtr-vazio">Não há outra equipe cadastrada para receber.</div>';
   const histTxt = hist.horas
     ? `<b>${hist.horas}</b> apontamento${hist.horas===1?'':'s'} em <b>${hist.dias}</b> dia${hist.dias===1?'':'s'} &middot; <b>${hist.pecas.toLocaleString("pt-BR")}</b> peças já lançadas no nome dela.<br>Tudo isso continua igual depois da transferência — o histórico é guardado pelo nome, não pela equipe.`
-    : 'Ainda não há produção lançada no nome dela. Nada será perdido na transferência.';
+    : 'O histórico é guardado pelo nome, não pela equipe — nenhum lançamento antigo é perdido na transferência.';
   box.innerHTML = `
     <div class="eqtr-nome">${esc(nome)}</div>
     <div class="eqtr-origem"><span class="eqtr-dot" style="background:${de.cor}"></span>Hoje na ${esc(_eqRotulo(de).titulo)} · ${esc(_eqRotulo(de).sub)}</div>
