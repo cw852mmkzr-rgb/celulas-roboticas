@@ -3739,7 +3739,8 @@ async function loadFromAPI(){
   const eqModalAberto     = document.getElementById('eqModal')&&document.getElementById('eqModal').style.display==='flex';
   const metaEqAberto      = document.getElementById('metaEqModal')&&document.getElementById('metaEqModal').style.display==='flex';
   const eqCfgAberto       = document.getElementById('eqCfgModal')&&document.getElementById('eqCfgModal').style.display==='flex';
-  if(modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto||metaEqAberto||eqCfgAberto)return;
+  const eqTransfAberto    = document.getElementById('eqTransfModal')&&document.getElementById('eqTransfModal').style.display==='flex';
+  if(eqTransfAberto||modalManuAberto||modalConcAberto||modalEditAberto||mrPainelAberto||modalMapaAberto||modalGabAberto||modalPecaAberto||modalMaqAberto||metaApAberto||eqModalAberto||metaEqAberto||eqCfgAberto)return;
 
   // Carrega cache local primeiro para resposta instantânea
   try{
@@ -8596,7 +8597,7 @@ function _eqGerenciarHTML(){
     const txt=_eqTextColor(eq.cor);
     const membros=(eq.membros||[]);
     const membrosHTML = membros.length
-      ? membros.map(m=>`<span class="eq-membro" style="border-color:${txt}44;color:${txt}">${esc(m)}</span>`).join('')
+      ? membros.map((m,i)=>`<button class="eq-membro" style="border-color:${txt}44;color:${txt}" onclick="eqAbrirTransferir('${eq.id}',${i})" title="Transferir ${esc(m)} para outra equipe">${esc(m)}</button>`).join('')
       : `<span class="eq-membro-vazio" style="color:${txt}99">Sem membros</span>`;
     const nomeCard = (eq.nome && eq.nome.trim()) ? esc(eq.nome.trim()) : 'Equipe';
     const stAt = vinc ? _eqStatusAtual(eq.id) : null;
@@ -9528,6 +9529,83 @@ function eqExcluir(id){
   saveEquipes(true);
   if(selected==='__equipes') renderEquipes();
   showToast('Equipe excluída');
+}
+
+// ---- Transferir membro de equipe (sem mexer no histórico) ----
+// Os lançamentos antigos guardam o NOME da pessoa congelado na hora do apontamento
+// (eqp_h**.presentes e func_h**). Trocar a equipe atual não toca em nenhum deles.
+let _eqTransf = null; // {nome, deId}
+function _eqHistoricoDe(nome){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  const md=(mk&&celulas[mk].metas_dias)||{};
+  let horas=0, pecas=0; const dias=new Set();
+  Object.entries(md).forEach(([chave,dia])=>{
+    ROBOS.forEach(r=>{ const rd=dia[r]; if(!rd) return;
+      [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{ const campo=campoH(h);
+        const v=parseCelVal(rd[campo]||'').num; if(v<=0) return;
+        const direto=rd['func_'+campo];
+        const eq=rd['eqp_'+campo];
+        const pres=(eq&&Array.isArray(eq.presentes))?eq.presentes:[];
+        if(direto===nome || pres.includes(nome)){ horas++; pecas+=v; dias.add(chave); }
+      });
+    });
+  });
+  return {horas, pecas, dias:dias.size};
+}
+function eqAbrirTransferir(eqId, idx){
+  if(!_eqCanAccess()) return;
+  const eq=equipesData.lista.find(e=>e.id===eqId); if(!eq) return;
+  const nome=(eq.membros||[])[idx]; if(!nome) return;
+  _eqTransf={ nome, deId:eqId };
+  _eqRenderTransf();
+  document.getElementById('eqTransfModal').style.display='flex';
+}
+function eqFecharTransf(){ const m=document.getElementById('eqTransfModal'); if(m) m.style.display='none'; _eqTransf=null; }
+function _eqRenderTransf(){
+  const box=document.getElementById('eqTransfBody'); if(!box||!_eqTransf) return;
+  const de=equipesData.lista.find(e=>e.id===_eqTransf.deId); if(!de) return;
+  const nome=_eqTransf.nome;
+  const hist=_eqHistoricoDe(nome);
+  const outras=equipesData.lista.filter(e=>e.id!==de.id);
+  const opcoes = outras.length
+    ? outras.map(e=>{
+        const ja=(e.membros||[]).includes(nome);
+        const qtd=(e.membros||[]).length;
+        return `<button class="eqtr-op" ${ja?'disabled style="opacity:.45;cursor:not-allowed"':`onclick="eqTransferirPara('${e.id}')"`}>
+          <span class="eqtr-dot" style="background:${e.cor}"></span>
+          <span class="eqtr-op-nome">${esc(_eqNome(e))}</span>
+          <span class="eqtr-op-qtd">${ja?'já está aqui':qtd+' membro'+(qtd===1?'':'s')}</span>
+        </button>`;
+      }).join('')
+    : '<div class="eqtr-vazio">Não há outra equipe cadastrada para receber.</div>';
+  const histTxt = hist.horas
+    ? `<b>${hist.horas}</b> apontamento${hist.horas===1?'':'s'} em <b>${hist.dias}</b> dia${hist.dias===1?'':'s'} &middot; <b>${hist.pecas.toLocaleString("pt-BR")}</b> peças já lançadas no nome dela.<br>Tudo isso continua igual depois da transferência — o histórico é guardado pelo nome, não pela equipe.`
+    : 'Ainda não há produção lançada no nome dela. Nada será perdido na transferência.';
+  box.innerHTML = `
+    <div class="eqtr-nome">${esc(nome)}</div>
+    <div class="eqtr-origem"><span class="eqtr-dot" style="background:${de.cor}"></span>Hoje na ${esc(_eqNome(de))}</div>
+    <div class="eqtr-hist">&#128202; ${histTxt}</div>
+    <label class="ap-label">Mover para</label>
+    <div class="eqtr-lista">${opcoes}</div>
+    <div class="eqtr-rodape">Ela sai da ${esc(_eqNome(de))} e entra na equipe escolhida com o mesmo nome. Relatórios, Funcionários e Desempenho continuam contando a produção antiga dela normalmente.</div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqFecharTransf()">Cancelar</button>
+    </div>`;
+}
+function eqTransferirPara(paraId){
+  if(!_eqCanAccess()||!_eqTransf) return;
+  const nome=_eqTransf.nome;
+  const de=equipesData.lista.find(e=>e.id===_eqTransf.deId);
+  const para=equipesData.lista.find(e=>e.id===paraId);
+  if(!de||!para) return;
+  if(!confirm(`Transferir ${nome} da ${_eqNome(de)} para a ${_eqNome(para)}?\n\nA produção já lançada no nome dela não muda.`)) return;
+  de.membros=(de.membros||[]).filter(m=>m!==nome);
+  para.membros=para.membros||[];
+  if(!para.membros.includes(nome)) para.membros.push(nome);
+  saveEquipes(true);
+  eqFecharTransf();
+  if(selected==='__equipes') renderEquipes();
+  showToast(nome+' agora é da '+_eqNome(para)+' ✓');
 }
 
 // ---- Integração com o apontamento de Metas (chips de equipe) ----
@@ -16401,11 +16479,23 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
         <button class="eq-add-membro" onclick="eqAddMembro()" title="Adicionar membro">＋</button>
       </div>
       <div id="eqMembrosList" class="eq-membros-list"></div>
+      <div style="font-size:11.5px;color:#5a6678;margin-top:9px;line-height:1.5">Para mover alguém de equipe sem perder o histórico, toque no nome dela no card da equipe (&#8646; Transferir). O &#10005; aqui só tira da equipe.</div>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px">
       <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqFecharModal()">Cancelar</button>
       <button class="ap-btn primary" onclick="eqSalvarModal()">✓ Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== Modal Transferir membro de equipe ===== -->
+<div id="eqTransfModal" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9310;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)eqFecharTransf()">
+  <div class="eq-modal-card" onclick="event.stopPropagation()">
+    <div class="eq-modal-head">
+      <div class="eq-modal-title">&#8646; Transferir membro</div>
+      <button class="ap-x" onclick="eqFecharTransf()">&#10005;</button>
+    </div>
+    <div id="eqTransfBody"></div>
   </div>
 </div>
 
@@ -16549,6 +16639,23 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-chip-membro{ display:inline-flex; align-items:center; gap:7px; background:#141b26; border:1px solid #26303f; color:#f0f5fc; font-size:14.5px; font-weight:700; padding:7px 9px 7px 14px; border-radius:99px; }
 .eq-chip-membro button{ background:#ff4d4d20; border:none; color:#ff6a6a; width:20px; height:20px; border-radius:50%; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 .eq-chip-membro button:active{ background:#ff4d4d40; }
+/* Transferir membro entre equipes */
+.eq-membro{ cursor:pointer; font-family:inherit; transition:transform .14s var(--ease-out), background .16s ease; }
+.eq-membro:hover{ background:#00000030; }
+.eq-membro:active{ transform:scale(0.94); }
+.eqtr-nome{ font-size:21px; font-weight:900; color:#fff; font-family:'Montserrat',sans-serif; letter-spacing:.01em; }
+.eqtr-origem{ display:flex; align-items:center; gap:9px; font-size:13px; color:#8a95a8; margin-top:8px; }
+.eqtr-dot{ width:13px; height:13px; border-radius:50%; flex-shrink:0; border:1px solid #ffffff30; }
+.eqtr-hist{ background:#0e131b; border:1px solid #1e2530; border-left:3px solid #00e87a; border-radius:10px; padding:11px 13px; margin:16px 0 18px; font-size:12.5px; color:#a8b3c4; line-height:1.6; }
+.eqtr-hist b{ color:#00e87a; font-family:'Courier New',monospace; font-size:13.5px; }
+.eqtr-lista{ display:flex; flex-direction:column; gap:8px; max-height:34vh; overflow-y:auto; }
+.eqtr-op{ display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:#0e131b; border:1px solid #26303f; border-radius:12px; padding:12px 14px; cursor:pointer; color:#f0f5fc; font-family:inherit; transition:border-color .16s ease, background .16s ease, transform .14s var(--ease-out); }
+.eqtr-op:hover{ background:#141b26; border-color:#3d9eff66; }
+.eqtr-op:active{ transform:scale(0.98); }
+.eqtr-op-nome{ font-size:15px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eqtr-op-qtd{ font-size:11px; color:#5a6678; font-family:'Courier New',monospace; flex-shrink:0; }
+.eqtr-vazio{ font-size:13px; color:#5a6678; font-style:italic; padding:8px 2px; }
+.eqtr-rodape{ font-size:11.5px; color:#5a6678; margin-top:16px; line-height:1.55; }
 /* Chips de equipe no apontamento de metas */
 .metaap-eqchips{ display:flex; flex-wrap:wrap; gap:12px; margin-top:4px; }
 .metaap-eqchip{ width:38px; height:38px; border-radius:50%; border:2px solid #ffffff22; cursor:pointer; transition:transform .16s var(--ease-out); padding:0; }
