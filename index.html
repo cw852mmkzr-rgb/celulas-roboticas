@@ -4300,6 +4300,12 @@ function removerFuncionarioT(nome){
   const lista=funcT(); const i=lista.indexOf(nome); if(i>=0) lista.splice(i,1);
   saveToAPI(celulas); renderFuncionarios(); showToast('Funcionário removido');
 }
+// Meta que a pessoa precisava bater NAQUELA hora - mesma regra da tela Meta Diaria:
+// meia hora (:30) e 15:00 = metade; cafe (10:00) = 60% do que sobrar; sexta 15:00 = cheia.
+function _funcMetaHoraT(h, meta, chave){
+  const base = metaEfetivaHora(h, meta, chave);
+  return HORAS_CAFE.includes(h) ? Math.round(base*0.6) : base;
+}
 function desempenhoFuncT(ano,mes){
   const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
   funcT().forEach(n=>garante(n));
@@ -4314,7 +4320,8 @@ function desempenhoFuncT(ano,mes){
         const o=garante(nome);
         o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
         o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
-        if(meta>0){ o.horasMeta+=1; if(val>=meta) o.metasOk+=1; }
+        const metaH=_funcMetaHoraT(h,meta,chave);
+        if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; }
       });
     });
   });
@@ -4459,7 +4466,8 @@ function desempenhoFuncDetalheT(nome,ano,mes){
         pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
         if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0};
         porDia[chave].pecas+=val; porDia[chave].horas+=1;
-        if(meta>0){ horasMeta+=1; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=meta){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
+        const metaH=_funcMetaHoraT(h,meta,chave);
+        if(metaH>0){ horasMeta+=1; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
       });
     });
   });
