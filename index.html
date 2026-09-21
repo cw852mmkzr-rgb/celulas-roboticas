@@ -9535,6 +9535,18 @@ function eqExcluir(id){
 // Os lançamentos antigos guardam o NOME da pessoa congelado na hora do apontamento
 // (eqp_h**.presentes e func_h**). Trocar a equipe atual não toca em nenhum deles.
 let _eqTransf = null; // {nome, deId}
+// As equipes costumam ficar sem nome — identifica pelo robô em que está agora ou pelos membros.
+function _eqRotulo(e){
+  const titulo = (e.nome&&e.nome.trim()) ? e.nome.trim() : 'Equipe';
+  const st = _eqStatusAtual(e.id);
+  let sub;
+  if(st.robos.length) sub = 'agora no ' + st.robos.map(r=>'#'+r).join(' ');
+  else {
+    const ms = e.membros||[];
+    sub = ms.length ? (ms.slice(0,3).join(', ') + (ms.length>3?' +'+(ms.length-3):'')) : 'sem membros';
+  }
+  return { titulo, sub };
+}
 function _eqHistoricoDe(nome){
   const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   const md=(mk&&celulas[mk].metas_dias)||{};
@@ -9571,9 +9583,13 @@ function _eqRenderTransf(){
     ? outras.map(e=>{
         const ja=(e.membros||[]).includes(nome);
         const qtd=(e.membros||[]).length;
+        const rot=_eqRotulo(e);
         return `<button class="eqtr-op" ${ja?'disabled style="opacity:.45;cursor:not-allowed"':`onclick="eqTransferirPara('${e.id}')"`}>
           <span class="eqtr-dot" style="background:${e.cor}"></span>
-          <span class="eqtr-op-nome">${esc(_eqNome(e))}</span>
+          <span style="flex:1;min-width:0">
+            <span class="eqtr-op-nome">${esc(rot.titulo)}</span>
+            <span class="eqtr-op-sub">${esc(rot.sub)}</span>
+          </span>
           <span class="eqtr-op-qtd">${ja?'já está aqui':qtd+' membro'+(qtd===1?'':'s')}</span>
         </button>`;
       }).join('')
@@ -9583,11 +9599,11 @@ function _eqRenderTransf(){
     : 'Ainda não há produção lançada no nome dela. Nada será perdido na transferência.';
   box.innerHTML = `
     <div class="eqtr-nome">${esc(nome)}</div>
-    <div class="eqtr-origem"><span class="eqtr-dot" style="background:${de.cor}"></span>Hoje na ${esc(_eqNome(de))}</div>
+    <div class="eqtr-origem"><span class="eqtr-dot" style="background:${de.cor}"></span>Hoje na ${esc(_eqRotulo(de).titulo)} · ${esc(_eqRotulo(de).sub)}</div>
     <div class="eqtr-hist">&#128202; ${histTxt}</div>
     <label class="ap-label">Mover para</label>
     <div class="eqtr-lista">${opcoes}</div>
-    <div class="eqtr-rodape">Ela sai da ${esc(_eqNome(de))} e entra na equipe escolhida com o mesmo nome. Relatórios, Funcionários e Desempenho continuam contando a produção antiga dela normalmente.</div>
+    <div class="eqtr-rodape">Ela sai desta equipe e entra na equipe escolhida com o mesmo nome. Relatórios, Funcionários e Desempenho continuam contando a produção antiga dela normalmente.</div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="ap-btn" style="background:#141b26;color:#8792a6;border:1px solid #26303f" onclick="eqFecharTransf()">Cancelar</button>
     </div>`;
@@ -9598,14 +9614,14 @@ function eqTransferirPara(paraId){
   const de=equipesData.lista.find(e=>e.id===_eqTransf.deId);
   const para=equipesData.lista.find(e=>e.id===paraId);
   if(!de||!para) return;
-  if(!confirm(`Transferir ${nome} da ${_eqNome(de)} para a ${_eqNome(para)}?\n\nA produção já lançada no nome dela não muda.`)) return;
+  if(!confirm(`Transferir ${nome} para a equipe ${_eqRotulo(para).titulo} (${_eqRotulo(para).sub})?\n\nA produção já lançada no nome dela não muda.`)) return;
   de.membros=(de.membros||[]).filter(m=>m!==nome);
   para.membros=para.membros||[];
   if(!para.membros.includes(nome)) para.membros.push(nome);
   saveEquipes(true);
   eqFecharTransf();
   if(selected==='__equipes') renderEquipes();
-  showToast(nome+' agora é da '+_eqNome(para)+' ✓');
+  showToast(nome+' transferida ✓ histórico preservado');
 }
 
 // ---- Integração com o apontamento de Metas (chips de equipe) ----
@@ -16652,7 +16668,8 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eqtr-op{ display:flex; align-items:center; gap:11px; width:100%; text-align:left; background:#0e131b; border:1px solid #26303f; border-radius:12px; padding:12px 14px; cursor:pointer; color:#f0f5fc; font-family:inherit; transition:border-color .16s ease, background .16s ease, transform .14s var(--ease-out); }
 .eqtr-op:hover{ background:#141b26; border-color:#3d9eff66; }
 .eqtr-op:active{ transform:scale(0.98); }
-.eqtr-op-nome{ font-size:15px; font-weight:800; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eqtr-op-nome{ display:block; font-size:15px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.eqtr-op-sub{ display:block; font-size:11.5px; color:#7a8698; font-family:'Courier New',monospace; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .eqtr-op-qtd{ font-size:11px; color:#5a6678; font-family:'Courier New',monospace; flex-shrink:0; }
 .eqtr-vazio{ font-size:13px; color:#5a6678; font-style:italic; padding:8px 2px; }
 .eqtr-rodape{ font-size:11.5px; color:#5a6678; margin-top:16px; line-height:1.55; }
