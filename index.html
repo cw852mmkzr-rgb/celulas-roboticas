@@ -4133,8 +4133,23 @@ function updateMetasCell(key,robo,campo,valor){
       delete celulas[String(robo)].status_manual;
     }
   }
-  // Código da peça digitado na planilha leva os dados da peça para a tela do robô
-  if(campo==='cod') _metaSyncPecaRobo(robo, valor, chave);
+  // Código da peça digitado na planilha: puxa meta/h e pontos do cadastro
+  // e leva os dados da peça para a tela do robô.
+  let _pecaRedesenha = false;
+  if(campo==='cod'){
+    const _cod = String(valor||'').trim();
+    const _achado = _pecaDoCodigo(_cod);
+    if(!_achado){
+      if(_cod && _cod!=='—') showToast('Peça '+_cod+' não está no cadastro — meta e pontos não foram alterados', true);
+    } else {
+      const _linha = celulas[key].metas_dias[chave][robo];
+      const _mudou = _metaAplicarPecaLinha(_linha, _achado);
+      const _noRobo = _metaSyncPecaRobo(robo, _achado, chave);
+      _pecaRedesenha = _mudou.length>0;
+      const _det = _mudou.join(' · ');
+      showToast('Peça '+_achado.cod+' no robô '+robo+(_det?' → '+_det:'')+(_noRobo?' · tela do robô atualizada':'')+' ✓');
+    }
+  }
   syncMetasToProducao(key);
   saveToAPI(celulas);
   const rd=celulas[key].metas_dias[chave][robo];
@@ -4163,6 +4178,7 @@ function updateMetasCell(key,robo,campo,valor){
   }
   avaliarStatusAutomatico();
   if(typeof _eletrodoAlertaCheck==='function') _eletrodoAlertaCheck();
+  if(_pecaRedesenha) renderMetasDiaria();
 }
 
 function updateMetasData(key,campo,valor){
@@ -7262,21 +7278,43 @@ function aplicarPecaNoRobo(cod){
   showToast("Peça aplicada ✓");
 }
 
-// Meta Diária → tela do robô: ao digitar o código da peça na linha do robô,
-// os dados do cadastro (cliente, tempo, eletrodo, corrente, imagem...) vão para a célula dele.
-// Só vale para o dia de hoje: editar um dia passado não mexe no robô.
-function _metaSyncPecaRobo(robo, cod, chave){
-  const hj=new Date();
-  if(chave !== hj.getFullYear()+"_"+hj.getMonth()+"_"+hj.getDate()) return;
-  const c = celulas[String(robo)];
-  if(!c || getCellTipo(String(robo))!=='robo') return;
+// Acha a peça no cadastro aceitando espaços sobrando e maiúscula/minúscula.
+// Retorna {cod, p} com o código exatamente como está cadastrado, ou null.
+function _pecaDoCodigo(cod){
   const codigo = String(cod||'').trim();
-  if(!codigo || codigo==='—') return;
+  if(!codigo || codigo==='—') return null;
   const pecas = getPecas();
-  let chaveP = pecas[codigo] ? codigo : Object.keys(pecas).find(k=>k.trim().toLowerCase()===codigo.toLowerCase());
-  const p = chaveP ? pecas[chaveP] : null;
-  if(!p){ showToast('Peça '+codigo+' não está no cadastro — o robô '+robo+' não foi atualizado', true); return; }
-  if(String(c.codigo_peca||'').trim()===chaveP) return; // já é a peça do robô, nada a fazer
+  const chaveP = pecas[codigo] ? codigo : Object.keys(pecas).find(k=>k.trim().toLowerCase()===codigo.toLowerCase());
+  return chaveP ? {cod:chaveP, p:pecas[chaveP]} : null;
+}
+
+// Pontos de solda do cadastro ("18 PONTOS", "18 pts", 18) → número
+function _pecaPontos(p){
+  const n = parseInt(String((p&&p.pontos_solda)||'').replace(/[^0-9]/g,''),10);
+  return n>0 ? n : 0;
+}
+
+// Linha da planilha: código novo → meta/h e pontos da peça.
+// Vale para qualquer dia, porque meta e pontos fazem parte do lançamento daquele dia.
+function _metaAplicarPecaLinha(rd, achado){
+  const p = achado.p;
+  const partes = [];
+  if(p.meta_hora && String(rd.meta||'') !== String(p.meta_hora)){ rd.meta = String(p.meta_hora); partes.push('meta '+p.meta_hora+'/h'); }
+  const pts = _pecaPontos(p);
+  if(pts && String(rd.pontos||'') !== String(pts)){ rd.pontos = String(pts); partes.push(pts+' pts'); }
+  return partes;
+}
+
+// Meta Diária → tela do robô: os dados do cadastro (cliente, tempo, eletrodo,
+// corrente, imagem...) vão para a célula do robô.
+// Só vale para o dia de hoje: editar um dia passado não mexe no robô.
+function _metaSyncPecaRobo(robo, achado, chave){
+  const hj=new Date();
+  if(chave !== hj.getFullYear()+"_"+hj.getMonth()+"_"+hj.getDate()) return false;
+  const c = celulas[String(robo)];
+  if(!c || getCellTipo(String(robo))!=='robo') return false;
+  const chaveP = achado.cod, p = achado.p;
+  if(String(c.codigo_peca||'').trim()===chaveP) return false; // já é a peça do robô, nada a fazer
   c.codigo_peca = chaveP;
   if(p.nome) c.peca = p.nome;
   if(p.cliente) c.cliente = p.cliente;
@@ -7291,7 +7329,7 @@ function _metaSyncPecaRobo(robo, cod, chave){
   if(p.operador) c.operador = p.operador;
   if(p.img) c.img_peca = p.img;
   if(selected===String(robo)) renderDetail();
-  showToast('Robô '+robo+' → peça '+chaveP+(p.cliente?' · '+p.cliente:'')+' ✓');
+  return true;
 }
 
 function abrirDropdownPeca(inputEl){
