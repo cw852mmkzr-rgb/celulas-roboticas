@@ -4133,6 +4133,8 @@ function updateMetasCell(key,robo,campo,valor){
       delete celulas[String(robo)].status_manual;
     }
   }
+  // Código da peça digitado na planilha leva os dados da peça para a tela do robô
+  if(campo==='cod') _metaSyncPecaRobo(robo, valor, chave);
   syncMetasToProducao(key);
   saveToAPI(celulas);
   const rd=celulas[key].metas_dias[chave][robo];
@@ -7258,6 +7260,38 @@ function aplicarPecaNoRobo(cod){
   fecharDropdownPeca();
   renderDetail();
   showToast("Peça aplicada ✓");
+}
+
+// Meta Diária → tela do robô: ao digitar o código da peça na linha do robô,
+// os dados do cadastro (cliente, tempo, eletrodo, corrente, imagem...) vão para a célula dele.
+// Só vale para o dia de hoje: editar um dia passado não mexe no robô.
+function _metaSyncPecaRobo(robo, cod, chave){
+  const hj=new Date();
+  if(chave !== hj.getFullYear()+"_"+hj.getMonth()+"_"+hj.getDate()) return;
+  const c = celulas[String(robo)];
+  if(!c || getCellTipo(String(robo))!=='robo') return;
+  const codigo = String(cod||'').trim();
+  if(!codigo || codigo==='—') return;
+  const pecas = getPecas();
+  let chaveP = pecas[codigo] ? codigo : Object.keys(pecas).find(k=>k.trim().toLowerCase()===codigo.toLowerCase());
+  const p = chaveP ? pecas[chaveP] : null;
+  if(!p){ showToast('Peça '+codigo+' não está no cadastro — o robô '+robo+' não foi atualizado', true); return; }
+  if(String(c.codigo_peca||'').trim()===chaveP) return; // já é a peça do robô, nada a fazer
+  c.codigo_peca = chaveP;
+  if(p.nome) c.peca = p.nome;
+  if(p.cliente) c.cliente = p.cliente;
+  if(p.tempo_peca) c.tempo_peca = p.tempo_peca;
+  if(p.meta_hora) c.meta_hora = p.meta_hora;
+  if(p.corrente) c.corrente = p.corrente;
+  if(p.pre_pressao) c.pre_pressao = p.pre_pressao;
+  if(p.pontos_solda) c.pontos_solda = p.pontos_solda;
+  if(p.tipo_eletrodo) c.tipo_eletrodo = p.tipo_eletrodo;
+  if(p.tempo_solda) c.tempo_solda = p.tempo_solda;
+  if(p.turno) c.turno = p.turno;
+  if(p.operador) c.operador = p.operador;
+  if(p.img) c.img_peca = p.img;
+  if(selected===String(robo)) renderDetail();
+  showToast('Robô '+robo+' → peça '+chaveP+(p.cliente?' · '+p.cliente:'')+' ✓');
 }
 
 function abrirDropdownPeca(inputEl){
