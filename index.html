@@ -7532,6 +7532,10 @@ function handleMetasInput(key,robo,campo,valor){
   }
 }
 
+// "PRAÇA" e "Praça" sao o mesmo cliente: agrupa ignorando acento, caixa e espaco sobrando
+function _catCliKey(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+}
 function _filtrarCatalogo(){
   if(!selected||getCellTipo(selected)!=='catalogo_pecas') return;
   const c = celulas[selected];
@@ -7539,13 +7543,13 @@ function _filtrarCatalogo(){
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
   const busca = (c._busca||'').toLowerCase();
   const lista = Object.entries(pecas).sort((a,b)=>{
-    const ca=(a[1].cliente||'').toLowerCase();
-    const cb=(b[1].cliente||'').toLowerCase();
+    const ca=_catCliKey(a[1].cliente), cb=_catCliKey(b[1].cliente);
     if(ca<cb)return -1; if(ca>cb)return 1;
-    return a[0].localeCompare(b[0]);
+    return a[0].localeCompare(b[0],'pt',{numeric:true});
   });
+  const buscaK = _catCliKey(busca);
   const filtradas = busca ? lista.filter(([cod,p])=>
-    cod.toLowerCase().includes(busca)||(p.cliente||'').toLowerCase().includes(busca)
+    _catCliKey(cod).includes(buscaK)||_catCliKey(p.cliente).includes(buscaK)
   ) : lista;
   const grid = document.getElementById("catalogoGrid");
   const counter = document.getElementById("catalogoCounter");
@@ -7553,7 +7557,7 @@ function _filtrarCatalogo(){
   if(!grid) return;
 
   // Só troca o HTML se algo mudou de verdade — senão a tela pisca a cada polling (3s)
-  const sig = JSON.stringify([isAdmin, busca, filtradas.map(([cod,p])=>[cod,p.cliente,p.tempo_peca,p.pares_gabarito,p.meta_hora,p.pontos_solda,!!p.img])]);
+  const sig = JSON.stringify([isAdmin, busca, filtradas.map(([cod,p])=>[cod,_catCliKey(p.cliente),p.tempo_peca,p.pares_gabarito,p.meta_hora,p.pontos_solda,!!p.img])]);
   if(grid.dataset.sig === sig) return;
   grid.dataset.sig = sig;
 
@@ -7562,12 +7566,14 @@ function _filtrarCatalogo(){
     return;
   }
 
+  const _porCli = {};
+  filtradas.forEach(([,p])=>{ const k=_catCliKey(p.cliente); _porCli[k]=(_porCli[k]||0)+1; });
   let html='', prevCliente=null;
   filtradas.forEach(([cod,p])=>{
-    const curCliente=p.cliente||'';
+    const curCliente=_catCliKey(p.cliente);
     if(curCliente!==prevCliente){
       if(prevCliente!==null) html+='</div>';
-      html+=`<div class="cat-cliente">${esc(curCliente||'Sem cliente')}<span>${filtradas.filter(([,q])=>(q.cliente||'')===curCliente).length}</span></div><div class="cat-grid">`;
+      html+=`<div class="cat-cliente">${esc(curCliente||'SEM CLIENTE')}<span>${_porCli[curCliente]}</span></div><div class="cat-grid">`;
       prevCliente=curCliente;
     }
     html+=`<div class="cat-card" onclick="${isAdmin?`abrirModalEditarPeca('${esc(cod)}')`:''}" ${isAdmin?'title="Editar peça"':'style="cursor:default"'}>
