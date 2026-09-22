@@ -1245,7 +1245,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(hover:hover){.cat-card:hover{transform:translateY(-3px);border-color:#ffb30055;box-shadow:0 12px 28px -12px #000,0 0 18px -8px #ffb30066}}
 .cat-foto{aspect-ratio:4/3;background:#080b0f;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .cat-foto img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
-.cat-semfoto{font-size:30px;opacity:.28}
+.cat-card .cat-body{padding-top:13px}
 .cat-body{padding:12px 14px;flex:1}
 .cat-cod{font-size:18px;font-weight:900;color:#ffb300;font-family:'Courier New',monospace;word-break:break-all}
 .cat-nome{font-size:12px;color:#d8dde6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -7571,7 +7571,7 @@ function _filtrarCatalogo(){
       prevCliente=curCliente;
     }
     html+=`<div class="cat-card" onclick="${isAdmin?`abrirModalEditarPeca('${esc(cod)}')`:''}" ${isAdmin?'title="Editar peça"':'style="cursor:default"'}>
-      <div class="cat-foto">${p.img?`<img src="${p.img}" alt="${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')">`:'<span class="cat-semfoto">📦</span>'}</div>
+      ${p.img?`<div class="cat-foto"><img src="${p.img}" alt="${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
       <div class="cat-body">
         <div class="cat-cod">${esc(cod)}</div>
         ${p.nome?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
