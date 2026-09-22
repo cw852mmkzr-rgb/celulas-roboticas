@@ -1240,7 +1240,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cat-cliente{display:flex;align-items:center;gap:9px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:.15em;font-weight:700;margin:22px 0 11px;padding-bottom:7px;border-bottom:1px solid #ffb30028}
 .cat-cliente:first-child{margin-top:0}
 .cat-cliente span{font-size:10px;letter-spacing:.06em;color:#7a8698;background:#ffb30014;border:1px solid #ffb30030;border-radius:999px;padding:2px 8px}
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;align-items:stretch}
 .cat-card{background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
 @media(hover:hover){.cat-card:hover{transform:translateY(-3px);border-color:#ffb30055;box-shadow:0 12px 28px -12px #000,0 0 18px -8px #ffb30066}}
 .cat-foto{aspect-ratio:4/3;background:#080b0f;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -7574,12 +7574,12 @@ function _filtrarCatalogo(){
       ${p.img?`<div class="cat-foto"><img src="${p.img}" alt="${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
       <div class="cat-body">
         <div class="cat-cod">${esc(cod)}</div>
-        ${p.nome?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
+        ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
         <div class="cat-chips">
           ${p.tempo_peca?`<span class="cat-chip verde">⏱ ${esc(p.tempo_peca)}</span>`:''}
           ${p.pares_gabarito?`<span class="cat-chip roxo">${esc(p.pares_gabarito)} par${String(p.pares_gabarito).trim()==='1'?'':'es'}</span>`:''}
           ${p.meta_hora?`<span class="cat-chip verde">🎯 ${esc(String(p.meta_hora))}/h</span>`:''}
-          ${p.pontos_solda?`<span class="cat-chip cinza">● ${esc(String(p.pontos_solda))} pts</span>`:''}
+          ${p.pontos_solda?`<span class="cat-chip cinza">● ${esc(/^\d+$/.test(String(p.pontos_solda).trim())?String(p.pontos_solda).trim()+' pts':String(p.pontos_solda))}</span>`:''}
         </div>
       </div>
       ${isAdmin?`<div class="cat-acts">
