@@ -17497,6 +17497,9 @@ window.iniciarIntro = function(){
 };
 
 // ===== Rastreamento de dispositivos que acessam o site =====
+// Avisar o host no WhatsApp a cada novo acesso. Desligado a pedido do Eduardo (21/09/2026):
+// o registro do dispositivo e o "derrubar sessao" continuam funcionando normalmente.
+const NOTIFICAR_ACESSO_WHATSAPP = false;
 (function initDispositivosSessoes(){
   try {
     let sessionId = sessionStorage.getItem('dispSessionId');
@@ -17547,7 +17550,8 @@ window.iniciarIntro = function(){
           }).catch(()=>{});
         }
       } catch(e){}
-      // Notifica no WhatsApp do host
+      // Notifica no WhatsApp do host (so quando o aviso estiver ligado)
+      if(!NOTIFICAR_ACESSO_WHATSAPP) return;
       try {
         let modelo='';
         if(/iPhone/.test(ua)) modelo='iPhone';
