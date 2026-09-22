@@ -6356,26 +6356,101 @@ async function removeImg(){
 function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
 function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
 
-// ===== Limite de tentativas de senha no login =====
-// 3 erros seguidos bloqueiam o campo de senha por 5 minutos. O contador fica no
-// localStorage, entao recarregar a pagina (F5) nao zera. "Entrar como Visualizador"
-// e o "Modo Dashboard TV" continuam livres - nao usam senha.
-const LOGIN_MAX_TENT   = 3;
+// ===== Limite de tentativas em TODAS as senhas do site =====
+// 3 erros seguidos travam aquela senha por 5 minutos. Cada tela ("porta") tem o
+// seu proprio contador, e existe um total geral: passando de 5 erros no aparelho,
+// o Eduardo recebe um aviso no WhatsApp. Tudo fica no localStorage, entao
+// recarregar a pagina (F5) nao zera.
+const LOGIN_MAX_TENT    = 3;
 const LOGIN_BLOQUEIO_MS = 5 * 60 * 1000;
+const SENHA_ALERTA_APOS = 5;                 // total de erros que dispara o aviso
+const SENHA_ALERTA_FONE = "5511963262732";   // WhatsApp do Eduardo
+const SENHA_SITE_NOME   = "Tremps";
 let _loginTick = null;
 
-function _loginEstado(){
+function _loginEstado(porta){
+  const p = porta || 'login';
   try{
-    const ate = parseInt(localStorage.getItem('login_bloqueado_ate') || '0');
-    const tent = parseInt(localStorage.getItem('login_tentativas') || '0');
+    const ate  = parseInt(localStorage.getItem('senha_bloq_' + p) || '0');
+    const tent = parseInt(localStorage.getItem('senha_tent_' + p) || '0');
     return { ate: isNaN(ate) ? 0 : ate, tent: isNaN(tent) ? 0 : tent };
   }catch(e){ return { ate: 0, tent: 0 }; }
 }
-function _loginSalva(ate, tent){
+function _loginSalva(ate, tent, porta){
+  const p = porta || 'login';
   try{
-    localStorage.setItem('login_bloqueado_ate', String(ate));
-    localStorage.setItem('login_tentativas', String(tent));
+    localStorage.setItem('senha_bloq_' + p, String(ate));
+    localStorage.setItem('senha_tent_' + p, String(tent));
   }catch(e){}
+}
+function _senhaFmtEspera(ms){
+  if(ms <= 0) return '';
+  const tot = Math.ceil(ms/1000), mm = Math.floor(tot/60), ss = tot%60;
+  return mm > 0 ? (mm+'min '+String(ss).padStart(2,'0')+'s') : (ss+'s');
+}
+// Trava aquela porta e devolve true se ainda esta no prazo de bloqueio.
+function senhaBloqueada(porta){
+  const ms = _loginEstado(porta).ate - Date.now();
+  return ms > 0;
+}
+function senhaEsperaTxt(porta){ return _senhaFmtEspera(_loginEstado(porta).ate - Date.now()); }
+// Avisa o Eduardo no WhatsApp quando passa do limite de erros no aparelho.
+// A propria Edge Function tem dedup de 1h por chave, entao nao vira spam.
+async function _senhaAvisarWhats(total, label){
+  try{
+    const agora = new Date();
+    const quando = String(agora.getDate()).padStart(2,'0')+'/'+String(agora.getMonth()+1).padStart(2,'0')+'/'+agora.getFullYear()
+                 + ' ' + String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
+    const msg = "\u{1F6A8} *Tentativas de senha no site " + SENHA_SITE_NOME + "*\n\n"
+              + total + " senhas erradas neste aparelho.\n"
+              + "Última tela: " + (label||'login') + "\n"
+              + "Quando: " + quando + "\n\n"
+              + "_Aviso automático. Se foi você tentando entrar, pode ignorar._";
+    const dia = agora.getFullYear()+'-'+agora.getMonth()+'-'+agora.getDate()+'-'+agora.getHours();
+    await fetch("https://dtsrisqueekmommmoqxf.supabase.co/functions/v1/whatsapp-bot", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({tipo: "alerta", phone: SENHA_ALERTA_FONE, mensagem: msg,
+                            dedup_key: "senha_" + SENHA_SITE_NOME + "_" + dia})
+    });
+  }catch(e){ /* aviso e best-effort: nunca atrapalha o login */ }
+}
+// Conta o erro na porta e no total geral. Devolve quantas tentativas faltam (0 = bloqueou).
+function senhaErrada(porta, label){
+  const st = _loginEstado(porta);
+  let total = 0;
+  try{
+    total = (parseInt(localStorage.getItem('senha_err_total') || '0') || 0) + 1;
+    localStorage.setItem('senha_err_total', String(total));
+  }catch(e){}
+  if(total >= SENHA_ALERTA_APOS) _senhaAvisarWhats(total, label || porta);
+  const tent = st.tent + 1;
+  if(tent >= LOGIN_MAX_TENT){ _loginSalva(Date.now() + LOGIN_BLOQUEIO_MS, 0, porta); return 0; }
+  _loginSalva(0, tent, porta);
+  return LOGIN_MAX_TENT - tent;
+}
+// Acertou: limpa a porta e o total geral.
+function senhaCerta(porta){
+  _loginSalva(0, 0, porta);
+  try{ localStorage.setItem('senha_err_total','0'); }catch(e){}
+}
+// Texto padrao pra mostrar depois de um erro.
+function senhaMsgErro(faltam, porta){
+  if(faltam <= 0) return 'Muitas tentativas. Aguarde ' + senhaEsperaTxt(porta) + '.';
+  return 'Senha incorreta \u2014 ' + faltam + (faltam===1 ? ' tentativa restante' : ' tentativas restantes');
+}
+// Porta protegida que usa prompt(): devolve true so quando a senha confere.
+// 'validar' recebe a senha digitada e devolve true/false.
+function pedirSenha(porta, titulo, validar, label){
+  if(senhaBloqueada(porta)){
+    showToast('Muitas tentativas. Aguarde ' + senhaEsperaTxt(porta) + '.', true);
+    return false;
+  }
+  const pw = prompt(titulo);
+  if(pw === null) return false;          // cancelou: nao conta como erro
+  if(validar(pw)){ senhaCerta(porta); return true; }
+  const faltam = senhaErrada(porta, label || titulo);
+  showToast(senhaMsgErro(faltam, porta), true);
+  return false;
 }
 function _loginErrTxt(txt){
   const e = document.getElementById('loginErr');
@@ -6383,13 +6458,7 @@ function _loginErrTxt(txt){
   e.textContent = txt;
   e.style.display = 'block';
 }
-function _loginRestante(){
-  const ms = _loginEstado().ate - Date.now();
-  if(ms <= 0) return '';
-  const tot = Math.ceil(ms/1000);
-  const mm = Math.floor(tot/60), ss = tot%60;
-  return mm > 0 ? (mm+'min '+String(ss).padStart(2,'0')+'s') : (ss+'s');
-}
+function _loginRestante(){ return senhaEsperaTxt('login'); }
 function _loginAplicaBloqueio(){
   const inp = document.getElementById('pwInput');
   const bloqueado = _loginEstado().ate > Date.now();
@@ -6409,16 +6478,9 @@ function _loginAplicaBloqueio(){
 function loginBloqueado(){ return _loginAplicaBloqueio(); }
 // Errou: conta a tentativa e bloqueia ao chegar no limite.
 function loginErrou(){
-  const st = _loginEstado();
-  const tent = st.tent + 1;
-  if(tent >= LOGIN_MAX_TENT){
-    _loginSalva(Date.now() + LOGIN_BLOQUEIO_MS, 0);
-    _loginAplicaBloqueio();
-    return;
-  }
-  _loginSalva(0, tent);
-  const faltam = LOGIN_MAX_TENT - tent;
-  _loginErrTxt('Senha incorreta \u2014 ' + faltam + (faltam===1 ? ' tentativa restante' : ' tentativas restantes'));
+  const faltam = senhaErrada('login', 'login do site');
+  if(faltam <= 0){ _loginAplicaBloqueio(); return; }
+  _loginErrTxt(senhaMsgErro(faltam, 'login'));
   const inp = document.getElementById('pwInput');
   if(inp) inp.classList.add('err');
   setTimeout(()=>{
@@ -6428,7 +6490,7 @@ function loginErrou(){
   }, 2500);
 }
 // Acertou: zera tudo.
-function loginAcertou(){ _loginSalva(0, 0); if(_loginTick){ clearInterval(_loginTick); _loginTick=null; } }
+function loginAcertou(){ senhaCerta('login'); if(_loginTick){ clearInterval(_loginTick); _loginTick=null; } }
 // Se a pagina abrir ja dentro do bloqueio, o campo aparece travado com a contagem.
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", ()=>_loginAplicaBloqueio());
 else _loginAplicaBloqueio();
@@ -8429,12 +8491,9 @@ function mapaUpdateApontarFab(){
 function mapaAbrirApontar(){
   // Se nao esta autenticado, pede a senha toda vez
   if(!isMapaAdmin && !isMapaHost && !isMapaApontar){
-    const pw = prompt("Digite a senha para apontar:");
-    if(pw === null) return;
-    if(pw !== MAPA_PW_APONTAR && pw !== MAPA_PW_HOST && pw !== MAPA_PW){
-      showToast("Senha incorreta", true);
-      return;
-    }
+    if(!pedirSenha('apontar', "Digite a senha para apontar:", function(pw){
+      return pw === MAPA_PW_APONTAR || pw === MAPA_PW_HOST || pw === MAPA_PW;
+    }, 'Apontar produção')) return;
   }
   _apHora = null;
   _apLog = [];
@@ -10335,7 +10394,10 @@ function entrarModoEdicaoMapa(){
   document.getElementById("mapaLoginErr").style.display="none";
 }
 function confirmarMapaLogin(){
+  const _erO=document.getElementById("mapaLoginErr");
+  if(senhaBloqueada('mapa')){ if(_erO){_erO.textContent='Muitas tentativas. Aguarde '+senhaEsperaTxt('mapa')+'.';_erO.style.display="block";} return; }
   const pw=document.getElementById("mapaPwInput").value;
+  if(pw===MAPA_PW||pw===MAPA_PW_HOST||pw===MAPA_PW_APONTAR) senhaCerta('mapa');
   if(pw===MAPA_PW){
     isMapaAdmin=true; isMapaApontar=false; isMapaHost=false;
     document.getElementById("modalMapaLogin").style.display="none";
@@ -10353,7 +10415,9 @@ function confirmarMapaLogin(){
     showToast("Modo apontar ativado ✓");
     renderMapaProducao();
   } else {
-    document.getElementById("mapaLoginErr").style.display="block";
+    const _f=senhaErrada('mapa','Mapa da Produção');
+    const _e=document.getElementById("mapaLoginErr");
+    if(_e){ _e.textContent=senhaMsgErro(_f,'mapa'); _e.style.display="block"; }
   }
 }
 function sairModoEdicaoMapa(){
@@ -11069,10 +11133,9 @@ let _pecaBusca = '';
 let _pecaEditIdx = null;
 function _pecaAuth(){
   if(isMapaHost || isMapaAdmin || _pecaAuthOk) return true;
-  const pw = prompt("Digite a senha do host para editar:");
-  if(pw === null) return false;
-  if(pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _pecaAuthOk = true; return true; }
-  showToast("Senha incorreta", true);
+  if(pedirSenha('pecas_mapa', "Digite a senha do host para editar:", function(pw){
+    return pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW;
+  }, 'Cadastro de peças (Mapa)')){ _pecaAuthOk = true; return true; }
   return false;
 }
 function _pecaLista(){
@@ -11235,10 +11298,9 @@ let _catImgPendente; // undefined = sem alteração · '' = remover · string = 
 
 function _catAuth(){
   if(isMapaHost || isMapaAdmin || _catAuthOk) return true;
-  const pw = prompt("Digite a senha do host para editar:");
-  if(pw === null) return false;
-  if(pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _catAuthOk = true; return true; }
-  showToast("Senha incorreta", true);
+  if(pedirSenha('catalogo_mapa', "Digite a senha do host para editar:", function(pw){
+    return pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW;
+  }, 'Catálogo (Mapa)')){ _catAuthOk = true; return true; }
   return false;
 }
 function _catLista(){
@@ -11498,10 +11560,9 @@ let _eqmTab = 'equipes'; // 'equipes' | 'funcionarios'
 let _eqmAuthOk = false;
 function _eqmAuth(){
   if(isMapaHost || isMapaAdmin || _eqmAuthOk) return true;
-  const pw = prompt("Digite a senha do host para editar:");
-  if(pw === null) return false;
-  if(pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _eqmAuthOk = true; return true; }
-  showToast("Senha incorreta", true);
+  if(pedirSenha('equipes_mapa', "Digite a senha do host para editar:", function(pw){
+    return pw === PECAS_PW || pw === MAPA_PW_HOST || pw === MAPA_PW;
+  }, 'Equipes (Mapa)')){ _eqmAuthOk = true; return true; }
   return false;
 }
 function _eqmSetTab(t){ _eqmTab = t; renderMapaEquipes(); }
@@ -11660,10 +11721,9 @@ let _cfgProgresso = '';
 let _cfgAuthOk = false;
 function _cfgAuthEntrada(){
   if(isMapaHost || isMapaAdmin || _cfgAuthOk) return true;
-  const pw = prompt("Digite a senha do host para acessar as Configurações:");
-  if(pw === null) return false;
-  if(pw === CFG_PW || pw === MAPA_PW_HOST || pw === MAPA_PW){ _cfgAuthOk = true; return true; }
-  showToast("Senha incorreta", true);
+  if(pedirSenha('config_mapa', "Digite a senha do host para acessar as Configurações:", function(pw){
+    return pw === CFG_PW || pw === MAPA_PW_HOST || pw === MAPA_PW;
+  }, 'Configurações (Mapa)')){ _cfgAuthOk = true; return true; }
   return false;
 }
 
@@ -11741,12 +11801,9 @@ async function _cfgProcessarRestore(event){
   if(!file) return;
 
   // Senha
-  const pw = prompt("Digite a senha do host para restaurar:");
-  if(pw === null) return;
-  if(pw !== CFG_PW && pw !== MAPA_PW_HOST && pw !== MAPA_PW){
-    showToast('Senha incorreta', true);
-    return;
-  }
+  if(!pedirSenha('restaurar', "Digite a senha do host para restaurar:", function(pw){
+    return pw === CFG_PW || pw === MAPA_PW_HOST || pw === MAPA_PW;
+  }, 'Restaurar backup')) return;
 
   // Lê o arquivo
   let backup;
@@ -14518,15 +14575,19 @@ function sairModoEdicaoGab(){
 }
 
 function confirmarGabLogin(){
+  const _e = document.getElementById("gabLoginErr");
+  if(senhaBloqueada('gabaritagem')){ if(_e){_e.textContent='Muitas tentativas. Aguarde '+senhaEsperaTxt('gabaritagem')+'.';_e.style.display="block";} return; }
   const pw = document.getElementById("gabPwInput").value;
   if(pw === GAB_PW){
+    senhaCerta('gabaritagem');
     isGabAdmin = true;
     document.getElementById("modalGabLogin").style.display="none";
     renderGabBtns();
     renderGabaritagem();
     showToast("Modo edição ativado ✓");
   } else {
-    document.getElementById("gabLoginErr").style.display="block";
+    const _f = senhaErrada('gabaritagem','Controle de Gabaritagem');
+    if(_e){ _e.textContent = senhaMsgErro(_f,'gabaritagem'); _e.style.display="block"; }
   }
 }
 
@@ -15764,11 +15825,13 @@ function abrirControleComponentes(){
   }
 }
 async function confirmarCompLogin(){
+  const _e=document.getElementById('compLoginErr');
+  if(senhaBloqueada('componentes')){ if(_e){_e.textContent='Muitas tentativas. Aguarde '+senhaEsperaTxt('componentes')+'.';_e.style.display='block';} return; }
   const pw=document.getElementById('compPwInput').value;
   await loadCompDados();  // garante a senha do host mais recente antes de validar
-  if(pw===ADMIN_PW){ compNivel='admin'; }
-  else if(pw===((componentesEstoque.config&&componentesEstoque.config.host_senha)||'1234')){ compNivel='operador'; }
-  else { document.getElementById('compLoginErr').style.display='block'; return; }
+  if(pw===ADMIN_PW){ compNivel='admin'; senhaCerta('componentes'); }
+  else if(pw===((componentesEstoque.config&&componentesEstoque.config.host_senha)||'1234')){ compNivel='operador'; senhaCerta('componentes'); }
+  else { const _f=senhaErrada('componentes','Controle de Componentes'); if(_e){ _e.textContent=senhaMsgErro(_f,'componentes'); _e.style.display='block'; } return; }
   document.getElementById('modalCompLogin').style.display='none';
   _entrarComp();
 }
@@ -17712,10 +17775,7 @@ const NOTIFICAR_ACESSO_WHATSAPP = false;
 
 const DISP_PW = "3102";
 function dispAbrirLogin(){
-  const pw = prompt("Senha do host:");
-  if(pw === null) return;
-  if(pw === DISP_PW) dispMostrarModal();
-  else showToast("Senha incorreta", true);
+  if(pedirSenha('dispositivos', "Senha do host:", function(pw){ return pw === DISP_PW; }, 'Dispositivos')) dispMostrarModal();
 }
 function dispMostrarModal(){
   document.getElementById('modalDispositivos').style.display='flex';
@@ -18072,13 +18132,12 @@ function _relAuthEntrada(){
   // Admin geral do sistema entra sem senha
   try{ if(typeof isAdmin!=='undefined' && isAdmin){ _relAuthOk = true; return true; } }catch(e){}
   try{ if(typeof isMapaHost!=='undefined' && isMapaHost){ _relAuthOk = true; return true; } }catch(e){}
-  const pw = prompt("🔒 Senha para acessar Relatórios:");
-  if(pw === null) return false;
-  const ok = pw === REL_PW
-    || (typeof ADMIN_PW==='string' && pw === ADMIN_PW)
-    || (typeof ADMIN_METAS_PW==='string' && pw === ADMIN_METAS_PW);
+  const ok = pedirSenha('relatorios', "🔒 Senha para acessar Relatórios:", function(pw){
+    return pw === REL_PW
+      || (typeof ADMIN_PW==='string' && pw === ADMIN_PW)
+      || (typeof ADMIN_METAS_PW==='string' && pw === ADMIN_METAS_PW);
+  }, 'Relatórios');
   if(ok){ _relAuthOk = true; return true; }
-  showToast("Senha incorreta", true);
   return false;
 }
 
@@ -20119,9 +20178,11 @@ function tdRenderTrava(erro){
 
 function tdEntrarColab(){
   const el=document.getElementById("tdPw"); if(!el) return;
+  if(senhaBloqueada('tarefas')){ tdRenderTrava('Muitas tentativas. Aguarde '+senhaEsperaTxt('tarefas')+'.'); return; }
   const pw=(el.value||"").trim();
   const ok = (tdData && pw === tdData.config.senha) || pw===ADMIN_PW || pw===ADMIN_METAS_PW;
-  if(!ok){ tdRenderTrava("Senha incorreta. Tente novamente."); return; }
+  if(!ok){ const _f=senhaErrada('tarefas','Tarefas Diárias'); tdRenderTrava(senhaMsgErro(_f,'tarefas')); return; }
+  senhaCerta('tarefas');
   tdAuthColab = true;
   tdRenderColab();
 }
