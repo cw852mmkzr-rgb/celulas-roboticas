@@ -407,9 +407,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td { border: 1px solid #1e2530; padding: 6px 6px; text-align: center; vertical-align: middle; }
 .metas-table tr:hover td { background: #ffffff04; }
 .metas-table td.robo-label { color: #00e87a; font-weight: 800; font-size: 13px; background: #04070d; position:sticky; left:0; z-index:1; }
-.metas-table td.meta-val { color: #3d9eff; font-weight: 700; font-size: 13px; background: #04070d; position:sticky; left:65px; z-index:1; }
+.metas-table td.meta-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:65px; z-index:1; font-family:'Courier New',monospace; }
 .metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:140px; z-index:1; }
-.metas-table td.pontos-val { color: #ff6a00; font-size: 12px; background: #04070d; min-width: 50px; }
+.metas-table td.pontos-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; min-width: 50px; font-family:'Courier New',monospace; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
 .metas-table input.hora-inp, .metas-car-table input.hora-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 20px; color: #d8dde6; text-align: center; width: 100%; padding: 4px 0; font-weight: 700; }
@@ -419,8 +419,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table input.hora-inp.cafe[readonly], .metas-car-table input.hora-inp.cafe[readonly] { color: #8a6200; }
 .metas-table input.hora-inp.cafe:focus, .metas-car-table input.hora-inp.cafe:focus { color: #ffe066; }
 .metas-table input.meta-inp, .metas-table input.cod-inp, .metas-car-table input.meta-inp, .metas-car-table input.cod-inp { background: transparent; border: none; outline: none; font-family: 'Courier New', monospace; font-size: 14px; width: 100%; padding: 4px 0; text-align: center; }
-.metas-table input.meta-inp, .metas-car-table input.meta-inp { color: #3d9eff; font-weight: 700; }
-.metas-table input.meta-inp[readonly], .metas-car-table input.meta-inp[readonly] { color: #00e87a; cursor: default; }
+.metas-table input.meta-inp, .metas-car-table input.meta-inp { color: #39ff14; font-weight: 700; font-size:19px; }
+.metas-table input.meta-inp[readonly], .metas-car-table input.meta-inp[readonly] { color: #39ff14; cursor: default; }
 .metas-table input.cod-inp, .metas-car-table input.cod-inp { color: #39ff14; font-size: 19px; font-weight: 700; }
 .metas-table input.cod-inp[readonly], .metas-car-table input.cod-inp[readonly] { color: #39ff14; cursor: default; }
 .cell-ok   { background: #00e87a20 !important; color: #00e87a !important; }
@@ -4221,7 +4221,7 @@ function buildTurnoTable(c,turno,chave){
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
-    const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="color:#ff6a00;width:44px" onchange="updateMetasCell('${selected}',${robo},'pontos',this.value)"></td>`:'';
+    const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="width:44px" onchange="updateMetasCell('${selected}',${robo},'pontos',this.value)"></td>`:'';
     return`<tr>
       <td class="robo-label">${robo}</td>
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
