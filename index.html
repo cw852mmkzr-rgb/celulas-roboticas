@@ -387,9 +387,9 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .mapa-tbl-arrow-top:active { transform:scale(.94); }
 .metas-table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 700px; font-family: 'Courier New', monospace; }
 .metas-table th { background: #0a0d11; color: #4a5568; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; padding: 10px 8px; border: 1px solid #1e2530; white-space: nowrap; font-weight: 700; text-align: center; }
-.metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 65px; position:sticky; left:0; z-index:2; }
-.metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 75px; position:sticky; left:65px; z-index:2; }
-.metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 110px; position:sticky; left:140px; z-index:2; }
+.metas-table th.col-robo { background: #0d1117; color: #00e87a; min-width: 88px; position:sticky; left:0; z-index:2; }
+.metas-table th.col-meta { background: #0d1117; color: #3d9eff; min-width: 75px; position:sticky; left:88px; z-index:2; }
+.metas-table th.col-cod  { background: #0d1117; color: #ffb300; min-width: 110px; position:sticky; left:163px; z-index:2; }
 /* Colunas fixas na planilha do Mapa → Produção — mesmo tamanho das colunas de hora (76px) */
 .mapa-table-wrap .metas-table th.col-robo { min-width:76px; width:76px; font-size:11px; }
 .mapa-table-wrap .metas-table th.col-meta { min-width:76px; width:76px; left:76px; font-size:11px; }
@@ -399,6 +399,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .mapa-table-wrap .metas-table td.cod-val   { min-width:76px; width:76px; left:152px; font-size:11px; }
 .mapa-table-wrap .meta-inp { width:60px !important; font-size:13px; }
 .mapa-table-wrap .cod-inp  { width:60px !important; font-size:11px; }
+/* Mapa → Produção mantém as cores antigas (o verde grande é só da Meta Diária) */
+.mapa-table-wrap .metas-table td.robo-label { color:#00e87a; }
+.mapa-table-wrap .metas-table td.meta-val { color:#3d9eff; }
+.mapa-table-wrap .metas-table td.pontos-val { color:#ff6a00; font-size:12px; }
+.mapa-table-wrap .metas-table input.meta-inp { color:#3d9eff; font-size:13px; }
 .metas-table th.col-hora { background: #0d1117; color: #d8dde6; min-width: 76px; }
 .metas-table th.col-hora-noite { background: #0d1117; color: #a78bfa; min-width: 76px; }
 .metas-table th.col-hora-cafe { background: #ffb30018; color: #ffb300; min-width: 76px; border-bottom: 2px solid #ffb30060; }
@@ -406,9 +411,15 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table th.col-total-geral { background: #0a0d11; color: #ffb300; min-width: 110px; border-left: 2px solid #ffb30040; }
 .metas-table td { border: 1px solid #1e2530; padding: 6px 6px; text-align: center; vertical-align: middle; }
 .metas-table tr:hover td { background: #ffffff04; }
-.metas-table td.robo-label { color: #00e87a; font-weight: 800; font-size: 13px; background: #04070d; position:sticky; left:0; z-index:1; }
-.metas-table td.meta-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:65px; z-index:1; font-family:'Courier New',monospace; }
-.metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:140px; z-index:1; }
+.metas-table td.robocell { padding-top:5px; padding-bottom:6px; }
+.robocell .stband { display:block; width:100%; box-sizing:border-box; text-align:center; font-size:8px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; padding:2px 2px; border-radius:5px; border:1px solid var(--sc); color:#04070d; background:var(--sc); font-family:'Courier New',monospace; margin-bottom:5px; cursor:pointer; line-height:1.25; }
+.robocell select.stband { appearance:none; -webkit-appearance:none; text-align-last:center; }
+.robocell select.stband option { background:#0d1117; color:#d8dde6; font-size:12px; }
+.robocell .stband.ro { cursor:default; }
+.robocell .rnum { line-height:1; }
+.metas-table td.robo-label { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:0; z-index:1; font-family:'Courier New',monospace; }
+.metas-table td.meta-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:88px; z-index:1; font-family:'Courier New',monospace; }
+.metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:163px; z-index:1; }
 .metas-table td.pontos-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; min-width: 50px; font-family:'Courier New',monospace; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
@@ -483,6 +494,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .metas-car-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; }
   .metas-car-table th { background:#080b0f; color:#4a5568; font-size:13px; padding:8px 6px; border:1px solid #1e2530; text-align:center; white-space:nowrap; }
   .metas-car-table td { border:1px solid #1e2530; padding:8px 4px; text-align:center; font-size:15px; white-space:nowrap; }
+  .metas-car-table td.car-num { color:#39ff14; font-weight:700; font-size:17px; background:#04070d; font-family:'Courier New',monospace; }
+  .metas-car-table td.robocell { min-width:86px; white-space:normal; }
   .btn-menu { display: block; }
   .sidebar { position: fixed; top: 56px; left: 0; bottom: 0; width: 260px; z-index: 150; transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
@@ -4186,6 +4199,31 @@ function updateMetasData(key,campo,valor){
   celulas[key][campo]=valor;syncMetasToProducao(key);saveToAPI(celulas);renderMetasDiaria();
 }
 
+// Faixa de status do robô em cima do número, na planilha da Meta Diária.
+// Clicável para o admin; quem não edita vê só a faixa colorida.
+const STATUS_ROBO_LISTA = ["Produzindo","Manutenção","Aguardando","Parado","Sem mão de obra","Setup/Troca Peça"];
+function _statusBandRoboHTML(robo, semTd){
+  const c = celulas[String(robo)];
+  const st = (c && c.status) || '';
+  const cor = (SC[st] && SC[st].text) || '#5b6676';
+  const band = (isAdmin && c)
+    ? `<select class="stband" style="--sc:${cor}" title="Status do robô ${robo} — clique para trocar" onclick="event.stopPropagation()" onchange="setStatusRoboMeta('${robo}',this.value,this)">${STATUS_ROBO_LISTA.map(x=>`<option ${x===st?'selected':''}>${x}</option>`).join('')}</select>`
+    : `<div class="stband ro" style="--sc:${cor}">${esc(st||'—')}</div>`;
+  if(semTd) return band;
+  return `<td class="robo-label robocell">${band}<div class="rnum">${esc(String(robo))}</div></td>`;
+}
+// Troca o status a partir da planilha — mesmo efeito do seletor na tela do robô
+function setStatusRoboMeta(k,v,el){
+  const c = celulas[String(k)];
+  if(!isAdmin || !c) return;
+  c.status = v;
+  c.status_manual = true; // trava a automação de status, igual ao seletor da tela do robô
+  if(el) el.style.setProperty('--sc', (SC[v] && SC[v].text) || '#5b6676');
+  saveToAPI(celulas);
+  renderSidebar();
+  showToast('Robô '+k+' → '+v.toUpperCase());
+}
+
 function buildTurnoTable(c,turno,chave){
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
   const podeEditar = isAdmin || isAdminMetas;
@@ -4223,7 +4261,7 @@ function buildTurnoTable(c,turno,chave){
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
     const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="width:44px" onchange="updateMetasCell('${selected}',${robo},'pontos',this.value)"></td>`:'';
     return`<tr>
-      <td class="robo-label">${robo}</td>
+      ${_statusBandRoboHTML(robo)}
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
       <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
       ${pontosCell}
@@ -7669,7 +7707,7 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
     const rd = data[robo]||{};
     const meta = parseInt(rd.meta)||0;
     const cod = rd.cod||'';
-    const pontosCell = isAdmin ? `<td style="color:#ff6a00;font-size:12px">${rd.pontos||'—'}</td>` : '';
+    const pontosCell = isAdmin ? `<td class="car-num">${rd.pontos||'—'}</td>` : '';
     const horasCells = grupo.map(h=>{
       const isCafe = HORAS_CAFE.includes(h);
       const campo = campoH(h);
@@ -7692,9 +7730,9 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
 
     const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     return`<tr>
-      <td style="color:#00e87a;font-weight:900;font-size:15px;text-align:left;padding-left:8px;background:#04070d;position:sticky;left:0">${robo}</td>
-      <td style="color:#3d9eff;font-size:13px;background:#04070d">${meta||'—'}</td>
-      <td style="color:#ffb300;font-size:12px;background:#04070d">${esc(cod)||'—'}</td>
+      <td class="car-num robocell" style="text-align:center;background:#04070d;position:sticky;left:0">${_statusBandRoboHTML(robo,true)}<div class="rnum">${robo}</div></td>
+      <td class="car-num">${meta||'—'}</td>
+      <td class="car-num">${esc(cod)||'—'}</td>
       ${pontosCell}
       ${horasCells}
       <td style="color:${subColor};font-weight:800;font-size:14px">${subRow>0?subRow:'—'}</td>
