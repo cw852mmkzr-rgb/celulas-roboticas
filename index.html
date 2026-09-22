@@ -1235,6 +1235,27 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .cc-frow{ flex-wrap:wrap; }
   .cc-frow .cc-field{ flex:1 1 42%; }
 }
+
+/* ===== Catálogo de Peças — cards ===== */
+.cat-cliente{display:flex;align-items:center;gap:9px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:.15em;font-weight:700;margin:22px 0 11px;padding-bottom:7px;border-bottom:1px solid #ffb30028}
+.cat-cliente:first-child{margin-top:0}
+.cat-cliente span{font-size:10px;letter-spacing:.06em;color:#7a8698;background:#ffb30014;border:1px solid #ffb30030;border-radius:999px;padding:2px 8px}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.cat-card{background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+@media(hover:hover){.cat-card:hover{transform:translateY(-3px);border-color:#ffb30055;box-shadow:0 12px 28px -12px #000,0 0 18px -8px #ffb30066}}
+.cat-foto{aspect-ratio:4/3;background:#080b0f;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cat-foto img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+.cat-semfoto{font-size:30px;opacity:.28}
+.cat-body{padding:12px 14px;flex:1}
+.cat-cod{font-size:18px;font-weight:900;color:#ffb300;font-family:'Courier New',monospace;word-break:break-all}
+.cat-nome{font-size:12px;color:#d8dde6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cat-chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+.cat-chip.verde{color:#00e87a;border-color:#00e87a38;background:#00e87a12}
+.cat-chip.roxo{color:#a78bfa;border-color:#a78bfa38;background:#a78bfa12}
+.cat-chip.cinza{color:#7a8698;border-color:#2a3342;background:#ffffff06}
+.cat-acts{display:flex;gap:6px;padding:0 14px 12px}
+@media(max-width:520px){.cat-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}.cat-cod{font-size:16px}}
 </style>
 </head>
 <body>
@@ -7526,33 +7547,49 @@ function _filtrarCatalogo(){
   const filtradas = busca ? lista.filter(([cod,p])=>
     cod.toLowerCase().includes(busca)||(p.cliente||'').toLowerCase().includes(busca)
   ) : lista;
-  const tbody = document.getElementById("catalogoTbody");
+  const grid = document.getElementById("catalogoGrid");
   const counter = document.getElementById("catalogoCounter");
   if(counter) counter.textContent = `${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}`;
-  if(!tbody) return;
+  if(!grid) return;
+
+  // Só troca o HTML se algo mudou de verdade — senão a tela pisca a cada polling (3s)
+  const sig = JSON.stringify([isAdmin, busca, filtradas.map(([cod,p])=>[cod,p.cliente,p.tempo_peca,p.pares_gabarito,p.meta_hora,p.pontos_solda,!!p.img])]);
+  if(grid.dataset.sig === sig) return;
+  grid.dataset.sig = sig;
+
   if(filtradas.length===0){
-    tbody.innerHTML=`<tr><td colspan="${isAdmin?5:4}" style="text-align:center;color:#2a3040;padding:20px;font-size:13px">${busca?`Nenhuma peça encontrada`:'Nenhuma peça cadastrada ainda.'}</td></tr>`;
+    grid.innerHTML=`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}</div>`;
     return;
   }
-  let html='', prevCliente='';
-  filtradas.forEach(([cod,p],i)=>{
+
+  let html='', prevCliente=null;
+  filtradas.forEach(([cod,p])=>{
     const curCliente=p.cliente||'';
     if(curCliente!==prevCliente){
-      html+=`<tr style="background:#080b0f"><td colspan="${isAdmin?5:4}" style="padding:10px 16px;font-size:12px;color:#ffb300;text-transform:uppercase;letter-spacing:0.15em;font-weight:700;border-bottom:1px solid #ffb30030">${esc(curCliente||'Sem cliente')}</td></tr>`;
+      if(prevCliente!==null) html+='</div>';
+      html+=`<div class="cat-cliente">${esc(curCliente||'Sem cliente')}<span>${filtradas.filter(([,q])=>(q.cliente||'')===curCliente).length}</span></div><div class="cat-grid">`;
       prevCliente=curCliente;
     }
-    html+=`<tr style="border-bottom:1px solid #0a0d12;background:${i%2===0?'#0a0d12':'#080b0f'}">
-      <td style="padding:12px 16px"><span style="font-size:18px;font-weight:900;color:#ffb300">${esc(cod)}</span></td>
-      <td style="padding:12px 16px;font-size:16px;font-weight:600;color:#d8dde6">${esc(p.cliente||'—')}</td>
-      <td style="padding:12px 16px;text-align:center"><span style="font-size:16px;font-weight:700;color:#00e87a">${esc(p.tempo_peca||'—')}</span></td>
-      <td style="padding:12px 16px;text-align:center"><span style="font-size:16px;font-weight:700;color:#a78bfa">${esc(p.pares_gabarito||'—')}</span></td>
-      ${isAdmin?`<td style="padding:12px 16px;text-align:center"><div style="display:flex;gap:6px;justify-content:center">
-        <button class="btn btn-gray" style="padding:5px 12px;font-size:12px" onclick="abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
-        <button class="btn btn-red" style="padding:5px 10px;font-size:12px" onclick="excluirPeca('${esc(cod)}');renderCatalogoPecas()">🗑</button>
-      </div></td>`:''}
-    </tr>`;
+    html+=`<div class="cat-card" onclick="${isAdmin?`abrirModalEditarPeca('${esc(cod)}')`:''}" ${isAdmin?'title="Editar peça"':'style="cursor:default"'}>
+      <div class="cat-foto">${p.img?`<img src="${p.img}" alt="${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')">`:'<span class="cat-semfoto">📦</span>'}</div>
+      <div class="cat-body">
+        <div class="cat-cod">${esc(cod)}</div>
+        ${p.nome?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
+        <div class="cat-chips">
+          ${p.tempo_peca?`<span class="cat-chip verde">⏱ ${esc(p.tempo_peca)}</span>`:''}
+          ${p.pares_gabarito?`<span class="cat-chip roxo">${esc(p.pares_gabarito)} par${String(p.pares_gabarito).trim()==='1'?'':'es'}</span>`:''}
+          ${p.meta_hora?`<span class="cat-chip verde">🎯 ${esc(String(p.meta_hora))}/h</span>`:''}
+          ${p.pontos_solda?`<span class="cat-chip cinza">● ${esc(String(p.pontos_solda))} pts</span>`:''}
+        </div>
+      </div>
+      ${isAdmin?`<div class="cat-acts">
+        <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="event.stopPropagation();abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
+        <button class="btn btn-red" style="padding:4px 9px;font-size:10px" onclick="event.stopPropagation();excluirPeca('${esc(cod)}')">🗑</button>
+      </div>`:''}
+    </div>`;
   });
-  tbody.innerHTML=html;
+  if(prevCliente!==null) html+='</div>';
+  grid.innerHTML=html;
 }
 
 function animarGrafico(){
@@ -13452,25 +13489,21 @@ function renderCatalogoPecas(){
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
-  const lista = Object.entries(pecas).sort((a,b)=>{
-    const ca=(a[1].cliente||'').toLowerCase();
-    const cb=(b[1].cliente||'').toLowerCase();
-    if(ca<cb)return -1; if(ca>cb)return 1;
-    return a[0].localeCompare(b[0]);
-  });
+  const total = Object.keys(pecas).length;
+  const busca = (c._busca||'');
 
-  const busca = (c._busca||'').toLowerCase();
-  const filtradas = busca ? lista.filter(([cod,p])=>
-    cod.toLowerCase().includes(busca)||
-    (p.cliente||'').toLowerCase().includes(busca)
-  ) : lista;
+  // A casca (título + busca) só é reconstruída quando muda de verdade.
+  // Sem isso o polling de 3s reescrevia a tela inteira e ela ficava piscando.
+  const casca = JSON.stringify([selected, c.nome, isAdmin]);
+  const jaMontado = document.getElementById("catalogoGrid");
+  if(jaMontado && jaMontado.dataset.casca === casca){ _filtrarCatalogo(); return; }
 
   document.getElementById("mainPanel").innerHTML=`
   <div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
-        <div style="font-size:11px;color:#4a5568;margin-top:2px" id="catalogoCounter">${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}</div>
+        <div style="font-size:11px;color:#4a5568;margin-top:2px" id="catalogoCounter">${total} peça${total!==1?'s':''} cadastrada${total!==1?'s':''}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         ${isAdmin?`<button class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
@@ -13478,7 +13511,7 @@ function renderCatalogoPecas(){
       </div>
     </div>
 
-    <div style="margin-bottom:14px">
+    <div style="margin-bottom:16px">
       <input value="${esc(busca)}" placeholder="🔍 Buscar por código ou cliente..."
         style="width:100%;background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:9px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"
         oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()"
@@ -13486,30 +13519,10 @@ function renderCatalogoPecas(){
         onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
     </div>
 
-    ${filtradas.length===0?`
-      <div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">
-        ${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}
-      </div>
-    `:`
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;border-radius:12px;border:1px solid #1e2530">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr style="background:#080b0f">
-              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Código</th>
-              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:left;border-bottom:1px solid #1e2530">Cliente</th>
-              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Tempo/ciclo</th>
-              <th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Pares de Gabarito</th>
-              ${isAdmin?`<th style="padding:12px 16px;font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.12em;text-align:center;border-bottom:1px solid #1e2530">Ações</th>`:''}
-            </tr>
-          </thead>
-          <tbody id="catalogoTbody">
-          </tbody>
-        </table>
-      </div>
-    `}
+    <div id="catalogoGrid"></div>
   </div>`;
-  // Preenche o tbody via _filtrarCatalogo para manter foco no input
-  setTimeout(()=>_filtrarCatalogo(), 0);
+  document.getElementById("catalogoGrid").dataset.casca = casca;
+  _filtrarCatalogo();
 }
 
 // ═══════════ MAPA DOS ROBÔS ═══════════
