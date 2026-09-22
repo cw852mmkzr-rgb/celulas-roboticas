@@ -7566,14 +7566,15 @@ function _filtrarCatalogo(){
     return;
   }
 
-  const _porCli = {};
-  filtradas.forEach(([,p])=>{ const k=_catCliKey(p.cliente); _porCli[k]=(_porCli[k]||0)+1; });
+  // conta por cliente e guarda a grafia real pra mostrar no titulo (PRACA -> Praça)
+  const _porCli = {}, _rotCli = {};
+  filtradas.forEach(([,p])=>{ const k=_catCliKey(p.cliente); _porCli[k]=(_porCli[k]||0)+1; if(!_rotCli[k]) _rotCli[k]=(p.cliente||"").trim(); });
   let html='', prevCliente=null;
   filtradas.forEach(([cod,p])=>{
     const curCliente=_catCliKey(p.cliente);
     if(curCliente!==prevCliente){
       if(prevCliente!==null) html+='</div>';
-      html+=`<div class="cat-cliente">${esc(curCliente||'SEM CLIENTE')}<span>${_porCli[curCliente]}</span></div><div class="cat-grid">`;
+      html+=`<div class="cat-cliente">${esc(_rotCli[curCliente]||'Sem cliente')}<span>${_porCli[curCliente]}</span></div><div class="cat-grid">`;
       prevCliente=curCliente;
     }
     html+=`<div class="cat-card" onclick="${isAdmin?`abrirModalEditarPeca('${esc(cod)}')`:''}" ${isAdmin?'title="Editar peça"':'style="cursor:default"'}>
