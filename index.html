@@ -6356,41 +6356,113 @@ async function removeImg(){
 function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightboxEl").classList.add("open");}
 function closeLightbox(){document.getElementById("lightboxEl").classList.remove("open");}
 
+// ===== Limite de tentativas de senha no login =====
+// 3 erros seguidos bloqueiam o campo de senha por 5 minutos. O contador fica no
+// localStorage, entao recarregar a pagina (F5) nao zera. "Entrar como Visualizador"
+// e o "Modo Dashboard TV" continuam livres - nao usam senha.
+const LOGIN_MAX_TENT   = 3;
+const LOGIN_BLOQUEIO_MS = 5 * 60 * 1000;
+let _loginTick = null;
+
+function _loginEstado(){
+  try{
+    const ate = parseInt(localStorage.getItem('login_bloqueado_ate') || '0');
+    const tent = parseInt(localStorage.getItem('login_tentativas') || '0');
+    return { ate: isNaN(ate) ? 0 : ate, tent: isNaN(tent) ? 0 : tent };
+  }catch(e){ return { ate: 0, tent: 0 }; }
+}
+function _loginSalva(ate, tent){
+  try{
+    localStorage.setItem('login_bloqueado_ate', String(ate));
+    localStorage.setItem('login_tentativas', String(tent));
+  }catch(e){}
+}
+function _loginErrTxt(txt){
+  const e = document.getElementById('loginErr');
+  if(!e) return;
+  e.textContent = txt;
+  e.style.display = 'block';
+}
+function _loginRestante(){
+  const ms = _loginEstado().ate - Date.now();
+  if(ms <= 0) return '';
+  const tot = Math.ceil(ms/1000);
+  const mm = Math.floor(tot/60), ss = tot%60;
+  return mm > 0 ? (mm+'min '+String(ss).padStart(2,'0')+'s') : (ss+'s');
+}
+function _loginAplicaBloqueio(){
+  const inp = document.getElementById('pwInput');
+  const bloqueado = _loginEstado().ate > Date.now();
+  if(inp){ inp.disabled = bloqueado; if(bloqueado) inp.value=''; }
+  if(bloqueado){
+    _loginErrTxt('Muitas tentativas. Aguarde ' + _loginRestante() + '.');
+    if(!_loginTick) _loginTick = setInterval(_loginAplicaBloqueio, 1000);
+  } else {
+    if(_loginTick){ clearInterval(_loginTick); _loginTick = null; }
+    const e = document.getElementById('loginErr');
+    if(e && /Muitas tentativas/.test(e.textContent||'')){ e.textContent='Senha incorreta'; e.style.display='none'; }
+    if(inp) inp.disabled = false;
+  }
+  return bloqueado;
+}
+// Chame antes de comparar a senha. Devolve true quando NAO pode tentar agora.
+function loginBloqueado(){ return _loginAplicaBloqueio(); }
+// Errou: conta a tentativa e bloqueia ao chegar no limite.
+function loginErrou(){
+  const st = _loginEstado();
+  const tent = st.tent + 1;
+  if(tent >= LOGIN_MAX_TENT){
+    _loginSalva(Date.now() + LOGIN_BLOQUEIO_MS, 0);
+    _loginAplicaBloqueio();
+    return;
+  }
+  _loginSalva(0, tent);
+  const faltam = LOGIN_MAX_TENT - tent;
+  _loginErrTxt('Senha incorreta \u2014 ' + faltam + (faltam===1 ? ' tentativa restante' : ' tentativas restantes'));
+  const inp = document.getElementById('pwInput');
+  if(inp) inp.classList.add('err');
+  setTimeout(()=>{
+    const i2 = document.getElementById('pwInput'); if(i2) i2.classList.remove('err');
+    const e2 = document.getElementById('loginErr');
+    if(e2 && !(_loginEstado().ate > Date.now())) e2.style.display='none';
+  }, 2500);
+}
+// Acertou: zera tudo.
+function loginAcertou(){ _loginSalva(0, 0); if(_loginTick){ clearInterval(_loginTick); _loginTick=null; } }
+// Se a pagina abrir ja dentro do bloqueio, o campo aparece travado com a contagem.
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", ()=>_loginAplicaBloqueio());
+else _loginAplicaBloqueio();
+
 function autoLogin(){
+  if(loginBloqueado()) return;
   const pw=document.getElementById("pwInput").value;
   if(pw===ADMIN_PW){
+    loginAcertou();
     window._pendingAdmin=true; window._pendingAdminMetas=false;
     isAdmin=true; isAdminMetas=false;
     startApp();
   } else if(pw===ADMIN_METAS_PW){
+    loginAcertou();
     window._pendingAdmin=false; window._pendingAdminMetas=true;
     isAdmin=false; isAdminMetas=true;
     startApp();
   } else {
-    document.getElementById("loginErr").style.display="block";
-    document.getElementById("pwInput").classList.add("err");
-    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
+    loginErrou();
   }
 }
 
 function tryLogin(){
+  if(loginBloqueado()) return;
   const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_PW){isAdmin=true;isAdminMetas=false;startApp();}
-  else if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
-  else{
-    document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display="block";
-    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
-  }
+  if(pw===ADMIN_PW){loginAcertou();isAdmin=true;isAdminMetas=false;startApp();}
+  else if(pw===ADMIN_METAS_PW){loginAcertou();isAdmin=false;isAdminMetas=true;startApp();}
+  else{ loginErrou(); }
 }
 function tryLoginMetas(){
+  if(loginBloqueado()) return;
   const pw=document.getElementById("pwInput").value;
-  if(pw===ADMIN_METAS_PW){isAdmin=false;isAdminMetas=true;startApp();}
-  else{
-    document.getElementById("pwInput").classList.add("err");
-    document.getElementById("loginErr").style.display="block";
-    setTimeout(()=>{document.getElementById("pwInput").classList.remove("err");document.getElementById("loginErr").style.display="none";},1500);
-  }
+  if(pw===ADMIN_METAS_PW){loginAcertou();isAdmin=false;isAdminMetas=true;startApp();}
+  else{ loginErrou(); }
 }
 function startDashboard(){
   document.getElementById("loginScreen").style.display="none";
@@ -6412,6 +6484,7 @@ function sairDashboard(){
   [_dashLoadTimer,_dashClockTimer,_dashSlideTimer].forEach(t=>clearInterval(t));
   document.getElementById("dashboardScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
+  if(typeof _loginAplicaBloqueio==="function") _loginAplicaBloqueio();
 }
 
 let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null;
@@ -6899,6 +6972,7 @@ function doLogout(){
   });
   document.getElementById("appScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
+  if(typeof _loginAplicaBloqueio==="function") _loginAplicaBloqueio();
   document.getElementById("iaBtnFlutuante").style.display="none";
   var _jbf=document.getElementById("jarvisBtnFlutuante"); if(_jbf) _jbf.style.display="none";
   document.getElementById("painelIA").style.display="none";
@@ -8117,6 +8191,7 @@ function fecharMapaProducao(){
   const ov=document.getElementById('apOverlay'); if(ov) ov.classList.remove('open');
   document.getElementById("mapaScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
+  if(typeof _loginAplicaBloqueio==="function") _loginAplicaBloqueio();
   mapaUpdateApontarFab();
 }
 
