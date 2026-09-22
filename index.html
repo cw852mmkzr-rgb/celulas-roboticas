@@ -4141,10 +4141,7 @@ function updateMetasCell(key,robo,campo,valor){
     const _compDelta = _compNovo - _compAnterior;
     const _compCod = (celulas[key].metas_dias[chave][robo].cod||'').trim();
     if(_compDelta!==0 && _compCod && _compCod!=='—') subtrairComponentesProducao(_compCod, _compDelta);
-    // Novo valor em hora: destrava a automação de status pra este robô
-    if(_compNovo>0 && celulas[String(robo)] && celulas[String(robo)].status_manual){
-      delete celulas[String(robo)].status_manual;
-    }
+    // (Automação de status desligada — o status manual não é mais destravado ao lançar hora.)
   }
   // Código da peça digitado na planilha: puxa meta/h e pontos do cadastro
   // e leva os dados da peça para a tela do robô.
@@ -13566,6 +13563,7 @@ function _horaVenceu(h, now){
 }
 let _autoStatusRodando = false;
 function avaliarStatusAutomatico(){
+  return false; // DESLIGADO — status do robô é definido manualmente (pedido do Eduardo)
   if(_autoStatusRodando) return false;
   _autoStatusRodando = true;
   try{
