@@ -11996,7 +11996,8 @@ function _ppecaAgregar(per){
         if(v>0){ totalSlot+=v; o.porHora[h]=(o.porHora[h]||0)+v; o.horasMaq++; }
       });
       if(totalSlot<=0) return;
-      o.grafias[cod]=(o.grafias[cod]||0)+totalSlot;
+      const graf=cod.replace(/[ 	]+/g,"");   // espaco solto e erro de digitacao, nao grafia diferente
+      o.grafias[graf]=(o.grafias[graf]||0)+totalSlot;
       o.total+=totalSlot;
       o.porDia[chave]=(o.porDia[chave]||0)+totalSlot;
       o.maquinas[nome]=(o.maquinas[nome]||0)+totalSlot;
