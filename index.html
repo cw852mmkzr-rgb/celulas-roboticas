@@ -11965,6 +11965,16 @@ function _ppecaEmPeriodo(chave, per){
 // Não soma os dois juntos — cada (grupo+código) é uma entrada própria.
 // Chave de saída: grupo + '' + código. Cada entrada guarda .cod e .grupo.
 function _ppecaGrupoDoSlot(slot){ return String(slot).startsWith('s_') ? 'topo' : 'maq'; }
+// Mesma peca apontada de jeitos diferentes conta junto: 401-1 = 401.1 = 401 1,
+// 385-601 = 385601, Prb-130 = Pr-130, Prb- 02 = Pr-02, Pr-025 = Prb-25.
+// O "s" no fim NAO junta (15324 e 15324s sao pecas diferentes) — so caem fora
+// pontuacao, espaco, maiuscula/minuscula, zero a esquerda e o prefixo PRB/PR.
+const _PPECA_ALIAS_PREFIXO = [['PRB','PR']];
+function _ppecaChaveCod(cod){
+  let u = String(cod||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  _PPECA_ALIAS_PREFIXO.forEach(([de,para])=>{ if(u.indexOf(de)===0) u = para + u.slice(de.length); });
+  return u.replace(/^([A-Z]*)0+([0-9])/, '$1$2');
+}
 function _ppecaAgregar(per){
   const HORAS=[...MAPA_HORAS_DIA, ...HORAS_NOITE];
   const out={};
@@ -11976,21 +11986,29 @@ function _ppecaAgregar(per){
       const cod=(rd.cod||'').trim();
       if(!cod || cod==='—') return;
       const grupo=_ppecaGrupoDoSlot(slot);
-      const gkey=grupo+''+cod;
+      const gkey=grupo+''+_ppecaChaveCod(cod);
       const nome=(rd.nome || (mapaDados.nomes_maquinas && mapaDados.nomes_maquinas[slot]) || '').trim() || slot;
       const meta=parseInt(rd.meta)||0;
-      const o=out[gkey] || (out[gkey]={cod, grupo, total:0, porDia:{}, porHora:{}, maquinas:{}, metaVotes:{}, horasMaq:0});
+      const o=out[gkey] || (out[gkey]={cod, grupo, total:0, porDia:{}, porHora:{}, maquinas:{}, metaVotes:{}, horasMaq:0, grafias:{}});
       let totalSlot=0;
       HORAS.forEach(h=>{
         const v=parseCelVal(rd[campoH(h)]||'').num;
         if(v>0){ totalSlot+=v; o.porHora[h]=(o.porHora[h]||0)+v; o.horasMaq++; }
       });
       if(totalSlot<=0) return;
+      o.grafias[cod]=(o.grafias[cod]||0)+totalSlot;
       o.total+=totalSlot;
       o.porDia[chave]=(o.porDia[chave]||0)+totalSlot;
       o.maquinas[nome]=(o.maquinas[nome]||0)+totalSlot;
       if(meta>0) o.metaVotes[meta]=(o.metaVotes[meta]||0)+1;
     });
+  });
+  // O codigo que aparece no card e a grafia mais produzida do grupo
+  Object.values(out).forEach(o=>{
+    let melhor=null, mx=-1;
+    Object.entries(o.grafias||{}).forEach(([c,q])=>{ if(q>mx){ mx=q; melhor=c; } });
+    if(melhor) o.cod=melhor;
+    o.outrasGrafias=Object.keys(o.grafias||{}).filter(c=>c!==o.cod);
   });
   return out;
 }
@@ -12006,7 +12024,7 @@ function _ppecaRenderLista(){
   const dados=_ppecaAgregar(per);
   const chaves=Object.keys(dados)
     .filter(k=>_ppecaGrupo==='todos' || dados[k].grupo===_ppecaGrupo)
-    .filter(k=>!_ppecaBusca || dados[k].cod.toLowerCase().includes(_ppecaBusca))
+    .filter(k=>!_ppecaBusca || Object.keys(dados[k].grafias||{}).concat(dados[k].cod).some(c=>c.toLowerCase().includes(_ppecaBusca)))
     .sort((a,b)=>dados[b].total-dados[a].total);
   if(!chaves.length){
     return `<div class="ppeca-empty">${_ppecaBusca ? `Nenhuma peça encontrada para "<b>${esc(_ppecaBusca)}</b>"` : 'Nenhum código com produção neste período.'}</div>`;
@@ -12042,6 +12060,7 @@ function _ppecaRenderLista(){
           <div class="ppeca-lbl">${gi.lbl}</div>
           <div class="ppeca-cod">${esc(cod)}</div>
           ${maqResumo?`<div class="ppeca-cod-sub">${maqResumo}</div>`:''}
+          ${(d.outrasGrafias&&d.outrasGrafias.length)?`<div class="ppeca-cod-sub" style="color:#ffb300" title="Apontado também como: ${esc(d.outrasGrafias.join(', '))}">+ ${esc(d.outrasGrafias.join(', '))}</div>`:''}
         </div>
         <div class="ppeca-col-spark">
           <div class="ppeca-lbl">${sparkLabel}</div>
