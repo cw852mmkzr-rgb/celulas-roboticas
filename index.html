@@ -13970,6 +13970,10 @@ function abrirPainelRobo(robo, silencioso){
 let _manuFiltro='pendentes';   // 'todos' | 'pendentes' | 'concluidas'
 let _manuFiltroRobo='';        // '' = todos
 let _manuFiltroPrio='';        // '' = todas
+let _manuOrdem=(()=>{ try{ return localStorage.getItem('manu_ordem')||'recentes'; }catch(e){ return 'recentes'; } })();   // recentes | antigas | prioridade | robo
+function manuSetOrdem(v){ _manuOrdem=v; try{ localStorage.setItem('manu_ordem',v); }catch(e){} renderManutencao(); }
+// data de abertura "DD/MM/AAAA, HH:MM" -> número para ordenar
+function _manuTs(m){ const x=String((m&&m.data)||'').match(/([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{2,4})(?:[^0-9]+([0-9]{1,2}):([0-9]{2}))?/); if(!x) return 0; let y=+x[3]; if(y<100) y+=2000; return new Date(y,+x[2]-1,+x[1],+(x[4]||0),+(x[5]||0)).getTime(); }
 function manuSetFiltro(f){ _manuFiltro=f; renderManutencao(); }
 function manuSetFiltroRobo(v){ _manuFiltroRobo=v; renderManutencao(); }
 function manuSetFiltroPrio(v){ _manuFiltroPrio=v; renderManutencao(); }
@@ -14035,6 +14039,9 @@ function renderManutencao(){
         <option value="" ${_manuFiltroPrio===''?'selected':''}>⚑ Toda prioridade</option>
         ${Object.keys(MANU_PRIO).map(p=>`<option value="${p}" ${p===_manuFiltroPrio?'selected':''}>${MANU_PRIO[p].ic} ${p}</option>`).join('')}
       </select>
+      <select onchange="manuSetOrdem(this.value)" title="Ordenar a lista" style="background:#0d1117;border:1px solid #1e2530;color:#e0e6ef;border-radius:10px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none">
+        ${[['recentes','↓ Mais recentes'],['antigas','↑ Mais antigas'],['prioridade','⚑ Prioridade'],['robo','🤖 Por robô']].map(([v,l])=>`<option value="${v}" ${_manuOrdem===v?'selected':''}>${l}</option>`).join('')}
+      </select>
       ${isAdmin?`<button onclick="abrirModalManu()" style="margin-left:auto;background:linear-gradient(180deg,#00f082,#00c46a);border:none;color:#04120a;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:800;cursor:pointer;transition:transform .12s var(--ease-out)" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''" onmouseleave="this.style.transform=''">+ Nova Manutenção</button>`:''}
     </div>
 
@@ -14048,10 +14055,15 @@ function renderManutencao(){
         else if(_manuFiltro==='concluidas') lista=lista.filter(x=>x.m.concluido);
         if(_manuFiltroRobo) lista=lista.filter(x=>String(x.robo)===_manuFiltroRobo);
         if(_manuFiltroPrio) lista=lista.filter(x=>x.m.prioridade===_manuFiltroPrio);
+        // desempate: o que foi lançado depois (índice maior) é o mais novo
+        const recente=(a,b)=>(_manuTs(b.m)-_manuTs(a.m)) || (b.idx-a.idx);
         lista.sort((a,b)=>{
+          if(_manuOrdem==='recentes') return recente(a,b);
+          if(_manuOrdem==='antigas') return -recente(a,b);
+          if(_manuOrdem==='robo') return (a.robo-b.robo) || recente(a,b);
           if(!!a.m.concluido!==!!b.m.concluido) return a.m.concluido?1:-1;
-          if(!a.m.concluido) return _manuPrio(a.m.prioridade).peso-_manuPrio(b.m.prioridade).peso;
-          return 0;
+          if(!a.m.concluido){ const d=_manuPrio(a.m.prioridade).peso-_manuPrio(b.m.prioridade).peso; if(d) return d; }
+          return recente(a,b);
         });
         if(!lista.length){
           const msg=_manuFiltro==='concluidas'?'Nenhuma manutenção concluída ainda.':_manuFiltro==='pendentes'?'Nenhuma manutenção pendente. Tudo em dia.':'Nenhuma manutenção registrada.';
