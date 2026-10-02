@@ -1258,6 +1258,43 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cat-chip.cinza{color:#7a8698;border-color:#2a3342;background:#ffffff06}
 .cat-acts{display:flex;gap:6px;padding:0 14px 12px}
 @media(max-width:520px){.cat-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}.cat-cod{font-size:17px}.cat-cliente{font-size:15px}}
+/* Funcionários — calendário de trabalho + horas do dia */
+.fcal-tit{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px;font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em}
+.fcal-leg{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.04em;text-transform:none;color:#6b7788}
+.fcal-leg i{width:9px;height:9px;border-radius:2px;background:var(--fc);margin-left:6px}
+.fcal-wrap.multi{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.fcal{border:1px solid #1e2530;border-radius:10px;padding:10px 12px 12px;background:#0a0d11}
+.fcal-mes{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-weight:800;font-size:14px;color:#e0e6ef}
+.fcal-mes em{font-style:normal;font-weight:400;font-size:11.5px;color:#6b7788}
+.fcal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.fcal-w{text-align:center;font-size:11px;color:#6b7788;padding-bottom:2px;font-weight:700}
+.fcal-d{position:relative;min-height:46px;border-radius:6px;border:1px solid #161c25;background:#0f1318;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#3a4454;font-family:inherit;font-size:13px;font-weight:700;padding:0}
+.fcal-d b{font-size:10.5px;font-weight:700;color:var(--fc)}
+.fcal-d.on{cursor:pointer;color:#fff;border-color:color-mix(in srgb,var(--fc) 50%,transparent);background:color-mix(in srgb,var(--fc) 12%,#0f1318);transition:transform .15s,box-shadow .15s,background .15s}
+@media(hover:hover){.fcal-d.on:hover{transform:translateY(-1px);box-shadow:0 0 10px -3px var(--fc)}}
+.fcal-d.on:active{transform:scale(.96)}
+.fcal-d.on:focus-visible{outline:2px solid #fff;outline-offset:1px}
+.fcal-d.sel{background:var(--fc);border-color:var(--fc);color:#04120a}
+.fcal-d.sel b{color:#04120a}
+.fcal-d.hoje::after{content:'';position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#3d9eff}
+.fcal-g.mini .fcal-d{min-height:34px;font-size:11px}.fcal-g.mini .fcal-d b{font-size:9px}
+.fdet{margin:12px 0 22px;border:1px solid #1e2530;border-radius:10px;background:#0a0d11;overflow:hidden}
+.fdet-vazio{padding:16px;text-align:center;color:#6b7788;font-size:13px}
+.fdet-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid #1e2530;border-left:3px solid var(--fc);background:color-mix(in srgb,var(--fc) 7%,transparent)}
+.fdet-data{font-weight:900;font-size:18px;color:#fff}
+.fdet-sem{font-size:11.5px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em;margin-top:2px}
+.fdet-res{font-size:13.5px;color:#8a95a8}.fdet-res b{color:#fff;font-weight:800}
+.fdet-list{padding:8px 10px;display:flex;flex-direction:column;gap:4px;max-height:300px;overflow-y:auto}
+.fdet-r{display:grid;grid-template-columns:78px minmax(90px,1.1fr) 2fr 52px 92px;align-items:center;gap:10px;padding:6px;border-radius:6px}
+.fdet-r:nth-child(odd){background:#ffffff05}
+.fdet-h{font-weight:800;font-size:14px;color:#e0e6ef}
+.fdet-rb{font-size:13px;color:#3d9eff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fdet-rb em{font-style:normal;color:#ffb300}
+.fdet-bar{height:7px;border-radius:99px;background:#1e2530;overflow:hidden}.fdet-bar i{display:block;height:100%;border-radius:99px}
+.fdet-v{font-weight:800;font-size:15px;text-align:right}
+.fdet-m{font-size:12px;color:#6b7788;text-align:right;white-space:nowrap}
+.fhist-r:hover{background:#3d9eff0d}
+@media(max-width:560px){.fcal-g{gap:3px}.fcal-d{min-height:40px;font-size:11.5px}.fcal-d b{font-size:9px}.fdet-r{grid-template-columns:66px 1fr 44px;row-gap:3px}.fdet-bar{grid-column:1/-1;order:5}.fdet-m{grid-column:1/-1;text-align:left;order:6}.fcal-leg{display:none}}
 </style>
 </head>
 <body>
@@ -4542,9 +4579,10 @@ function desempenhoFuncDetalheT(nome,ano,mes){
         if(_funcHoraCredT(rd,campo)!==nome) return;
         const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
         pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
-        if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0};
+        if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0,itens:[]};
         porDia[chave].pecas+=val; porDia[chave].horas+=1;
         const metaH=_funcMetaHoraT(h,meta,chave);
+        porDia[chave].itens.push({h, robo:String(r), val, meta:metaH, cod:String(rd.cod||'').trim()});
         if(metaH>0){ horasMeta+=1; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
       });
     });
@@ -4584,6 +4622,12 @@ function abrirFuncDetalheT(nomeEnc){
     if(d.melhorDia){ const m=d.melhorDia; const df=`${String(m.dia).padStart(2,'0')}/${String(m.mes+1).padStart(2,'0')}/${m.ano}`;
       inner+=`<div style="background:#00e87a0d;border:1px solid #00e87a4d;border-radius:8px;padding:13px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px"><span style="font-size:22px">⭐</span><span style="font-size:16px;color:#d8dde6"><b style="color:#00e87a">Melhor dia:</b> ${df} — ${m.pecas.toLocaleString("pt-BR")} peças</span></div>`;
     }
+    // Calendário de trabalho (clique no dia = horas detalhadas)
+    window._funcDiaCacheT={}; d.diasList.forEach(x=>{ window._funcDiaCacheT[x.chave]=x; });
+    const mesesCal=_funcTodoAnoT ? [...new Set(d.diasList.map(x=>x.mes))].sort((a,b)=>b-a) : [_funcMesT];
+    inner+=`<div class="fcal-tit"><span>Calendário de trabalho</span><span class="fcal-leg"><i style="--fc:#00e87a"></i>85%+ <i style="--fc:#ffb300"></i>45%+ <i style="--fc:#ff4d4d"></i>abaixo <i style="--fc:#3d9eff"></i>sem meta</span></div>
+      <div class="fcal-wrap${mesesCal.length>1?' multi':''}">${mesesCal.map(m=>_funcCalMesT(_funcAnoT,m,window._funcDiaCacheT,mesesCal.length>1)).join('')}</div>
+      <div id="funcDiaDetT" class="fdet"><div class="fdet-vazio">Toque num dia destacado para ver as horas trabalhadas.</div></div>`;
     const maxR=d.robosList.length?d.robosList[0].pecas:1;
     inner+=`<div style="font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px">Produção por robô</div>`;
     inner+=d.robosList.map(r=>{ const pct=Math.round(r.pecas/maxR*100); const tx=r.horasMeta>0?Math.round(r.metasOk/r.horasMeta*100):null;
@@ -4604,7 +4648,7 @@ function abrirFuncDetalheT(nomeEnc){
           </tr></thead><tbody>
           ${d.diasList.map(x=>{ const df=`${String(x.dia).padStart(2,'0')}/${String(x.mes+1).padStart(2,'0')}/${x.ano}`; const tx=x.horasMeta>0?Math.round(x.metasOk/x.horasMeta*100):null;
             const cor=tx==null?'#8a95a8':(tx>=85?'#00e87a':tx>=45?'#ffb300':'#ff4d4d');
-            return `<tr style="border-bottom:1px solid #1e2530">
+            return `<tr class="fhist-r" onclick="_funcVerDiaT('${x.chave}',true)" title="Ver as horas deste dia" style="border-bottom:1px solid #1e2530;cursor:pointer">
               <td style="padding:11px 12px;font-size:14px;color:#d8dde6">${df}</td>
               <td style="padding:11px 12px;font-size:16px;color:#00e87a;text-align:center;font-weight:700">${x.pecas.toLocaleString("pt-BR")}</td>
               <td style="padding:11px 12px;font-size:14px;color:#6b7788;text-align:center">${x.horas}</td>
@@ -4617,6 +4661,46 @@ function abrirFuncDetalheT(nomeEnc){
   if(!ov){ ov=document.createElement('div'); ov.id='funcDetOv'; ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#000000dd;display:flex;align-items:center;justify-content:center;padding:16px'; ov.onclick=e=>{ if(e.target===ov) fecharFuncDet(); }; document.body.appendChild(ov); }
   ov.innerHTML=`<div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:100%;max-width:840px;max-height:90vh;overflow-y:auto">${inner}</div>`;
   ov.style.display='flex'; document.body.style.overflow='hidden';
+  if(d.diasList.length) _funcVerDiaT(d.diasList[0].chave);
+}
+function _funcCorTxT(x){ const tx=x.horasMeta>0?Math.round(x.metasOk/x.horasMeta*100):null; return {tx, cor: tx==null?'#3d9eff':(tx>=85?'#00e87a':tx>=45?'#ffb300':'#ff4d4d')}; }
+function _funcCalMesT(ano,mes,porCh,compacto){
+  const ini=new Date(ano,mes,1).getDay(), nd=new Date(ano,mes+1,0).getDate();
+  const h=new Date(); let cel=['D','S','T','Q','Q','S','S'].map(w=>`<div class="fcal-w">${w}</div>`).join('');
+  for(let i=0;i<ini;i++) cel+='<div></div>';
+  let nDias=0;
+  for(let dd=1;dd<=nd;dd++){
+    const ch=ano+'_'+mes+'_'+dd, x=porCh[ch];
+    const hoje=h.getFullYear()===ano&&h.getMonth()===mes&&h.getDate()===dd?' hoje':'';
+    if(!x){ cel+=`<div class="fcal-d${hoje}"><span>${dd}</span></div>`; continue; }
+    nDias++; const {tx,cor}=_funcCorTxT(x);
+    cel+=`<button type="button" class="fcal-d on${hoje}" data-ch="${ch}" style="--fc:${cor}" onclick="_funcVerDiaT('${ch}')" title="${dd}/${mes+1}: ${x.pecas.toLocaleString('pt-BR')} peças em ${x.horas}h${tx!=null?' · '+tx+'% da meta':''}"><span>${dd}</span><b>${x.pecas.toLocaleString('pt-BR')}</b></button>`;
+  }
+  return `<div class="fcal"><div class="fcal-mes">${MESES[mes]} ${ano}<em>${nDias} dia${nDias!==1?'s':''} trabalhado${nDias!==1?'s':''}</em></div><div class="fcal-g${compacto?' mini':''}">${cel}</div></div>`;
+}
+function _funcVerDiaT(ch,rolar){
+  const x=(window._funcDiaCacheT||{})[ch], box=document.getElementById('funcDiaDetT'); if(!x||!box) return;
+  document.querySelectorAll('#funcDetOv .fcal-d.sel').forEach(e=>e.classList.remove('sel'));
+  const btn=document.querySelector('#funcDetOv .fcal-d[data-ch="'+ch+'"]'); if(btn) btn.classList.add('sel');
+  const p=ch.split('_').map(Number), dt=new Date(p[0],p[1],p[2]);
+  const dataFmt=String(p[2]).padStart(2,'0')+'/'+String(p[1]+1).padStart(2,'0')+'/'+p[0];
+  const sem=dt.toLocaleDateString('pt-BR',{weekday:'long'});
+  const itens=(x.itens||[]).slice().sort((a,b)=>a.h.localeCompare(b.h)||a.robo.localeCompare(b.robo));
+  const mx=Math.max(...itens.map(i=>i.val),1), {tx,cor}=_funcCorTxT(x);
+  const linhas=itens.map(i=>{ const ok=i.meta>0&&i.val>=i.meta, c=i.meta>0?(ok?'#00e87a':'#ff4d4d'):'#3d9eff';
+    return `<div class="fdet-r">
+      <span class="fdet-h">${i.h}${HORAS_CAFE.includes(i.h)?' ☕':''}</span>
+      <span class="fdet-rb">R${esc(i.robo)}${i.cod?` · <em>${esc(i.cod)}</em>`:''}</span>
+      <div class="fdet-bar"><i style="width:${Math.max(Math.round(i.val/mx*100),4)}%;background:${c}"></i></div>
+      <span class="fdet-v" style="color:${c}">${i.val.toLocaleString('pt-BR')}</span>
+      <span class="fdet-m">${i.meta>0?(ok?'✓':'✗')+' meta '+i.meta:'sem meta'}</span>
+    </div>`; }).join('');
+  box.innerHTML=`<div class="fdet-top" style="--fc:${cor}">
+      <div><div class="fdet-data">${dataFmt}</div><div class="fdet-sem">${sem}</div></div>
+      <div class="fdet-res"><b>${x.pecas.toLocaleString('pt-BR')}</b> peças · <b>${x.horas}</b>h${itens.length?` · das <b>${itens[0].h}</b> às <b>${itens[itens.length-1].h}</b>`:''}${tx!=null?` · metas <b>${x.metasOk}/${x.horasMeta}</b> (${tx}%)`:''}</div>
+    </div>
+    <div class="fdet-list">${linhas||'<div class="fdet-vazio">Sem horas registradas.</div>'}</div>`;
+  if(rolar) box.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 // campo de funcionário por hora na tabela de metas
 function setFuncHoraT(key,robo,campo,nome,el){
