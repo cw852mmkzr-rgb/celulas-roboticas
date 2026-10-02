@@ -5520,6 +5520,9 @@ function _renderDetailInner(){
   setTimeout(() => gerarQR(selected), 80);
 }
 
+// mês escolhido no histórico de cada robô ('todos' = sem filtro)
+const _histRoboMesT={};
+function _histRoboSetT(key,v){ _histRoboMesT[key]=v; const el=document.getElementById('histRoboT'); if(el) el.outerHTML=renderHistoricoRobo(key); }
 function renderHistoricoRobo(key) {
   // Descobre o número do robô (ex: "600") a partir do nome da célula
   const nomeCell = (celulas[key].nome||'').toLowerCase();
@@ -5534,7 +5537,7 @@ function renderHistoricoRobo(key) {
   const mc = celulas[metasKey];
 
   // Coleta todos os dias que têm dados para este robô
-  const registros = []; // [{data, cod, totalDia, totalNoite, totalGeral, meta}]
+  let registros = []; // [{data, cod, totalDia, totalNoite, totalGeral, meta}]
 
   Object.entries(mc.metas_dias).forEach(([chave, diaData]) => {
     const [ano, mes, dia] = chave.split('_');
@@ -5553,7 +5556,7 @@ function renderHistoricoRobo(key) {
   });
 
   if (registros.length === 0) {
-    return `<div class="section">
+    return `<div class="section" id="histRoboT">
       <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}</div>
       <div style="font-size:12px;color:#2a3040;padding:8px 0">Nenhum registro ainda. Os dados vêm automaticamente da célula Metas.</div>
     </div>`;
@@ -5565,6 +5568,14 @@ function renderHistoricoRobo(key) {
     if (b.mes !== a.mes) return b.mes - a.mes;
     return b.dia - a.dia;
   });
+
+  // seletor de mês: abre no mês atual (ou no último mês com registro)
+  const mesesH = [...new Set(registros.map(r => r.ano+'_'+r.mes))];
+  const hjH = new Date(); const hjK = hjH.getFullYear()+'_'+hjH.getMonth();
+  let selM = _histRoboMesT[key];
+  if (selM !== 'todos' && !mesesH.includes(selM)) selM = mesesH.includes(hjK) ? hjK : mesesH[0];
+  if (selM !== 'todos') registros = registros.filter(r => r.ano+'_'+r.mes === selM);
+  const selHtml = `<select onchange="_histRoboSetT('${key}',this.value)" title="Mês do histórico" style="background:#0d1117;border:1px solid #1e2530;color:#e0e6ef;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;outline:none;letter-spacing:0;text-transform:none">${mesesH.map(m=>{ const [a,mm]=m.split('_').map(Number); return `<option value="${m}" ${m===selM?'selected':''}>${MESES[mm]} ${a}</option>`; }).join('')}<option value="todos" ${selM==='todos'?'selected':''}>Todos os meses</option></select>`;
 
   const maxTotal = Math.max(...registros.map(r => r.totalGeral), 1);
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
@@ -5595,9 +5606,9 @@ function renderHistoricoRobo(key) {
     </tr>`;
   }).join('');
 
-  return `<div class="section">
-    <div class="sec-title">📈 Histórico de Produção — Robô ${roboNum}
-      <span style="font-size:9px;color:#2a3040;font-weight:400">${registros.length} dia(s) registrado(s)</span>
+  return `<div class="section" id="histRoboT">
+    <div class="sec-title" style="flex-wrap:wrap;gap:10px">📈 Histórico de Produção — Robô ${roboNum}
+      <span style="display:flex;align-items:center;gap:10px;margin-left:auto"><span style="font-size:10px;color:#6b7788;font-weight:400">${registros.length} dia(s)</span>${selHtml}</span>
     </div>
 
     <!-- Cards de resumo -->
