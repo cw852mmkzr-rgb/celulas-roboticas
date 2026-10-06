@@ -1224,6 +1224,54 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cc-hqty{ font-family:'Courier New',monospace; font-weight:800; font-size:16px; min-width:56px; }
 .cc-hmeta{ flex:1; min-width:0; color:var(--cc-mut); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
+/* Abas do Controle de Componentes */
+.cc-tabs{ display:flex; gap:7px; margin-top:12px; overflow-x:auto; scrollbar-width:none; }
+.cc-tabs::-webkit-scrollbar{ display:none; }
+.cc-tab{ background:transparent; border:1px solid var(--cc-bd); color:var(--cc-mut); border-radius:9px; padding:9px 16px; font-size:13px; font-weight:800; font-family:'Courier New',monospace; cursor:pointer; white-space:nowrap; transition:background var(--dur-fast) ease,border-color var(--dur-fast) ease,color var(--dur-fast) ease,transform var(--dur-fast) var(--ease-out); }
+.cc-tab:active{ transform:scale(.96); }
+.cc-tab.on{ background:#ffb30018; border-color:#ffb30066; color:var(--cc-amber); }
+@media (hover:hover) and (pointer:fine){ .cc-tab:not(.on):hover{ color:var(--cc-tx); border-color:var(--cc-bd-hi); } }
+
+/* Aba Apontamentos do Dia */
+.cc-apont{ flex:1; flex-direction:column; min-height:0; }
+.cc-ap-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:12px 18px; border-bottom:1px solid var(--cc-bd); background:var(--cc-panel); flex-shrink:0; }
+.cc-ap-nav{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.cc-ap-nav .cc-btn:disabled{ opacity:.35; cursor:default; transform:none; filter:none; }
+.cc-ap-date{ background:var(--cc-bg); border:1px solid var(--cc-bd); color:var(--cc-tx); padding:8px 10px; border-radius:9px; font-family:'Courier New',monospace; font-size:14px; color-scheme:dark; outline:none; }
+.cc-ap-date:focus{ border-color:var(--cc-bd-hi); }
+.cc-ap-diatxt{ font-size:12.5px; color:var(--cc-mut); margin-left:4px; }
+.cc-ap-busca{ max-width:340px; }
+.cc-ap-body{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:18px 18px 40px; }
+.cc-ap-kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:16px; }
+.cc-ap-kpi{ background:var(--cc-card); border:1px solid var(--cc-bd); border-radius:12px; padding:14px 16px; }
+.cc-ap-kpi-n{ font-size:28px; font-weight:900; font-family:'Courier New',monospace; line-height:1; letter-spacing:-.5px; font-variant-numeric:tabular-nums; }
+.cc-ap-kpi-l{ font-size:11px; color:var(--cc-mut); margin-top:7px; text-transform:uppercase; letter-spacing:.5px; font-weight:700; }
+.cc-ap-filtros{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
+.cc-ap-chip{ background:#12161d; border:1px solid #2a3040; color:#8a94a6; border-radius:8px; padding:7px 14px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Courier New',monospace; }
+.cc-ap-chip.on{ background:#ffb30020; border-color:#ffb30050; color:#ffb300; }
+.cc-ap-row{ position:relative; display:flex; align-items:center; gap:14px; padding:13px 14px 13px 17px; background:var(--cc-card); border:1px solid var(--cc-bd); border-radius:11px; margin-bottom:8px; overflow:hidden; animation:cardIn 280ms var(--ease-out) both; }
+.cc-ap-row::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--st,#00e87a); }
+.cc-ap-hora{ font-family:'Courier New',monospace; font-weight:800; font-size:15px; color:var(--cc-tx); flex-shrink:0; min-width:48px; font-variant-numeric:tabular-nums; }
+.cc-ap-ic{ width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:800; flex-shrink:0; }
+.cc-ap-info{ flex:1; min-width:0; }
+.cc-ap-nome{ font-size:15.5px; font-weight:800; color:#f3f7fc; line-height:1.25; }
+.cc-ap-cod{ font-family:'Courier New',monospace; font-size:12px; font-weight:600; color:var(--cc-faint); }
+.cc-ap-meta{ font-size:12.5px; color:var(--cc-mut); margin-top:3px; overflow-wrap:anywhere; }
+.cc-ap-qtd{ text-align:right; flex-shrink:0; font-family:'Courier New',monospace; font-weight:900; font-size:20px; line-height:1.1; font-variant-numeric:tabular-nums; }
+.cc-ap-qtd small{ font-size:12px; color:var(--cc-faint); font-weight:600; }
+.cc-ap-est{ font-size:11px; color:var(--cc-faint); font-weight:600; margin-top:4px; }
+
+@media (max-width:760px){
+  .cc-ap-bar{ padding:10px 12px; }
+  .cc-ap-busca{ max-width:none; }
+  .cc-ap-body{ padding:12px 12px 32px; }
+  .cc-ap-kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .cc-ap-kpi-n{ font-size:24px; }
+  .cc-ap-row{ flex-wrap:wrap; gap:10px; padding:12px 12px 12px 15px; }
+  .cc-ap-info{ flex:1 1 calc(100% - 120px); }
+  .cc-ap-qtd{ margin-left:auto; }
+}
+
 @media (max-width:760px){
   .cc-header{ padding:10px 12px; }
   .cc-title{ font-size:15px; }
@@ -15978,6 +16026,7 @@ function _entrarComp(){
   compPecaSel=null; compBusca='';
   const bi=document.getElementById('compBuscaInput'); if(bi)bi.value='';
   renderComp();
+  if(compAba==='apont'){ compApontData=_compHojeISO(); compApontCarregado=''; _compApontSig=''; renderCompApont(); _compApontCarregar().then(renderCompApont); }
   _startCompPoll();
 }
 function fecharControleComponentes(){
@@ -16000,6 +16049,7 @@ function _startCompPoll(){
     if(ae && cs.contains(ae) && (ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT')) return;
     await loadCompDados();
     if(_compSig()!==_compRenderSig) renderComp();  // só re-renderiza se algo mudou (não pisca à toa)
+    if(compAba==='apont'){ await _compApontCarregar(); renderCompApont(); }  // renderCompApont compara assinatura
   }, 2500);
 }
 
@@ -16019,6 +16069,8 @@ function renderComp(){
   renderCompListaPecas();
   renderCompDetalhe();
   _compRenderSig = _compSig();
+  _compAplicarAba();
+  renderCompApont();
 }
 // Assinatura só do que afeta a exibição — usada para não re-renderizar (piscar) sem mudança
 function _compSig(){
@@ -16389,6 +16441,127 @@ function renderCompHist(){
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Aba "Apontamentos do Dia": entradas e ajustes lançados no Controle de Componentes ──
+let compAba='estoque';           // 'estoque' | 'apont'
+let compApontData='';            // dia selecionado, 'YYYY-MM-DD' (hora local)
+let compApontMovs=[];            // movimentos manuais do dia (entrada/ajuste)
+let compApontCarregado='';       // dia cujos movimentos já chegaram do banco
+let compApontErro=false;
+let compApontFiltro='todos';
+let compApontTermo='';
+let _compApontSig='';
+function _compHojeISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _compHoraDe(iso){ try{ let s=iso; if(typeof s==='string'&&s.indexOf('T')>=0&&!/[Zz+]/.test(s.slice(11))) s=s+'Z'; return new Date(s).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function compSetAba(a){
+  compAba=a;
+  _compAplicarAba();
+  if(a==='apont'){
+    if(!compApontData) compApontData=_compHojeISO();
+    renderCompApont();
+    _compApontCarregar().then(renderCompApont);
+  }
+}
+function _compAplicarAba(){
+  const b=document.getElementById('compBody'), ap=document.getElementById('compApont');
+  if(b) b.style.display=compAba==='estoque'?'flex':'none';
+  if(ap) ap.style.display=compAba==='apont'?'flex':'none';
+  document.querySelectorAll('#compTabs .cc-tab').forEach(t=>t.classList.toggle('on',t.dataset.aba===compAba));
+}
+async function _compApontCarregar(){
+  const dia=compApontData; if(!dia) return;
+  const [y,m,d]=dia.split('-').map(Number);
+  const ini=new Date(y,m-1,d).toISOString(), fim=new Date(y,m-1,d+1).toISOString();
+  const r=await _sbGet('componentes_historico?select=*&tipo=neq.producao&criado_em=gte.'+encodeURIComponent(ini)+'&criado_em=lt.'+encodeURIComponent(fim)+'&order=criado_em.desc&limit=2000');
+  if(dia!==compApontData) return;  // trocou de dia enquanto carregava
+  if(Array.isArray(r)){ compApontMovs=r; compApontCarregado=dia; compApontErro=false; }
+  else if(compApontCarregado!==dia) compApontErro=true;
+}
+function compApontIrPara(v){
+  const hoje=_compHojeISO();
+  if(!v) return;
+  if(v>hoje) v=hoje;
+  if(v===compApontData) return;
+  compApontData=v; compApontMovs=[]; compApontCarregado=''; compApontErro=false;
+  renderCompApont();
+  _compApontCarregar().then(renderCompApont);
+}
+function compApontMudarDia(delta){
+  const [y,m,d]=(compApontData||_compHojeISO()).split('-').map(Number);
+  const nd=new Date(y,m-1,d+delta);
+  compApontIrPara(nd.getFullYear()+'-'+String(nd.getMonth()+1).padStart(2,'0')+'-'+String(nd.getDate()).padStart(2,'0'));
+}
+function compSetApontFiltro(f){ compApontFiltro=f; renderCompApont(); }
+function renderCompApont(){
+  if(compAba!=='apont') return;
+  const el=document.getElementById('compApontConteudo'); if(!el) return;
+  const hoje=_compHojeISO(), dia=compApontData||hoje;
+  // barra: data, ▶ e "Hoje"
+  const inp=document.getElementById('compApontDataInp');
+  if(inp){ inp.max=hoje; if(document.activeElement!==inp) inp.value=dia; }
+  const [y,m,d]=dia.split('-').map(Number);
+  const txt=document.getElementById('compApontDiaTxt');
+  if(txt) txt.textContent=(dia===hoje?'Hoje · ':'')+new Date(y,m-1,d).toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  const px=document.getElementById('compApontProx'); if(px) px.disabled=dia>=hoje;
+  const bh=document.getElementById('compApontHoje'); if(bh) bh.style.display=dia===hoje?'none':'';
+
+  const carregando=compApontCarregado!==dia;
+  const termo=(compApontTermo||'').toLowerCase().trim();
+  const movsDia=carregando?[]:compApontMovs;
+  let movs=movsDia.filter(mv=>compApontFiltro==='todos'||mv.tipo===compApontFiltro);
+  if(termo) movs=movs.filter(mv=>{
+    const c=compMasterById(mv.componente_id)||{};
+    const pecas=compPecasDoComp(mv.componente_id).map(l=>l.codigo_peca).join(' ');
+    return [c.nome,c.codigo,mv.descricao,pecas].some(v=>String(v||'').toLowerCase().includes(termo));
+  });
+
+  const sig=[dia,carregando,compApontErro,compApontFiltro,termo,JSON.stringify(movs),JSON.stringify(compMasters)].join('|');
+  if(sig===_compApontSig) return;  // nada mudou — não re-renderiza (não pisca)
+  _compApontSig=sig;
+
+  const filtros=[['todos','Todos'],['entrada','Entradas'],['ajuste','Ajustes']];
+  const nEnt=movsDia.filter(mv=>mv.tipo==='entrada');
+  const totEnt=nEnt.reduce((s,mv)=>s+(Number(mv.quantidade)||0),0);
+  const nAj=movsDia.filter(mv=>mv.tipo==='ajuste').length;
+  const nComp=new Set(movsDia.map(mv=>mv.componente_id)).size;
+  const kpi=(n,l,c)=>`<div class="cc-ap-kpi"><div class="cc-ap-kpi-n" style="color:${c}">${carregando?'…':n}</div><div class="cc-ap-kpi-l">${l}</div></div>`;
+  const cor={entrada:'#00e87a',ajuste:'#a78bfa'};
+  const ic={entrada:'＋',ajuste:'✎'};
+
+  let lista;
+  if(carregando) lista=`<div class="cc-empty">${compApontErro?'Não foi possível carregar os apontamentos. Tentando de novo…':'Carregando apontamentos…'}</div>`;
+  else if(!movs.length) lista=`<div class="cc-empty"><div style="font-size:34px;opacity:.5;margin-bottom:8px">📋</div>${movsDia.length?'Nenhum apontamento com esse filtro.':'Nenhum apontamento neste dia.'}</div>`;
+  else lista=movs.map((mv,i)=>{
+    const c=compMasterById(mv.componente_id);
+    const cc=cor[mv.tipo]||'#8a94a6'; const q=Number(mv.quantidade)||0;
+    const un=(c&&c.unidade)||'un';
+    const pecas=compPecasDoComp(mv.componente_id).map(l=>l.codigo_peca).filter(Boolean);
+    const est=c?(Number(c.estoque_atual)||0):null;
+    const estCor=c?_compCor(c.estoque_atual,c.estoque_minimo).c:'#8a94a6';
+    return `<div class="cc-ap-row" style="--st:${cc};animation-delay:${Math.min(i,12)*22}ms">
+      <div class="cc-ap-hora">${_compHoraDe(mv.criado_em)}</div>
+      <div class="cc-ap-ic" style="background:${cc}18;color:${cc}">${ic[mv.tipo]||'•'}</div>
+      <div class="cc-ap-info">
+        <div class="cc-ap-nome">${esc(c?(c.nome||'—'):'Componente excluído')}${c&&c.codigo?` <span class="cc-ap-cod">${esc(c.codigo)}</span>`:''}</div>
+        <div class="cc-ap-meta"><span style="color:${cc};font-weight:800">${(mv.tipo||'').toUpperCase()}</span>${mv.descricao?' · '+esc(mv.descricao):''}${pecas.length?' · peça'+(pecas.length>1?'s':'')+' '+esc(pecas.join(', ')):''}</div>
+      </div>
+      <div class="cc-ap-qtd">
+        <div style="color:${q<0?'#ff8c00':cc}">${q>0?'+':''}${q.toLocaleString('pt-BR')} <small>${esc(un)}</small></div>
+        ${est!==null?`<div class="cc-ap-est">estoque <b style="color:${estCor}">${est.toLocaleString('pt-BR')}</b></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="cc-ap-kpis">
+      ${kpi(nEnt.length,'Entradas','#00e87a')}
+      ${kpi(totEnt.toLocaleString('pt-BR'),'Unidades recebidas','#ffb300')}
+      ${kpi(nComp,'Componentes movimentados','#3d9eff')}
+      ${kpi(nAj,'Ajustes','#a78bfa')}
+    </div>
+    <div class="cc-ap-filtros">${filtros.map(([f,l])=>`<button type="button" onclick="compSetApontFiltro('${f}')" class="cc-ap-chip${compApontFiltro===f?' on':''}">${l}</button>`).join('')}</div>
+    ${lista}`;
 }
 
 // ── Configurações (só admin) ──
@@ -17239,11 +17412,30 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
     </div>
     <!-- Toggle automação (só admin) -->
     <div id="compToggleWrap" style="margin-top:11px;display:none"></div>
+    <!-- Abas -->
+    <div id="compTabs" class="cc-tabs">
+      <button type="button" class="cc-tab on" data-aba="estoque" onclick="compSetAba('estoque')">📦 Estoque</button>
+      <button type="button" class="cc-tab" data-aba="apont" onclick="compSetAba('apont')">📋 Apontamentos do Dia</button>
+    </div>
   </div>
   <!-- Banner de alerta -->
   <div id="compAlertBanner" style="flex-shrink:0"></div>
+  <!-- Aba Apontamentos do Dia -->
+  <div id="compApont" class="cc-apont" style="display:none">
+    <div class="cc-ap-bar">
+      <div class="cc-ap-nav">
+        <button type="button" class="cc-btn ghost" onclick="compApontMudarDia(-1)" title="Dia anterior">◀</button>
+        <input type="date" id="compApontDataInp" class="cc-ap-date" onchange="compApontIrPara(this.value)">
+        <button type="button" id="compApontProx" class="cc-btn ghost" onclick="compApontMudarDia(1)" title="Próximo dia">▶</button>
+        <button type="button" id="compApontHoje" class="cc-btn a" onclick="compApontIrPara(_compHojeISO())">Hoje</button>
+        <span id="compApontDiaTxt" class="cc-ap-diatxt"></span>
+      </div>
+      <input id="compApontBuscaInp" class="cc-search cc-ap-busca" placeholder="🔍  Filtrar por componente, peça ou motivo" oninput="compApontTermo=this.value;renderCompApont()">
+    </div>
+    <div id="compApontConteudo" class="cc-ap-body"></div>
+  </div>
   <!-- Corpo: duas colunas -->
-  <div class="cc-body">
+  <div id="compBody" class="cc-body">
     <div class="cc-side">
       <div class="cc-side-top">
         <input id="compBuscaInput" class="cc-search" placeholder="🔍  Buscar por código ou nome" oninput="compFiltrar(this.value)">
