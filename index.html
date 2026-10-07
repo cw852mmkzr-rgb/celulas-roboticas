@@ -14116,7 +14116,8 @@ let _manuFiltroPrio='';        // '' = todas
 let _manuOrdem=(()=>{ try{ return localStorage.getItem('manu_ordem')||'recentes'; }catch(e){ return 'recentes'; } })();   // recentes | antigas | prioridade | robo
 function manuSetOrdem(v){ _manuOrdem=v; try{ localStorage.setItem('manu_ordem',v); }catch(e){} renderManutencao(); }
 // data de abertura "DD/MM/AAAA, HH:MM" -> número para ordenar
-function _manuTs(m){ const x=String((m&&m.data)||'').match(/([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{2,4})(?:[^0-9]+([0-9]{1,2}):([0-9]{2}))?/); if(!x) return 0; let y=+x[3]; if(y<100) y+=2000; return new Date(y,+x[2]-1,+x[1],+(x[4]||0),+(x[5]||0)).getTime(); }
+// concluída = vale a data de conclusão; aberta = a data de abertura
+function _manuTs(m){ const fonte=(m&&m.concluido&&m.data_conclusao)?m.data_conclusao:(m&&m.data); const x=String(fonte||'').match(/([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{2,4})(?:[^0-9]+([0-9]{1,2}):([0-9]{2}))?/); if(!x) return 0; let y=+x[3]; if(y<100) y+=2000; return new Date(y,+x[2]-1,+x[1],+(x[4]||0),+(x[5]||0)).getTime(); }
 function manuSetFiltro(f){ _manuFiltro=f; renderManutencao(); }
 function manuSetFiltroRobo(v){ _manuFiltroRobo=v; renderManutencao(); }
 function manuSetFiltroPrio(v){ _manuFiltroPrio=v; renderManutencao(); }
