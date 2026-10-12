@@ -1367,6 +1367,64 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .proj-chk input{width:18px;height:18px;accent-color:#3d9eff}
 .proj-reset{background:#1e2530;border:1px solid #2a3342;color:#d8dde6;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
 .proj-reset:hover{border-color:#3d9eff;color:#fff}
+/* Painel — meta do dia e do mês */
+.pn{display:flex;flex-direction:column;gap:14px}
+.pn-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.pn-tit{font-size:24px;font-weight:900;color:#fff;letter-spacing:.03em}
+.pn-sub{font-size:12.5px;color:#7a8698;margin-top:4px}
+.pn-sel{display:flex;gap:10px}
+.pn-heros{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.pn-hero{background:#0f1318;border:1px solid #1e2530;border-radius:14px;padding:16px 18px}
+.pn-hero-t{font-size:12.5px;color:#8a95a8;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:10px}
+.pn-hero-b{display:flex;align-items:center;gap:16px}
+.pn-anel{width:132px;height:132px;flex-shrink:0}
+.pn-lis{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.pn-li{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#8a95a8;border-bottom:1px dashed #1a2029;padding-bottom:4px}
+.pn-li b{color:#e0e6ef;font-weight:800;text-align:right}
+.pn-vazio{font-size:15px;color:#8a95a8;padding:24px 4px;line-height:1.6}
+.pn-vazio b{color:#00e87a}
+.pn-box{background:#0f1318;border:1px solid #1e2530;border-radius:14px;padding:14px 16px}
+.pn-box-t{font-size:12.5px;color:#8a95a8;text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.pn-box-t em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400;color:#5c6676;font-size:11.5px}
+.pn-horas{display:flex;gap:4px;align-items:stretch;overflow-x:auto;padding-bottom:4px}
+.pn-h{flex:1 0 34px;display:flex;flex-direction:column;align-items:center;gap:3px;border-radius:6px;padding:2px 0}
+.pn-h.agora{background:#3d9eff14;outline:1px solid #3d9eff55}
+.pn-h-v{font-size:10.5px;color:#d8dde6;font-weight:700;height:14px}
+.pn-h-bar{position:relative;width:70%;height:110px;background:#151a21;border-radius:4px;overflow:visible}
+.pn-h-bar i{position:absolute;left:0;right:0;bottom:0;border-radius:4px}
+.pn-h-bar b{position:absolute;left:-3px;right:-3px;height:2px;background:#ffb300;box-shadow:0 0 4px #ffb300}
+.pn-h-l{font-size:10px;color:#8a95a8;font-weight:700}
+.pn-h-r{font-size:10px;color:#4a5568}
+.pn-tab{width:100%;border-collapse:collapse;min-width:640px}
+.pn-tab th{font-size:11px;color:#8a95a8;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:8px;border-bottom:1px solid #1e2530;font-weight:800}
+.pn-tab td{padding:8px;border-bottom:1px solid #161b22;font-size:13px;color:#d8dde6;white-space:nowrap}
+.pn-rn{font-size:15px;color:#fff;margin-right:6px}
+.pn-st{font-size:9.5px;font-weight:800;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:5px;padding:1px 5px;text-transform:uppercase}
+.pn-turno{color:#3d9eff}.pn-turno em{color:#5c6676;font-style:normal;font-size:10.5px}
+.pn-bar{display:inline-block;vertical-align:middle;width:70px;height:7px;background:#1e2530;border-radius:99px;overflow:hidden;margin-right:6px}
+.pn-bar i{display:block;height:100%;border-radius:99px}
+.pn-pc{font-weight:800;font-size:12.5px}
+.pn-cal-h,.pn-cal{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.pn-cal-h span{font-size:10.5px;color:#6b7788;text-align:center;font-weight:800;text-transform:uppercase}
+.pn-cal{margin-top:6px}
+.pn-cd{border:1px solid color-mix(in srgb,var(--c) 45%,transparent);background:color-mix(in srgb,var(--c) 10%,#0a0d11);border-radius:8px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;gap:1px}
+.pn-cd span{font-size:11px;color:#8a95a8;font-weight:700}
+.pn-cd b{font-size:15px;color:var(--c);font-weight:900}
+.pn-cd small{font-size:10px;color:#6b7788}
+.pn-cd.fut b{color:#6b7788;font-size:12.5px}
+.pn-cd.hoje{outline:2px solid #3d9eff;outline-offset:1px}
+.pn-cd.clic{cursor:pointer}.pn-cd.clic:hover{filter:brightness(1.25)}
+.pn-cd.folga{border-style:dashed;background:#0a0d11}.pn-cd.folga b{font-size:12px;color:#6b7788}
+.pn-turnos summary{cursor:pointer;list-style:none;margin:0}
+.pn-turnos[open] summary{margin-bottom:12px}
+.pn-tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:8px}
+.pn-tr{display:flex;flex-wrap:wrap;align-items:center;gap:7px;background:#0a0d11;border:1px solid #1e2530;border-radius:8px;padding:7px 9px;font-size:12.5px;color:#8a95a8}
+.pn-tr b{color:#fff;font-size:14px;min-width:30px}
+.pn-tr select{background:#0d1117;border:1px solid #1e2530;color:#e0e6ef;border-radius:6px;padding:4px 6px;min-width:86px}
+.pn-tr label{display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.pn-tr em{margin-left:auto;font-style:normal;font-size:10.5px;color:#5c6676}
+.pn-tbtns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+@media(max-width:560px){.pn-hero-b{flex-direction:column;align-items:stretch}.pn-anel{align-self:center}.pn-heros{grid-template-columns:1fr}.pn-h{flex:0 0 30px}}
 @media(max-width:560px){.fcal-g{gap:3px}.fcal-d{min-height:40px;font-size:11.5px}.fcal-d b{font-size:9px}.fdet-r{grid-template-columns:66px 1fr 44px;row-gap:3px}.fdet-bar{grid-column:1/-1;order:5}.fdet-m{grid-column:1/-1;text-align:left;order:6}.fcal-leg{display:none}}
 </style>
 </head>
@@ -3804,6 +3862,7 @@ const SC = {
 // ── tipo da célula detectado pelo nome ───────
 function getCellTipo(k) {
   if (k === '__maparobos') return 'mapa_robos';
+  if (k === '__painel') return 'painel';
   if (k === '__gerenciar') return 'gerenciar';
   if (!celulas[k]) return 'robo';
   const n = (celulas[k].nome||'').toLowerCase();
@@ -4060,6 +4119,14 @@ function renderSidebar(){
     <div class="cell-info">
       <div class="cell-name">Mapa dos Robôs</div>
       <div class="cell-peca">Chão de fábrica ao vivo</div>
+    </div>
+    <div class="dot dot-green"></div>
+  </div>`;
+  html+=`<div class="cell-item ${selected==='__painel'?'active':''}" onclick="selectCell('__painel')">
+    <div class="cell-num" style="font-size:15px">🎯</div>
+    <div class="cell-info">
+      <div class="cell-name">Painel</div>
+      <div class="cell-peca">Meta do dia e do mês</div>
     </div>
     <div class="dot dot-green"></div>
   </div>`;
@@ -5417,6 +5484,7 @@ function _renderDetailInner(){
     if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
     renderTarefas(); return;
   }
+  if(selected==='__painel'){renderPainel();return;}
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
     if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
@@ -6155,6 +6223,274 @@ function _projDesenha(restanteSim, E){
     area + `<polyline points="${pts(real)}" fill="none" stroke="#00e87a" stroke-width="2.6" stroke-linejoin="round"/>` +
     (P.estado !== 'fechado' ? `<polyline points="${pts(proj)}" fill="none" stroke="#3d9eff" stroke-width="2.4" stroke-dasharray="7 5" stroke-linejoin="round"/><circle cx="${X(nd).toFixed(1)}" cy="${Y(fimSim).toFixed(1)}" r="4.5" fill="#3d9eff"/><text x="${X(nd)-8}" y="${(Y(fimSim) + 16).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="#3d9eff">${_projFmt(fimSim)}</text>` : '') +
     (ultR[0] > 0 ? `<circle cx="${X(ultR[0]).toFixed(1)}" cy="${Y(ultR[1]).toFixed(1)}" r="4" fill="#00e87a"/>` : '');
+}
+
+// ===== PAINEL — meta do dia e do mês =====
+// Meta = só dias úteis (segunda a sexta), horas de 06:00 a 22:00, e cada robô conta só nas horas do turno dele.
+// Turno: definido pelo host em "Turnos dos robôs" ou, se não definido, estimado pelo histórico
+// (horas em que o robô rodou em pelo menos 40% dos últimos 20 dias úteis com produção).
+// Meta da hora segue o site: metaEfetivaHora (meia meta no :30 e às 15:00, sexta sem 14:30, 06/07 desde 12/10/2026).
+let _painelMes = null, _pnTurnosAberto = false, _pnTurnosEdit = null;
+function _pnTodasHoras(){ return [...HORAS_DIA, ...HORAS_NOITE]; }
+function _pnHorasDia(chave){ return [...horasDiaPara(chave), ...HORAS_NOITE]; }
+function _pnIdx(h){ return _pnTodasHoras().indexOf(h); }
+function _pnMetaCel(){ const k = metaApKey(); return k ? celulas[k] : null; }
+function _pnChave(d){ return d.getFullYear()+'_'+d.getMonth()+'_'+d.getDate(); }
+function _pnUtil(d){ const w = d.getDay(); return w >= 1 && w <= 5; }
+function _pnRoboProd(rd){ return !!rd && _pnTodasHoras().some(h => parseCelVal(rd[campoH(h)] || '').num > 0); }
+function _pnTurnosEstimados(md){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const dias = [];
+  for(let i = 1; i <= 90 && dias.length < 20; i++){
+    const d = new Date(hoje); d.setDate(d.getDate()-i); if(!_pnUtil(d)) continue;
+    const dd = md[_pnChave(d)]; if(dd && ROBOS.some(r => _pnRoboProd(dd[r] || dd[String(r)]))) dias.push(dd);
+  }
+  const H = _pnTodasHoras(), out = {};
+  ROBOS.forEach(r => {
+    const idx = [];
+    H.forEach((h, i) => {
+      if(!dias.length) return;
+      const n = dias.filter(dd => { const rd = dd[r] || dd[String(r)]; return rd && parseCelVal(rd[campoH(h)] || '').num > 0; }).length;
+      if(n / dias.length >= 0.4) idx.push(i);
+    });
+    if(!idx.length){ out[r] = null; return; }
+    let ini = H[idx[0]]; const fim = H[idx[idx.length-1]];
+    if(_pnIdx(ini) <= _pnIdx('08:00')) ini = '06:00';   // turno do dia começa às 06:00 desde 12/10/2026
+    out[r] = {ini, fim, est: true};
+  });
+  return out;
+}
+function _pnTurnos(){
+  const mc = _pnMetaCel(); const md = (mc && mc.metas_dias) || {};
+  const est = _pnTurnosEstimados(md), cfg = (mc && mc.turnos_robos) || {};
+  const out = {};
+  ROBOS.forEach(r => { const c = cfg[r] || cfg[String(r)]; out[r] = c ? (c.off ? null : {ini: c.ini, fim: c.fim, est: false}) : est[r]; });
+  return out;
+}
+// meta/h do robô no dia: a lançada no dia ou, se não tiver, a última lançada antes
+function _pnMetaHora(md, r, d){
+  for(let i = 0; i <= 60; i++){
+    const x = new Date(d); x.setDate(x.getDate()-i);
+    const dd = md[_pnChave(x)]; const rd = dd && (dd[r] || dd[String(r)]);
+    const m = rd ? (parseInt(rd.meta) || 0) : 0; if(m > 0) return m;
+  }
+  return 0;
+}
+function _pnDia(md, d, turnos, agora, semMeta){
+  const ch = _pnChave(d), dd = md[ch] || {}, horas = _pnHorasDia(ch);
+  const folga = _pnUtil(d) && !!(semMeta && semMeta[ch]);
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const res = {ch, d, util: _pnUtil(d) && !folga, folga, meta: 0, feito: 0, metaAteAgora: 0, robos: {}, porHora: {}, horas};
+  horas.forEach(h => { res.porHora[h] = {meta: 0, feito: 0, robos: 0}; });
+  ROBOS.forEach(r => {
+    const rd = dd[r] || dd[String(r)] || {};
+    const t = turnos[r]; const mh = _pnMetaHora(md, r, d > hoje ? hoje : d);
+    const rr = {meta: 0, feito: 0, metaAteAgora: 0, horas: 0, mh};
+    _pnTodasHoras().forEach(h => { rr.feito += parseCelVal(rd[campoH(h)] || '').num; });   // produzido: todas as horas lançadas
+    horas.forEach(h => {
+      const v = parseCelVal(rd[campoH(h)] || '').num; res.porHora[h].feito += v;
+      const roda = res.util && t && _pnIdx(h) >= _pnIdx(t.ini) && _pnIdx(h) <= _pnIdx(t.fim);
+      if(roda && mh > 0){
+        const m = metaEfetivaHora(h, mh, ch); rr.meta += m; rr.horas++; res.porHora[h].meta += m; res.porHora[h].robos++;
+        if(agora && _horaVenceu(h, agora)) rr.metaAteAgora += m;
+      }
+    });
+    res.meta += rr.meta; res.feito += rr.feito; res.metaAteAgora += rr.metaAteAgora; res.robos[r] = rr;
+  });
+  return res;
+}
+function _pnMes(ano, mes){
+  const mc = _pnMetaCel(); const md = (mc && mc.metas_dias) || {};
+  const turnos = _pnTurnos(); const agora = new Date(); const semMeta = (mc && mc.dias_sem_meta) || {};
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const nd = new Date(ano, mes+1, 0).getDate(), dias = [];
+  for(let i = 1; i <= nd; i++){ const d = new Date(ano, mes, i); dias.push(_pnDia(md, d, turnos, d.getTime() === hoje.getTime() ? agora : null, semMeta)); }
+  const uteis = dias.filter(x => x.util);
+  const meta = uteis.reduce((s, x) => s + x.meta, 0);
+  const feito = dias.reduce((s, x) => s + x.feito, 0);
+  const feitoFds = dias.filter(x => !x.util).reduce((s, x) => s + x.feito, 0);
+  const passados = uteis.filter(x => x.d < hoje);
+  const hojeD = dias.find(x => x.d.getTime() === hoje.getTime()) || null;
+  const metaAteHoje = passados.reduce((s, x) => s + x.meta, 0) + (hojeD && hojeD.util ? hojeD.metaAteAgora : 0);
+  const fechados = passados.filter(x => x.feito > 0);
+  const mediaDia = fechados.length ? Math.round(fechados.reduce((s, x) => s + x.feito, 0) / fechados.length) : 0;
+  const restantes = uteis.filter(x => x.d > hoje || (x.d.getTime() === hoje.getTime() && x.feito === 0)).length;
+  const projecao = feito + mediaDia * restantes;
+  return {ano, mes, nd, dias, uteis, meta, feito, feitoFds, metaAteHoje, mediaDia, restantes, projecao, hojeD, turnos, agora};
+}
+function _pnPct(a, b){ return b > 0 ? Math.round(a / b * 100) : null; }
+function _pnCor(p){ return p == null ? '#8a95a8' : p >= 100 ? '#00e87a' : p >= 85 ? '#ffb300' : '#ff4d4d'; }
+function _pnAnel(p, cor){
+  const r = 52, c = 2 * Math.PI * r, v = Math.max(0, Math.min(p || 0, 100));
+  return `<svg viewBox="0 0 130 130" class="pn-anel"><circle cx="65" cy="65" r="${r}" stroke="#1e2530" stroke-width="12" fill="none"/>`
+    + `<circle cx="65" cy="65" r="${r}" stroke="${cor}" stroke-width="12" fill="none" stroke-linecap="${v >= 1 ? 'round' : 'butt'}" stroke-dasharray="${(c*v/100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 65 65)"/>`
+    + `<text x="65" y="74" text-anchor="middle" font-size="27" font-weight="900" fill="${cor}">${p == null ? '—' : p + '%'}</text></svg>`;
+}
+function _pnLinha(rot, val, cor){ return `<div class="pn-li"><span>${rot}</span><b${cor ? ` style="color:${cor}"` : ''}>${val}</b></div>`; }
+function _pnSaldo(feito, meta){
+  const s = feito - meta;
+  return s >= 0 ? {txt: '+' + _projFmt(s) + ' adiantado', cor: '#00e87a'} : {txt: _projFmt(s) + ' atrasado', cor: '#ff4d4d'};
+}
+function _pnSetMes(campo, v){ const h = new Date(); const atual = _painelMes || {ano: h.getFullYear(), mes: h.getMonth()}; _painelMes = {...atual, [campo]: +v}; renderPainel(); }
+function renderPainel(){
+  const mp = document.getElementById('mainPanel'); if(!mp) return;
+  const h0 = new Date();
+  const ano = _painelMes ? _painelMes.ano : h0.getFullYear(), mes = _painelMes ? _painelMes.mes : h0.getMonth();
+  const M = _pnMes(ano, mes), F = _projFmt;
+  const atual = ano === h0.getFullYear() && mes === h0.getMonth();
+  const D = atual ? M.hojeD : null;
+  const mesesOpts = MESES.map((m, i) => `<option value="${i}" ${i === mes ? 'selected' : ''}>${m}</option>`).join('');
+  const anosOpts = [h0.getFullYear()-1, h0.getFullYear(), h0.getFullYear()+1].map(a => `<option value="${a}" ${a === ano ? 'selected' : ''}>${a}</option>`).join('');
+
+  // ── Meta do dia ──
+  let cardDia = '';
+  if(D){
+    if(!D.util){
+      cardDia = `<div class="pn-hero"><div class="pn-hero-t">☀ Meta do dia · ${String(D.d.getDate()).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</div>
+        <div class="pn-vazio">${D.folga ? 'Dia marcado sem expediente (feriado/folga) — sem meta.' : 'Fim de semana — sem meta.'}${D.feito ? `<br>Produzido hoje: <b>${F(D.feito)}</b> peças (conta como extra no mês).` : ''}</div></div>`;
+    } else {
+      const p = _pnPct(D.feito, D.meta), cor = _pnCor(p);
+      const sd = _pnSaldo(D.feito, D.metaAteAgora);
+      const restH = D.horas.filter(h => D.porHora[h].meta > 0 && !_horaVenceu(h, M.agora));
+      const falta = Math.max(0, D.meta - D.feito);
+      const robosHoje = ROBOS.filter(r => D.robos[r].meta > 0).length;
+      cardDia = `<div class="pn-hero"><div class="pn-hero-t">☀ Meta do dia · hoje ${String(D.d.getDate()).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</div>
+        <div class="pn-hero-b">${_pnAnel(p, cor)}<div class="pn-lis">
+          ${_pnLinha('Meta do dia', F(D.meta) + ' pç')}
+          ${_pnLinha('Produzido', F(D.feito) + ' pç', cor)}
+          ${_pnLinha('Falta', F(falta) + ' pç')}
+          ${_pnLinha('Até agora (horas fechadas)', 'meta ' + F(D.metaAteAgora) + ' · ' + sd.txt, sd.cor)}
+          ${_pnLinha('Ritmo necessário', falta > 0 && restH.length ? F(Math.ceil(falta / restH.length)) + ' pç/h nas ' + restH.length + ' h que faltam' : (falta > 0 ? 'turno encerrado' : '✅ meta batida'))}
+          ${_pnLinha('Robôs no cálculo', robosHoje + ' de ' + ROBOS.length)}
+        </div></div></div>`;
+    }
+  }
+  // ── Meta do mês ──
+  const pM = _pnPct(M.feito, M.meta), corM = _pnCor(pM);
+  const sdM = _pnSaldo(M.feito, M.metaAteHoje);
+  const faltaM = Math.max(0, M.meta - M.feito);
+  const pProj = _pnPct(M.projecao, M.meta);
+  const cardMes = `<div class="pn-hero"><div class="pn-hero-t">📅 Meta do mês · ${MESES[mes]} ${ano} · ${M.uteis.length} dias úteis</div>
+    <div class="pn-hero-b">${_pnAnel(pM, corM)}<div class="pn-lis">
+      ${_pnLinha('Meta do mês', F(M.meta) + ' pç')}
+      ${_pnLinha('Produzido', F(M.feito) + ' pç' + (M.feitoFds ? ' (' + F(M.feitoFds) + ' em fim de semana)' : ''), corM)}
+      ${_pnLinha('Falta', F(faltaM) + ' pç')}
+      ${atual ? _pnLinha('Meta até agora', F(M.metaAteHoje) + ' · ' + sdM.txt, sdM.cor) : ''}
+      ${atual || M.restantes ? _pnLinha('Projeção', F(M.projecao) + ' pç' + (pProj != null ? ' (' + pProj + '% da meta)' : ''), _pnCor(pProj)) : ''}
+      ${M.restantes ? _pnLinha('Precisa por dia', faltaM > 0 ? F(Math.ceil(faltaM / M.restantes)) + ' pç/dia nos ' + M.restantes + ' dias úteis que faltam (média atual ' + F(M.mediaDia) + ')' : '✅ meta batida') : ''}
+    </div></div></div>`;
+
+  // ── Hoje hora a hora ──
+  let horasHTML = '';
+  if(D && D.util){
+    const agoraH = (typeof _dashGetHoraCheia === 'function') ? _dashGetHoraCheia() : '';
+    const mx = Math.max(1, ...D.horas.map(h => Math.max(D.porHora[h].meta, D.porHora[h].feito)));
+    horasHTML = `<div class="pn-box"><div class="pn-box-t">⏱ Hoje hora a hora <em>barra = produzido · traço = meta da hora · número de baixo = robôs no turno</em></div>
+      <div class="pn-horas">${D.horas.map(h => {
+        const o = D.porHora[h], venc = _horaVenceu(h, M.agora);
+        const cor = o.feito === 0 ? '#2a3342' : (o.meta > 0 && o.feito >= o.meta ? '#00e87a' : (venc ? '#ff4d4d' : '#3d9eff'));
+        return `<div class="pn-h${h === agoraH ? ' agora' : ''}" title="${h} — produzido ${F(o.feito)} / meta ${F(o.meta)} (${o.robos} robôs no turno)">
+          <div class="pn-h-v">${o.feito ? F(o.feito) : ''}</div>
+          <div class="pn-h-bar"><i style="height:${(o.feito / mx * 100).toFixed(1)}%;background:${cor}"></i>${o.meta ? `<b style="bottom:${(o.meta / mx * 100).toFixed(1)}%"></b>` : ''}</div>
+          <div class="pn-h-l">${h}</div><div class="pn-h-r">${o.robos || '–'}</div></div>`;
+      }).join('')}</div></div>`;
+  }
+
+  // ── Robôs ──
+  const linhasRob = ROBOS.map(r => {
+    const t = M.turnos[r];
+    const mesMeta = M.uteis.reduce((s, x) => s + x.robos[r].meta, 0), mesFeito = M.dias.reduce((s, x) => s + x.robos[r].feito, 0);
+    const pm = _pnPct(mesFeito, mesMeta);
+    const hr = D ? D.robos[r] : null; const ph = hr ? _pnPct(hr.feito, hr.meta) : null;
+    const c = celulas[String(r)] || {}; const st = c.status || '—'; const stc = (SC[st] && SC[st].text) || '#6b7788';
+    const barra = (p) => `<div class="pn-bar"><i style="width:${Math.min(p || 0, 100)}%;background:${_pnCor(p)}"></i></div>`;
+    return `<tr>
+      <td><b class="pn-rn">${r}</b><span class="pn-st" style="--c:${stc}">${esc(st)}</span></td>
+      <td class="pn-turno">${t ? t.ini + '–' + t.fim + (t.est ? ' <em>est.</em>' : '') : '<span style="color:#4a5568">não roda</span>'}</td>
+      <td>${hr ? (hr.mh || '—') : '—'}</td>
+      ${D ? `<td>${F(hr.meta)}</td><td style="color:${_pnCor(ph)};font-weight:800">${F(hr.feito)}</td><td>${barra(ph)}<span class="pn-pc" style="color:${_pnCor(ph)}">${ph == null ? '—' : ph + '%'}</span></td>` : ''}
+      <td>${F(mesMeta)}</td><td style="color:${_pnCor(pm)};font-weight:800">${F(mesFeito)}</td><td>${barra(pm)}<span class="pn-pc" style="color:${_pnCor(pm)}">${pm == null ? '—' : pm + '%'}</span></td>
+    </tr>`;
+  }).join('');
+  const tabRob = `<div class="pn-box"><div class="pn-box-t">🤖 Robôs <em>turno estimado (est.) pelo histórico ou definido pelo host</em></div>
+    <div style="overflow-x:auto"><table class="pn-tab"><thead><tr><th>Robô</th><th>Turno</th><th>Meta/h</th>
+      ${D ? '<th>Meta hoje</th><th>Feito hoje</th><th>Hoje</th>' : ''}<th>Meta mês</th><th>Feito mês</th><th>Mês</th></tr></thead><tbody>${linhasRob}</tbody></table></div></div>`;
+
+  // ── Calendário dos dias úteis ──
+  const hoje0 = new Date(); hoje0.setHours(0,0,0,0);
+  const ini = new Date(ano, mes, 1); let cal = '';
+  const off0 = (ini.getDay() + 6) % 7, off = off0 >= 5 ? 0 : off0;  // segunda = 0; mês que começa no fim de semana não desloca
+  for(let i = 0; i < off; i++) cal += '<div></div>';
+  const podeFolga = isAdmin || isAdminMetas;
+  M.dias.forEach(x => {
+    if(!_pnUtil(x.d)) return;
+    const p = _pnPct(x.feito, x.meta), fut = x.d > hoje0, eHoje = x.d.getTime() === hoje0.getTime();
+    const clique = podeFolga ? ` onclick="_pnToggleFolga('${x.ch}')"` : '';
+    const dica = podeFolga ? ' · clique para ' + (x.folga ? 'voltar a ter meta' : 'marcar sem expediente') : '';
+    if(x.folga){ cal += `<div class="pn-cd folga${eHoje ? ' hoje' : ''}${podeFolga ? ' clic' : ''}" style="--c:#5c6676"${clique} title="sem expediente${dica}"><span>${x.d.getDate()}</span><b>folga</b><small>${x.feito ? F(x.feito) : 'sem meta'}</small></div>`; return; }
+    cal += `<div class="pn-cd${fut ? ' fut' : ''}${eHoje ? ' hoje' : ''}${podeFolga ? ' clic' : ''}" style="--c:${fut ? '#2a3342' : _pnCor(p)}"${clique} title="${String(x.d.getDate()).padStart(2,'0')}/${String(mes+1).padStart(2,'0')} — feito ${F(x.feito)} / meta ${F(x.meta)}${dica}">
+      <span>${x.d.getDate()}</span><b>${fut ? F(x.meta) : (p == null ? '—' : p + '%')}</b><small>${fut ? 'meta' : F(x.feito)}</small></div>`;
+  });
+  const calHTML = `<div class="pn-box"><div class="pn-box-t">🗓 Dias úteis do mês <em>% da meta de cada dia · futuros mostram a meta prevista${(isAdmin || isAdminMetas) ? ' · clique num dia para marcar feriado/folga' : ''}</em></div>
+    <div class="pn-cal-h"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span></div><div class="pn-cal">${cal}</div></div>`;
+
+  // ── Turnos (host) ──
+  let turnosHTML = '';
+  if(isAdmin || isAdminMetas){
+    const mc = _pnMetaCel(); const cfg = (mc && mc.turnos_robos) || {};
+    const est = _pnTurnosEstimados((mc && mc.metas_dias) || {});
+    const opts = sel => _pnTodasHoras().map(h => `<option ${h === sel ? 'selected' : ''}>${h}</option>`).join('');
+    turnosHTML = `<details class="pn-box pn-turnos" ${_pnTurnosAberto ? 'open' : ''} ontoggle="_pnTurnosAberto=this.open">
+      <summary class="pn-box-t">⚙ Turnos dos robôs <em>em que horário cada robô roda — entra no cálculo da meta</em></summary>
+      <div class="pn-tg">${ROBOS.map(r => {
+        const c = cfg[r] || cfg[String(r)]; const e = est[r];
+        const v = c ? c : (e ? {ini: e.ini, fim: e.fim} : {ini: '06:00', fim: '17:00'});
+        return `<div class="pn-tr" data-r="${r}"><b>${r}</b>
+          <select class="pn-ti">${opts(v.ini || '06:00')}</select><span>às</span><select class="pn-tf">${opts(v.fim || '17:00')}</select>
+          <label><input type="checkbox" class="pn-to" ${(c && c.off) || (!c && !e) ? 'checked' : ''}> não roda</label>
+          <em>${c ? 'definido' : (e ? 'estimado' : 'sem histórico')}</em></div>`;
+      }).join('')}</div>
+      <div class="pn-tbtns"><button type="button" class="btn btn-green" onclick="_pnSalvarTurnos()">💾 Salvar turnos</button>
+        <button type="button" class="btn btn-gray" onclick="_pnLimparTurnos()">↺ Voltar todos ao estimado</button></div>
+    </details>`;
+  }
+
+  mp.innerHTML = `<div class="pn">
+    <div class="pn-top"><div><div class="pn-tit">🎯 Painel</div><div class="pn-sub">Meta de segunda a sexta, das 06:00 às 22:00, só nas horas em que cada robô roda</div></div>
+      <div class="pn-sel"><div class="date-sel"><label>Mês</label><select onchange="_pnSetMes('mes',this.value)">${mesesOpts}</select></div>
+      <div class="date-sel"><label>Ano</label><select onchange="_pnSetMes('ano',this.value)">${anosOpts}</select></div></div></div>
+    <div class="pn-heros">${cardDia}${cardMes}</div>
+    ${horasHTML}${tabRob}${calHTML}${turnosHTML}
+  </div>`;
+}
+function _pnSalvarTurnos(){
+  if(!(isAdmin || isAdminMetas)) return;
+  const k = metaApKey(); if(!k) return;
+  const novo = {}; let erro = '';
+  document.querySelectorAll('.pn-tr').forEach(el => {
+    const r = el.getAttribute('data-r'); const ini = el.querySelector('.pn-ti').value, fim = el.querySelector('.pn-tf').value, off = el.querySelector('.pn-to').checked;
+    if(!off && _pnIdx(fim) < _pnIdx(ini)) erro = 'Robô ' + r + ': o fim do turno está antes do início';
+    novo[r] = off ? {off: true} : {ini, fim};
+  });
+  if(erro){ showToast(erro, true); return; }
+  celulas[k].turnos_robos = novo; lastUserAction = Date.now();
+  saveToAPI(celulas); showToast('Turnos salvos ✓ — meta recalculada'); renderPainel();
+}
+function _pnToggleFolga(ch){
+  if(!(isAdmin || isAdminMetas)) return;
+  const k = metaApKey(); if(!k) return;
+  const sm = celulas[k].dias_sem_meta || (celulas[k].dias_sem_meta = {});
+  const p = ch.split('_').map(Number), dt = String(p[2]).padStart(2,'0') + '/' + String(p[1]+1).padStart(2,'0');
+  if(sm[ch]){ if(!confirm('Voltar a ter meta no dia ' + dt + '?')) return; delete sm[ch]; }
+  else { if(!confirm('Marcar ' + dt + ' como sem expediente (feriado/folga)? A meta desse dia sai do cálculo.')) return; sm[ch] = true; }
+  lastUserAction = Date.now(); saveToAPI(celulas); showToast(sm[ch] ? dt + ' sem expediente ✓' : dt + ' voltou a ter meta ✓'); renderPainel();
+}
+function _pnLimparTurnos(){
+  if(!(isAdmin || isAdminMetas)) return;
+  const k = metaApKey(); if(!k) return;
+  if(!confirm('Voltar todos os robôs ao turno estimado pelo histórico?')) return;
+  delete celulas[k].turnos_robos; lastUserAction = Date.now();
+  saveToAPI(celulas); showToast('Turnos voltaram ao estimado'); renderPainel();
 }
 
 function renderRelatorio(){
