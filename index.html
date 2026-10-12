@@ -1908,7 +1908,10 @@ let _compRenderSig = "";                // assinatura do que está renderizado (
 let _compLastLoad = 0;                  // timestamp da última leitura dos dados de componentes (para revalidar antes de descontar)
 
 const ROBOS = [600,601,602,603,604,605,606,607,608,609,610,611];
-const HORAS_DIA   = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
+// 06:00 e 07:00 entraram em 12/10/2026 (meta cheia, todos os dias). Dias anteriores continuam começando às 08:00.
+const HORAS_CEDO  = ["06:00","07:00"];
+const HORAS_CEDO_DESDE = new Date(2026, 9, 12); // 12/10/2026
+const HORAS_DIA   = [...HORAS_CEDO,"08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 // Horários que devem contar meia meta (:30 naturalmente + horas especiais com produção reduzida)
 const HORAS_MEIA_META = ["15:00"];
 // Sextas-feiras A PARTIR desta data não têm o horário 14:30 (turno encerra às 14:00).
@@ -1919,10 +1922,16 @@ function _ehSextaSem1430(ano, mes, dia){
   return d.getDay() === 5 && d.getTime() >= SEXTA_SEM_1430_DESDE.getTime();
 }
 // Horas do turno dia para uma data específica (chave "ano_mes_dia"): remove 14:30 nas sextas a partir do corte
+// e tira 06:00/07:00 dos dias antes de HORAS_CEDO_DESDE
 function horasDiaPara(chave){
   if(typeof chave === 'string'){
     const p = chave.split('_').map(Number);
-    if(p.length === 3 && !p.some(isNaN) && _ehSextaSem1430(p[0], p[1], p[2])) return HORAS_DIA.filter(h => h !== '14:30');
+    if(p.length === 3 && !p.some(isNaN)){
+      let hs = HORAS_DIA;
+      if(new Date(p[0], p[1], p[2]).getTime() < HORAS_CEDO_DESDE.getTime()) hs = hs.filter(h => !HORAS_CEDO.includes(h));
+      if(_ehSextaSem1430(p[0], p[1], p[2])) hs = hs.filter(h => h !== '14:30');
+      return hs;
+    }
   }
   return HORAS_DIA;
 }
@@ -4814,7 +4823,7 @@ function renderMetasDiaria(){
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <span style="font-size:15px">☀</span>
-        <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — 08:00 às 17:00</span>
+        <span style="font-size:12px;font-weight:800;color:#ffb300;letter-spacing:0.1em;text-transform:uppercase">Turno Dia — ${horasDiaPara(chave)[0]} às 17:00</span>
       </div>
       ${buildTurnoTable(c,'dia',chave)}
       <div class="metas-carousel" id="carDia">
@@ -18618,7 +18627,7 @@ async function _relSalvarDados(){
 //   (b) celulas[<meta_key>].metas_dias — robôs 600-611 das Células Robóticas
 // Um código de peça pode ser apontado em qualquer uma (ou nas duas — são fisicamente diferentes, não há dupla contagem)
 function _relCalcular(codigoPeca, chaves){
-  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const HORAS = [...HORAS_DIA, ...HORAS_NOITE]; // inclui 06:00/07:00 dos robôs (o mapa não tem, fica 0)
   const cod = String(codigoPeca||'').trim().toUpperCase();
   if(!cod) return null;
   let totalPecas = 0;
@@ -19267,7 +19276,7 @@ function _relHeatmapHTML(r){
 
 // ── Chart por hora ──
 function _relChartHoraHTML(r){
-  const HORAS = [...MAPA_HORAS_DIA, ...HORAS_NOITE];
+  const HORAS = [...HORAS_DIA, ...HORAS_NOITE];
   const dados = HORAS.map(h => ({h, v: r.porHora[h]||0})).filter(d => d.v > 0);
   if(!dados.length) return '<div class="rel-hist-empty">Sem produção horária registrada</div>';
   const max = Math.max(...dados.map(d=>d.v), 1);
