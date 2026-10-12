@@ -1436,129 +1436,33 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .pn-tr em{margin-left:auto;font-style:normal;font-size:10.5px;color:#5c6676}
 .pn-tbtns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 @media(max-width:560px){.pn-hero-b{flex-direction:column;align-items:stretch}.pn-anel{align-self:center}.pn-heros{grid-template-columns:1fr}.pn-h{flex:0 0 30px}}
-/* ===== Painel ao vivo (quem não é host) — estilo dashboard Cromo Azul ===== */
-.ptv{--nc:#00f0ff;--nm:#ff2bd6;--ny:#f9f871;--ok:#00ffae;--mut:#7d8bb0;position:relative;display:flex;flex-direction:column;color:#eaf2ff;overflow:hidden;
-  background-color:#05060d;
-  background-image:radial-gradient(1100px 560px at 82% -8%,rgba(255,43,214,.10),transparent 60%),radial-gradient(950px 520px at -5% 108%,rgba(0,240,255,.11),transparent 55%),linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
-  background-size:100% 100%,100% 100%,44px 44px,44px 44px}
-.ptv::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.13) 2px 3px)}
-.ptv:fullscreen{margin:0!important;height:100vh!important;min-height:100vh!important}
-.ptv-head{display:flex;align-items:center;gap:14px;padding:12px 22px;border-bottom:1px solid rgba(0,240,255,.18);background:rgba(8,10,20,.75);flex-shrink:0;position:relative;z-index:2}
-.ptv-h1{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(16px,2.1vw,30px);letter-spacing:.2em;background:linear-gradient(90deg,#00f0ff,#ff2bd6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
-.ptv-date{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.2vw,16px);color:var(--mut);letter-spacing:.1em;margin-top:3px}
-.ptv-clock{margin-left:auto;font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(28px,6vw,96px);color:var(--nc);letter-spacing:.14em;line-height:1;text-shadow:0 0 24px rgba(0,240,255,.75),0 0 6px rgba(0,240,255,.9);white-space:nowrap}
-.ptv-fs{background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.35);color:var(--nc);width:38px;height:38px;font-size:19px;cursor:pointer;flex-shrink:0;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
-.ptv-fs:hover{background:rgba(0,240,255,.16)}
-.ptv-main{flex:1;min-height:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.ptv-fit{display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,80px);transform-origin:center center;flex-shrink:0;position:relative}
-.ptv-geral>.ptv-fit{display:block;width:max-content;min-width:100%}
-.ptv-load{font-family:'Share Tech Mono',monospace;letter-spacing:.2em;color:var(--mut)}
-.ptv-robo{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,80px);padding:16px 30px;position:relative;box-sizing:border-box}
-.ptv-robo::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--cor) 9%,transparent),transparent 65%);pointer-events:none}
-.ptv-sweep{position:absolute;left:0;right:0;top:0;height:100%;pointer-events:none;opacity:.35;background:linear-gradient(90deg,transparent,var(--cor),transparent) no-repeat 0 0/100% 2px;animation:ptvSweep 5s linear infinite;will-change:transform}
-@keyframes ptvSweep{from{transform:translateY(0)}to{transform:translateY(100%)}}
-.ptv-svg{position:relative;flex-shrink:0}
-.ptv-svg::before{content:"";position:absolute;left:-16%;right:-16%;top:-16%;bottom:-16%;background:radial-gradient(closest-side,var(--cor),transparent);opacity:.16;animation:ptvHalo 2.2s ease-in-out infinite alternate;pointer-events:none}
-@keyframes ptvHalo{to{opacity:.34}}
-.ptv-svg svg{width:clamp(200px,28vw,430px);height:auto;position:relative;display:block}
-.ptv-info{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(6px,1.4vh,16px);text-align:center;position:relative;max-width:640px}
-.ptv-rn{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(24px,4.6vh,54px);color:#fff;letter-spacing:.06em;animation:ptvGlitchTxt 6s infinite}
-@keyframes ptvGlitchTxt{0%,93%,100%{text-shadow:0 0 18px color-mix(in srgb,var(--cor) 60%,transparent)}94%{text-shadow:3px 0 0 #ff2bd6,-3px 0 0 #00f0ff}96%{text-shadow:-3px 0 0 #ff2bd6,3px 0 0 #00f0ff}98%{text-shadow:2px 0 0 #00f0ff,-2px 0 0 #ff2bd6}}
-.ptv-nome{font-family:'Share Tech Mono',monospace;font-size:clamp(13px,1.6vw,18px);color:var(--mut);letter-spacing:.14em;text-transform:uppercase}
-.ptv-cod{font-family:'Orbitron',sans-serif;font-size:clamp(16px,2.4vw,30px);color:var(--ny);font-weight:700;text-shadow:0 0 10px rgba(249,248,113,.5);margin-top:4px}
-.ptv-box{border:1px solid color-mix(in srgb,var(--cor) 45%,transparent);background:rgba(10,14,28,.7);padding:clamp(10px,2.4vh,32px) clamp(20px,5vw,80px);clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--cor) 20%,transparent)}
-.ptv-prod-h{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.6vw,22px);letter-spacing:.2em;color:var(--mut)}
-.ptv-prod-n{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(48px,14vh,170px);line-height:1;color:var(--cor);text-shadow:0 0 30px color-mix(in srgb,var(--cor) 70%,transparent);animation:ptvPop .55s cubic-bezier(.16,1,.3,1)}
-@keyframes ptvPop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
-.ptv-mt{font-family:'Share Tech Mono',monospace;font-size:clamp(12px,1.6vw,22px);color:var(--mut);letter-spacing:.1em;margin-top:8px}
-.ptv-mt b{color:var(--cor)} .ptv-mt.fail{color:#ff6a00;font-weight:700}
-.ptv-pct-wrap{position:relative;display:inline-block;padding:16px 40px}
-.ptv-spin{position:absolute;left:50%;top:50%;width:100%;padding-top:100%;transform:translate(-50%,-50%) scaleY(.52);pointer-events:none}
-.ptv-spin i{position:absolute;inset:0;border-radius:50%;border:2px dashed var(--cor);opacity:.5;animation:ptvGira 7s linear infinite;will-change:transform}
-.ptv-spin i+i{inset:9%;opacity:.28;border-style:dotted;animation-duration:10s;animation-direction:reverse}
-@keyframes ptvGira{to{transform:rotate(360deg)}}
-.ptv-pct{position:relative;font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(38px,10vh,130px);line-height:1;color:var(--cor);text-shadow:0 0 24px color-mix(in srgb,var(--cor) 60%,transparent)}
-.ptv-eff-l{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.5vw,20px);letter-spacing:.2em;color:var(--mut);margin-top:6px}
-.ptv-bar{width:min(520px,70vw);margin:12px auto 0;height:14px;background:#111a2e;border:1px solid rgba(255,255,255,.06);overflow:hidden}
-.ptv-bar i{display:block;height:100%;width:100%;background:var(--cor);transform-origin:left;box-shadow:0 0 14px var(--cor);transition:transform .4s}
-.ptv-dots{display:flex;gap:6px;justify-content:center;margin-top:6px;flex-wrap:wrap}
-.ptv-dots i{width:6px;height:6px;border-radius:99px;background:#1a2540;display:block;transition:all .3s}
-.ptv-dots i.on{width:22px;background:var(--nc);box-shadow:0 0 10px var(--nc)}
-.ptv-dots i.on.g{background:var(--ny);box-shadow:0 0 10px var(--ny)}
-.ptv-geral{width:100%;height:100%;padding:14px 20px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:center}
-.ptv-geral-t{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.2em;color:var(--mut);text-align:center;margin-bottom:10px}
-.ptv-geral-t b{color:var(--ny)}
-.ptv-tbl-w{overflow-x:auto;max-width:100%}
-.ptv-tbl{width:100%;border-collapse:collapse;background:rgba(10,14,28,.7);border:1px solid rgba(0,240,255,.18)}
-.ptv-tbl th{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1vw,17px);letter-spacing:.06em;color:var(--mut);padding:8px 5px;border-bottom:1px solid rgba(0,240,255,.15);white-space:nowrap;text-align:center}
-.ptv-tbl th.at{color:var(--ny);border-bottom:2px solid var(--ny)}
-.ptv-tbl th.mt{color:var(--nc)} .ptv-tbl th.tt{color:var(--ok);border-left:2px solid rgba(0,255,174,.25)}
-.ptv-tbl td{padding:6px 5px;text-align:center;font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(11px,1.15vw,21px);border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
-.ptv-tbl td.at{font-size:clamp(13px,1.45vw,26px)}
-.ptv-tbl td.rn{color:#fff;text-align:left;padding-left:12px} .ptv-tbl td.cd{color:var(--ny);text-align:left}
-.ptv-tbl td.mt{color:var(--nc);text-shadow:0 0 10px rgba(0,240,255,.5)} .ptv-tbl td.tt{color:var(--ok);border-left:2px solid rgba(0,255,174,.25)}
-.ptv-tbl tfoot td{border-top:2px solid rgba(0,240,255,.2);color:#fff}
-.ptv-tbl tfoot td:first-child{text-align:left;font-family:'Share Tech Mono',monospace;letter-spacing:.12em;font-size:clamp(11px,1.1vw,17px)}
-.ptv-foot{flex-shrink:0;background:rgba(6,8,16,.85);border-top:1px solid rgba(0,240,255,.2);padding:10px 16px;position:relative;z-index:2}
-.ptv-foot-t{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase;margin-bottom:8px}
-.ptv-horas{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
-.ptv-hc{flex:1 0 auto;min-width:58px;text-align:center;padding:7px 6px;background:rgba(10,14,28,.7);border:1px solid rgba(255,255,255,.07);--cor:#4a5a7a}
-.ptv-hc.at{border-color:var(--cor);background:color-mix(in srgb,var(--cor) 10%,transparent);box-shadow:0 0 16px -6px var(--cor)}
-.ptv-hc .hl{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--mut);margin-bottom:3px;white-space:nowrap}
-.ptv-hc.at .hl{color:var(--cor)}
-.ptv-hc .hv{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(16px,1.7vw,30px);color:var(--cor);text-shadow:0 0 12px color-mix(in srgb,var(--cor) 55%,transparent);white-space:nowrap}
-.ptv-hc.tot{flex:1.6 0 auto;border-color:rgba(249,248,113,.5);background:rgba(249,248,113,.08);--cor:#f9f871}
-/* glitch de TV na troca de slide (só transform/opacity + sombra nos textos) */
-.ptv-main.gl{animation:ptvShake .28s steps(5)}
-.ptv-main.gl .ptv-rn,.ptv-main.gl .ptv-prod-n,.ptv-main.gl .ptv-pct,.ptv-main.gl .ptv-cod,.ptv-main.gl .ptv-geral-t,.ptv-main.gl .ptv-tbl{animation:ptvRgb .28s steps(4)}
-@keyframes ptvShake{0%,100%{transform:translate(0,0)}18%{transform:translate(-7px,3px)}34%{transform:translate(6px,-4px)}52%{transform:translate(-4px,-2px)}70%{transform:translate(3px,4px)}86%{transform:translate(-2px,1px)}}
-@keyframes ptvRgb{25%{text-shadow:3px 0 #ff2bd6,-3px 0 #00f0ff}50%{text-shadow:-4px 0 #ff2bd6,4px 0 #00f0ff}75%{text-shadow:2px 0 #00f0ff,-2px 0 #ff2bd6}}
-.ptv-static{position:absolute;left:-80px;right:-80px;top:-80px;bottom:-80px;z-index:60;pointer-events:none;opacity:0;background-image:var(--ptv-ruido,none);background-size:256px 256px}
-.ptv-static.on{animation:ptvRuido .3s steps(6)}
-@keyframes ptvRuido{0%{opacity:.55;transform:translate(0,0)}25%{opacity:.8;transform:translate(-44px,24px)}50%{opacity:.35;transform:translate(32px,-36px)}75%{opacity:.65;transform:translate(-24px,42px)}100%{opacity:0;transform:translate(0,0)}}
-/* robô R-2000iB com pinça de solda a ponto */
-.ptr-arm1{transform-origin:82px 168px;animation:ptrArm1 2.8s ease-in-out infinite}
-.ptr-arm2{transform-origin:112px 72px;animation:ptrArm2 1.9s ease-in-out infinite}
-.ptr-gun{transform-origin:200px 58px;animation:ptrGun 1.9s ease-in-out infinite}
-.ptr-pinca{transform-origin:210px 140px;animation:ptrPinca 1.2s ease-in-out infinite}
-.ptr-spark{transform-origin:193px 184px;animation:ptrSpark 1.2s ease-in-out infinite}
-.ptr-weldglow{transform-origin:193px 184px;animation:ptrGlow 1.2s ease-in-out infinite}
-.ptr-led{animation:ptrLed 1.4s ease-in-out infinite}
-.ptr-halo{transform-origin:82px 175px;animation:ptrHaloG 14s linear infinite}
-@keyframes ptrArm1{0%,100%{transform:rotate(2.5deg)}50%{transform:rotate(-2.5deg)}}
-@keyframes ptrArm2{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3.5deg)}}
-@keyframes ptrGun{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-2deg)}}
-@keyframes ptrPinca{0%,35%{transform:rotate(-14deg)}45%,80%{transform:rotate(0deg)}100%{transform:rotate(-14deg)}}
-@keyframes ptrSpark{0%,44%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1.15) rotate(-10deg)}58%{opacity:.5;transform:scale(.7) rotate(20deg)}66%{opacity:1;transform:scale(1) rotate(-25deg)}80%,100%{opacity:0;transform:scale(.3)}}
-@keyframes ptrGlow{0%,44%{opacity:.1;transform:scale(.6)}55%{opacity:.9;transform:scale(1.4)}80%,100%{opacity:.1;transform:scale(.6)}}
-@keyframes ptrLed{0%,100%{opacity:1}50%{opacity:.2}}
-@keyframes ptrHaloG{to{transform:rotate(360deg)}}
-@media(max-width:760px){
-  .ptv-head{padding:10px 12px;gap:6px 10px;flex-wrap:wrap}
-  .ptv-head .ptv-fs{margin-left:auto}
-  .ptv-clock{order:3;width:100%;margin:2px 0 0;text-align:center;font-size:clamp(30px,12vw,52px);letter-spacing:.1em}
-  .ptv-date{font-size:11px}
-  .ptv-rn{font-size:30px}
-  .ptv-prod-n{font-size:76px}
-  .ptv-pct{font-size:56px}
-  .ptv-pct-wrap{padding:10px 30px}
-  .ptv-main{min-height:340px}
-  .ptv-fit{flex-direction:column;gap:6px;transform:none!important}
-  .ptv-geral>.ptv-fit{width:100%}
-  .ptv-robo{padding:12px}
-  .ptv-svg svg{width:min(62vw,260px)}
-  .ptv-box{padding:10px 26px}
-  .ptv-geral{padding:10px 6px;justify-content:flex-start}
-}
-@media(min-width:761px){
-  .ptv-horas{overflow:hidden;gap:min(.45vw,6px)}
-  .ptv-hc{flex:1 1 0;min-width:0;padding:min(1vh,7px) 2px}
-  .ptv-hc .hl{font-size:min(.9vw,2.2vh,15px);overflow:hidden}
-  .ptv-hc .hl .x{display:none}
-  .ptv-hc .hv{font-size:min(1.2vw,3.6vh,32px);overflow:hidden}
-  .ptv-hc.tot{flex:1.8 1 0}
-}
-@media(prefers-reduced-motion:reduce){.ptv *,.ptv-main.gl,.ptv-static.on{animation:none!important}}
+/* ===== Painel "Visão geral" (quem não é host) — estilo Painel da Cromo Azul ===== */
+.main:has(>.pv){background-color:#05060d;background-image:radial-gradient(1100px 560px at 82% -8%,rgba(255,43,214,.08),transparent 60%),radial-gradient(950px 520px at -5% 108%,rgba(0,240,255,.09),transparent 55%),linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:100% 100%,100% 100%,44px 44px,44px 44px}
+.pv{--nc:#00f0ff;--nm:#ff2bd6;--ok:#00ffae;--mut:#7d8bb0;--faint:#5c6890;color:#eaf2ff}
+.pv-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.pv-ico{width:40px;height:40px;border:1px solid rgba(0,240,255,.45);border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(0,240,255,.06);box-shadow:0 0 14px -4px rgba(0,240,255,.7)}
+.pv-ico svg{width:20px;height:20px;stroke:var(--nc);fill:none;stroke-width:1.8}
+.pv-t{font-family:'Orbitron',sans-serif;font-weight:800;font-size:21px;color:#fff;letter-spacing:.04em}
+.pv-s{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;margin-top:3px}
+.pv-bento{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
+.pv-card{background:rgba(10,14,28,.72);border:1px solid rgba(0,240,255,.16);border-radius:8px;padding:18px 20px;min-width:0}
+.pv-card.span{grid-column:1/-1}
+.pv-card.cen{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.pv-lbl{font-family:'Share Tech Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--nc)}
+.pv-big{font-family:'Orbitron',sans-serif;font-weight:800;font-size:46px;line-height:1;color:var(--nc);text-shadow:0 0 22px rgba(0,240,255,.55);letter-spacing:.02em;margin-top:6px}
+.pv-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);margin-top:7px;text-transform:uppercase}
+.pv-h3{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--nc);text-shadow:0 0 10px rgba(0,240,255,.35);margin-bottom:14px}
+.pv-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex-shrink:0}
+.pv-alert{display:flex;align-items:center;gap:11px;font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;margin-top:12px;letter-spacing:.02em;color:var(--c)}
+.pv-robos{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.pv-rc{background:rgba(5,8,18,.6);border:1px solid rgba(0,240,255,.14);border-radius:8px;padding:18px;min-height:130px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;transition:border-color .18s,box-shadow .18s}
+.pv-rc:hover{border-color:rgba(0,240,255,.5);box-shadow:0 0 18px -6px rgba(0,240,255,.7)}
+.pv-rc .n{font-family:'Orbitron',sans-serif;font-weight:800;font-size:28px;color:#fff}
+.pv-rc .s{display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:13px;text-transform:uppercase;color:var(--mut);margin-top:10px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pv-rc .v{font-family:'Orbitron',sans-serif;font-weight:800;font-size:30px;color:var(--nc);margin-top:10px;text-shadow:0 0 14px rgba(0,240,255,.45)}
+@media(max-width:1250px){.pv-robos{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:900px){.pv-bento{grid-template-columns:1fr 1fr}.pv-bento>.pv-card:first-child{grid-column:1/-1}}
+@media(max-width:560px){.pv-bento{grid-template-columns:1fr}.pv-robos{grid-template-columns:repeat(2,1fr);gap:10px}.pv-big{font-size:38px}.pv-rc{min-height:100px;padding:14px}.pv-rc .n{font-size:22px}.pv-rc .v{font-size:24px}}
 @media(max-width:560px){.fcal-g{gap:3px}.fcal-d{min-height:40px;font-size:11.5px}.fcal-d b{font-size:9px}.fdet-r{grid-template-columns:66px 1fr 44px;row-gap:3px}.fdet-bar{grid-column:1/-1;order:5}.fdet-m{grid-column:1/-1;text-align:left;order:6}.fcal-leg{display:none}}
 </style>
 </head>
@@ -4260,7 +4164,7 @@ function renderSidebar(){
     <div class="cell-num" style="font-size:15px">🎯</div>
     <div class="cell-info">
       <div class="cell-name">Painel</div>
-      <div class="cell-peca">${isAdmin?'Meta do dia e do mês':'Produção ao vivo'}</div>
+      <div class="cell-peca">${isAdmin?'Meta do dia e do mês':'Visão geral'}</div>
     </div>
     <div class="dot dot-green"></div>
   </div>`;
@@ -6595,227 +6499,51 @@ function _pnSaldo(feito, meta){
   return s >= 0 ? {txt: '+' + _projFmt(s) + ' adiantado', cor: '#00e87a'} : {txt: _projFmt(s) + ' atrasado', cor: '#ff4d4d'};
 }
 function _pnSetMes(campo, v){ const h = new Date(); const atual = _painelMes || {ano: h.getFullYear(), mes: h.getMonth()}; _painelMes = {...atual, [campo]: +v}; renderPainel(); }
-// ===== Painel ao vivo (quem não é host) — estilo dashboard Cromo Azul =====
-// O painel de metas (dia/mês, projeção, turnos, feriados) só o host vê; os outros veem este.
-let _ptv = {seq: [], idx: 0, geral: false, slideT: null, clockT: null, sigM: '', sigF: ''};
-const PTV_OK = '#00ffae', PTV_FAIL = '#ff6a00', PTV_RED = '#ff2b5e', PTV_NONE = '#4a5a7a', PTV_CAFE = '#ffb000';
-function _ptvRobos(){ return Object.keys(celulas).filter(k => getCellTipo(k) === 'robo').sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0)); }
-function _ptvRn(k){ return String(k).replace(/[^0-9]/g, ''); }
-function _ptvHoras(){ return [...horasDiaPara(_dashGetChave()), ...HORAS_NOITE]; }
-function _ptvMeta(rd){ return parseInt((rd || {}).meta) || 0; }
-function _ptvVivo(){ return selected === '__painel' && !isAdmin && !!document.getElementById('ptvRoot'); }
-function _ptvParar(){ clearTimeout(_ptv.slideT); clearInterval(_ptv.clockT); _ptv.slideT = null; _ptv.clockT = null; }
-function _ptvIniciar(){
-  const dd = _dashGetDados(), h = _dashGetHoraRef(), rb = _ptvRobos();
-  // igual ao dashboard: só entram robôs com produção na hora atual; se nenhum tiver, entram todos
-  let seq = rb.filter(k => !_dashRoboSemValor(k, dd, h)); if(!seq.length) seq = rb;
-  _ptv.seq = seq; _ptv.idx = 0; _ptv.geral = false;
-}
-function _ptvAgenda(){ clearTimeout(_ptv.slideT); _ptv.slideT = setTimeout(_ptvProximo, _ptv.geral ? 30000 : 6000); }
-function _ptvProximo(){
-  if(!_ptvVivo()){ _ptvParar(); return; }
-  _ptvGlitch();
-  if(_ptv.geral || !_ptv.seq.length) _ptvIniciar();
-  else if(_ptv.idx >= _ptv.seq.length - 1) _ptv.geral = true;
-  else _ptv.idx++;
-  _ptv.sigM = ''; _ptvDesenha(); _ptvAgenda();
-}
-function _ptvRelogio(){
-  if(!_ptvVivo()){ _ptvParar(); return; }
-  const n = new Date(), c = document.getElementById('ptvClock'), d = document.getElementById('ptvDate');
-  if(c) c.textContent = n.toLocaleTimeString('pt-BR');
-  if(d){ const s = n.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'}); d.textContent = s.charAt(0).toUpperCase() + s.slice(1); }
-}
-// chiado pré-desenhado uma vez (troca de slide)
-function _ptvRuido(){ if(window._ptvRuidoOk) return;
-  try{ const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), im = x.createImageData(128, 128);
-    for(let i = 0; i < im.data.length; i += 4){ const v = Math.random()*255|0; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = Math.random() < .55 ? 95 : 0; }
-    x.putImageData(im, 0, 0); document.documentElement.style.setProperty('--ptv-ruido', 'url(' + c.toDataURL() + ')'); window._ptvRuidoOk = 1; }catch(e){} }
-function _ptvGlitch(){
-  const m = document.getElementById('ptvMain'), s = document.getElementById('ptvStatic'); if(!m) return;
-  m.classList.remove('gl'); if(s) s.classList.remove('on'); void m.offsetWidth;
-  m.classList.add('gl'); if(s) s.classList.add('on');
-  setTimeout(() => { m.classList.remove('gl'); if(s) s.classList.remove('on'); }, 320);
-}
-// ocupa a área toda (tira o recuo do painel) e a altura visível
-function _ptvAjusta(){
-  const mp = document.getElementById('mainPanel'), r = document.getElementById('ptvRoot'); if(!mp || !r) return;
-  const cs = getComputedStyle(mp), px = v => -(parseFloat(v) || 0) + 'px';
-  r.style.margin = [px(cs.paddingTop), px(cs.paddingRight), px(cs.paddingBottom), px(cs.paddingLeft)].join(' ');
-  // computador/TV: altura travada na tela e o slide encolhe pra caber · celular: rola normal
-  if(window.innerWidth > 760){ r.style.height = mp.clientHeight + 'px'; r.style.minHeight = ''; }
-  else { r.style.height = ''; r.style.minHeight = mp.clientHeight + 'px'; }
-  _ptvFit();
-}
-function _ptvFit(){
-  const main = document.getElementById('ptvMain'), fit = main && main.querySelector('.ptv-fit'); if(!fit) return;
-  fit.style.transform = '';
-  if(window.innerWidth <= 760) return;
-  const W = main.clientWidth - 24, H = main.clientHeight - 16, w = fit.offsetWidth, h = fit.offsetHeight;
-  if(!w || !h || W <= 0 || H <= 0) return;
-  const e = Math.min(1, W / w, H / h);
-  if(e < 0.995) fit.style.transform = 'scale(' + e.toFixed(3) + ')';
-}
-window.addEventListener('resize', () => { if(document.getElementById('ptvRoot')) _ptvAjusta(); });
-// a fonte Orbitron chega depois do 1º desenho e aumenta o texto: reencaixa quando ela carregar
-if(document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { if(document.getElementById('ptvRoot')) _ptvFit(); });
-function _ptvTelaCheia(){
-  const r = document.getElementById('ptvRoot'); if(!r) return;
-  try{ if(document.fullscreenElement) document.exitFullscreen();
-    else if(r.requestFullscreen) r.requestFullscreen(); else if(r.webkitRequestFullscreen) r.webkitRequestFullscreen(); }catch(e){}
-}
+// ===== Painel "Visão geral" (quem não é host) — estilo Painel da Cromo Azul =====
+// O painel de metas (dia/mês, projeção, turnos, feriados) só o host vê; os outros veem este resumo.
 function renderPainelVivo(){
   const mp = document.getElementById('mainPanel'); if(!mp) return;
-  if(!document.getElementById('ptvRoot')){
-    _ptvParar(); _ptvRuido();
-    mp.innerHTML = `<div class="ptv" id="ptvRoot">
-      <div class="ptv-head"><div><div class="ptv-h1">TREMPS · AO VIVO</div><div class="ptv-date" id="ptvDate"></div></div>
-        <div class="ptv-clock" id="ptvClock">--:--:--</div>
-        <button type="button" class="ptv-fs" onclick="_ptvTelaCheia()" title="Tela cheia">⛶</button></div>
-      <div class="ptv-main" id="ptvMain"><div class="ptv-load">CARREGANDO PRODUÇÃO…</div></div>
-      <div class="ptv-foot"><div class="ptv-foot-t">⏱ Produção total por hora — hoje (todos os robôs)</div><div class="ptv-horas" id="ptvHoras"></div></div>
-      <div class="ptv-static" id="ptvStatic"></div></div>`;
-    _ptv.sigM = ''; _ptv.sigF = ''; _ptvIniciar();
-    _ptvRelogio(); _ptv.clockT = setInterval(_ptvRelogio, 1000); _ptvAgenda();
-  }
-  _ptvAjusta();
-  if(!_ptv.seq.length) _ptvIniciar();
-  _ptvDesenha();
-}
-function _ptvDesenha(){
-  try{ if(_ptv.geral) _ptvGeral(); else _ptvRobo(_ptv.seq[_ptv.idx]); }catch(e){ console.error('painel ao vivo', e); }
-  try{ _ptvRodape(); }catch(e){ console.error('painel ao vivo', e); }
-}
-function _ptvRobo(k){
-  const main = document.getElementById('ptvMain'); if(!main) return;
-  if(!k || !celulas[k]){ if(_ptv.sigM !== 'vazio'){ _ptv.sigM = 'vazio'; main.innerHTML = '<div class="ptv-load">SEM ROBÔS CADASTRADOS</div>'; } return; }
-  const c = celulas[k], rn = _ptvRn(k), rd = _dashGetDados()[rn] || {}, hora = _dashGetHoraCheia(), ch = _dashGetChave();
-  const mb = _ptvMeta(rd), cafe = HORAS_CAFE.includes(hora), meta = metaEfetivaHora(hora, mb, ch), prod = parseCelVal(rd[campoH(hora)] || '').num;
-  const pct = meta > 0 ? Math.round(prod / meta * 100) : 0, bateu = meta > 0 && prod >= meta, faltam = meta > 0 ? Math.max(meta - prod, 0) : 0;
-  const cor = cafe ? PTV_CAFE : ((prod === 0 && meta === 0) ? PTV_NONE : bateu ? PTV_OK : PTV_FAIL);
-  const totDia = _ptvHoras().reduce((s, h) => s + parseCelVal(rd[campoH(h)] || '').num, 0);
-  const sig = ['R', k, hora, prod, meta, rd.cod || '', c.nome || '', _ptv.idx, _ptv.seq.length, totDia].join('|'); if(sig === _ptv.sigM) return; _ptv.sigM = sig;
-  const dots = _ptv.seq.map((_, i) => `<i class="${i === _ptv.idx ? 'on' : ''}"></i>`).join('') + '<i class="g"></i>';
-  main.innerHTML = `<div class="ptv-robo" style="--cor:${cor}"><div class="ptv-sweep"></div>
-    <div class="ptv-fit"><div class="ptv-svg">${_ptvRoboSVG(cor)}</div>
-    <div class="ptv-info">
-      <div><div class="ptv-rn">ROBÔ ${esc(rn)}</div><div class="ptv-nome">${esc(c.nome || '')}</div><div class="ptv-cod">⚙ ${esc(rd.cod || c.codigo_peca || '—')}</div></div>
-      <div class="ptv-box"><div class="ptv-prod-h">PRODUÇÃO ${hora}</div><div class="ptv-prod-n">${prod > 0 ? prod : '—'}</div>
-        ${meta > 0 ? `<div class="ptv-mt">META${cafe ? ' (CAFÉ)' : ''}: <b>${meta}</b> PEÇAS/HORA</div>` : ''}
-        ${meta > 0 && prod > 0 && faltam > 0 ? `<div class="ptv-mt fail">FALTOU ${faltam} PEÇA${faltam === 1 ? '' : 'S'}</div>` : ''}
-        ${totDia > 0 ? `<div class="ptv-mt">HOJE: <b>${totDia.toLocaleString('pt-BR')}</b> PEÇAS</div>` : ''}</div>
-      ${meta > 0 && prod > 0 ? `<div class="ptv-eff"><div class="ptv-pct-wrap"><div class="ptv-spin"><i></i><i></i></div><div class="ptv-pct">${pct}%</div></div><div class="ptv-eff-l">EFICIÊNCIA DA HORA</div>
-        <div class="ptv-bar"><i style="transform:scaleX(${Math.min(pct, 100) / 100})"></i></div></div>` : ''}
-      <div class="ptv-dots">${dots}</div>
-    </div></div></div>`;
-  _ptvFit();
-}
-function _ptvGeral(){
-  const main = document.getElementById('ptvMain'); if(!main) return;
-  const dd = _dashGetDados(), hora = _dashGetHoraCheia(), ch = _dashGetChave(), horas = _ptvHoras(), rb = _ptvRobos();
-  const sig = 'G|' + hora + '|' + _ptv.seq.length + '|' + JSON.stringify(dd); if(sig === _ptv.sigM) return; _ptv.sigM = sig;
-  let tg = 0;
-  const linhas = rb.map(k => {
-    const rn = _ptvRn(k), rd = dd[rn] || {}, mb = _ptvMeta(rd);
-    const pa = parseCelVal(rd[campoH(hora)] || '').num, ma = metaEfetivaHora(hora, mb, ch), corA = (mb === 0 || pa === 0) ? PTV_NONE : (pa >= ma ? PTV_OK : PTV_RED);
-    const tr = horas.reduce((s, h) => s + parseCelVal(rd[campoH(h)] || '').num, 0); tg += tr;
-    const cells = horas.map(h => {
-      const v = parseCelVal(rd[campoH(h)] || '').num, at = h === hora, me = metaEfetivaHora(h, mb, ch);
-      let cor = at ? corA : (me > 0 && v >= me) ? PTV_OK : (me > 0 && v > 0) ? PTV_RED : PTV_NONE;
-      if(HORAS_CAFE.includes(h) && v > 0) cor = PTV_CAFE;
-      return `<td class="${at ? 'at' : ''}" style="color:${cor};${at ? 'background:' + cor + '18' : ''}">${v > 0 ? v : '—'}</td>`;
-    }).join('');
-    return `<tr><td class="rn">${esc(rn)}</td><td class="cd">${esc(rd.cod || '—')}</td><td class="mt">${mb || '—'}</td>${cells}<td class="tt">${tr > 0 ? tr.toLocaleString('pt-BR') : '—'}</td></tr>`;
+  const h = new Date(), A = h.getFullYear(), Mi = h.getMonth(), F = _projFmt;
+  const M = _pnMes(A, Mi), D = M.hojeD;
+  // produção do mês + gráfico dos últimos 14 dias
+  const serie = M.dias.filter(x => x.d <= h).map(x => x.feito);
+  const dcp = M.dias.filter(x => x.feito > 0).length, media = dcp ? Math.round(M.feito / dcp) : 0;
+  const jan = serie.slice(-14), mx = Math.max(1, ...jan);
+  const pts = jan.length > 1 ? jan.map((v, i) => (i / (jan.length - 1) * 320).toFixed(0) + ',' + (40 - (v / mx) * 34).toFixed(1)).join(' ') : '0,38 320,38';
+  // meta do dia (mesma regra do painel do host: seg–sex, turno de cada robô)
+  const temMeta = D && D.util && D.meta > 0, pct = temMeta ? Math.round(D.feito / D.meta * 100) : null;
+  const corAnel = pct != null && pct >= 100 ? '#00ffae' : '#00f0ff';
+  const dash = 232, off = dash - dash * Math.min(pct || 0, 100) / 100;
+  const subMeta = temMeta ? F(D.feito) + ' / ' + F(D.meta) + ' PÇ HOJE'
+    : (D && D.folga ? 'FERIADO / FOLGA — SEM META' : 'FIM DE SEMANA — SEM META') + (D && D.feito ? ' · ' + F(D.feito) + ' PÇ' : '');
+  // alertas: robôs fora de produção + chamados de manutenção abertos
+  const alerta = ROBOS.filter(r => celulas[String(r)] && (celulas[String(r)].status || '') !== 'Produzindo');
+  let alertHtml = alerta.slice(0, 6).map(r => { const i = mapaRobosStatusInfo(celulas[String(r)].status);
+    return `<div class="pv-alert" style="--c:${i.cor}"><span class="pv-dot"></span>${r} :: ${esc(i.label)}</div>`; }).join('');
+  if(alerta.length > 6) alertHtml += `<div class="pv-alert" style="--c:#5c6890"><span class="pv-dot"></span>+${alerta.length - 6} ROBÔ${alerta.length - 6 > 1 ? 'S' : ''}</div>`;
+  const km = Object.keys(celulas).find(k => getCellTipo(k) === 'manutencao'), mn = (km && celulas[km].manutencoes) || {};
+  const nCh = Object.values(mn).reduce((s, l) => s + (Array.isArray(l) ? l.filter(m => m && !m.concluido).length : 0), 0);
+  if(nCh) alertHtml += `<div class="pv-alert" style="--c:#ff2bd6"><span class="pv-dot"></span>${nCh} CHAMADO${nCh > 1 ? 'S' : ''} ABERTO${nCh > 1 ? 'S' : ''}</div>`;
+  if(!alertHtml) alertHtml = `<div class="pv-alert" style="--c:#00ffae"><span class="pv-dot"></span>TUDO OPERANDO</div>`;
+  // robôs: status + produção de hoje
+  const robosHtml = ROBOS.filter(r => celulas[String(r)]).map(r => {
+    const i = mapaRobosStatusInfo(celulas[String(r)].status), t = mapaRobosProducaoHoje(r).produzido;
+    return `<div class="pv-rc" onclick="selectCell('${r}')"><div class="n">${r}</div><div class="s"><span class="pv-dot" style="--c:${i.cor}"></span>${esc(i.label)}</div><div class="v">${F(t)}</div></div>`;
   }).join('');
-  const heads = horas.map(h => `<th class="${h === hora ? 'at' : ''}">${h}${HORAS_CAFE.includes(h) ? ' ☕' : ''}</th>`).join('');
-  const tot = horas.map(h => { const t = rb.reduce((s, k) => s + parseCelVal((dd[_ptvRn(k)] || {})[campoH(h)] || '').num, 0); return `<td>${t > 0 ? t : '—'}</td>`; }).join('');
-  main.innerHTML = `<div class="ptv-geral"><div class="ptv-fit"><div class="ptv-geral-t">📊 VISÃO GERAL — PRODUÇÃO DO DIA · HORA ATUAL: <b>${hora}</b></div>
-    <div class="ptv-tbl-w"><table class="ptv-tbl"><thead><tr><th style="text-align:left">Robô</th><th style="text-align:left">Peça</th><th class="mt">Meta/h</th>${heads}<th class="tt">Total</th></tr></thead>
-    <tbody>${linhas}</tbody><tfoot><tr><td colspan="3">TOTAL GERAL</td>${tot}<td class="tt">${tg.toLocaleString('pt-BR')}</td></tr></tfoot></table></div>
-    <div class="ptv-dots">${_ptv.seq.map(() => '<i></i>').join('')}<i class="on g"></i></div></div></div>`;
-  _ptvFit();
+  mp.innerHTML = `<div class="pv">
+    <div class="pv-head"><div class="pv-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+      <div><div class="pv-t">Painel</div><div class="pv-s">Visão geral · ${MESES[Mi]} ${A}</div></div></div>
+    <div class="pv-bento">
+      <div class="pv-card"><div class="pv-lbl">Produção do mês</div><div class="pv-big">${F(M.feito)}</div>
+        <div class="pv-sub">Média ${F(media)}/dia · ${dcp} dia${dcp === 1 ? '' : 's'} ativo${dcp === 1 ? '' : 's'}</div>
+        <svg viewBox="0 0 320 44" width="100%" height="42" preserveAspectRatio="none" style="margin-top:12px;display:block"><polyline points="${pts}" fill="none" stroke="#ff2bd6" stroke-width="2.5" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 5px rgba(255,43,214,.8))"/></svg></div>
+      <div class="pv-card cen"><div class="pv-lbl">Meta do dia</div>
+        <svg viewBox="0 0 90 90" width="90" height="90" style="margin-top:8px"><circle cx="45" cy="45" r="37" fill="none" stroke="#16233c" stroke-width="8"/>${temMeta ? `<circle cx="45" cy="45" r="37" fill="none" stroke="${corAnel}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 45 45)" style="filter:drop-shadow(0 0 6px ${corAnel})"/>` : ''}</svg>
+        <div class="pv-big" style="font-size:26px;margin-top:8px;color:${corAnel}">${pct != null ? pct + '%' : '—'}</div><div class="pv-sub">${subMeta}</div></div>
+      <div class="pv-card"><div class="pv-lbl" style="color:#ff2bd6">// Alertas</div>${alertHtml}</div>
+      <div class="pv-card span"><div class="pv-h3">🤖 Robôs · produção de hoje</div><div class="pv-robos">${robosHtml}</div></div>
+    </div></div>`;
 }
-function _ptvRodape(){
-  const f = document.getElementById('ptvHoras'); if(!f) return;
-  const dd = _dashGetDados(), hora = _dashGetHoraCheia(), ch = _dashGetChave(), horas = _ptvHoras(), rb = _ptvRobos();
-  const sig = 'F|' + hora + '|' + JSON.stringify(dd); if(sig === _ptv.sigF) return; _ptv.sigF = sig;
-  let tot = 0;
-  f.innerHTML = horas.map(h => {
-    let t = 0, m = 0;
-    rb.forEach(k => { const rd = dd[_ptvRn(k)] || {}, v = parseCelVal(rd[campoH(h)] || '').num; t += v; if(v > 0) m += metaEfetivaHora(h, _ptvMeta(rd), ch); });
-    tot += t;
-    const at = h === hora, cafe = HORAS_CAFE.includes(h);
-    const cor = (cafe && t > 0) ? PTV_CAFE : t === 0 ? PTV_NONE : (m > 0 && t >= m) ? PTV_OK : PTV_RED;
-    return `<div class="ptv-hc ${at ? 'at' : ''}" style="--cor:${cor}"><div class="hl">${h}<span class="x">${cafe ? ' ☕' : ''}${at ? ' ◀' : ''}</span></div><div class="hv">${t > 0 ? t : '—'}</div></div>`;
-  }).join('') + `<div class="ptv-hc tot"><div class="hl">∑ TOTAL</div><div class="hv">${tot > 0 ? tot.toLocaleString('pt-BR') : '—'}</div></div>`;
-}
-function _ptvRoboSVG(cor){ const Y='#f5c400', CU='#d08a3e'; return `<svg viewBox="0 0 270 235" style="overflow:visible">
-  <circle class="ptr-halo" cx="82" cy="175" r="70" fill="none" stroke="${cor}" stroke-width="1.5" stroke-dasharray="6 10" opacity=".3"/>
-  <line x1="10" y1="214" x2="262" y2="214" stroke="${cor}" stroke-width="1" opacity=".35"/>
-  <!-- Mesa laranja (bancada tipo a da foto) -->
-  <polygon points="146,192 240,192 246,206 138,206" fill="#ff6a1f" opacity=".16" stroke="${cor}" stroke-width="1.5"/>
-  <line x1="146" y1="192" x2="240" y2="192" stroke="${cor}" stroke-width="2" opacity=".7"/>
-  <rect x="150" y="206" width="5" height="18" fill="#0b0e18" stroke="${cor}" stroke-width="1.2"/>
-  <rect x="228" y="206" width="5" height="18" fill="#0b0e18" stroke="${cor}" stroke-width="1.2"/>
-  <!-- Base do gabarito (chapa preta) -->
-  <rect x="156" y="180" width="72" height="14" rx="1" fill="#0b0e18" stroke="${cor}" stroke-width="1.5"/>
-  <!-- Moldura interna arredondada (tubo) -->
-  <rect x="160" y="182" width="64" height="10" rx="2.5" fill="none" stroke="#7c8aa8" stroke-width="1" opacity=".65"/>
-  <!-- Peça sendo soldada -->
-  <rect x="167" y="184" width="50" height="6" rx="0.5" fill="#1a2030" stroke="#3a4560" stroke-width="0.6"/>
-  <line x1="180" y1="184" x2="180" y2="190" stroke="#2a3040" stroke-width="0.4"/>
-  <line x1="196" y1="184" x2="196" y2="190" stroke="#2a3040" stroke-width="0.4"/>
-  <!-- Clamps (blocos que seguram a peça) — 4 em cima, 4 embaixo -->
-  <g fill="#1a2030" stroke="${cor}" stroke-width="0.7">
-    <rect x="163" y="176" width="5" height="5"/><rect x="180" y="176" width="5" height="5"/>
-    <rect x="197" y="176" width="5" height="5"/><rect x="214" y="176" width="5" height="5"/>
-    <rect x="163" y="192" width="5" height="5"/><rect x="180" y="192" width="5" height="5"/>
-    <rect x="197" y="192" width="5" height="5"/><rect x="214" y="192" width="5" height="5"/>
-  </g>
-  <!-- Parafusos nos cantos -->
-  <circle cx="159" cy="183" r=".9" fill="${cor}"/><circle cx="225" cy="183" r=".9" fill="${cor}"/>
-  <circle cx="159" cy="191" r=".9" fill="${cor}"/><circle cx="225" cy="191" r=".9" fill="${cor}"/>
-  <ellipse class="ptr-weldglow" cx="193" cy="184" rx="7" ry="3" fill="#ffb000" opacity=".55"/>
-  <rect x="38" y="192" width="88" height="22" rx="4" fill="#0b0e18" stroke="${cor}" stroke-width="2.5"/>
-  <circle cx="52" cy="203" r="2" fill="${cor}"/><circle cx="112" cy="203" r="2" fill="${cor}"/>
-  <rect x="58" y="166" width="48" height="28" rx="6" fill="${Y}" stroke="${cor}" stroke-width="2" style="filter:drop-shadow(0 0 4px ${cor})"/>
-  <path d="M60,176 C30,168 30,120 62,104" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity=".75"/>
-  <g class="ptr-arm1">
-    <line x1="82" y1="168" x2="112" y2="72" stroke="${Y}" stroke-width="16" stroke-linecap="round" style="filter:drop-shadow(0 0 6px ${cor})"/>
-    <line x1="82" y1="168" x2="112" y2="72" stroke="${cor}" stroke-width="1.5" stroke-linecap="round" opacity=".9"/>
-    <line x1="74" y1="160" x2="102" y2="78" stroke="${cor}" stroke-width="1" opacity=".45"/>
-    <text x="104" y="128" font-family="Share Tech Mono,monospace" font-size="8" fill="${cor}" opacity=".85" transform="rotate(-72 104 128)">R-2000iB</text>
-    <circle cx="82" cy="168" r="11" fill="#0b0e18" stroke="${cor}" stroke-width="2.5"/><circle class="ptr-led" cx="82" cy="168" r="3.5" fill="${cor}"/>
-    <g class="ptr-arm2">
-      <rect x="92" y="52" width="16" height="14" rx="3" fill="#ff3b3b" opacity=".55" stroke="${cor}" stroke-width="1.5"/>
-      <line x1="112" y1="72" x2="200" y2="58" stroke="${Y}" stroke-width="13" stroke-linecap="round" style="filter:drop-shadow(0 0 6px ${cor})"/>
-      <line x1="112" y1="72" x2="200" y2="58" stroke="${cor}" stroke-width="1.5" stroke-linecap="round" opacity=".9"/>
-      <path d="M118,62 C150,42 176,44 198,48" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity=".75"/>
-      <circle cx="112" cy="72" r="13" fill="#0b0e18" stroke="${cor}" stroke-width="2.5"/><circle class="ptr-led d" cx="112" cy="72" r="3.5" fill="${cor}"/>
-      <g class="ptr-gun">
-        <circle cx="200" cy="58" r="13" fill="${Y}" stroke="${cor}" stroke-width="2" style="filter:drop-shadow(0 0 5px ${cor})"/>
-        <circle cx="200" cy="58" r="7" fill="none" stroke="${cor}" stroke-width="1.2"/>
-        <circle cx="200" cy="47" r="1.6" fill="${cor}"/><circle cx="211" cy="58" r="1.6" fill="${cor}"/><circle cx="200" cy="69" r="1.6" fill="${cor}"/><circle cx="189" cy="58" r="1.6" fill="${cor}"/>
-        <rect x="188" y="74" width="24" height="66" rx="2" fill="#5b6470" opacity=".55" stroke="${cor}" stroke-width="2.5"/>
-        <rect x="188" y="74" width="24" height="8" rx="2" fill="#0b0e18" opacity=".5"/>
-        <rect x="192" y="86" width="16" height="4" rx="1" fill="none" stroke="${cor}" stroke-width="1" opacity=".55"/>
-        <rect x="192" y="94" width="16" height="20" rx="1" fill="none" stroke="${cor}" stroke-width="1" opacity=".45"/>
-        <circle cx="200" cy="124" r="3" fill="none" stroke="${cor}" stroke-width="1" opacity=".65"/><circle cx="200" cy="124" r="1.2" fill="${cor}"/>
-        <path d="M212,90 C232,88 236,110 214,116" fill="none" stroke="#0b0e18" stroke-width="3"/><path d="M212,90 C232,88 236,110 214,116" fill="none" stroke="${cor}" stroke-width="1.2" opacity=".6"/>
-        <path d="M190,140 L188,158 C187,172 190,180 193,184" fill="none" stroke="${CU}" stroke-width="3.5" stroke-linecap="round" style="filter:drop-shadow(0 0 2px ${CU})"/>
-        <g class="ptr-pinca">
-          <path d="M210,140 L212,158 C214,172 210,180 193,184" fill="none" stroke="${CU}" stroke-width="3.5" stroke-linecap="round" style="filter:drop-shadow(0 0 2px ${CU})"/>
-        </g>
-        <g class="ptr-spark">
-          <circle cx="193" cy="184" r="3.5" fill="#fff2a8"/>
-          <line x1="193" y1="178" x2="193" y2="168" stroke="#ffb000" stroke-width="2"/><line x1="199" y1="180" x2="207" y2="174" stroke="#ffb000" stroke-width="2"/>
-          <line x1="187" y1="180" x2="179" y2="174" stroke="#ffb000" stroke-width="2"/><line x1="200" y1="187" x2="209" y2="189" stroke="#ff8a00" stroke-width="2"/>
-          <line x1="186" y1="187" x2="177" y2="190" stroke="#ff8a00" stroke-width="2"/>
-        </g>
-      </g>
-    </g>
-  </g>
-</svg>`; }
 
 function renderPainel(){
   if(!isAdmin){ renderPainelVivo(); return; }   // painel de metas: só o host
