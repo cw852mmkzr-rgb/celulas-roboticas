@@ -1342,6 +1342,31 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .fdet-v{font-weight:800;font-size:15px;text-align:right}
 .fdet-m{font-size:12px;color:#6b7788;text-align:right;white-space:nowrap}
 .fhist-r:hover{background:#3d9eff0d}
+/* Relatório mensal — projeção e simulador */
+.proj-box{background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.proj-tit{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:12px}
+.proj-tit em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400;color:#6b7788;font-size:12px}
+.proj-grid,.proj-out{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px}
+.proj-out{margin-top:14px}
+.proj-card{background:color-mix(in srgb,var(--c) 8%,#0a0d11);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);border-radius:10px;padding:12px 14px;min-width:0}
+.proj-rot{font-size:11px;color:#8a95a8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:700}
+.proj-val{font-size:24px;font-weight:900;color:var(--c);line-height:1.1;word-break:break-word}
+.proj-sub{font-size:11.5px;color:#6b7788;margin-top:4px;line-height:1.35}
+.proj-graf{margin-top:14px;background:#0a0d11;border:1px solid #1e2530;border-radius:10px;padding:8px 8px 4px}
+.proj-graf svg{display:block;width:100%;height:auto}
+.proj-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#6b7788;padding:4px 6px}
+.proj-leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle;background:var(--c)}
+.proj-sim{margin-top:14px;border:1px dashed #3d9eff55;border-radius:12px;padding:14px;background:#3d9eff08}
+.proj-sim-tit{font-size:12px;color:#3d9eff;text-transform:uppercase;letter-spacing:.12em;font-weight:800;margin-bottom:12px}
+.proj-sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
+.proj-in{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:#8a95a8;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.proj-in input[type=number]{background:#0a0d11;border:1px solid #1e2530;border-radius:8px;color:#e0e6ef;font-size:16px;font-weight:800;padding:8px 10px;width:100%;box-sizing:border-box;font-family:inherit}
+.proj-in input[type=range]{width:100%;accent-color:#3d9eff;cursor:pointer}
+.proj-in b{color:#e0e6ef;font-size:14px}
+.proj-chk{display:flex;align-items:center;gap:8px;font-size:13px;color:#d8dde6;cursor:pointer;padding:8px 0}
+.proj-chk input{width:18px;height:18px;accent-color:#3d9eff}
+.proj-reset{background:#1e2530;border:1px solid #2a3342;color:#d8dde6;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
+.proj-reset:hover{border-color:#3d9eff;color:#fff}
 @media(max-width:560px){.fcal-g{gap:3px}.fcal-d{min-height:40px;font-size:11.5px}.fcal-d b{font-size:9px}.fdet-r{grid-template-columns:66px 1fr 44px;row-gap:3px}.fdet-bar{grid-column:1/-1;order:5}.fdet-m{grid-column:1/-1;text-align:left;order:6}.fcal-leg{display:none}}
 </style>
 </head>
@@ -5930,6 +5955,208 @@ function renderRelatorioAnual(){
   </div>`;
 }
 
+// ===== Projeção do mês/ano + simulador (Relatório mensal) =====
+// Ritmo = média dos dias JÁ FECHADOS com produção (o dia de hoje ainda está em andamento).
+// Dias que faltam = dias em que a fábrica costuma trabalhar (aprendido das últimas 12 semanas);
+// hoje só conta como "faltando" se ainda não tem produção lançada.
+let _projP = null, _projEstado = null;
+function _projHoras(){ return [...HORAS_DIA, ...HORAS_NOITE]; }
+function _projFmt(n){ return Math.round(n || 0).toLocaleString('pt-BR'); }
+function _projTotDia(dd){
+  if(!dd) return 0; let t = 0;
+  ROBOS.forEach(r => { const rd = dd[r] || dd[String(r)]; if(!rd) return; _projHoras().forEach(h => { t += parseCelVal(rd[campoH(h)] || '').num; }); });
+  return t;
+}
+function _projRoboProduziu(rd){ return !!rd && _projHoras().some(h => parseCelVal(rd[campoH(h)] || '').num > 0); }
+function _projMetaDia(dd, chave){
+  if(!dd) return 0; let m = 0;
+  ROBOS.forEach(r => { const rd = dd[r] || dd[String(r)]; const meta = rd ? (parseInt(rd.meta) || 0) : 0; if(meta > 0 && _projRoboProduziu(rd)) m += metaTotalDia(meta, chave); });
+  return m;
+}
+function _projData(ch){ const p = ch.split('_').map(Number); return new Date(p[0], p[1], p[2]); }
+function _projCalc(mc, ano, mes){
+  const md = (mc && mc.metas_dias) || {};
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const chHoje = hoje.getFullYear()+'_'+hoje.getMonth()+'_'+hoje.getDate();
+  const tot = {};
+  Object.keys(md).forEach(ch => { if(ch.split('_').length !== 3) return; const t = _projTotDia(md[ch]); if(t > 0) tot[ch] = t; });
+  // dias da semana em que a fábrica costuma trabalhar (últimas 12 semanas)
+  const cont = [0,0,0,0,0,0,0], comProd = [0,0,0,0,0,0,0];
+  for(let i = 1; i <= 84; i++){ const d = new Date(hoje); d.setDate(d.getDate()-i); cont[d.getDay()]++; if(tot[d.getFullYear()+'_'+d.getMonth()+'_'+d.getDate()]) comProd[d.getDay()]++; }
+  let trab = cont.map((c, w) => comProd[w] >= Math.max(2, c * 0.4));
+  if(!trab.some(Boolean)) trab = [false,true,true,true,true,true,false];
+  const ehTrab = (d, sab) => d.getDay() === 6 ? !!sab : trab[d.getDay()];
+  const concl = Object.keys(tot).filter(ch => _projData(ch) < hoje).sort((a, b) => _projData(a) - _projData(b));
+  const doMes = ch => { const p = ch.split('_').map(Number); return p[0] === ano && p[1] === mes; };
+  const conclMes = concl.filter(doMes), ult30 = concl.slice(-30);
+  const media = arr => arr.length ? Math.round(arr.reduce((s, ch) => s + tot[ch], 0) / arr.length) : 0;
+  const mediaMes = media(conclMes), mediaRec = media(ult30), media5 = media(concl.slice(-5));
+  const ord = ult30.map(ch => tot[ch]).sort((a, b) => a - b);
+  const quart = p => ord.length ? ord[Math.round(p * (ord.length - 1))] : 0;
+  const nd = new Date(ano, mes + 1, 0).getDate();
+  const ini = new Date(ano, mes, 1), fim = new Date(ano, mes, nd);
+  const estado = fim < hoje ? 'fechado' : (ini > hoje ? 'futuro' : 'atual');
+  const porDia = []; for(let d = 1; d <= nd; d++) porDia.push(tot[ano+'_'+mes+'_'+d] || 0);
+  const realizadoMes = porDia.reduce((s, v) => s + v, 0);
+  const falta = (dt, sab) => dt >= hoje && !(dt.getTime() === hoje.getTime() && tot[chHoje]) && ehTrab(dt, sab);
+  const restMes = sab => { let n = 0; for(let d = 1; d <= nd; d++) if(falta(new Date(ano, mes, d), sab)) n++; return n; };
+  const restAno = sab => { let n = 0; for(let d = new Date(ano, 0, 1); d.getFullYear() === ano; d.setDate(d.getDate() + 1)) if(falta(new Date(d), sab)) n++; return n; };
+  const diasFuturos = sab => { const arr = []; for(let d = 1; d <= nd; d++) arr.push(falta(new Date(ano, mes, d), sab)); return arr; };
+  const metaConcl = Object.keys(tot).filter(doMes).reduce((s, ch) => s + _projMetaDia(md[ch], ch), 0);
+  const metaRec = ult30.length ? Math.round(ult30.reduce((s, ch) => s + _projMetaDia(md[ch], ch), 0) / ult30.length) : 0;
+  const robosDia = ch => ROBOS.filter(r => _projRoboProduziu(md[ch] && (md[ch][r] || md[ch][String(r)]))).length;
+  const robosMed = ult30.length ? Math.max(1, Math.round(ult30.reduce((s, ch) => s + robosDia(ch), 0) / ult30.length)) : ROBOS.length;
+  const realizadoAno = Object.keys(tot).filter(ch => +ch.split('_')[0] === ano).reduce((s, ch) => s + tot[ch], 0);
+  const pa = new Date(ano, mes - 1, 1);
+  const totAnt = Object.keys(tot).filter(ch => { const p = ch.split('_').map(Number); return p[0] === pa.getFullYear() && p[1] === pa.getMonth(); }).reduce((s, ch) => s + tot[ch], 0);
+  const hojeD = estado === 'atual' ? hoje.getDate() : (estado === 'fechado' ? nd : 0);
+  return {ano, mes, nd, estado, hojeD, porDia, realizadoMes, realizadoAno, mediaMes, mediaRec, media5,
+    p25: quart(0.25), p75: quart(0.75), ritmo: mediaMes || mediaRec, metaConcl, metaRec, robosMed,
+    sabPadrao: trab[6], restMes, restAno, diasFuturos, totAnt, mesAnt: MESES[pa.getMonth()], temHist: concl.length > 0};
+}
+function _projPadrao(P){
+  const rest = P.restMes(P.sabPadrao);
+  return {k: P.ano+'_'+P.mes, ritmo: P.ritmo, sab: P.sabPadrao, dias: rest, diasManual: false, robos: P.robosMed,
+    meta: Math.round(P.metaConcl + P.metaRec * rest), metaManual: false};
+}
+function _projCard(cor, rot, val, sub){
+  return `<div class="proj-card" style="--c:${cor}"><div class="proj-rot">${rot}</div><div class="proj-val">${val}</div><div class="proj-sub">${sub}</div></div>`;
+}
+function _projSecao(ano, mes, mc){
+  const P = _projP = _projCalc(mc, ano, mes);
+  // comparação com o mês anterior: se ele ainda está em andamento, compara com a projeção dele
+  P.antRef = P.totAnt; P.antTxt = P.mesAnt + ': ' + _projFmt(P.totAnt) + ' peças';
+  if(P.estado === 'futuro'){ const pm = new Date(ano, mes - 1, 1), PA = _projCalc(mc, pm.getFullYear(), pm.getMonth()); if(PA.estado === 'atual'){ P.antRef = PA.realizadoMes + PA.ritmo * PA.restMes(PA.sabPadrao); P.antTxt = 'projeção de ' + P.mesAnt + ': ' + _projFmt(P.antRef) + ' peças'; } }
+  if(!_projEstado || _projEstado.k !== ano+'_'+mes) _projEstado = _projPadrao(P);
+  const E = _projEstado;
+  if(!P.temHist && !P.realizadoMes) return '';
+  const rest = P.restMes(P.sabPadrao);
+  const proj = P.realizadoMes + P.ritmo * rest;
+  const metaMes = Math.round(P.metaConcl + P.metaRec * rest);
+  const pctMeta = metaMes > 0 ? Math.round(proj / metaMes * 100) : null;
+  const corMeta = pctMeta == null ? '#8a95a8' : (pctMeta >= 100 ? '#00e87a' : pctMeta >= 85 ? '#ffb300' : '#ff4d4d');
+  const vsAnt = P.antRef > 0 ? Math.round((proj / P.antRef - 1) * 100) : null;
+  const restA = P.restAno(P.sabPadrao);
+  const ritmoAno = P.mediaRec || P.ritmo;
+  const projAno = P.realizadoAno + ritmoAno * restA;
+  const fechado = P.estado === 'fechado';
+  const titulo = fechado ? 'Mês fechado' : (P.estado === 'futuro' ? 'Previsão do mês' : 'Projeção do mês');
+  const subProj = fechado ? 'total realizado no mês'
+    : (P.estado === 'futuro' ? `${rest} dias de trabalho × ${_projFmt(P.ritmo)}/dia (média recente)`
+    : `${_projFmt(P.realizadoMes)} feitas + ${rest} dia(s) × ${_projFmt(P.ritmo)}/dia`);
+  const cards = [
+    _projCard('#00e87a', '📈 ' + titulo, _projFmt(proj), subProj),
+    fechado ? '' : _projCard('#3d9eff', '📊 Faixa provável', `${_projFmt(P.realizadoMes + P.p25 * rest)} a ${_projFmt(P.realizadoMes + P.p75 * rest)}`, 'entre um ritmo de dias fracos e de dias fortes (últimos 30 dias)'),
+    fechado ? '' : _projCard('#a78bfa', '⚡ Pelo ritmo da semana', _projFmt(P.realizadoMes + (P.media5 || P.ritmo) * rest), `média de ${_projFmt(P.media5)}/dia nos últimos 5 dias de produção`),
+    _projCard(corMeta, '🎯 Meta do mês', pctMeta == null ? '—' : pctMeta + '%', metaMes > 0 ? `${_projFmt(proj)} de ${_projFmt(metaMes)} peças da meta cheia (todas as horas)` : 'sem meta lançada'),
+    _projCard('#ffb300', '↔ vs ' + P.mesAnt, vsAnt == null ? '—' : (vsAnt > 0 ? '+' : '') + vsAnt + '%', P.antTxt),
+    _projCard('#f472b6', `🗓 ${P.ano < new Date().getFullYear() ? 'Total' : 'Projeção'} do ano ${P.ano}`, _projFmt(projAno), restA > 0 ? `${_projFmt(P.realizadoAno)} feitas + ${restA} dias × ${_projFmt(ritmoAno)}/dia` : 'total realizado no ano')
+  ].join('');
+  const maxR = Math.max(100, Math.ceil(Math.max(P.ritmo * 2, P.p75 * 1.5) / 50) * 50);
+  const sim = fechado ? '' : `
+    <div class="proj-sim">
+      <div class="proj-sim-tit">🎛 Simulador — e se…</div>
+      <div class="proj-sim-grid">
+        <label class="proj-in"><span>Peças por dia</span>
+          <input type="range" id="psRitmoR" min="0" max="${maxR}" step="5" value="${E.ritmo}" oninput="_projSet('ritmo',this.value)">
+          <input type="number" id="psRitmo" min="0" value="${E.ritmo}" oninput="_projSet('ritmo',this.value)"></label>
+        <label class="proj-in"><span>Robôs rodando: <b id="psRobosV">${E.robos}</b> (hoje a média é ${P.robosMed})</span>
+          <input type="range" id="psRobosR" min="1" max="${ROBOS.length}" step="1" value="${E.robos}" oninput="_projSet('robos',this.value)"></label>
+        <label class="proj-in"><span>Dias de trabalho que faltam</span>
+          <input type="number" id="psDias" min="0" max="${P.nd}" value="${E.dias}" oninput="_projSet('dias',this.value)"></label>
+        <label class="proj-in"><span>Meta do mês (peças)</span>
+          <input type="number" id="psMeta" min="0" step="100" value="${E.meta}" oninput="_projSet('meta',this.value)"></label>
+        <label class="proj-chk"><input type="checkbox" id="psSab" ${E.sab ? 'checked' : ''} onchange="_projSet('sab',this.checked)"> Trabalhar aos sábados</label>
+        <button type="button" class="proj-reset" onclick="_projReset()">↺ Voltar ao ritmo atual</button>
+      </div>
+      <div class="proj-out" id="psOut"></div>
+    </div>`;
+  return `<div class="proj-box">
+    <div class="proj-tit">🔮 Projeção <em>${fechado ? 'como o mês terminou' : 'conforme a média dos dias já fechados'}</em></div>
+    <div class="proj-grid">${cards}</div>
+    <div class="proj-graf"><svg id="projGraf" viewBox="0 0 640 180" role="img" aria-label="Produção acumulada do mês e projeção"></svg>
+      <div class="proj-leg"><span><i style="--c:#00e87a"></i>Realizado (acumulado)</span>${fechado ? '' : '<span><i style="--c:#3d9eff"></i>Simulação</span>'}<span><i style="--c:#ffb300"></i>Meta</span></div></div>
+    ${sim}
+  </div>`;
+}
+function _projSet(c, v){
+  const E = _projEstado, P = _projP; if(!E || !P) return;
+  if(c === 'sab'){ E.sab = !!v; if(!E.diasManual) E.dias = P.restMes(E.sab); if(!E.metaManual) E.meta = Math.round(P.metaConcl + P.metaRec * P.restMes(E.sab)); }
+  else if(c === 'dias'){ E.dias = Math.max(0, parseInt(v) || 0); E.diasManual = true; }
+  else if(c === 'meta'){ E.meta = Math.max(0, parseInt(v) || 0); E.metaManual = true; }
+  else if(c === 'ritmo'){ E.ritmo = Math.max(0, parseInt(v) || 0); }
+  else if(c === 'robos'){ E.robos = Math.max(1, parseInt(v) || 1); }
+  _projAtualiza();
+}
+function _projReset(){
+  if(!_projP) return; _projEstado = _projPadrao(_projP);
+  const sab = document.getElementById('psSab'); if(sab) sab.checked = _projEstado.sab;
+  _projAtualiza(true);
+}
+function _projAtualiza(forcar){
+  const P = _projP, E = _projEstado; if(!P || !E) return;
+  const g = id => document.getElementById(id);
+  const sync = (id, val) => { const el = g(id); if(el && (forcar || document.activeElement !== el)) el.value = val; };
+  sync('psRitmo', E.ritmo); sync('psRitmoR', E.ritmo); sync('psDias', E.dias); sync('psMeta', E.meta); sync('psRobosR', E.robos);
+  if(g('psRobosV')) g('psRobosV').textContent = E.robos;
+  const fechado = P.estado === 'fechado';
+  const ritmoSim = Math.round(E.ritmo * (P.robosMed > 0 ? E.robos / P.robosMed : 1));
+  const totalSim = fechado ? P.realizadoMes : P.realizadoMes + ritmoSim * E.dias;
+  const out = g('psOut');
+  if(out){
+    const projAtual = P.realizadoMes + P.ritmo * P.restMes(P.sabPadrao);
+    const dif = totalSim - projAtual;
+    const falta = Math.max(0, E.meta - P.realizadoMes);
+    const precisa = E.dias > 0 ? Math.ceil(falta / E.dias) : null;
+    const pct = E.meta > 0 ? Math.round(totalSim / E.meta * 100) : null;
+    const corPct = pct == null ? '#8a95a8' : (pct >= 100 ? '#00e87a' : pct >= 85 ? '#ffb300' : '#ff4d4d');
+    const anoSim = P.realizadoAno + ritmoSim * P.restAno(E.sab);
+    const vsAnt = P.antRef > 0 ? Math.round((totalSim / P.antRef - 1) * 100) : null;
+    let metaTxt;
+    if(E.meta <= 0) metaTxt = 'sem meta definida';
+    else if(falta === 0) metaTxt = '✅ a meta do mês já foi batida';
+    else if(precisa == null) metaTxt = `faltam ${_projFmt(falta)} peças e não sobram dias`;
+    else metaTxt = `${ritmoSim >= precisa ? '✅' : '⚠️'} precisa de ${_projFmt(precisa)}/dia — no simulador está ${_projFmt(ritmoSim)}/dia`;
+    out.innerHTML = [
+      _projCard('#3d9eff', 'Mês com essa simulação', _projFmt(totalSim), `${_projFmt(P.realizadoMes)} feitas + ${E.dias} dia(s) × ${_projFmt(ritmoSim)}/dia`),
+      _projCard(dif >= 0 ? '#00e87a' : '#ff4d4d', 'Diferença da projeção', (dif >= 0 ? '+' : '') + _projFmt(dif), `projeção atual: ${_projFmt(projAtual)} peças`),
+      _projCard(corPct, 'Meta do mês', pct == null ? '—' : pct + '%', metaTxt),
+      _projCard('#ffb300', 'vs ' + P.mesAnt, vsAnt == null ? '—' : (vsAnt > 0 ? '+' : '') + vsAnt + '%', P.antTxt),
+      _projCard('#f472b6', 'Ano com esse ritmo', _projFmt(anoSim), `${_projFmt(P.realizadoAno)} feitas + ${P.restAno(E.sab)} dias × ${_projFmt(ritmoSim)}/dia`)
+    ].join('');
+  }
+  _projDesenha(fechado ? 0 : ritmoSim * E.dias, E);
+}
+function _projDesenha(restanteSim, E){
+  const P = _projP, svg = document.getElementById('projGraf'); if(!P || !svg) return;
+  const W = 640, H = 180, L = 52, R = 14, T = 12, B = 24, nd = P.nd;
+  const fut = P.diasFuturos(E.sab), nFut = fut.filter(Boolean).length;
+  const real = [[0, 0]]; let acum = 0;
+  for(let d = 1; d <= nd; d++){ acum += P.porDia[d-1]; if(d <= P.hojeD) real.push([d, acum]); }
+  const acumAte = d => { let s = 0; for(let i = 1; i <= d; i++) s += P.porDia[i-1]; return s; };
+  let d0 = P.hojeD; const primFut = fut.indexOf(true); if(primFut >= 0) d0 = Math.min(d0, primFut);
+  const proj = []; let c = acumAte(d0); proj.push([d0, c]);
+  const porFut = nFut ? restanteSim / nFut : 0;
+  for(let d = d0 + 1; d <= nd; d++){ if(fut[d-1]) c += porFut; proj.push([d, c]); }
+  if(!nFut && restanteSim > 0){ c += restanteSim; proj[proj.length - 1] = [nd, c]; }
+  const fimSim = P.estado === 'fechado' ? acumAte(nd) : c;
+  const meta = E.meta || 0;
+  const maxY = Math.max(fimSim, meta, acumAte(nd), 1) * 1.08;
+  const X = d => L + d / nd * (W - L - R), Y = v => T + (1 - v / maxY) * (H - T - B);
+  const pts = arr => arr.map(p => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ');
+  let grade = '';
+  for(let i = 1; i <= 3; i++){ const v = maxY / 1.08 * i / 3, y = Y(v).toFixed(1); grade += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#1e2530" stroke-dasharray="3 4"/><text x="${L-6}" y="${(+y + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#6b7788">${v >= 1000 ? (v/1000).toLocaleString('pt-BR', {maximumFractionDigits: 1}) + 'k' : Math.round(v)}</text>`; }
+  let eixo = ''; for(let d = 1; d <= nd; d++) if(d === 1 || d % 5 === 0 || d === nd) eixo += `<text x="${X(d).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="#6b7788">${d}</text>`;
+  const ultR = real[real.length - 1];
+  const area = real.length > 1 ? `<path d="M${X(0)},${Y(0)} L${pts(real).split(' ').join(' L')} L${X(ultR[0]).toFixed(1)},${Y(0)} Z" fill="#00e87a" opacity=".12"/>` : '';
+  svg.innerHTML = grade + eixo +
+    `<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2a3342"/>` +
+    (meta > 0 ? `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(nd)}" y2="${Y(meta).toFixed(1)}" stroke="#ffb300" stroke-width="1.6" stroke-dasharray="6 5" opacity=".85"/><text x="${X(nd)-4}" y="${(Y(meta) - 6).toFixed(1)}" text-anchor="end" font-size="10.5" font-weight="700" fill="#ffb300">meta ${_projFmt(meta)}</text>` : '') +
+    area + `<polyline points="${pts(real)}" fill="none" stroke="#00e87a" stroke-width="2.6" stroke-linejoin="round"/>` +
+    (P.estado !== 'fechado' ? `<polyline points="${pts(proj)}" fill="none" stroke="#3d9eff" stroke-width="2.4" stroke-dasharray="7 5" stroke-linejoin="round"/><circle cx="${X(nd).toFixed(1)}" cy="${Y(fimSim).toFixed(1)}" r="4.5" fill="#3d9eff"/><text x="${X(nd)-8}" y="${(Y(fimSim) + 16).toFixed(1)}" text-anchor="end" font-size="11" font-weight="800" fill="#3d9eff">${_projFmt(fimSim)}</text>` : '') +
+    (ultR[0] > 0 ? `<circle cx="${X(ultR[0]).toFixed(1)}" cy="${Y(ultR[1]).toFixed(1)}" r="4" fill="#00e87a"/>` : '');
+}
+
 function renderRelatorio(){
   const c = celulas[selected];
   const anoAtual = new Date().getFullYear();
@@ -6018,6 +6245,8 @@ function renderRelatorio(){
       <div class="date-sel"><label>Ano</label><select onchange="updateRelFiltro('${selected}','rel_ano',+this.value)">${anosOpts}</select></div>
       <div style="margin-left:auto;font-size:12px;color:#6b7788">${diasComDados.length} dia(s) com dados</div>
     </div>
+
+    ${_projSecao(anoSel, mesIdx, mc)}
 
     ${diasComDados.length===0?`
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:40px;text-align:center;color:#2a3040;font-size:13px">
@@ -6327,6 +6556,7 @@ function renderRelatorio(){
       })()}
     </div>`}
   </div>`;
+  _projAtualiza();
 }
 
 // Dia selecionado por robô na seção de Equipes (histórico). roboNum -> chave 'ano_mes_dia'
