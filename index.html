@@ -1367,6 +1367,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .proj-chk input{width:18px;height:18px;accent-color:#3d9eff}
 .proj-reset{background:#1e2530;border:1px solid #2a3342;color:#d8dde6;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer;font-family:inherit}
 .proj-reset:hover{border-color:#3d9eff;color:#fff}
+.proj-sim.cap{border-color:#00e87a55;background:#00e87a08}
+.proj-sim.cap .proj-sim-tit{color:#00e87a}
+.pc-tab{width:100%;border-collapse:collapse;min-width:900px}
+.pc-tab th{font-size:11px;color:#8a95a8;text-transform:uppercase;letter-spacing:.05em;text-align:left;padding:8px;border-bottom:1px solid #1e2530;font-weight:800;white-space:nowrap}
+.pc-tab td{padding:8px;border-bottom:1px solid #161b22;font-size:13px;color:#d8dde6;white-space:nowrap}
+.pc-tab td b{color:#fff}
+.pc-tab tr.pc-dest td{background:#3d9eff0d}
+.pc-tab tr.pc-grupo td{font-size:11px;color:#3d9eff;text-transform:uppercase;letter-spacing:.12em;font-weight:800;padding-top:14px;border-bottom:1px solid #3d9eff33;background:none}
+.pc-var{font-weight:900}
+.pc-tab small{color:#5c6676;font-size:10.5px}
 /* Painel — meta do dia e do mês */
 .pn{display:flex;flex-direction:column;gap:14px}
 .pn-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
@@ -6078,13 +6088,124 @@ function _projCalc(mc, ano, mes){
   const pa = new Date(ano, mes - 1, 1);
   const totAnt = Object.keys(tot).filter(ch => { const p = ch.split('_').map(Number); return p[0] === pa.getFullYear() && p[1] === pa.getMonth(); }).reduce((s, ch) => s + tot[ch], 0);
   const hojeD = estado === 'atual' ? hoje.getDate() : (estado === 'fechado' ? nd : 0);
+  // ponto de partida do simulador de capacidade: o real do mês (ou dos últimos 30 dias)
+  const stats = _projStats(md);
+  const baseCap = conclMes.length ? conclMes : ult30;
+  const sm = baseCap.reduce((a, ch) => { const x = stats[ch] || {t: 0, hm: 0, rob: 0}; a.t += x.t; a.hm += x.hm; a.rob += x.rob; return a; }, {t: 0, hm: 0, rob: 0});
+  const cap = {mph: sm.hm ? Math.round(sm.t / sm.hm) : 0, rob: baseCap.length ? Math.max(1, Math.round(sm.rob / baseCap.length)) : ROBOS.length, hor: sm.rob ? Math.round(sm.hm / sm.rob * 2) / 2 : 8};
+  let diasUteis = 0; for(let d = 1; d <= nd; d++) if(ehTrab(new Date(ano, mes, d), trab[6])) diasUteis++;
   return {ano, mes, nd, estado, hojeD, porDia, realizadoMes, realizadoAno, mediaMes, mediaRec, media5,
     p25: quart(0.25), p75: quart(0.75), ritmo: mediaMes || mediaRec, metaConcl, metaRec, robosMed,
-    sabPadrao: trab[6], restMes, restAno, diasFuturos, totAnt, mesAnt: MESES[pa.getMonth()], temHist: concl.length > 0};
+    sabPadrao: trab[6], stats, cap, diasUteis, restMes, restAno, diasFuturos, totAnt, mesAnt: MESES[pa.getMonth()], temHist: concl.length > 0};
+}
+// estatística de cada dia: total, horas-máquina, robôs que rodaram, meta das horas apontadas (regra do site)
+function _projStats(md){
+  const out = {};
+  Object.keys(md).forEach(ch => {
+    if(ch.split('_').length !== 3) return; const dd = md[ch]; if(!dd) return;
+    let t = 0, hm = 0, rob = 0, metaH = 0, prodMeta = 0;
+    ROBOS.forEach(r => {
+      const rd = dd[r] || dd[String(r)]; if(!rd) return; const meta = parseInt(rd.meta) || 0; let rodou = false;
+      _projHoras().forEach(h => {
+        const v = parseCelVal(rd[campoH(h)] || '').num; if(v <= 0) return;
+        t += v; hm++; rodou = true;
+        if(meta > 0){ const m = metaEfetivaHora(h, meta, ch); if(m > 0){ metaH += m; prodMeta += v; } }
+      });
+      if(rodou) rob++;
+    });
+    if(t > 0) out[ch] = {t, hm, rob, metaH, prodMeta};
+  });
+  return out;
+}
+function _projAgg(P, chs){
+  const a = {t: 0, hm: 0, rob: 0, metaH: 0, prodMeta: 0, dias: 0};
+  chs.forEach(ch => { const x = P.stats[ch]; if(!x) return; a.t += x.t; a.hm += x.hm; a.rob += x.rob; a.metaH += x.metaH; a.prodMeta += x.prodMeta; a.dias++; });
+  a.mDia = a.dias ? a.t / a.dias : 0; a.mH = a.hm ? a.t / a.hm : 0; a.robDia = a.dias ? a.rob / a.dias : 0;
+  a.horRob = a.rob ? a.hm / a.rob : 0; a.efic = a.metaH ? a.prodMeta / a.metaH * 100 : null;
+  return a;
+}
+function _projChs(ini, fim){ const out = []; for(const d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) out.push(d.getFullYear()+'_'+d.getMonth()+'_'+d.getDate()); return out; }
+function _projVar(a, b){ if(!b) return ''; const v = Math.round((a / b - 1) * 100); return `<span class="pc-var" style="color:${v >= 0 ? '#00e87a' : '#ff4d4d'}">${v >= 0 ? '+' : ''}${v}%</span>`; }
+function _projDec(n){ return (n || 0).toLocaleString('pt-BR', {maximumFractionDigits: 1}); }
+function _projComparativo(P){
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const linha = (nome, a, k, vs, destaque) => {
+    k = k || 1;
+    return `<tr${destaque ? ' class="pc-dest"' : ''}><td>${nome}</td><td><b>${_projFmt(a.t / k)}</b></td><td>${_projDec(a.dias / k)}</td><td>${_projFmt(a.mDia)}</td><td>${_projFmt(a.hm / k)}</td><td>${_projFmt(a.mH)}</td><td>${_projDec(a.robDia)}</td><td>${_projDec(a.horRob)}</td><td>${a.efic == null ? '—' : Math.round(a.efic) + '%'}</td><td>${vs || ''}</td></tr>`;
+  };
+  let semHTML = '';
+  if(P.estado === 'atual'){
+    const seg = new Date(hoje); seg.setDate(seg.getDate() - ((seg.getDay() + 6) % 7));
+    const segAnt = new Date(seg); segAnt.setDate(segAnt.getDate() - 7);
+    const domAnt = new Date(seg); domAnt.setDate(domAnt.getDate() - 1);
+    const ini4 = new Date(seg); ini4.setDate(ini4.getDate() - 28);
+    const sem = _projAgg(P, _projChs(seg, hoje)), ant = _projAgg(P, _projChs(segAnt, domAnt)), q4 = _projAgg(P, _projChs(ini4, domAnt));
+    semHTML = linha('Semana atual (seg até hoje)', sem, 1, !sem.dias ? '<small>sem produção ainda nesta semana</small>' : (ant.mDia ? _projVar(sem.mDia, ant.mDia) + ' <small>média/dia vs semana passada</small>' : ''), true)
+      + linha('Semana passada', ant, 1, q4.mDia ? _projVar(ant.mDia, q4.mDia) + ' <small>vs média 4 semanas</small>' : '')
+      + linha('Média das últimas 4 semanas (por semana)', q4, 4, '');
+  }
+  const ini = new Date(P.ano, P.mes, 1), fim = new Date(P.ano, P.mes, P.nd);
+  const iniA = new Date(P.ano, P.mes - 1, 1), fimA = new Date(P.ano, P.mes, 0);
+  const mesSel = _projAgg(P, _projChs(ini, P.estado === 'atual' ? hoje : fim));
+  const mesAnt = _projAgg(P, _projChs(iniA, fimA));
+  const ini3 = new Date(P.ano, P.mes - 3, 1), m3 = _projAgg(P, _projChs(ini3, fimA));
+  let mesHTML;
+  if(P.estado === 'atual'){
+    const fimMesmo = new Date(P.ano, P.mes - 1, Math.min(hoje.getDate(), fimA.getDate()));
+    const mesmo = _projAgg(P, _projChs(iniA, fimMesmo));
+    mesHTML = linha(MESES[P.mes] + ' até hoje', mesSel, 1, mesmo.t ? _projVar(mesSel.t, mesmo.t) + ' <small>vs mesmo período</small>' : '', true)
+      + linha(P.mesAnt + ' no mesmo período (1 a ' + fimMesmo.getDate() + ')', mesmo, 1, '');
+  } else {
+    mesHTML = linha(MESES[P.mes] + (P.estado === 'futuro' ? ' (ainda sem produção)' : ''), mesSel, 1, mesAnt.t ? _projVar(mesSel.t, mesAnt.t) + ' <small>vs ' + P.mesAnt + '</small>' : '', true);
+  }
+  mesHTML += linha(P.mesAnt + ' inteiro', mesAnt, 1, m3.t ? _projVar(mesAnt.t, m3.t / 3) + ' <small>vs média 3 meses</small>' : '')
+    + linha('Média dos 3 meses anteriores (por mês)', m3, 3, '');
+  const cab = '<tr><th>Período</th><th>Total</th><th>Dias c/ produção</th><th>Média/dia</th><th>Horas-máquina</th><th>Média/h por robô</th><th>Robôs/dia</th><th>Horas por robô/dia</th><th>Eficiência</th><th>Comparação</th></tr>';
+  return `<div class="proj-box"><div class="proj-tit">📊 Comparativo <em>semana e mês · eficiência = produção ÷ meta das horas trabalhadas</em></div>
+    <div style="overflow-x:auto"><table class="pc-tab"><thead>${cab}</thead><tbody>
+      ${semHTML ? '<tr class="pc-grupo"><td colspan="10">Semanas</td></tr>' + semHTML : ''}
+      <tr class="pc-grupo"><td colspan="10">Meses</td></tr>${mesHTML}
+    </tbody></table></div></div>`;
+}
+function _projCapSet(c, v){
+  const E = _projEstado; if(!E) return;
+  if(c === 'chor') E.chor = Math.max(0, Math.min(17, parseFloat(String(v).replace(',', '.')) || 0));
+  else if(c === 'crob') E.crob = Math.max(1, parseInt(v) || 1);
+  else E[c] = Math.max(0, parseInt(v) || 0);
+  _projCapAtualiza();
+}
+function _projCapAtualiza(forcar){
+  const P = _projP, E = _projEstado; if(!P || !E) return;
+  const g = id => document.getElementById(id);
+  const sync = (id, val) => { const el = g(id); if(el && (forcar || document.activeElement !== el)) el.value = val; };
+  sync('pcMph', E.cmph); sync('pcRobR', E.crob); sync('pcHor', E.chor); sync('pcDias', E.cdias);
+  if(g('pcRobV')) g('pcRobV').textContent = E.crob;
+  const out = g('pcOut'); if(!out) return;
+  const porH = E.cmph * E.crob, porDia = porH * E.chor, periodo = porDia * E.cdias;
+  const fechado = P.estado === 'fechado';
+  const fechaMes = P.realizadoMes + periodo;
+  const projAtual = P.realizadoMes + P.ritmo * P.restMes(P.sabPadrao);
+  const metaFalta = Math.max(0, (E.meta || 0) - P.realizadoMes);
+  const capHoras = E.crob * E.chor * E.cdias;
+  const precisa = capHoras > 0 ? Math.ceil(metaFalta / capHoras) : null;
+  let metaTxt, metaCor = '#8a95a8', metaVal = '—';
+  if(!(E.meta > 0)) metaTxt = 'sem meta do mês';
+  else if(metaFalta === 0){ metaVal = '✅'; metaTxt = 'a meta do mês já foi batida'; metaCor = '#00e87a'; }
+  else if(precisa == null) metaTxt = 'informe robôs, horas e dias';
+  else { metaVal = _projFmt(precisa) + '/h'; metaCor = precisa <= E.cmph ? '#00e87a' : '#ff4d4d'; metaTxt = `${precisa <= E.cmph ? '✅' : '⚠️'} por robô para bater ${_projFmt(E.meta)} — no simulador está ${_projFmt(E.cmph)}/h`; }
+  out.innerHTML = [
+    _projCard('#00e87a', 'Peças por hora (fábrica)', _projFmt(porH), `${E.crob} robôs × ${_projFmt(E.cmph)}/h`),
+    _projCard('#3d9eff', 'Peças por dia', _projFmt(porDia), `× ${_projDec(E.chor)} h trabalhadas por robô`),
+    _projCard('#a78bfa', `Em ${E.cdias} dia(s)`, _projFmt(periodo), `${_projFmt(porDia)} × ${E.cdias} dias`),
+    fechado ? '' : _projCard(fechaMes >= projAtual ? '#00e87a' : '#ff4d4d', 'Mês fechando em', _projFmt(fechaMes), `${_projFmt(P.realizadoMes)} feitas + ${_projFmt(periodo)} · projeção atual ${_projFmt(projAtual)}`),
+    fechado ? '' : _projCard(metaCor, 'Média/h necessária', metaVal, metaTxt),
+    fechado ? '' : _projCard('#ffb300', 'vs ' + P.mesAnt, P.antRef ? ((fechaMes / P.antRef - 1) * 100 >= 0 ? '+' : '') + Math.round((fechaMes / P.antRef - 1) * 100) + '%' : '—', P.antTxt || '')
+  ].join('');
 }
 function _projPadrao(P){
   const rest = P.restMes(P.sabPadrao);
   return {k: P.ano+'_'+P.mes, ritmo: P.ritmo, sab: P.sabPadrao, dias: rest, diasManual: false, robos: P.robosMed,
+    cmph: P.cap.mph, crob: P.cap.rob, chor: P.cap.hor, cdias: P.estado === 'fechado' ? P.diasUteis : rest,
     meta: Math.round(P.metaConcl + P.metaRec * rest), metaManual: false};
 }
 function _projCard(cor, rot, val, sub){
@@ -6139,13 +6260,30 @@ function _projSecao(ano, mes, mc){
       </div>
       <div class="proj-out" id="psOut"></div>
     </div>`;
+  const capSim = `
+    <div class="proj-sim cap">
+      <div class="proj-sim-tit">🏭 Simulador de capacidade — robôs × horas × dias</div>
+      <div class="proj-sim-grid">
+        <label class="proj-in"><span>Média por hora de cada robô</span>
+          <input type="number" id="pcMph" min="0" value="${E.cmph}" oninput="_projCapSet('cmph',this.value)"></label>
+        <label class="proj-in"><span>Quantos robôs: <b id="pcRobV">${E.crob}</b></span>
+          <input type="range" id="pcRobR" min="1" max="${ROBOS.length}" step="1" value="${E.crob}" oninput="_projCapSet('crob',this.value)"></label>
+        <label class="proj-in"><span>Horas trabalhadas por robô no dia</span>
+          <input type="number" id="pcHor" min="0" max="17" step="0.5" value="${E.chor}" oninput="_projCapSet('chor',this.value)"></label>
+        <label class="proj-in"><span>Quantos dias</span>
+          <input type="number" id="pcDias" min="0" max="31" value="${E.cdias}" oninput="_projCapSet('cdias',this.value)"></label>
+      </div>
+      <div class="proj-sub" style="margin-top:8px">Ponto de partida = o real ${P.estado === 'atual' ? 'do mês' : 'dos dias de produção'}: ${_projFmt(P.cap.mph)} peças/h por robô · ${P.cap.rob} robôs por dia · ${_projDec(P.cap.hor)} h por robô por dia.</div>
+      <div class="proj-out" id="pcOut"></div>
+    </div>`;
   return `<div class="proj-box">
     <div class="proj-tit">🔮 Projeção <em>${fechado ? 'como o mês terminou' : 'conforme a média dos dias já fechados'}</em></div>
     <div class="proj-grid">${cards}</div>
     <div class="proj-graf"><svg id="projGraf" viewBox="0 0 640 180" role="img" aria-label="Produção acumulada do mês e projeção"></svg>
       <div class="proj-leg"><span><i style="--c:#00e87a"></i>Realizado (acumulado)</span>${fechado ? '' : '<span><i style="--c:#3d9eff"></i>Simulação</span>'}<span><i style="--c:#ffb300"></i>Meta</span></div></div>
     ${sim}
-  </div>`;
+    ${capSim}
+  </div>${_projComparativo(P)}`;
 }
 function _projSet(c, v){
   const E = _projEstado, P = _projP; if(!E || !P) return;
@@ -6194,6 +6332,7 @@ function _projAtualiza(forcar){
     ].join('');
   }
   _projDesenha(fechado ? 0 : ritmoSim * E.dias, E);
+  _projCapAtualiza(forcar);
 }
 function _projDesenha(restanteSim, E){
   const P = _projP, svg = document.getElementById('projGraf'); if(!P || !svg) return;
