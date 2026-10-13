@@ -6545,6 +6545,14 @@ function renderPainelVivo(){
     </div></div>`;
 }
 
+// Projeção do dia: eficiência das horas já fechadas aplicada na meta das horas que faltam
+function _pnProjDia(D, agora){
+  let mF = 0, fF = 0, mR = 0, fR = 0;
+  D.horas.forEach(h => { const o = D.porHora[h]; if(_horaVenceu(h, agora)){ mF += o.meta; fF += o.feito; } else { mR += o.meta; fR += o.feito; } });
+  if(mF <= 0) return null;
+  const ef = fF / mF;
+  return {proj: Math.round(D.feito + Math.max(0, ef * mR - fR)), ef, restaMeta: mR};
+}
 function renderPainel(){
   if(!isAdmin){ renderPainelVivo(); return; }   // painel de metas: só o host
   const mp = document.getElementById('mainPanel'); if(!mp) return;
@@ -6568,12 +6576,14 @@ function renderPainel(){
       const restH = D.horas.filter(h => D.porHora[h].meta > 0 && !_horaVenceu(h, M.agora));
       const falta = Math.max(0, D.meta - D.feito);
       const robosHoje = ROBOS.filter(r => D.robos[r].meta > 0).length;
+      const pj = _pnProjDia(D, M.agora), pjP = pj ? _pnPct(pj.proj, D.meta) : null;
       cardDia = `<div class="pn-hero"><div class="pn-hero-t">☀ Meta do dia · hoje ${String(D.d.getDate()).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}</div>
         <div class="pn-hero-b">${_pnAnel(p, cor)}<div class="pn-lis">
           ${_pnLinha('Meta do dia', F(D.meta) + ' pç')}
           ${_pnLinha('Produzido', F(D.feito) + ' pç', cor)}
           ${_pnLinha('Falta', F(falta) + ' pç')}
           ${_pnLinha('Até agora (horas fechadas)', 'meta ' + F(D.metaAteAgora) + ' · ' + sd.txt, sd.cor)}
+          ${_pnLinha('Projeção do dia' + (pj && pj.restaMeta > 0 ? ' (no ritmo de hoje)' : ''), pj ? F(pj.proj) + ' pç · ' + pjP + '% da meta' : 'aguarda a 1ª hora fechar', pj ? _pnCor(pjP) : null)}
           ${_pnLinha('Ritmo necessário', falta > 0 && restH.length ? F(Math.ceil(falta / restH.length)) + ' pç/h nas ' + restH.length + ' h que faltam' : (falta > 0 ? 'turno encerrado' : '✅ meta batida'))}
           ${_pnLinha('Robôs no cálculo', robosHoje + ' de ' + ROBOS.length)}
         </div></div></div>`;
