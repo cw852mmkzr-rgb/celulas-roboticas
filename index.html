@@ -4656,8 +4656,8 @@ function renderFuncionarios(){
   const lista=funcT();
   const mesFiltro=_funcTodoAnoT?null:_funcMesT;
   const dadosF=desempenhoFuncT(_funcAnoT,mesFiltro);
-  // ranking por eficiência de meta (peças ÷ meta das horas trabalhadas); sem meta vai pro fim
-  const comDados=dadosF.filter(f=>f.horas>0).sort((a,b)=> (b.efic==null?-1:b.efic)-(a.efic==null?-1:a.efic) || b.taxa-a.taxa || b.pecas-a.pecas);
+  // ranking: 1º metas atingidas (horas com meta batida) · 2º eficiência de meta (peças ÷ meta das horas trabalhadas) · 3º peças
+  const comDados=dadosF.filter(f=>f.horas>0).sort((a,b)=> b.metasOk-a.metasOk || (b.efic==null?-1:b.efic)-(a.efic==null?-1:a.efic) || b.pecas-a.pecas);
   const periodoTxt=_funcTodoAnoT?(_funcAnoT+' (ano todo)'):(MESES[_funcMesT]+' / '+_funcAnoT);
   const totalPecas=comDados.reduce((s,f)=>s+f.pecas,0);
   const totalHoras=comDados.reduce((s,f)=>s+f.horas,0);
@@ -4699,7 +4699,7 @@ function renderFuncionarios(){
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Funcionários</div><div style="font-size:26px;font-weight:900;color:#3d9eff">${lista.length}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${comDados.length} com produção</div></div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Peças no período</div><div style="font-size:26px;font-weight:900;color:#00e87a">${totalPecas.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">creditadas à equipe</div></div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média/hora da equipe</div><div style="font-size:26px;font-weight:900;color:#a78bfa">${mediaEquipe.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">peças por hora</div></div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Destaque</div><div style="font-size:20px;font-weight:900;color:#ffb300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lider?esc(lider.nome):'—'}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${lider?(lider.efic!=null?lider.efic+'% de eficiência da meta':lider.pecas.toLocaleString("pt-BR")+' peças'):'sem dados'}</div></div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Destaque</div><div style="font-size:20px;font-weight:900;color:#ffb300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lider?esc(lider.nome):'—'}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${lider?(lider.horasMeta>0?lider.metasOk+' metas atingidas · '+lider.efic+'% da meta':lider.pecas.toLocaleString("pt-BR")+' peças'):'sem dados'}</div></div>
   </div>`;
 
   // Ranking (cards clicáveis)
@@ -4715,8 +4715,9 @@ function renderFuncionarios(){
             <div style="font-size:11px;color:${st.cor};font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px">${st.txt}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:28px;font-weight:900;color:${st.cor};line-height:1">${f.efic!=null?f.efic+'%':'—'}</div>
-            <div style="font-size:10px;color:#6b7788;letter-spacing:0.1em">DA META</div>
+            <div style="font-size:28px;font-weight:900;color:${st.cor};line-height:1">${f.horasMeta>0?f.metasOk:'—'}</div>
+            <div style="font-size:10px;color:#6b7788;letter-spacing:0.1em">METAS ATINGIDAS</div>
+            <div style="font-size:12px;font-weight:800;color:${st.cor};margin-top:3px">${f.efic!=null?f.efic+'% da meta':''}</div>
           </div>
         </div>
         <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${barPct}%;background:${st.cor};border-radius:99px"></div></div>
