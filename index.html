@@ -4609,7 +4609,7 @@ function _funcMetaHoraT(h, meta, chave){
   return HORAS_CAFE.includes(h) ? Math.round(base*0.6) : base;
 }
 function desempenhoFuncT(ano,mes){
-  const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
+  const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,pecasM:0,metaSoma:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
   funcT().forEach(n=>garante(n));
   const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
   Object.entries(md).forEach(([chave,dia])=>{
@@ -4623,23 +4623,25 @@ function desempenhoFuncT(ano,mes){
         o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
         o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
         const metaH=_funcMetaHoraT(h,meta,chave);
-        if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; }
+        if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; o.pecasM+=val; o.metaSoma+=metaH; }
       });
     });
   });
   return Object.values(res).map(o=>{
     const media=o.horas>0?Math.round(o.pecas/o.horas):0;
     const taxa=o.horasMeta>0?Math.round(o.metasOk/o.horasMeta*100):0;
+    // eficiência de meta: peças feitas ÷ meta das horas que a pessoa trabalhou (só horas com meta)
+    const efic=o.metaSoma>0?Math.round(o.pecasM/o.metaSoma*100):null;
     let melhorDia=null,melhorP=0; Object.entries(o.diaPecas).forEach(([ch,v])=>{ if(v>melhorP){melhorP=v;melhorDia=ch;} });
-    return {...o, dias:o.dias.size, robos:o.robos.size, media, taxa, melhorDia, melhorP};
+    return {...o, dias:o.dias.size, robos:o.robos.size, media, taxa, efic, melhorDia, melhorP};
   });
 }
 function _funcStatusT(f){
   if(!f.horas) return {txt:'Sem dados',cor:'#8a95a8'};
-  if(f.horasMeta===0) return {txt:'Sem meta definida',cor:'#3d9eff'};
-  if(f.taxa>=85) return {txt:'Excelente',cor:'#00e87a'};
-  if(f.taxa>=65) return {txt:'Muito bom',cor:'#3d9eff'};
-  if(f.taxa>=45) return {txt:'Regular',cor:'#ffb300'};
+  if(f.horasMeta===0 || f.efic==null) return {txt:'Sem meta definida',cor:'#3d9eff'};
+  if(f.efic>=95) return {txt:'Excelente',cor:'#00e87a'};
+  if(f.efic>=85) return {txt:'Muito bom',cor:'#3d9eff'};
+  if(f.efic>=70) return {txt:'Regular',cor:'#ffb300'};
   return {txt:'Precisa melhorar',cor:'#ff4d4d'};
 }
 function _funcStatT(label,valor,cor,big){
@@ -4654,7 +4656,8 @@ function renderFuncionarios(){
   const lista=funcT();
   const mesFiltro=_funcTodoAnoT?null:_funcMesT;
   const dadosF=desempenhoFuncT(_funcAnoT,mesFiltro);
-  const comDados=dadosF.filter(f=>f.horas>0).sort((a,b)=> b.taxa-a.taxa || b.metasOk-a.metasOk || b.pecas-a.pecas);
+  // ranking por eficiência de meta (peças ÷ meta das horas trabalhadas); sem meta vai pro fim
+  const comDados=dadosF.filter(f=>f.horas>0).sort((a,b)=> (b.efic==null?-1:b.efic)-(a.efic==null?-1:a.efic) || b.taxa-a.taxa || b.pecas-a.pecas);
   const periodoTxt=_funcTodoAnoT?(_funcAnoT+' (ano todo)'):(MESES[_funcMesT]+' / '+_funcAnoT);
   const totalPecas=comDados.reduce((s,f)=>s+f.pecas,0);
   const totalHoras=comDados.reduce((s,f)=>s+f.horas,0);
@@ -4696,14 +4699,14 @@ function renderFuncionarios(){
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Funcionários</div><div style="font-size:26px;font-weight:900;color:#3d9eff">${lista.length}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${comDados.length} com produção</div></div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Peças no período</div><div style="font-size:26px;font-weight:900;color:#00e87a">${totalPecas.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">creditadas à equipe</div></div>
     <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Média/hora da equipe</div><div style="font-size:26px;font-weight:900;color:#a78bfa">${mediaEquipe.toLocaleString("pt-BR")}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">peças por hora</div></div>
-    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Destaque</div><div style="font-size:20px;font-weight:900;color:#ffb300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lider?esc(lider.nome):'—'}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${lider?(lider.horasMeta>0?lider.taxa+'% das metas ('+lider.metasOk+'/'+lider.horasMeta+')':lider.pecas.toLocaleString("pt-BR")+' peças'):'sem dados'}</div></div>
+    <div style="background:#0f1318;border:1px solid #1e2530;border-radius:12px;padding:14px 16px"><div style="font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">🏆 Destaque</div><div style="font-size:20px;font-weight:900;color:#ffb300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lider?esc(lider.nome):'—'}</div><div style="font-size:11px;color:#6b7788;margin-top:3px">${lider?(lider.efic!=null?lider.efic+'% de eficiência da meta':lider.pecas.toLocaleString("pt-BR")+' peças'):'sem dados'}</div></div>
   </div>`;
 
   // Ranking (cards clicáveis)
   if(comDados.length){
     html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-bottom:16px">`+comDados.map((f,i)=>{
       const st=_funcStatusT(f); const medalha=['🥇','🥈','🥉'][i]||`${i+1}º`;
-      const barPct=f.horasMeta>0?Math.min(100,f.taxa):0;
+      const barPct=f.efic!=null?Math.min(100,f.efic):0;
       return `<div class="func-card" onclick="abrirFuncDetalheT('${encodeURIComponent(f.nome)}')" style="background:#0f1318;border:1px solid ${st.cor}44;border-radius:12px;padding:18px;cursor:pointer;transition:transform .15s,border-color .15s" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='${st.cor}88'" onmouseout="this.style.transform='';this.style.borderColor='${st.cor}44'">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
           <span style="font-size:20px;min-width:30px;text-align:center">${medalha}</span>
@@ -4712,8 +4715,8 @@ function renderFuncionarios(){
             <div style="font-size:11px;color:${st.cor};font-weight:800;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px">${st.txt}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:28px;font-weight:900;color:${st.cor};line-height:1">${f.pecas.toLocaleString("pt-BR")}</div>
-            <div style="font-size:10px;color:#6b7788;letter-spacing:0.1em">PEÇAS</div>
+            <div style="font-size:28px;font-weight:900;color:${st.cor};line-height:1">${f.efic!=null?f.efic+'%':'—'}</div>
+            <div style="font-size:10px;color:#6b7788;letter-spacing:0.1em">DA META</div>
           </div>
         </div>
         <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${barPct}%;background:${st.cor};border-radius:99px"></div></div>
@@ -4723,7 +4726,7 @@ function renderFuncionarios(){
           ${_funcStatT('Horas',f.horas.toLocaleString("pt-BR"),'#a78bfa')}
           ${_funcStatT('Dias / Robôs',`${f.dias} / ${f.robos}`,'#ffb300')}
           ${_funcStatT('Melhor dia',f.melhorDia?`${f.melhorP} pç`:'—','#00e87a')}
-          ${_funcStatT('% da meta',f.horasMeta>0?f.taxa+'%':'—',st.cor)}
+          ${_funcStatT('Peças',f.pecas.toLocaleString("pt-BR"),'#00e87a')}
         </div>
       </div>`;
     }).join('')+`</div>`;
@@ -4757,7 +4760,7 @@ function renderFuncionarios(){
 function desempenhoFuncDetalheT(nome,ano,mes){
   const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
   const porRobo={}; ROBOS.forEach(r=>porRobo[r]={pecas:0,horas:0,metasOk:0,horasMeta:0});
-  const porDia={}; let pecas=0,horas=0,metasOk=0,horasMeta=0;
+  const porDia={}; let pecas=0,horas=0,metasOk=0,horasMeta=0,pecasM=0,metaSoma=0;
   Object.entries(md).forEach(([chave,dia])=>{
     const p=chave.split('_').map(Number); if(p.length!==3) return;
     if(p[0]!==ano) return; if(mes!=null && p[1]!==mes) return;
@@ -4770,7 +4773,7 @@ function desempenhoFuncDetalheT(nome,ano,mes){
         porDia[chave].pecas+=val; porDia[chave].horas+=1;
         const metaH=_funcMetaHoraT(h,meta,chave);
         porDia[chave].itens.push({h, robo:String(r), val, meta:metaH, cod:String(rd.cod||'').trim()});
-        if(metaH>0){ horasMeta+=1; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
+        if(metaH>0){ horasMeta+=1; pecasM+=val; metaSoma+=metaH; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
       });
     });
   });
@@ -4778,14 +4781,15 @@ function desempenhoFuncDetalheT(nome,ano,mes){
   const robosList=Object.entries(porRobo).filter(([k,v])=>v.horas>0).map(([k,v])=>({robo:k,...v})).sort((a,b)=>b.pecas-a.pecas);
   const diasList=Object.keys(porDia).map(ch=>{const p=ch.split('_').map(Number);return {chave:ch,ano:p[0],mes:p[1],dia:p[2],...porDia[ch]};}).sort((a,b)=>b.ano-a.ano||b.mes-a.mes||b.dia-a.dia);
   let melhorDia=null,melhorP=0; diasList.forEach(d=>{ if(d.pecas>melhorP){melhorP=d.pecas;melhorDia=d;} });
-  return {nome,pecas,horas,media,metasOk,horasMeta,taxa,dias:diasList.length,robos:robosList.length,robosList,diasList,melhorDia,melhorP};
+  const efic=metaSoma>0?Math.round(pecasM/metaSoma*100):null;
+  return {nome,pecas,horas,media,metasOk,horasMeta,taxa,efic,dias:diasList.length,robos:robosList.length,robosList,diasList,melhorDia,melhorP};
 }
 function fecharFuncDet(){ const ov=document.getElementById('funcDetOv'); if(ov) ov.style.display='none'; document.body.style.overflow=''; }
 function abrirFuncDetalheT(nomeEnc){
   const nome=decodeURIComponent(nomeEnc);
   const mesFiltro=_funcTodoAnoT?null:_funcMesT;
   const d=desempenhoFuncDetalheT(nome,_funcAnoT,mesFiltro);
-  const st=_funcStatusT({horas:d.horas,horasMeta:d.horasMeta,taxa:d.taxa});
+  const st=_funcStatusT({horas:d.horas,horasMeta:d.horasMeta,taxa:d.taxa,efic:d.efic});
   const periodoTxt=_funcTodoAnoT?(_funcAnoT+' (ano todo)'):(MESES[_funcMesT]+' / '+_funcAnoT);
   let inner=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:6px">
       <div style="width:60px;height:60px;border-radius:14px;background:${st.cor}1f;border:1px solid ${st.cor}66;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:30px">👤</div>
@@ -4801,8 +4805,8 @@ function abrirFuncDetalheT(nomeEnc){
     inner+=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0">
       ${_funcStatT('Peças',d.pecas.toLocaleString("pt-BR"),'#00e87a',true)}
       ${_funcStatT('Média/hora',d.media.toLocaleString("pt-BR"),'#3d9eff',true)}
-      ${_funcStatT('% da meta',d.horasMeta>0?d.taxa+'%':'—',st.cor,true)}
-      ${_funcStatT('Metas batidas',d.horasMeta>0?`${d.metasOk}/${d.horasMeta}`:'—','#00e87a',true)}
+      ${_funcStatT('Eficiência da meta',d.efic!=null?d.efic+'%':'—',st.cor,true)}
+      ${_funcStatT('Metas batidas',d.horasMeta>0?`${d.metasOk}/${d.horasMeta} · ${d.taxa}%`:'—','#00e87a',true)}
       ${_funcStatT('Horas',d.horas.toLocaleString("pt-BR"),'#a78bfa',true)}
       ${_funcStatT('Dias / Robôs',`${d.dias} / ${d.robos}`,'#ffb300',true)}
     </div>`;
