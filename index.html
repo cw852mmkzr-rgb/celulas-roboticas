@@ -4369,8 +4369,22 @@ function syncMetasToProducao(metasKey){
   celulas[prodKey].producao_meses[prodChave][dia]=totalGeral;
 }
 
+// Desde 16/10/2026: se a hora ficou a 1 peça da meta, arredonda pra cima (ex.: meta 45, lançou 44 → grava 45).
+// Vale só pra lançamento normal (não para ajuste "#") e não no café (meta reduzida).
+const ARRED_META_DESDE = new Date(2026, 9, 16);
+function _arredMetaHora(key, robo, campo, chave, valor){
+  if(!campo || !/^h[0-9]{4}$/.test(campo)) return valor;
+  const p = String(chave||'').split('_').map(Number);
+  if(p.length !== 3 || p.some(isNaN) || new Date(p[0], p[1], p[2]) < ARRED_META_DESDE) return valor;
+  const pv = parseCelVal(valor||''); if(pv.tipo === 'ajuste' || String(valor).includes('#') || pv.num <= 0) return valor;
+  const hora = [...HORAS_DIA, ...HORAS_NOITE].find(h => campoH(h) === campo) || ''; if(!hora || HORAS_CAFE.includes(hora)) return valor;
+  const rd = (((celulas[key]||{}).metas_dias||{})[chave]||{})[robo] || {};
+  const metaH = metaEfetivaHora(hora, parseInt(rd.meta) || 0, chave);
+  return (metaH > 1 && pv.num === metaH - 1) ? String(metaH) : valor;
+}
 function updateMetasCell(key,robo,campo,valor){
   const chave=getMetasChave(key);
+  valor=_arredMetaHora(key,robo,campo,chave,valor);
   if(!celulas[key].metas_dias)celulas[key].metas_dias={};
   if(!celulas[key].metas_dias[chave])celulas[key].metas_dias[chave]={};
   if(!celulas[key].metas_dias[chave][robo])celulas[key].metas_dias[chave][robo]={};
@@ -8532,6 +8546,9 @@ function handleMetasInputEl(el, key, robo, campo){
     }
   }
 
+  // 1 peça da meta → arredonda (desde 16/10/2026)
+  const _arr = _arredMetaHora(key, robo, campo, chave, valorFinal);
+  if(_arr !== valorFinal){ valorFinal = _arr; el.value = valorFinal; }
   // Atualiza cor do input
   const meta = parseInt(rd.meta)||0;
   const {num, tipo} = parseCelVal(valorFinal);
@@ -8593,6 +8610,9 @@ function handleMetasInput(key,robo,campo,valor){
     }
   }
 
+  // 1 peça da meta → arredonda (desde 16/10/2026)
+  const _arr = _arredMetaHora(key, robo, campo, chave, valorFinal);
+  if(_arr !== valorFinal){ valorFinal = _arr; const _i = document.getElementById(`inp-${robo}-${campo}`); if(_i) _i.value = valorFinal; }
   // aplica cor correta sem rerenderizar
   const meta = parseInt(rd.meta)||0;
   const {num, tipo} = parseCelVal(valorFinal);
