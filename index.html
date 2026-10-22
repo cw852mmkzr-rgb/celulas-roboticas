@@ -10889,7 +10889,27 @@ let _metaApLastPorRobo = {}; // { [robo]: {equipeId, membros:[]} }
 let _metaApLastEquipeId = null;
 // Busca no banco a última equipe usada para este robô (últimos 7 dias).
 // Retorna {equipeId, membros:[]} ou null. Reaproveita snapshots já salvos.
-function _eqUltimaDoRobo(robo){
+// Equipe do começo do dia (azul-clara): só ela trabalha às 06:00 e 07:00 (pedido do usuário, 22/10/2026).
+// Nessas duas horas só ela aparece para escolher; nas outras horas ela não aparece,
+// e a "última equipe do robô" não carrega de 06/07 para as outras horas (nem o contrário).
+const EQ_CEDO_ID = 'emrtksk7ztayk25';
+const EQ_CEDO_HORAS = ['06:00','07:00'];
+function _eqCedoAtiva(){ return !!(equipesData && Array.isArray(equipesData.lista) && equipesData.lista.some(e=>e.id===EQ_CEDO_ID)); }
+function _eqHoraCedo(h){ return EQ_CEDO_HORAS.includes(h); }
+function _eqListaDaHora(h, selId){
+  const l=(equipesData&&equipesData.lista)||[];
+  if(!_eqCedoAtiva() || !h) return l;
+  const out=_eqHoraCedo(h) ? l.filter(e=>e.id===EQ_CEDO_ID) : l.filter(e=>e.id!==EQ_CEDO_ID);
+  // apontamento antigo com outra equipe: mantém o chip dela visível para poder trocar
+  if(selId && !out.some(e=>e.id===selId)){ const s=l.find(e=>e.id===selId); if(s) out.push(s); }
+  return out;
+}
+function _eqLembrancaServe(lemb, h){
+  if(!lemb || !lemb.equipeId) return false;
+  if(!_eqCedoAtiva() || !h) return true;
+  return _eqHoraCedo(h) ? lemb.equipeId===EQ_CEDO_ID : lemb.equipeId!==EQ_CEDO_ID;
+}
+function _eqUltimaDoRobo(robo, hora){
   const key=metaApKey(); if(!key) return null;
   const c=celulas[key]; if(!c||!c.metas_dias) return null;
   const horas=[...HORAS_DIA,...HORAS_NOITE];
@@ -10903,7 +10923,7 @@ function _eqUltimaDoRobo(robo){
     // varre horas em ordem inversa (mais recente do dia primeiro)
     for(let j=horas.length-1;j>=0;j--){
       const eq=rd['eqp_'+campoH(horas[j])];
-      if(eq&&eq.id) return { equipeId:eq.id, membros:(eq.presentes||[]).slice() };
+      if(eq&&eq.id){ const cand={ equipeId:eq.id, membros:(eq.presentes||[]).slice() }; if(_eqLembrancaServe(cand, hora)) return cand; }
     }
   }
   return null;
@@ -10915,8 +10935,10 @@ function _metaApPreselEquipe(){
   const robo=roboEl?parseInt(roboEl.value):null;
   // 1º: cache da sessão; 2º: última do banco pra esse robô (sem fallback global)
   let lembrado=(robo!=null&&_metaApLastPorRobo[robo])?_metaApLastPorRobo[robo]:null;
-  if(!lembrado && robo!=null){ lembrado=_eqUltimaDoRobo(robo); }
-  const eqId=lembrado?lembrado.equipeId:null;
+  if(lembrado && !_eqLembrancaServe(lembrado, _metaApHora)) lembrado=null;
+  if(!lembrado && robo!=null){ lembrado=_eqUltimaDoRobo(robo, _metaApHora); }
+  let eqId=lembrado?lembrado.equipeId:null;
+  if(!eqId && _eqCedoAtiva() && _eqHoraCedo(_metaApHora)) eqId=EQ_CEDO_ID;   // 06/07: já vem a equipe da manhã
   if(!eqId){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
   const eq=equipesData.lista.find(e=>e.id===eqId);
   if(!eq){ _metaApEquipeSel=null; _metaApMembrosSel=[]; return; }
@@ -10929,7 +10951,7 @@ function metaApRenderEquipes(){
   if(!box) return;
   if(!equipesData.vincular_metas || !equipesData.lista.length){ box.style.display='none'; box.innerHTML=''; return; }
   box.style.display='';
-  const chips=equipesData.lista.map(eq=>{
+  const chips=_eqListaDaHora(_metaApHora, _metaApEquipeSel&&_metaApEquipeSel.id).map(eq=>{
     const sel=_metaApEquipeSel && _metaApEquipeSel.id===eq.id;
     return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="background:${eq.cor}${sel?';box-shadow:0 0 0 3px #0d1219,0 0 0 6px '+eq.cor:''}" onclick="metaApSelEquipe('${eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
   }).join('');
@@ -10979,8 +11001,10 @@ function metaEqAbrir(key, robo, campo){
     _metaEqSel=null; _metaEqMembros=[];
     // Fallback: sessão → banco (últimos 7 dias, mesmo robô); sem fallback global
     let lembrado=_metaApLastPorRobo[robo];
-    if(!lembrado){ lembrado=_eqUltimaDoRobo(robo); }
-    const eqId=lembrado?lembrado.equipeId:null;
+    if(lembrado && !_eqLembrancaServe(lembrado, hora)) lembrado=null;
+    if(!lembrado){ lembrado=_eqUltimaDoRobo(robo, hora); }
+    let eqId=lembrado?lembrado.equipeId:null;
+    if(!eqId && _eqCedoAtiva() && _eqHoraCedo(hora)) eqId=EQ_CEDO_ID;   // 06/07: já vem a equipe da manhã
     if(eqId){
       const eq=equipesData.lista.find(e=>e.id===eqId);
       if(eq){
@@ -10994,7 +11018,7 @@ function metaEqAbrir(key, robo, campo){
   document.getElementById('metaEqModal').style.display='flex';
 }
 function metaEqRender(){
-  const chips=equipesData.lista.map(eq=>{
+  const chips=_eqListaDaHora(_metaEqCtx&&_metaEqCtx.hora, _metaEqSel&&_metaEqSel.id).map(eq=>{
     const sel=_metaEqSel&&_metaEqSel.id===eq.id;
     return `<button type="button" class="metaap-eqchip ${sel?'sel':''}" style="background:${eq.cor}${sel?';box-shadow:0 0 0 3px #0f1420,0 0 0 6px '+eq.cor:''}" onclick="metaEqSelEquipe('${eq.id}')" title="${esc(_eqNome(eq))}"></button>`;
   }).join('');
