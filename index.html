@@ -10894,11 +10894,12 @@ let _metaApLastEquipeId = null;
 // e a "última equipe do robô" não carrega de 06/07 para as outras horas (nem o contrário).
 const EQ_CEDO_ID = 'emrtksk7ztayk25';
 const EQ_CEDO_HORAS = ['06:00','07:00'];
+const EQ_CEDO_TAMBEM = ['13:00'];   // nessa hora ela aparece junto com as outras equipes (pedido de 23/10/2026)
 function _eqCedoAtiva(){ return !!(equipesData && Array.isArray(equipesData.lista) && equipesData.lista.some(e=>e.id===EQ_CEDO_ID)); }
 function _eqHoraCedo(h){ return EQ_CEDO_HORAS.includes(h); }
 function _eqListaDaHora(h, selId){
   const l=(equipesData&&equipesData.lista)||[];
-  if(!_eqCedoAtiva() || !h) return l;
+  if(!_eqCedoAtiva() || !h || EQ_CEDO_TAMBEM.includes(h)) return l;
   const out=_eqHoraCedo(h) ? l.filter(e=>e.id===EQ_CEDO_ID) : l.filter(e=>e.id!==EQ_CEDO_ID);
   // apontamento antigo com outra equipe: mantém o chip dela visível para poder trocar
   if(selId && !out.some(e=>e.id===selId)){ const s=l.find(e=>e.id===selId); if(s) out.push(s); }
@@ -10906,7 +10907,7 @@ function _eqListaDaHora(h, selId){
 }
 function _eqLembrancaServe(lemb, h){
   if(!lemb || !lemb.equipeId) return false;
-  if(!_eqCedoAtiva() || !h) return true;
+  if(!_eqCedoAtiva() || !h || EQ_CEDO_TAMBEM.includes(h)) return true;
   return _eqHoraCedo(h) ? lemb.equipeId===EQ_CEDO_ID : lemb.equipeId!==EQ_CEDO_ID;
 }
 function _eqUltimaDoRobo(robo, hora){
