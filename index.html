@@ -4012,10 +4012,13 @@ async function loadFromAPI(){
       headers:HEADERS_SB, signal:controller.signal
     });
     clearTimeout(timeout);
+    // Resposta com erro (falha do Supabase, limite, etc.) NUNCA pode virar "banco vazio"
+    if(!r.ok) throw new Error('HTTP '+r.status);
     offline = false; // Conexão restaurada
     lastServerSync = Date.now();
     const d=await r.json();
-    if(d&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
+    if(Array.isArray(d)&&d[0]&&d[0].conteudo&&Object.keys(d[0].conteudo).length>0){
+      _tamServidor = JSON.stringify(d[0].conteudo).length;
       const anterior=JSON.stringify(celulas);
       const novo=JSON.stringify(d[0].conteudo);
       if(anterior&&anterior!=='{}'&&novo!==anterior){
@@ -4028,11 +4031,13 @@ async function loadFromAPI(){
       // Salva no cache local
       try{ localStorage.setItem('celulas_cache', JSON.stringify(celulas)); }catch(e){}
     }
-    else{celulas=defaultData;await saveToAPI(celulas);}
+    // 29/10/2026: aqui o site trocava tudo pelos dados de exemplo e GRAVAVA por cima quando o banco
+    // respondia algo inesperado — foi isso que apagou os dados. Agora só avisa e tenta de novo no próximo ciclo.
+    else{ console.warn('loadFromAPI: resposta inesperada do banco — nada foi alterado', d); }
   }catch(e){
     offline = true; // Sem conexão
-    if(!Object.keys(celulas).length) celulas=defaultData;
-    if(e.name==='AbortError') showToast("Conexão lenta — usando dados locais",true);
+    if(!Object.keys(celulas).length) showToast("Sem conexão com o banco — tentando de novo…",true);
+    else if(e.name==='AbortError') showToast("Conexão lenta — usando dados locais",true);
   }
 
   avaliarStatusAutomatico(); // automação de status dos robôs (roda em qualquer tela)
@@ -4050,6 +4055,7 @@ async function loadFromAPI(){
   }
 }
 
+let _tamServidor = 0;   // tamanho do conteúdo que veio do banco (trava contra gravar dados incompletos)
 async function saveToAPI(data){
   try{
     // Anti-conflito: SÓ ativa quando realmente teve queda de internet detectada
@@ -4077,8 +4083,18 @@ async function saveToAPI(data){
     const semImg = JSON.parse(JSON.stringify(data));
     const imgs = {};
     Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
+    // Trava: nunca grava se os dados ficariam menos da metade do que veio do banco
+    // (mesma regra do gatilho trg_trava_conteudo_encolher no Supabase)
+    const _tamNovo = JSON.stringify(semImg).length;
+    if(_tamServidor > 200000 && _tamNovo < _tamServidor/2){
+      showToast("⚠ Gravação bloqueada: os dados estavam incompletos. Recarregando…",true);
+      lastUserAction = 0; loadFromAPI();
+      return false;
+    }
     // Salva dados
-    await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
+    const _rs = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
+    if(!_rs.ok){ showToast("Erro ao salvar — o banco recusou ("+_rs.status+")",true); return false; }
+    _tamServidor = _tamNovo;
     // Salva imagens preservando _gabaritagem
     if(Object.keys(imgs).length>0){
       try{
