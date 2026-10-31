@@ -4208,7 +4208,7 @@ async function loadFromAPI(){
     if(cache){
       celulas = JSON.parse(cache);
       renderSidebar();
-      if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=(window.innerWidth<=700?'__painel':keys[0]);renderSidebar();renderDetail();}}
+      if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected='__painel';renderSidebar();renderDetail();}}
     }
   }catch(e){}
 
@@ -4249,7 +4249,7 @@ async function loadFromAPI(){
 
   avaliarStatusAutomatico(); // automação de status dos robôs (roda em qualquer tela)
   renderSidebar();
-  if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=(window.innerWidth<=700?'__painel':keys[0]);renderSidebar();renderDetail();}}
+  if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected='__painel';renderSidebar();renderDetail();}}
   else{
     const tipo=getCellTipo(selected);
     // Não rerenderiza armário se tiver algum card aberto
@@ -6546,8 +6546,6 @@ function _projSecao(ano, mes, mc){
   return `<div class="proj-box">
     <div class="proj-tit">🔮 Projeção <em>${fechado ? 'como o mês terminou' : 'conforme a média dos dias já fechados'}</em></div>
     <div class="proj-grid">${cards}</div>
-    <div class="proj-graf"><svg id="projGraf" viewBox="0 0 640 180" role="img" aria-label="Produção acumulada do mês e projeção"></svg>
-      <div class="proj-leg"><span><i style="--c:#00e87a"></i>Realizado (acumulado)</span>${fechado ? '' : '<span><i style="--c:#3d9eff"></i>Simulação</span>'}<span><i style="--c:#ffb300"></i>Meta</span></div></div>
     ${sim}
     ${capSim}
   </div>${_projComparativo(P)}`;
