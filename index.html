@@ -5205,7 +5205,6 @@ function _ppmAbrirDetalhe(cod){
     kpi('Meta/hora', meta>0?meta.toLocaleString('pt-BR'):'—', pctMeta!=null?`${pctMeta}% da meta atingido`:'sem meta cadastrada', pctMeta==null?'#6b7788':(pctMeta>=100?'#00e87a':'#ff6a00')),
     melhorDia?kpi('Melhor dia', melhorDia.v.toLocaleString('pt-BR'), fmtK(melhorDia.k), '#00e87a'):'',
     (piorDia&&diasProd>1)?kpi('Menor dia', piorDia.v.toLocaleString('pt-BR'), fmtK(piorDia.k), '#ff6b6b'):'',
-    melhorHora?kpi('Melhor hora', melhorHora.v.toLocaleString('pt-BR'), `às ${melhorHora.h}`, '#00e87a'):'',
     kpi('Dias produtivos', `${diasProd}/${per.numDias}`, 'dias com produção', '#3d9eff'),
     kpi('Robôs', String(robosOrd.length), robosOrd.length===1?'único robô':'robôs envolvidos', '#a78bfa')
   ].filter(Boolean).join('');
