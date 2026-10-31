@@ -1486,112 +1486,97 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(max-width:1250px){.pv-robos{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){.pv-bento{grid-template-columns:1fr 1fr}.pv-bento>.pv-card:first-child{grid-column:1/-1}}
 @media(max-width:560px){.pv-bento{grid-template-columns:1fr}.pv-robos{grid-template-columns:repeat(2,1fr);gap:10px}.pv-big{font-size:38px}.pv-rc{min-height:100px;padding:14px}.pv-rc .n{font-size:22px}.pv-rc .v{font-size:24px}}
-/* ===== Aba Produção por Robô — estilo "linha do tempo / sala de controle" ===== */
-.main:has(>.prb){background-color:#070b14;background-image:linear-gradient(rgba(56,189,248,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.045) 1px,transparent 1px);background-size:32px 32px}
-.prb{--ac:#38bdf8;--am:#f59e0b;--ok:#34d399;--bad:#f87171;--mut:#7c8aa5;--ln:#1c2a44;--pn:#0d1527;color:#e6edf7;padding-bottom:40px}
-.prb-mono{font-family:'Share Tech Mono',monospace}
-.prb-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.prb-tt{font-size:24px;font-weight:900;letter-spacing:.02em}
-.prb-tt small{display:block;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--mut);letter-spacing:.18em;text-transform:uppercase;font-weight:400;margin-top:4px}
-.prb-per{display:flex;gap:8px;align-items:center;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:6px 10px}
-.prb-per select{background:#0a1222;color:#e6edf7;border:1px solid var(--ln);border-radius:7px;padding:6px 8px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
-.prb-rail{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;scrollbar-width:thin}
-.prb-tile{flex:0 0 auto;min-width:104px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:9px 11px;cursor:pointer;text-align:left;color:inherit;font:inherit;position:relative;transition:border-color .15s,transform .15s}
-.prb-tile:hover{border-color:#2b4370;transform:translateY(-1px)}
-.prb-tile.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset,0 6px 22px -12px var(--ac)}
-.prb-tile .n{font-family:'Share Tech Mono',monospace;font-size:17px;font-weight:700}
-.prb-tile .t{font-family:'Share Tech Mono',monospace;font-size:12.5px;color:var(--ac);margin-top:2px}
-.prb-tile .c{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--mut);margin-top:4px;white-space:nowrap}
-.prb-tile.geral{min-width:120px;background:linear-gradient(135deg,#0f1d36,#0b1428)}
-.prb-dot{width:9px;height:9px;border-radius:3px;flex:0 0 auto;background:var(--c)}
-.prb-box{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:16px}
-.prb-bt{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ac);margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.prb-bt em{font-style:normal;color:var(--mut);letter-spacing:.04em;text-transform:none;font-size:11px}
-/* gantt */
-.prb-gw{overflow-x:auto}
-.prb-g{display:grid;gap:3px 0;min-width:640px}
-.prb-gh{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--mut);text-align:center;padding-bottom:4px}
-.prb-gh.fds{color:#3b4a66}
-.prb-gr{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:700;display:flex;align-items:center;padding-right:8px;cursor:pointer;white-space:nowrap}
-.prb-gr:hover{color:var(--ac)}
-.prb-gl{grid-column:2/-1;height:26px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(100% / var(--nd) - 1px),rgba(124,138,165,.08) calc(100% / var(--nd) - 1px),rgba(124,138,165,.08) calc(100% / var(--nd)));border-radius:5px;position:relative}
-.prb-seg{position:absolute;top:2px;bottom:2px;border-radius:5px;background:var(--c);color:#06101f;font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;padding:0 6px;overflow:hidden;white-space:nowrap;cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
-.prb-seg:hover{filter:brightness(1.15)}
-.prb-seg.cont-e{border-top-left-radius:0;border-bottom-left-radius:0}
-.prb-seg.cont-d{border-top-right-radius:0;border-bottom-right-radius:0}
-.prb-leg{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px}
-.prb-leg span{display:flex;align-items:center;gap:6px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#c9d4e6}
-.prb-leg b{color:var(--mut);font-weight:400}
-/* cabeçalho do robô */
-.prb-hd{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
-.prb-hd .big{font-family:'Share Tech Mono',monospace;font-size:38px;font-weight:700;line-height:1;color:#fff}
-.prb-hd .sub{font-size:12px;color:var(--mut);margin-top:4px;letter-spacing:.06em;text-transform:uppercase}
-.prb-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c);color:var(--c);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:800;letter-spacing:.06em}
-.prb-back{margin-left:auto;background:transparent;border:1px solid var(--ln);color:#c9d4e6;border-radius:8px;padding:7px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
-.prb-back:hover{border-color:var(--ac);color:var(--ac)}
-.prb-kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-bottom:16px}
-.prb-k{background:var(--pn);border:1px solid var(--ln);border-left:3px solid var(--c,var(--ac));border-radius:8px;padding:9px 11px}
-.prb-k .l{font-size:10px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
-.prb-k .v{font-family:'Share Tech Mono',monospace;font-size:21px;font-weight:700;margin-top:3px;color:var(--c,#fff)}
-.prb-k .s{font-size:10.5px;color:var(--mut);margin-top:2px}
-/* linha do tempo de lotes */
-.prb-tl{position:relative;padding-left:28px}
-.prb-tl::before{content:"";position:absolute;left:10px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--ln),#24406b,var(--ln))}
-.prb-lote{position:relative;background:#0b1325;border:1px solid var(--ln);border-radius:12px;padding:14px 16px;margin-bottom:6px}
-.prb-lote::before{content:"";position:absolute;left:-24px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 4px #070b14,0 0 14px var(--c)}
-.prb-lote.atual{border-color:var(--c);box-shadow:0 0 0 1px var(--c) inset}
-.prb-lh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.prb-lh .cod{font-family:'Share Tech Mono',monospace;font-size:20px;font-weight:700;color:var(--c)}
-.prb-lh .nm{font-size:12px;color:var(--mut)}
-.prb-tag{font-size:10px;font-weight:800;letter-spacing:.1em;border-radius:5px;padding:3px 7px;background:var(--c);color:#06101f}
-.prb-tag.cin{background:#1c2a44;color:#c9d4e6}
-.prb-lg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px}
-.prb-li .l{font-size:10px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
-.prb-li .v{font-family:'Share Tech Mono',monospace;font-size:14.5px;margin-top:2px}
-.prb-li .v b{color:#fff}
-.prb-bars{display:flex;align-items:flex-end;gap:3px;height:46px;margin-top:12px;padding-top:4px;border-top:1px dashed var(--ln)}
-.prb-bars i{flex:1 1 0;min-width:4px;background:var(--c);border-radius:3px 3px 0 0;opacity:.85}
-.prb-bars i.fail{opacity:.45}
-.prb-pess{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.prb-pess span{font-size:11px;background:#132038;border:1px solid var(--ln);border-radius:99px;padding:3px 9px;color:#c9d4e6}
-.prb-pess span b{font-family:'Share Tech Mono',monospace;color:var(--ac);font-weight:400}
-.prb-mais{margin-top:10px;background:transparent;border:1px dashed #2b4370;color:var(--ac);border-radius:8px;padding:6px 10px;font:inherit;font-size:11.5px;cursor:pointer}
-.prb-dias{margin-top:10px;overflow-x:auto}
-.prb-dias table{border-collapse:collapse;width:100%;min-width:560px;font-size:12px}
-.prb-dias th{font-size:10px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:6px;border-bottom:1px solid var(--ln)}
-.prb-dias td{padding:6px;border-bottom:1px solid rgba(28,42,68,.6);vertical-align:top}
-.prb-hs{display:flex;flex-wrap:wrap;gap:3px}
-.prb-hs span{font-family:'Share Tech Mono',monospace;font-size:10.5px;border-radius:4px;padding:2px 5px;background:rgba(52,211,153,.12);color:var(--ok)}
-.prb-hs span.f{background:rgba(248,113,113,.12);color:var(--bad)}
-.prb-hs span.n{background:#132038;color:#c9d4e6}
-/* troca de peça entre os lotes */
-.prb-troca{position:relative;margin:4px 0 8px;padding:9px 12px;border-radius:10px;border:1px dashed #33507f;background:rgba(56,189,248,.05);font-size:12.5px;line-height:1.5}
-.prb-troca::before{content:"";position:absolute;left:-22px;top:50%;width:8px;height:8px;margin-top:-4px;transform:rotate(45deg);background:var(--am)}
-.prb-troca b{color:#fff}
-.prb-troca .ic{color:var(--am);font-weight:800;margin-right:4px}
-.prb-troca .q{font-family:'Share Tech Mono',monospace;color:var(--am)}
-/* resumo por peça */
-.prb-tb{width:100%;border-collapse:collapse;font-size:12.5px;min-width:560px}
-.prb-tb th{font-size:10px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase;text-align:right;padding:7px 8px;border-bottom:1px solid var(--ln)}
-.prb-tb th:first-child,.prb-tb td:first-child{text-align:left}
-.prb-tb td{font-family:'Share Tech Mono',monospace;text-align:right;padding:8px;border-bottom:1px solid rgba(28,42,68,.6)}
-.prb-share{display:inline-block;width:70px;height:6px;background:#132038;border-radius:99px;vertical-align:middle;margin-left:6px;overflow:hidden}
-.prb-share i{display:block;height:100%;background:var(--c)}
-/* lista geral de trocas */
-.prb-tr-l{display:flex;flex-direction:column;gap:6px}
-.prb-tr-i{display:grid;grid-template-columns:92px 70px 1fr;gap:10px;align-items:center;font-size:12.5px;padding:8px 10px;background:#0b1325;border:1px solid var(--ln);border-radius:8px}
-.prb-tr-i .d{font-family:'Share Tech Mono',monospace;color:var(--am)}
-.prb-tr-i .r{font-family:'Share Tech Mono',monospace;font-weight:700;cursor:pointer}
-.prb-tr-i .r:hover{color:var(--ac)}
-.prb-vazio{color:var(--mut);font-size:13px;padding:10px 0}
-@media(max-width:620px){
-  .prb-tt{font-size:20px}
-  .prb-hd .big{font-size:30px}
-  .prb-tl{padding-left:22px}
-  .prb-lote{padding:12px}
-  .prb-lote::before{left:-19px}
-  .prb-troca::before{left:-17px}
-  .prb-tr-i{grid-template-columns:80px 56px 1fr;font-size:12px}
+/* ===== Aba Produção por Robô (v2: leitura simples — tabelas, frases e poucos números) ===== */
+.prb{--ln:#1d2633;--pn:#0e131b;--mut:#7d8899;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;color:#e5ebf3;padding-bottom:40px;font-family:'Montserrat',sans-serif}
+.prb-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.prb-tt{font-size:22px;font-weight:800;color:#fff}
+.prb-st{font-size:12.5px;color:var(--mut);margin-top:4px}
+.prb-per{display:flex;gap:8px}
+.prb-per select{background:var(--pn);color:#e5ebf3;border:1px solid var(--ln);border-radius:9px;padding:8px 10px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.prb-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.prb-pill{display:inline-flex;align-items:center;gap:7px;background:var(--pn);border:1px solid var(--ln);color:#c9d3df;border-radius:99px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.prb-pill:hover{border-color:#34445a;background:#131a24}
+.prb-pill.on{background:#00e87a18;border-color:#00e87a;color:#fff}
+.prb-pill i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.prb-card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.prb-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.prb-h b{font-size:15px;color:#fff}
+.prb-h span{font-size:12px;color:var(--mut)}
+.prb-chip{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:13px;color:#fff;white-space:nowrap}
+.prb-chip i{width:10px;height:10px;border-radius:3px;background:var(--c);flex-shrink:0}
+.prb-mut{color:var(--mut);font-size:12px}
+.prb-tw{overflow-x:auto}
+.prb-t{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+.prb-t th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:9px 10px;border-bottom:1px solid var(--ln);white-space:nowrap}
+.prb-t td{padding:11px 10px;border-bottom:1px solid #161d28;vertical-align:middle;white-space:nowrap}
+.prb-t th.n,.prb-t td.n{text-align:right}
+.prb-t tbody tr.cl{cursor:pointer;transition:background .12s}
+.prb-t tbody tr.cl:hover{background:#ffffff06}
+.prb-t td.big{font-size:14.5px;font-weight:800;color:#fff}
+.prb-t .rob{font-size:15px;font-weight:800;color:#fff}
+.prb-ef{display:inline-block;min-width:44px;text-align:center;font-weight:800;font-size:12.5px;padding:3px 8px;border-radius:99px;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
+.prb-sit{font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:99px;background:#1b2431;color:#9aa6b6}
+.prb-sit.on{background:#00e87a1c;color:#00e87a}
+.prb-seta{color:var(--mut);font-size:12px}
+.prb-det td{background:#0a0e14;white-space:normal;padding:14px 16px}
+.prb-dd{width:100%;border-collapse:collapse;font-size:12.5px}
+.prb-dd th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:6px 8px;border-bottom:1px solid var(--ln)}
+.prb-dd td{padding:7px 8px;border-bottom:1px solid #141a24;vertical-align:top}
+.prb-hs{display:flex;flex-wrap:wrap;gap:4px}
+.prb-hs span{font-size:11px;border-radius:5px;padding:2px 6px;background:#22c55e1a;color:#4ade80}
+.prb-hs span.f{background:#ef44441a;color:#f87171}
+.prb-hs span.n{background:#1b2431;color:#c9d3df}
+.prb-quem{margin-top:12px;font-size:12px;color:var(--mut);line-height:1.8}
+.prb-quem b{color:#e5ebf3;font-weight:700}
+/* mapa do mês */
+.prb-g{min-width:680px}
+.prb-gd{display:grid;grid-template-columns:52px 1fr;align-items:center;margin-bottom:5px}
+.prb-gd .lb{font-size:13px;font-weight:800;color:#fff;cursor:pointer}
+.prb-gd .lb:hover{color:#00e87a}
+.prb-gh{display:grid;font-size:10px;color:var(--mut);text-align:center}
+.prb-gh span.fds{color:#3b4656}
+.prb-gl{position:relative;height:28px;border-radius:6px;background:#0a0e14;background-image:linear-gradient(90deg,#1b2431 1px,transparent 1px);background-size:calc(100% / var(--nd)) 100%}
+.prb-seg{position:absolute;top:3px;bottom:3px;border-radius:5px;background:var(--c);color:#0b0f15;font-size:11px;font-weight:800;display:flex;align-items:center;padding:0 7px;overflow:hidden;white-space:nowrap;cursor:pointer}
+.prb-seg:hover{filter:brightness(1.12)}
+.prb-leg{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:12px;color:#c9d3df}
+.prb-leg span{display:inline-flex;align-items:center;gap:6px}
+.prb-leg i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.prb-leg em{font-style:normal;color:var(--mut)}
+/* trocas em frases */
+.prb-tr{display:flex;flex-direction:column}
+.prb-tri{display:grid;grid-template-columns:94px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #161d28;align-items:start}
+.prb-tri:last-child{border-bottom:0}
+.prb-tri .q{font-size:12px;font-weight:800;color:#f59e0b;line-height:1.35}
+.prb-tri .q small{display:block;color:var(--mut);font-weight:600}
+.prb-tri .t{font-size:13px;line-height:1.55;color:#c9d3df}
+.prb-tri .t b{color:#fff}
+.prb-tri .t .rb{cursor:pointer;color:#00e87a;font-weight:800}
+.prb-tri.pausa .q{color:#7d8899}
+/* robô */
+.prb-hero{display:grid;grid-template-columns:1fr 1.3fr;gap:14px;margin-bottom:16px}
+.prb-hc{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:16px 18px}
+.prb-hc .rn{font-size:30px;font-weight:900;color:#fff;line-height:1}
+.prb-hc .rs{font-size:12px;color:var(--mut);margin-top:6px;letter-spacing:.06em;text-transform:uppercase}
+.prb-st2{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:12px;font-weight:800;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);padding:4px 10px;border-radius:99px}
+.prb-agora{border-left:4px solid var(--c)}
+.prb-agora .lb{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.prb-agora .pc{font-size:26px;font-weight:900;color:#fff;margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prb-agora .pc small{font-size:12px;font-weight:600;color:var(--mut)}
+.prb-agora .ds{font-size:13px;color:#c9d3df;margin-top:8px;line-height:1.6}
+.prb-agora .ds b{color:#fff}
+.prb-kp{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.prb-k{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:14px 16px}
+.prb-k .l{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.prb-k .v{font-size:26px;font-weight:900;color:var(--c,#fff);margin-top:6px}
+.prb-k .s{font-size:11.5px;color:var(--mut);margin-top:3px}
+.prb-vazio{color:var(--mut);font-size:13px;padding:6px 0}
+.prb-back{background:transparent;border:1px solid var(--ln);color:#c9d3df;border-radius:9px;padding:8px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.prb-back:hover{border-color:#00e87a;color:#00e87a}
+@media (max-width:760px){
+  .prb-hero{grid-template-columns:1fr}
+  .prb-kp{grid-template-columns:repeat(2,1fr)}
+  .prb-tri{grid-template-columns:80px 1fr}
+  .prb-card{padding:14px 12px}
 }
 /* ===== Menu lateral (layout formal: seções, ícones de linha, grade de robôs) ===== */
 @media (min-width: 701px){ .sidebar { width: 244px; } }
@@ -6811,12 +6796,28 @@ function _prbIntervalo(a, b){
 function _prbSet(campo, v){ const e = _prbEstado(); if(campo === 'robo') e.robo = v; else e[campo] = +v; e.sig = ''; renderProdRobo(); const mp = document.getElementById('mainPanel'); if(mp && campo === 'robo') mp.scrollTop = 0; }
 function _prbToggle(id){ const e = _prbEstado(); e.abertos[id] = !e.abertos[id]; e.sig = ''; renderProdRobo(); }
 
+function _prbCorEf(e){ return e == null ? '#7d8899' : e >= 95 ? '#22c55e' : e >= 80 ? '#f59e0b' : '#ef4444'; }
+function _prbEfHtml(e){ return e == null ? '<span class="prb-mut">—</span>' : `<span class="prb-ef" style="--c:${_prbCorEf(e)}">${e}%</span>`; }
+function _prbChip(cod){ return `<span class="prb-chip"><i style="--c:${_prbCor(cod)}"></i>${esc(cod)}</span>`; }
+function _prbQuando(d, h){ return _prbDiaSem(d) + ' ' + h; }
+// Frase de uma troca (ou pausa) entre dois lotes seguidos
+function _prbTrocaHtml(r, de, para, mostraRobo){
+  const inter = _prbIntervalo(_prbFimTs(de), _prbInicio(para));
+  const rob = mostraRobo ? `<span class="rb" onclick="_prbSet('robo',${r})">Robô ${r}</span> · ` : '';
+  if(de.cod === para.cod){
+    return `<div class="prb-tri pausa"><div class="q">${_prbDia(para.ini)}<small>${para.iniH} · pausa</small></div>
+      <div class="t">${rob}Ficou <b>${inter}</b> sem apontamento na peça <b>${esc(para.cod)}</b> (de ${_prbQuando(de.fim, de.fimH)} até ${_prbQuando(para.ini, para.iniH)}).</div></div>`;
+  }
+  return `<div class="prb-tri"><div class="q">${_prbDia(para.ini)}<small>${para.iniH} · troca</small></div>
+    <div class="t">${rob}Trocou da peça ${_prbChip(de.cod)} para ${_prbChip(para.cod)}.<br>
+    A <b>${esc(de.cod)}</b> teve o último apontamento em <b>${_prbQuando(de.fim, de.fimH)}</b> e a <b>${esc(para.cod)}</b> começou a ter apontamento em <b>${_prbQuando(para.ini, para.iniH)}</b> — <b>${inter}</b> entre uma e outra.</div></div>`;
+}
+
 function renderProdRobo(){
   const mp = document.getElementById('mainPanel'); if(!mp) return;
   const E = _prbEstado();
   const ini = new Date(E.ano, E.mes, 1), fim = new Date(E.ano, E.mes + 1, 0), nd = fim.getDate();
   const md = _prbMd();
-  // assinatura: só redesenha quando os dados do mês ou a seleção mudam (o poll chama a cada poucos segundos)
   const pref = E.ano + '_' + E.mes + '_';
   const sig = JSON.stringify([E.ano, E.mes, E.robo, E.abertos, Object.keys(md).filter(k => k.startsWith(pref)).map(k => [k, md[k]])]);
   if(sig === E.sig && mp.querySelector('.prb')) return;
@@ -6827,152 +6828,117 @@ function renderProdRobo(){
   robos.forEach(r => {
     const lotes = _prbLotes(r);
     const noMes = lotes.filter(l => l.fim >= ini && l.ini <= fim);
-    let tot = 0; lotes.forEach(l => l.dias.forEach(x => { if(x.d >= ini && x.d <= fim) tot += x.total; }));
-    dados[r] = {lotes, noMes, tot, atual: lotes[lotes.length - 1] || null};
+    const diasMes = []; lotes.forEach(l => l.dias.forEach(x => { if(x.d >= ini && x.d <= fim) diasMes.push(x); }));
+    let tot = 0, hrs = 0, ms = 0, pm = 0, ok = 0, hm = 0;
+    diasMes.forEach(x => { tot += x.total; hrs += x.hs.length; ms += x.ms; pm += x.pm; ok += x.ok; hm += x.hm; });
+    const trocas = []; lotes.forEach((l, i) => { if(i > 0 && l.ini >= ini && l.ini <= fim) trocas.push({de: lotes[i-1], para: l}); });
+    dados[r] = {lotes, noMes, diasMes, tot, hrs, ok, hm, ef: ms > 0 ? Math.round(pm / ms * 100) : null, trocas, atual: lotes[lotes.length - 1] || null};
   });
-
-  // cores: as peças do mês, da mais produzida para a menos, recebem cores diferentes em ordem
-  const _codMes = {};
-  robos.forEach(r => dados[r].noMes.forEach(l => l.dias.forEach(x => { _codMes[l.cod] = (_codMes[l.cod] || 0) + x.total; })));
+  // cores: peças do mês, da mais produzida para a menos, cada uma com uma cor
+  const codMes = {};
+  robos.forEach(r => dados[r].diasMes.forEach(x => { codMes[x.cod] = (codMes[x.cod] || 0) + x.total; }));
   _prbMapaCor = {};
-  Object.entries(_codMes).filter(([c]) => c !== '—').sort((a, b) => b[1] - a[1]).forEach(([c], i) => { _prbMapaCor[c] = PRB_CORES[i % PRB_CORES.length]; });
+  Object.entries(codMes).filter(([c]) => c !== '—').sort((a, b) => b[1] - a[1]).forEach(([c], i) => { _prbMapaCor[c] = PRB_CORES[i % PRB_CORES.length]; });
+
+  const h0 = new Date();
   const mesesOpts = MESES.map((m, i) => `<option value="${i}" ${i === E.mes ? 'selected' : ''}>${m}</option>`).join('');
-  const h0 = new Date(); const anosOpts = [h0.getFullYear() - 1, h0.getFullYear()].map(a => `<option value="${a}" ${a === E.ano ? 'selected' : ''}>${a}</option>`).join('');
-  const totMes = robos.reduce((s, r) => s + dados[r].tot, 0);
+  const anosOpts = [h0.getFullYear() - 1, h0.getFullYear()].map(a => `<option value="${a}" ${a === E.ano ? 'selected' : ''}>${a}</option>`).join('');
+  const pills = `<div class="prb-pills"><button type="button" class="prb-pill ${E.robo === null ? 'on' : ''}" onclick="_prbSet('robo',null)">Todos os robôs</button>${robos.map(r => {
+      const st = mapaRobosStatusInfo((celulas[String(r)] || {}).status);
+      return `<button type="button" class="prb-pill ${E.robo === r ? 'on' : ''}" onclick="_prbSet('robo',${r})" title="${esc(st.label)}"><i style="--c:${st.cor}"></i>${r}</button>`; }).join('')}</div>`;
 
-  const rail = `<div class="prb-rail">
-    <button type="button" class="prb-tile geral ${E.robo === null ? 'on' : ''}" onclick="_prbSet('robo',null)"><div class="n">TODOS</div><div class="t">${_prbFmt(totMes)} pç</div><div class="c">visão geral</div></button>
-    ${robos.map(r => { const D = dados[r], cod = D.atual ? D.atual.cod : '—';
-      return `<button type="button" class="prb-tile ${E.robo === r ? 'on' : ''}" onclick="_prbSet('robo',${r})"><div class="n">${r}</div><div class="t">${_prbFmt(D.tot)} pç</div><div class="c"><span class="prb-dot" style="--c:${_prbCor(cod)}"></span>${esc(cod)}</div></button>`; }).join('')}
-  </div>`;
-
-  // barra de lotes (gantt) de um robô dentro do mês
-  const linhaGantt = (r, alto) => {
-    const segs = dados[r].noMes.map(l => {
-      const a = l.ini < ini ? ini : l.ini, b = l.fim > fim ? fim : l.fim;
-      const i0 = a.getDate() - 1, i1 = b.getDate();
-      const left = (i0 / nd * 100).toFixed(3), w = ((i1 - i0) / nd * 100).toFixed(3);
-      let tot = 0; l.dias.forEach(x => { if(x.d >= ini && x.d <= fim) tot += x.total; });
-      const tip = `Robô ${r} · peça ${l.cod} · ${_prbDia(l.ini)} ${l.iniH} até ${_prbDia(l.fim)} ${l.fimH} · ${_prbFmt(tot)} pç no mês`;
-      return `<div class="prb-seg ${l.ini < ini ? 'cont-e' : ''} ${l.fim > fim ? 'cont-d' : ''}" style="--c:${_prbCor(l.cod)};left:${left}%;width:${w}%" title="${esc(tip)}" onclick="_prbSet('robo',${r})">${esc(l.cod)}</div>`;
-    }).join('');
-    return `<div class="prb-gr" onclick="_prbSet('robo',${r})">${r}</div><div class="prb-gl" style="--nd:${nd}${alto ? ';height:34px' : ''}">${segs}</div>`;
-  };
-  const cabGantt = () => {
-    let c = '';
-    for(let i = 1; i <= nd; i++){ const w = new Date(E.ano, E.mes, i).getDay(); c += `<div class="prb-gh ${w === 0 || w === 6 ? 'fds' : ''}">${i}</div>`; }
-    return `<div></div><div style="display:grid;grid-template-columns:repeat(${nd},1fr)">${c}</div>`;
-  };
+  // barra do mês de um robô (cada bloco = uma peça, do 1º ao último apontamento)
+  const linha = r => `<div class="prb-gd"><div class="lb" onclick="_prbSet('robo',${r})">${r}</div><div class="prb-gl" style="--nd:${nd}">${dados[r].noMes.map(l => {
+      const a = l.ini < ini ? ini : l.ini, b = l.fim > fim ? fim : l.fim, i0 = a.getDate() - 1, i1 = b.getDate();
+      return `<div class="prb-seg" style="--c:${_prbCor(l.cod)};left:${(i0 / nd * 100).toFixed(3)}%;width:${((i1 - i0) / nd * 100).toFixed(3)}%" title="Peça ${esc(l.cod)} · ${_prbQuando(l.ini, l.iniH)} até ${_prbQuando(l.fim, l.fimH)}" onclick="_prbSet('robo',${r})">${esc(l.cod)}</div>`; }).join('')}</div></div>`;
+  const cab = () => { let c = ''; for(let i = 1; i <= nd; i++){ const w = new Date(E.ano, E.mes, i).getDay(); c += `<span class="${w === 0 || w === 6 ? 'fds' : ''}">${i}</span>`; }
+    return `<div class="prb-gd"><div></div><div class="prb-gh" style="grid-template-columns:repeat(${nd},1fr)">${c}</div></div>`; };
+  const legenda = () => `<div class="prb-leg">${Object.entries(codMes).filter(([c]) => c !== '—').sort((a, b) => b[1] - a[1]).map(([c, t]) => `<span><i style="--c:${_prbCor(c)}"></i>${esc(c)} <em>${_prbFmt(t)} pç</em></span>`).join('')}</div>`;
 
   let corpo = '';
   if(E.robo === null){
-    // ── VISÃO GERAL ──
-    const codTot = {};
-    robos.forEach(r => dados[r].lotes.forEach(l => l.dias.forEach(x => { if(x.d >= ini && x.d <= fim) codTot[l.cod] = (codTot[l.cod] || 0) + x.total; })));
-    const leg = Object.entries(codTot).sort((a, b) => b[1] - a[1]).map(([c, t]) => `<span><i class="prb-dot" style="--c:${_prbCor(c)}"></i>${esc(c)} <b>${_prbFmt(t)}</b></span>`).join('');
-    // trocas de peça no mês (todos os robôs)
+    // ── TODOS OS ROBÔS ──
+    const linhas = robos.map(r => {
+      const D = dados[r], at = D.atual, emProd = at && (new Date() - at.fim) / 86400000 < 4;
+      return `<tr class="cl" onclick="_prbSet('robo',${r})">
+        <td class="rob">${r}</td>
+        <td>${at ? _prbChip(at.cod) : '<span class="prb-mut">—</span>'}</td>
+        <td>${at ? _prbQuando(at.ini, at.iniH) : '—'}</td>
+        <td>${at ? (emProd ? '<span class="prb-sit on">Em produção</span>' : '<span class="prb-sit">Parado desde ' + _prbDia(at.fim) + '</span>') : '—'}</td>
+        <td class="n big">${D.tot ? _prbFmt(D.tot) : '—'}</td>
+        <td class="n">${_prbEfHtml(D.ef)}</td>
+        <td class="n">${D.trocas.filter(t => t.de.cod !== t.para.cod).length}</td>
+        <td class="prb-seta">›</td></tr>`; }).join('');
     const trocas = [];
-    robos.forEach(r => { const L = dados[r].lotes; for(let i = 1; i < L.length; i++){ const de = L[i-1], para = L[i]; if(para.ini >= ini && para.ini <= fim && de.cod !== para.cod) trocas.push({r, de, para}); } });
+    robos.forEach(r => dados[r].trocas.filter(t => t.de.cod !== t.para.cod).forEach(t => trocas.push({r, ...t})));
     trocas.sort((a, b) => _prbInicio(b.para) - _prbInicio(a.para));
-    corpo = `<div class="prb-box"><div class="prb-bt">🗓 Mapa de peças por robô <em>cada barra é um lote: do 1º ao último apontamento da peça · toque para abrir o robô</em></div>
-        <div class="prb-gw"><div class="prb-g" style="grid-template-columns:54px 1fr">${cabGantt()}${robos.map(r => linhaGantt(r, false)).join('')}</div></div>
-        <div class="prb-leg">${leg || '<span>Sem produção no mês.</span>'}</div></div>
-      <div class="prb-box"><div class="prb-bt">🔄 Trocas de peça no mês <em>${trocas.length} troca${trocas.length === 1 ? '' : 's'}</em></div>
-        ${trocas.length ? `<div class="prb-tr-l">${trocas.map(t => `<div class="prb-tr-i"><span class="d">${_prbDia(t.para.ini)} ${t.para.iniH}</span><span class="r" onclick="_prbSet('robo',${t.r})">R${t.r}</span>
-          <span><span class="prb-dot" style="--c:${_prbCor(t.de.cod)};display:inline-block"></span> <b>${esc(t.de.cod)}</b> → <span class="prb-dot" style="--c:${_prbCor(t.para.cod)};display:inline-block"></span> <b>${esc(t.para.cod)}</b>
-          <span style="color:var(--mut)"> · parou ${_prbDia(t.de.fim)} ${t.de.fimH} · ${_prbIntervalo(_prbFimTs(t.de), _prbInicio(t.para))} até o 1º apontamento</span></span></div>`).join('')}</div>` : '<div class="prb-vazio">Nenhuma troca de peça neste mês.</div>'}</div>`;
+    corpo = `
+      <div class="prb-card"><div class="prb-h"><b>Resumo de ${MESES[E.mes].toLowerCase()}</b><span>toque num robô para ver os detalhes</span></div>
+        <div class="prb-tw"><table class="prb-t"><thead><tr><th>Robô</th><th>Peça atual</th><th>Começou em</th><th>Situação</th><th class="n">Peças no mês</th><th class="n">Eficiência</th><th class="n">Trocas</th><th></th></tr></thead><tbody>${linhas}</tbody></table></div></div>
+      <div class="prb-card"><div class="prb-h"><b>Mapa de peças do mês</b><span>cada bloco é uma peça, do 1º ao último apontamento</span></div>
+        <div class="prb-tw"><div class="prb-g">${cab()}${robos.map(linha).join('')}</div></div>${legenda()}</div>
+      <div class="prb-card"><div class="prb-h"><b>Trocas de peça no mês</b><span>${trocas.length} troca${trocas.length === 1 ? '' : 's'} · da mais recente para a mais antiga</span></div>
+        ${trocas.length ? `<div class="prb-tr">${trocas.map(t => _prbTrocaHtml(t.r, t.de, t.para, true)).join('')}</div>` : '<div class="prb-vazio">Nenhuma troca de peça neste mês.</div>'}</div>`;
   } else {
-    // ── ROBÔ ──
-    const r = E.robo, D = dados[r], c = celulas[String(r)] || {};
-    const st = mapaRobosStatusInfo(c.status);
-    const diasMes = []; D.lotes.forEach(l => l.dias.forEach(x => { if(x.d >= ini && x.d <= fim) diasMes.push(x); }));
-    let hrs = 0, ms = 0, pm = 0, ok = 0, hm = 0; const codsMes = {};
-    diasMes.forEach(x => { hrs += x.hs.length; ms += x.ms; pm += x.pm; ok += x.ok; hm += x.hm; codsMes[x.cod] = (codsMes[x.cod] || 0) + x.total; });
-    const ef = ms > 0 ? Math.round(pm / ms * 100) : null;
-    const nTrocas = D.lotes.filter((l, i) => i > 0 && l.ini >= ini && l.ini <= fim && D.lotes[i-1].cod !== l.cod).length;
-    const corEf = ef == null ? '#7c8aa5' : ef >= 95 ? '#34d399' : ef >= 80 ? '#f59e0b' : '#f87171';
-    const atual = D.atual;
-    const kp = (l, v, s, cor) => `<div class="prb-k" style="--c:${cor}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-    const kpis = [
-      kp('Peças no mês', _prbFmt(D.tot), MESES[E.mes].toLowerCase() + ' ' + E.ano, '#38bdf8'),
-      kp('Dias produtivos', diasMes.length, 'com apontamento', '#a78bfa'),
-      kp('Horas apontadas', _prbFmt(hrs), 'horas com produção', '#60a5fa'),
-      kp('Média por hora', hrs ? _prbFmt(D.tot / hrs) : '—', 'peças por hora', '#f59e0b'),
-      kp('Eficiência', ef == null ? '—' : ef + '%', 'peças ÷ meta das horas', corEf),
-      kp('Metas batidas', hm ? ok + '/' + hm : '—', hm ? Math.round(ok / hm * 100) + '% das horas' : 'sem meta', '#34d399'),
-      kp('Peças diferentes', Object.keys(codsMes).length, 'códigos no mês', '#f472b6'),
-      kp('Trocas de peça', nTrocas, 'no mês', '#fb923c')
-    ].join('');
-
-    // lotes do mês, do mais recente para o mais antigo, com a troca entre eles
+    // ── UM ROBÔ ──
+    const r = E.robo, D = dados[r], c = celulas[String(r)] || {}, st = mapaRobosStatusInfo(c.status), nm = String(c.nome || '');
+    const marca = /fanuc/i.test(nm) ? 'FANUC' : /kuka/i.test(nm) ? 'KUKA' : 'Robô';
+    const at = D.atual, emProd = at && (new Date() - at.fim) / 86400000 < 4, nomeAt = at ? _prbNomePeca(at.cod) : '';
+    const nTrocas = D.trocas.filter(t => t.de.cod !== t.para.cod).length;
+    const kp = (l, v, s, cor) => `<div class="prb-k" style="--c:${cor || '#fff'}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
     const L = D.lotes, idxs = L.map((l, i) => i).filter(i => L[i].fim >= ini && L[i].ini <= fim).reverse();
-    let tl = '';
-    idxs.forEach((i, k) => {
-      const l = L[i], cor = _prbCor(l.cod), id = r + '_' + i, eAtual = i === L.length - 1 && (new Date() - l.fim) / 86400000 < 4;
-      const nome = _prbNomePeca(l.cod);
-      const mx = Math.max(1, ...l.dias.map(x => x.total));
-      const pes = Object.entries(l.pes).sort((a, b) => b[1] - a[1]);
-      const prodDias = l.dias.length;
-      tl += `<div class="prb-lote ${eAtual ? 'atual' : ''}" style="--c:${cor}">
-        <div class="prb-lh"><span class="cod">PEÇA ${esc(l.cod)}</span>${nome ? `<span class="nm">${esc(nome)}</span>` : ''}
-          ${eAtual ? '<span class="prb-tag">EM PRODUÇÃO</span>' : `<span class="prb-tag cin">LOTE ENCERRADO</span>`}
-          ${l.ini < ini ? '<span class="prb-tag cin">COMEÇOU EM ' + MESES[l.ini.getMonth()].toUpperCase() + '</span>' : ''}</div>
-        <div class="prb-lg">
-          <div class="prb-li"><div class="l">▶ 1º apontamento</div><div class="v"><b>${_prbDiaSem(l.ini)}</b> às ${l.iniH}</div></div>
-          <div class="prb-li"><div class="l">■ Último apontamento</div><div class="v"><b>${_prbDiaSem(l.fim)}</b> às ${l.fimH}</div></div>
-          <div class="prb-li"><div class="l">Duração</div><div class="v"><b>${l.corridos}</b> dia${l.corridos === 1 ? '' : 's'} · ${prodDias} produtivo${prodDias === 1 ? '' : 's'}</div></div>
-          <div class="prb-li"><div class="l">Total produzido</div><div class="v"><b>${_prbFmt(l.total)}</b> peças</div></div>
-          <div class="prb-li"><div class="l">Horas apontadas</div><div class="v"><b>${l.horas}</b> h · ${_prbFmt(l.total / l.horas)}/h</div></div>
-          <div class="prb-li"><div class="l">Meta/h</div><div class="v"><b>${[...l.metas].join(' / ') || '—'}</b></div></div>
-          <div class="prb-li"><div class="l">Eficiência</div><div class="v"><b style="color:${l.ef == null ? '#7c8aa5' : l.ef >= 95 ? '#34d399' : l.ef >= 80 ? '#f59e0b' : '#f87171'}">${l.ef == null ? '—' : l.ef + '%'}</b> · metas ${l.ok}/${l.hm}</div></div>
-          <div class="prb-li"><div class="l">Melhor dia</div><div class="v"><b>${_prbDia(l.melhor.d)}</b> · ${_prbFmt(l.melhor.total)} pç</div></div>
+    const lotesHtml = idxs.map(i => {
+      const l = L[i], id = r + '_' + i, aberto = !!E.abertos[id], eAt = i === L.length - 1 && emProd;
+      const det = aberto ? `<tr class="prb-det"><td colspan="9">
+          <table class="prb-dd"><thead><tr><th>Dia</th><th>Horas apontadas (verde = bateu a meta)</th><th style="text-align:right">Peças</th><th style="text-align:right">Meta/h</th></tr></thead><tbody>
+          ${l.dias.map(x => `<tr><td style="white-space:nowrap"><b>${_prbDiaSem(x.d)}</b></td>
+            <td><div class="prb-hs">${x.hs.map(o => `<span class="${o.mh > 0 ? (o.v >= o.mh ? '' : 'f') : 'n'}" title="${o.quem ? esc(o.quem) : ''}">${o.h} · ${o.v}</span>`).join('')}</div></td>
+            <td style="text-align:right;font-weight:800">${_prbFmt(x.total)}</td><td style="text-align:right">${x.meta || '—'}</td></tr>`).join('')}
+          </tbody></table>
+          ${Object.keys(l.pes).length ? `<div class="prb-quem">Quem trabalhou: ${Object.entries(l.pes).sort((a, b) => b[1] - a[1]).map(([n, v]) => `<b>${esc(n)}</b> (${_prbFmt(v)})`).join(' · ')}</div>` : ''}
+        </td></tr>` : '';
+      return `<tr class="cl" onclick="_prbToggle('${id}')">
+          <td>${_prbChip(l.cod)}${_prbNomePeca(l.cod) ? `<div class="prb-mut" style="margin-top:3px">${esc(_prbNomePeca(l.cod))}</div>` : ''}</td>
+          <td>${eAt ? '<span class="prb-sit on">Em produção</span>' : '<span class="prb-sit">Encerrado</span>'}</td>
+          <td>${_prbQuando(l.ini, l.iniH)}${l.ini < ini ? '<div class="prb-mut">começou em ' + MESES[l.ini.getMonth()].toLowerCase() + '</div>' : ''}</td>
+          <td>${_prbQuando(l.fim, l.fimH)}</td>
+          <td class="n">${l.dias.length} dia${l.dias.length === 1 ? '' : 's'}</td>
+          <td class="n big">${_prbFmt(l.total)}</td>
+          <td class="n">${_prbFmt(l.total / l.horas)}/h</td>
+          <td class="n">${_prbEfHtml(l.ef)}</td>
+          <td class="prb-seta">${aberto ? '▾' : '▸'}</td></tr>${det}`;
+    }).join('');
+    const trocasRobo = D.trocas.slice().reverse();
+    corpo = `
+      <div class="prb-hero">
+        <div class="prb-hc"><div class="rn">Robô ${r}</div><div class="rs">${marca}</div>
+          <div class="prb-st2" style="--c:${st.cor}">● ${esc(st.label)}</div>
+          <div style="margin-top:14px"><button type="button" class="prb-back" onclick="_prbSet('robo',null)">← Todos os robôs</button></div></div>
+        <div class="prb-hc prb-agora" style="--c:${at ? _prbCor(at.cod) : '#334155'}">
+          <div class="lb">${emProd ? 'Fazendo agora' : 'Última peça'}</div>
+          ${at ? `<div class="pc">${_prbChip(at.cod)}${nomeAt ? `<small>${esc(nomeAt)}</small>` : ''}</div>
+            <div class="ds">1º apontamento: <b>${_prbQuando(at.ini, at.iniH)}</b><br>Último apontamento: <b>${_prbQuando(at.fim, at.fimH)}</b><br>Já foram <b>${_prbFmt(at.total)} peças</b> em ${at.dias.length} dia${at.dias.length === 1 ? '' : 's'} de produção.</div>`
+            : '<div class="ds">Sem produção registrada.</div>'}
         </div>
-        <div class="prb-bars" title="Produção por dia do lote">${l.dias.map(x => `<i class="${x.ms > 0 && x.pm < x.ms * 0.9 ? 'fail' : ''}" style="height:${Math.max(6, x.total / mx * 100)}%" title="${_prbDiaSem(x.d)}: ${_prbFmt(x.total)} pç"></i>`).join('')}</div>
-        ${pes.length ? `<div class="prb-pess">${pes.slice(0, 8).map(([n, v]) => `<span>${esc(n)} <b>${_prbFmt(v)}</b></span>`).join('')}${pes.length > 8 ? `<span>+${pes.length - 8}</span>` : ''}</div>` : ''}
-        <button type="button" class="prb-mais" onclick="_prbToggle('${id}')">${E.abertos[id] ? '▲ esconder dia a dia' : '▼ ver dia a dia, hora a hora'}</button>
-        ${E.abertos[id] ? `<div class="prb-dias"><table><thead><tr><th>Dia</th><th>Horas apontadas</th><th style="text-align:right">Total</th><th style="text-align:right">Meta/h</th><th>Quem</th></tr></thead><tbody>
-          ${l.dias.map(x => `<tr><td class="prb-mono">${_prbDiaSem(x.d)}</td>
-            <td><div class="prb-hs">${x.hs.map(o => `<span class="${o.mh > 0 ? (o.v >= o.mh ? '' : 'f') : 'n'}" title="${o.h}: ${o.v}${o.mh ? ' / meta ' + o.mh : ''}${o.quem ? ' · ' + esc(o.quem) : ''}">${o.h} ${o.v}</span>`).join('')}</div></td>
-            <td class="prb-mono" style="text-align:right">${_prbFmt(x.total)}</td><td class="prb-mono" style="text-align:right">${x.meta || '—'}</td>
-            <td style="font-size:11px;color:#c9d4e6">${esc(Object.keys(x.pes).join(', ') || '—')}</td></tr>`).join('')}
-        </tbody></table></div>` : ''}
-      </div>`;
-      // entre este lote (mais novo) e o anterior (mais antigo)
-      if(i > 0){
-        const ant = L[i - 1];
-        const inter = _prbIntervalo(_prbFimTs(ant), _prbInicio(l));
-        tl += ant.cod !== l.cod
-          ? `<div class="prb-troca"><span class="ic">🔄 TROCA DE PEÇA</span> <b>${esc(ant.cod)}</b> → <b>${esc(l.cod)}</b><br>
-              Peça ${esc(ant.cod)} terminou em <b>${_prbDiaSem(ant.fim)} às ${ant.fimH}</b> · peça ${esc(l.cod)} começou a ter apontamento em <b>${_prbDiaSem(l.ini)} às ${l.iniH}</b> · intervalo: <span class="q">${inter}</span></div>`
-          : `<div class="prb-troca"><span class="ic">⏸ PAUSA</span> mesma peça ${esc(l.cod)} · sem apontamento de <b>${_prbDiaSem(ant.fim)} ${ant.fimH}</b> até <b>${_prbDiaSem(l.ini)} ${l.iniH}</b> · <span class="q">${inter}</span></div>`;
-      }
-    });
-
-    // resumo por peça no mês
-    const porCod = {};
-    diasMes.forEach(x => { const o = porCod[x.cod] || (porCod[x.cod] = {t: 0, d: 0, h: 0, ms: 0, pm: 0}); o.t += x.total; o.d++; o.h += x.hs.length; o.ms += x.ms; o.pm += x.pm; });
-    const tab = Object.entries(porCod).sort((a, b) => b[1].t - a[1].t).map(([cod, o]) => { const e2 = o.ms > 0 ? Math.round(o.pm / o.ms * 100) : null, sh = D.tot ? Math.round(o.t / D.tot * 100) : 0;
-      return `<tr><td><span class="prb-dot" style="--c:${_prbCor(cod)};display:inline-block"></span> <b>${esc(cod)}</b> <span style="color:var(--mut);font-family:Montserrat,sans-serif;font-size:11px">${esc(_prbNomePeca(cod))}</span></td>
-        <td>${_prbFmt(o.t)}</td><td>${o.d}</td><td>${o.h}</td><td>${_prbFmt(o.t / o.h)}</td><td>${e2 == null ? '—' : e2 + '%'}</td><td>${sh}%<span class="prb-share"><i style="--c:${_prbCor(cod)};width:${sh}%"></i></span></td></tr>`; }).join('');
-
-    corpo = `<div class="prb-hd">
-        <div><div class="big">ROBÔ ${r}</div><div class="sub">${esc(c.nome || '')}</div></div>
-        <span class="prb-pill" style="--c:${st.cor}">● ${esc(st.label)}</span>
-        ${atual ? `<span class="prb-pill" style="--c:${_prbCor(atual.cod)}">⚙ última peça: ${esc(atual.cod)}</span>` : ''}
-        <button type="button" class="prb-back" onclick="_prbSet('robo',null)">← todos os robôs</button></div>
-      <div class="prb-kp">${kpis}</div>
-      <div class="prb-box"><div class="prb-bt">🗓 Peças no mês <em>barra = lote (1º ao último apontamento)</em></div>
-        <div class="prb-gw"><div class="prb-g" style="grid-template-columns:54px 1fr">${cabGantt()}${linhaGantt(r, true)}</div></div></div>
-      <div class="prb-box"><div class="prb-bt">🧭 Linha do tempo de lotes e trocas <em>do mais recente para o mais antigo</em></div>
-        ${tl ? `<div class="prb-tl">${tl}</div>` : '<div class="prb-vazio">Sem produção deste robô no mês.</div>'}</div>
-      <div class="prb-box"><div class="prb-bt">📦 Resumo por peça no mês</div>
-        ${tab ? `<div style="overflow-x:auto"><table class="prb-tb"><thead><tr><th>Peça</th><th>Peças</th><th>Dias</th><th>Horas</th><th>Média/h</th><th>Eficiência</th><th>% do robô</th></tr></thead><tbody>${tab}</tbody></table></div>` : '<div class="prb-vazio">Sem produção no mês.</div>'}</div>`;
+      </div>
+      <div class="prb-kp">
+        ${kp('Peças no mês', _prbFmt(D.tot), D.diasMes.length + ' dias com produção', '#fff')}
+        ${kp('Eficiência', D.ef == null ? '—' : D.ef + '%', 'peças feitas ÷ meta das horas', _prbCorEf(D.ef))}
+        ${kp('Média por hora', D.hrs ? _prbFmt(D.tot / D.hrs) : '—', D.hm ? 'metas batidas ' + D.ok + ' de ' + D.hm : 'sem meta', '#fff')}
+        ${kp('Trocas de peça', nTrocas, 'no mês', '#f59e0b')}
+      </div>
+      <div class="prb-card"><div class="prb-h"><b>Peças no mês</b><span>cada bloco é uma peça, do 1º ao último apontamento</span></div>
+        <div class="prb-tw"><div class="prb-g">${cab()}${linha(r)}</div></div></div>
+      <div class="prb-card"><div class="prb-h"><b>Peças feitas</b><span>da mais recente para a mais antiga · toque numa linha para ver o dia a dia</span></div>
+        ${lotesHtml ? `<div class="prb-tw"><table class="prb-t"><thead><tr><th>Peça</th><th>Situação</th><th>1º apontamento</th><th>Último apontamento</th><th class="n">Dias</th><th class="n">Peças</th><th class="n">Média</th><th class="n">Eficiência</th><th></th></tr></thead><tbody>${lotesHtml}</tbody></table></div>` : '<div class="prb-vazio">Sem produção deste robô no mês.</div>'}</div>
+      <div class="prb-card"><div class="prb-h"><b>Trocas de peça</b><span>${trocasRobo.length ? 'da mais recente para a mais antiga' : ''}</span></div>
+        ${trocasRobo.length ? `<div class="prb-tr">${trocasRobo.map(t => _prbTrocaHtml(r, t.de, t.para, false)).join('')}</div>` : '<div class="prb-vazio">Nenhuma troca de peça neste mês.</div>'}</div>`;
   }
 
   mp.innerHTML = `<div class="prb">
-    <div class="prb-top"><div class="prb-tt">🏭 Produção por Robô<small>peças · lotes · trocas de peça · apontamentos</small></div>
+    <div class="prb-top"><div><div class="prb-tt">🏭 Produção por Robô</div><div class="prb-st">Que peça cada robô fez, quando começou, quando terminou e quando trocou</div></div>
       <div class="prb-per"><select onchange="_prbSet('mes',this.value)">${mesesOpts}</select><select onchange="_prbSet('ano',this.value)">${anosOpts}</select></div></div>
-    ${rail}${corpo}</div>`;
+    ${pills}${corpo}</div>`;
 }
 
 // ===== Painel "Visão geral" (quem não é host) — estilo Painel da Cromo Azul =====
