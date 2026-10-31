@@ -1570,6 +1570,37 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .prb-troca::before{left:-17px}
   .prb-tr-i{grid-template-columns:80px 56px 1fr;font-size:12px}
 }
+/* ===== Menu lateral (layout formal: seções, ícones de linha, grade de robôs) ===== */
+@media (min-width: 701px){ .sidebar { width: 244px; } }
+.sidebar { background: linear-gradient(180deg,#0b1017,#090d13); scrollbar-width: thin; scrollbar-color: #1f2a38 transparent; }
+.sidebar-hdr { padding: 14px 16px 10px; border-bottom: 1px solid #161e29; color: #8592a6; letter-spacing: .16em; font-size: 10px; }
+#sidebarList { padding-bottom: 18px; }
+.sb-grp { display: flex; align-items: center; gap: 10px; padding: 16px 16px 6px; font-size: 9.5px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: #4f5d70; }
+.sb-grp::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg,#1c2533,transparent); }
+.sb-item { position: relative; display: flex; align-items: center; gap: 11px; margin: 1px 8px; padding: 7px 9px; border-radius: 9px; cursor: pointer; transition: background .15s ease, box-shadow .15s ease; }
+.sb-item:hover { background: #ffffff07; }
+.sb-item:active { background: #ffffff0d; }
+.sb-ic { width: 30px; height: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #111823; border: 1px solid #1c2633; color: #8794a8; transition: color .15s ease, border-color .15s ease, background .15s ease; }
+.sb-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sb-item:hover .sb-ic { color: #d3dce8; border-color: #2a3647; }
+.sb-tx { flex: 1; min-width: 0; }
+.sb-nm { font-family: 'Montserrat', sans-serif; font-size: 12.6px; font-weight: 600; color: #d6dee9; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-sub { font-size: 10.4px; color: #5f6c80; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-item.active { background: linear-gradient(90deg,#00e87a16,#00e87a04 85%); box-shadow: inset 0 0 0 1px #00e87a26; }
+.sb-item.active::before { content: ""; position: absolute; left: -8px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: #00e87a; box-shadow: 0 0 10px #00e87a99; }
+.sb-item.active .sb-ic { background: #00e87a17; border-color: #00e87a55; color: #00e87a; }
+.sb-item.active .sb-nm { color: #fff; }
+.sb-tag { flex-shrink: 0; color: #4f5d70; display: flex; }
+.sb-tag svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sb-robos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px 14px 8px; }
+.sb-rb { position: relative; text-align: center; padding: 7px 4px 6px; border-radius: 9px; background: #0f151f; border: 1px solid #1c2633; cursor: pointer; transition: border-color .15s ease, background .15s ease, transform .15s ease; }
+.sb-rb::after { content: ""; position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 6px var(--c); }
+.sb-rb:hover { border-color: #2c3a4e; background: #131b27; transform: translateY(-1px); }
+.sb-rb.active { border-color: #00e87a; background: #00e87a12; box-shadow: 0 0 0 1px #00e87a33 inset; }
+.sb-rb .m { font-size: 7.8px; font-weight: 800; letter-spacing: .14em; color: #4f5d70; }
+.sb-rb .n { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: #e6edf6; line-height: 1.15; }
+.sb-rb .s { font-size: 7.6px; font-weight: 800; letter-spacing: .05em; color: var(--c); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+#sidebar.nav-enter .sb-item, #sidebar.nav-enter .sb-rb { animation: cellIn 300ms var(--ease-out) backwards; }
 @media(max-width:560px){.fcal-g{gap:3px}.fcal-d{min-height:40px;font-size:11.5px}.fcal-d b{font-size:9px}.fdet-r{grid-template-columns:66px 1fr 44px;row-gap:3px}.fdet-bar{grid-column:1/-1;order:5}.fdet-m{grid-column:1/-1;text-align:left;order:6}.fcal-leg{display:none}}
 </style>
 </head>
@@ -4249,119 +4280,96 @@ function updateAndRefreshRitmo(key,field,value){
 }
 
 // ── SIDEBAR ──────────────────────────────────
+// Ícones de linha do menu lateral (mesmo traço em todos)
+const SB_IC = {
+  mapa: '<path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  painel: '<path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4.2-4.2"/><circle cx="12" cy="15" r="1.3"/>',
+  prodrobo: '<path d="M3 21h18"/><path d="M5 21v-9l4 2.5V12l4 2.5V12l4 2.5V7l3 1.5V21"/>',
+  metas: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  producao_mensal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  producao_peca: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>',
+  relatorio: '<path d="M4 20h16"/><rect x="6" y="11" width="3" height="7" rx=".6"/><rect x="11" y="6.5" width="3" height="11.5" rx=".6"/><rect x="16" y="13.5" width="3" height="4.5" rx=".6"/>',
+  relatorio_anual: '<path d="M4 19.5h16"/><path d="M5 15.5l4-4 3 3 6-7"/><path d="M15 7.5h3v3"/>',
+  relatorios: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  catalogo_pecas: '<rect x="3.5" y="4" width="17" height="16" rx="2"/><circle cx="9" cy="9.5" r="1.8"/><path d="M20.5 16l-5-5-8.5 9"/>',
+  cadastro_pecas: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  armario: '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M5 12h14M10 7.5h4M10 16.5h4"/>',
+  manutencao: '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  equipes: '<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16.2 14.6A5 5 0 0 1 21 19.5"/>',
+  funcionarios: '<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17.5a4 4 0 0 1 8 0"/>',
+  tarefas: '<path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17"/>',
+  gerenciar: '<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  outro: '<rect x="4" y="4" width="16" height="16" rx="3"/>'
+};
+// Nome e descrição padronizados por tipo de aba
+const SB_ROTULO = {
+  metas: ['Meta Diária', 'Apontamento hora a hora'],
+  producao_mensal: ['Produção Mensal', 'Total por dia do mês'],
+  producao_peca: ['Produção por Peça', 'Totais por código'],
+  relatorio: ['Relatório Mensal', 'Projeção e comparativos'],
+  relatorio_anual: ['Relatório Anual', 'Resultado do ano'],
+  catalogo_pecas: ['Catálogo de Peças', 'Fotos e dados das peças'],
+  cadastro_pecas: ['Cadastro de Peças', 'Metas e parâmetros'],
+  armario: ['Armário de Gabaritos', 'Posições e ocupação'],
+  manutencao: ['Manutenção', 'Chamados e histórico']
+};
+const SB_GRUPO = { metas: 'prod', producao_mensal: 'prod', producao_peca: 'prod', relatorio: 'rel', relatorio_anual: 'rel', catalogo_pecas: 'rec', cadastro_pecas: 'rec', armario: 'rec', manutencao: 'rec' };
+const SB_ORDEM = ['metas', 'producao_mensal', 'producao_peca', 'relatorio', 'relatorio_anual', 'catalogo_pecas', 'cadastro_pecas', 'armario', 'manutencao'];
+
 function renderSidebar(){
-  const keys=Object.keys(celulas).sort();
-  document.getElementById("cellCount").textContent="Células ("+keys.length+")";
+  const keys = Object.keys(celulas).sort();
+  document.getElementById("cellCount").textContent = "Menu principal";
 
-  // Separa painéis e robôs
-  const paineis = keys.filter(k=>getCellTipo(k)!=='robo' && (getCellTipo(k)!=='cadastro_pecas' || isAdmin));
-  const robos   = keys.filter(k=>getCellTipo(k)==='robo');
-  const robosVisiveis = sidebarExpandida ? robos : robos.slice(0,1);
-  const robosRestantes = robos.length-1;
+  const paineis = keys.filter(k => getCellTipo(k) !== 'robo' && (getCellTipo(k) !== 'cadastro_pecas' || isAdmin));
+  const robos   = keys.filter(k => getCellTipo(k) === 'robo').sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
 
-  const icones = {armario:'🗄',producao_mensal:'📅',metas:'📋',producao_peca:'📦',relatorio:'📊',relatorio_anual:'📈',cadastro_pecas:'🔧',catalogo_pecas:'📋',manutencao:'🔩',robo:'⚙'};
+  const ico = id => `<span class="sb-ic"><svg viewBox="0 0 24 24">${SB_IC[id] || SB_IC.outro}</svg></span>`;
+  const item = (key, icone, nome, sub, extra) => `<div class="sb-item ${selected === key ? 'active' : ''}" onclick="selectCell('${key}')" title="${esc(nome)}">
+      ${ico(icone)}<div class="sb-tx"><div class="sb-nm">${esc(nome)}</div><div class="sb-sub">${esc(sub)}</div></div>${extra || ''}</div>`;
+  const grupo = t => `<div class="sb-grp">${t}</div>`;
+  const cadeado = '<span class="sb-tag" title="Pede senha"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>';
 
-  function itemHTML(k){
-    const c=celulas[k];const s=SC[c.status]||SC["Parado"];
-    const t=getCellTipo(k);const ic=icones[t]||'⚙';
-    return `<div class="cell-item ${k===selected?'active':''}" onclick="selectCell('${k}')">
-      <div class="cell-num" style="font-size:15px">${ic}</div>
-      <div class="cell-info">
-        <div class="cell-name">${c.nome}${isAdmin?` <span onclick="event.stopPropagation();renomearCelula('${k}')" style="color:#2a3040;cursor:pointer;font-size:10px" title="Renomear">✏</span>`:''}</div>
-        <div class="cell-peca">${t==='robo'?(c.cliente||c.peca||'—'):''}</div>
-      </div>
-      <div class="dot ${s.dot}"></div>
-    </div>`;
-  }
+  // abas que vêm das células (agrupadas e com nome padronizado)
+  const porGrupo = {prod: [], rel: [], rec: []};
+  paineis.slice().sort((a, b) => { const ia = SB_ORDEM.indexOf(getCellTipo(a)), ib = SB_ORDEM.indexOf(getCellTipo(b)); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); })
+    .forEach(k => {
+      const t = getCellTipo(k), r = SB_ROTULO[t];
+      porGrupo[SB_GRUPO[t] || 'rec'].push(item(k, SB_IC[t] ? t : 'outro', r ? r[0] : (celulas[k].nome || k), r ? r[1] : ''));
+    });
 
-  let html='';
-  html+=`<div class="sidebar-group-label">Painéis</div>`;
-  html+=`<div class="cell-item ${selected==='__maparobos'?'active':''}" onclick="selectCell('__maparobos')">
-    <div class="cell-num" style="font-size:15px">📍</div>
-    <div class="cell-info">
-      <div class="cell-name">Mapa dos Robôs</div>
-      <div class="cell-peca">Chão de fábrica ao vivo</div>
-    </div>
-    <div class="dot dot-green"></div>
-  </div>`;
-  html+=`<div class="cell-item ${selected==='__painel'?'active':''}" onclick="selectCell('__painel')">
-    <div class="cell-num" style="font-size:15px">🎯</div>
-    <div class="cell-info">
-      <div class="cell-name">Painel</div>
-      <div class="cell-peca">${isAdmin?'Meta do dia e do mês':'Visão geral'}</div>
-    </div>
-    <div class="dot dot-green"></div>
-  </div>`;
-  html+=`<div class="cell-item ${selected==='__prodrobo'?'active':''}" onclick="selectCell('__prodrobo')">
-    <div class="cell-num" style="font-size:15px">🏭</div>
-    <div class="cell-info">
-      <div class="cell-name">Produção por Robô</div>
-      <div class="cell-peca">Peças, lotes e trocas</div>
-    </div>
-    <div class="dot dot-green"></div>
-  </div>`;
-  if(paineis.length>0){
-    html+=paineis.map(itemHTML).join('');
-  }
-  // Aba Equipes — só para host/metas (visualizador não vê)
+  let html = '';
+  html += grupo('Visão geral');
+  html += item('__maparobos', 'mapa', 'Mapa dos Robôs', 'Chão de fábrica ao vivo');
+  html += item('__painel', 'painel', 'Painel', isAdmin ? 'Metas do dia e do mês' : 'Visão geral');
+  html += item('__prodrobo', 'prodrobo', 'Produção por Robô', 'Lotes e trocas de peça');
+
+  if(porGrupo.prod.length){ html += grupo('Produção') + porGrupo.prod.join(''); }
+
+  html += grupo('Relatórios') + porGrupo.rel.join('');
+  html += item('__relatorios', 'relatorios', 'Relatórios', 'Por período e exportação', cadeado);
+
+  if(porGrupo.rec.length){ html += grupo('Cadastros e recursos') + porGrupo.rec.join(''); }
+
   if(isAdmin || isAdminMetas){
-    html+=`<div class="cell-item ${selected==='__equipes'?'active':''}" onclick="selectCell('__equipes')">
-      <div class="cell-num" style="font-size:15px">👥</div>
-      <div class="cell-info">
-        <div class="cell-name">Equipes</div>
-        <div class="cell-peca">Equipes e membros</div>
-      </div>
-      <div class="dot dot-green"></div>
-    </div>`;
-    html+=`<div class="cell-item ${selected==='__funcionarios'?'active':''}" onclick="selectCell('__funcionarios')">
-      <div class="cell-num" style="font-size:15px">👷</div>
-      <div class="cell-info">
-        <div class="cell-name">Funcionários</div>
-        <div class="cell-peca">Desempenho da equipe</div>
-      </div>
-      <div class="dot dot-green"></div>
-    </div>`;
-  }
-  // Aba Gerenciar — só host
-  if(isAdmin){
-    html+=`<div class="cell-item ${selected==='__gerenciar'?'active':''}" onclick="selectCell('__gerenciar')">
-      <div class="cell-num" style="font-size:15px">⚙️</div>
-      <div class="cell-info">
-        <div class="cell-name">Gerenciar</div>
-        <div class="cell-peca">Configurações do host</div>
-      </div>
-      <div class="dot dot-green"></div>
-    </div>`;
-  }
-  if(isAdmin){
-    html+=`<div class="cell-item ${selected==='__tarefas'?'active':''}" onclick="selectCell('__tarefas')">
-      <div class="cell-num" style="font-size:15px">📋</div>
-      <div class="cell-info">
-        <div class="cell-name">Tarefas Diárias</div>
-        <div class="cell-peca">Rotina da colaboradora</div>
-      </div>
-      <div class="dot dot-green"></div>
-    </div>`;
-  }
-  // Aba Relatórios — todos veem, mas exige senha ao clicar
-  html+=`<div class="cell-item ${selected==='__relatorios'?'active':''}" onclick="selectCell('__relatorios')">
-    <div class="cell-num" style="font-size:15px">📄</div>
-    <div class="cell-info">
-      <div class="cell-name">Relatórios</div>
-      <div class="cell-peca">Produção por peça</div>
-    </div>
-    <div class="dot dot-green"></div>
-  </div>`;
-  if(robos.length>0){
-    html+=`<div class="sidebar-group-label" style="border-top:1px solid #1e2530;margin-top:4px">Robôs</div>`;
-    html+=robosVisiveis.map(itemHTML).join('');
-    if(!sidebarExpandida&&robosRestantes>0){
-      html+=`<div class="sidebar-ver-mais" onclick="toggleSidebarExpand()">▼ Ver mais ${robosRestantes} robô(s)</div>`;
-    }else if(sidebarExpandida&&robos.length>1){
-      html+=`<div class="sidebar-recolher" onclick="toggleSidebarExpand()">▲ Recolher</div>`;
+    html += grupo('Gestão');
+    html += item('__equipes', 'equipes', 'Equipes', 'Equipes e membros');
+    html += item('__funcionarios', 'funcionarios', 'Funcionários', 'Desempenho individual');
+    if(isAdmin){
+      html += item('__tarefas', 'tarefas', 'Tarefas Diárias', 'Rotina diária');
+      html += item('__gerenciar', 'gerenciar', 'Gerenciar', 'Configurações do host');
     }
   }
-  document.getElementById("sidebarList").innerHTML=html;
+
+  if(robos.length){
+    html += grupo('Robôs');
+    html += `<div class="sb-robos">${robos.map(k => {
+      const c = celulas[k] || {}, st = mapaRobosStatusInfo(c.status), nm = String(c.nome || '');
+      const marca = /fanuc/i.test(nm) ? 'FANUC' : /kuka/i.test(nm) ? 'KUKA' : 'ROBÔ';
+      return `<div class="sb-rb ${selected === k ? 'active' : ''}" style="--c:${st.cor}" onclick="selectCell('${k}')" title="${esc(nm || ('Robô ' + k))} · ${esc(st.label)}">
+        <div class="m">${marca}</div><div class="n">${esc(k)}</div><div class="s">${esc(st.label)}</div></div>`;
+    }).join('')}</div>`;
+  }
+  document.getElementById("sidebarList").innerHTML = html;
 }
 
 function toggleSidebarExpand(){ lastUserAction = Date.now(); sidebarExpandida=!sidebarExpandida; renderSidebar(); }
