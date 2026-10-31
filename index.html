@@ -4166,7 +4166,7 @@ async function loadFromAPI(){
     if(cache){
       celulas = JSON.parse(cache);
       renderSidebar();
-      if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
+      if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=(window.innerWidth<=700?'__painel':keys[0]);renderSidebar();renderDetail();}}
     }
   }catch(e){}
 
@@ -4207,7 +4207,7 @@ async function loadFromAPI(){
 
   avaliarStatusAutomatico(); // automação de status dos robôs (roda em qualquer tela)
   renderSidebar();
-  if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=keys[0];renderDetail();}}
+  if(!selected){const keys=Object.keys(celulas).sort();if(keys.length){selected=(window.innerWidth<=700?'__painel':keys[0]);renderSidebar();renderDetail();}}
   else{
     const tipo=getCellTipo(selected);
     // Não rerenderiza armário se tiver algum card aberto
@@ -19065,18 +19065,69 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 </div>
 
 <!-- ===== TELA DE PLAY (antes da intro) ===== -->
-<div id="playScreen" style="position:fixed;inset:0;background:#04070d;z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px">
-  <div style="text-align:center">
-    <div style="font-size:13px;letter-spacing:0.4em;color:#2a3040;text-transform:uppercase;margin-bottom:16px;font-family:'Courier New',monospace">TREMPS ROBOTICS</div>
-    <div style="font-size:clamp(22px,5vw,42px);font-weight:900;color:#ff6a00;letter-spacing:0.12em;text-transform:uppercase;font-family:'Montserrat',sans-serif">CÉLULAS ROBÓTICAS</div>
-    <div style="font-size:11px;letter-spacing:0.3em;color:#2a3040;text-transform:uppercase;margin-top:8px;font-family:'Courier New',monospace">Sistema de Monitoramento Industrial</div>
+<div id="playScreen" class="ps" style="display:flex">
+  <div class="ps-floor"></div>
+  <div class="ps-halo"></div>
+  <div class="ps-scan"></div>
+  <span class="ps-cn tl"></span><span class="ps-cn tr"></span><span class="ps-cn bl"></span><span class="ps-cn br"></span>
+  <div class="ps-hud ps-hud-l">SYS.ONLINE<br>CÉLULAS 600-611</div>
+  <div class="ps-hud ps-hud-r">FANUC · KUKA<br>MONITOR v2</div>
+  <div class="ps-box">
+    <div class="ps-tremps" data-t="TREMPS">TREMPS</div>
+    <div class="ps-line"><i></i></div>
+    <div class="ps-title">CÉLULAS ROBÓTICAS</div>
+    <div class="ps-sub">Sistema de Monitoramento Industrial</div>
+    <button type="button" class="ps-btn" onclick="iniciarIntro()"><span class="ps-btn-ic">▶</span><span>Iniciar sistema</span></button>
+    <div class="ps-audio"><span class="ps-eq"><i></i><i></i><i></i><i></i></span> Com áudio</div>
   </div>
-  <button onclick="iniciarIntro()" style="background:transparent;border:2px solid #ff6a00;color:#ff6a00;font-family:'Courier New',monospace;font-size:14px;letter-spacing:0.2em;padding:16px 40px;border-radius:99px;cursor:pointer;text-transform:uppercase;position:relative;overflow:hidden;transition:all 0.3s"
-    onmouseover="this.style.background='#ff6a0020'" onmouseout="this.style.background='transparent'">
-    ▶ &nbsp; INICIAR SISTEMA
-  </button>
-  <div style="font-size:10px;color:#1e2535;letter-spacing:0.2em;text-transform:uppercase;font-family:'Courier New',monospace">🔊 Com áudio</div>
 </div>
+<style>
+.ps{position:fixed;inset:0;z-index:100000;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,#0b1a14 0%,#05090d 55%,#020406 100%);font-family:'Montserrat',sans-serif}
+.ps-floor{position:absolute;left:-50%;right:-50%;bottom:-8%;height:62%;transform:perspective(420px) rotateX(62deg);transform-origin:50% 100%;background-image:linear-gradient(rgba(57,255,20,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(57,255,20,.16) 1px,transparent 1px);background-size:56px 56px;animation:psFloor 2.4s linear infinite;-webkit-mask-image:linear-gradient(to top,#000 10%,transparent 85%);mask-image:linear-gradient(to top,#000 10%,transparent 85%)}
+@keyframes psFloor{to{background-position:0 56px,0 0}}
+.ps-halo{position:absolute;width:min(760px,120vw);height:min(760px,120vw);border-radius:50%;background:radial-gradient(circle,rgba(57,255,20,.14),rgba(255,106,0,.05) 45%,transparent 68%);animation:psHalo 5s ease-in-out infinite alternate}
+@keyframes psHalo{from{transform:scale(.92);opacity:.7}to{transform:scale(1.06);opacity:1}}
+.ps-scan{position:absolute;left:0;right:0;top:0;height:120px;background:linear-gradient(180deg,transparent,rgba(57,255,20,.07),transparent);animation:psScan 6s linear infinite;pointer-events:none}
+@keyframes psScan{from{transform:translateY(-140px)}to{transform:translateY(110vh)}}
+.ps::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.18) 2px 3px)}
+.ps-cn{position:absolute;width:34px;height:34px;border:2px solid rgba(57,255,20,.45);animation:psIn .9s ease both .2s}
+.ps-cn.tl{top:22px;left:22px;border-right:0;border-bottom:0}.ps-cn.tr{top:22px;right:22px;border-left:0;border-bottom:0}
+.ps-cn.bl{bottom:22px;left:22px;border-right:0;border-top:0}.ps-cn.br{bottom:22px;right:22px;border-left:0;border-top:0}
+.ps-hud{position:absolute;top:30px;font-family:'Share Tech Mono','Courier New',monospace;font-size:10.5px;letter-spacing:.22em;line-height:1.7;color:rgba(57,255,20,.55);animation:psIn 1s ease both .5s}
+.ps-hud-l{left:66px}.ps-hud-r{right:66px;text-align:right}
+.ps-box{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px}
+.ps-tremps{position:relative;font-family:'Orbitron','Montserrat',sans-serif;font-weight:900;font-size:clamp(58px,15vw,150px);line-height:1;letter-spacing:.16em;margin-right:-.16em;color:#39ff14;
+  text-shadow:0 0 6px #39ff14,0 0 18px #39ff14,0 0 42px rgba(57,255,20,.75),0 0 90px rgba(57,255,20,.45);animation:psDrop 1s cubic-bezier(.2,.9,.25,1.15) both,psNeon 4.5s linear infinite 1.2s}
+.ps-tremps::before,.ps-tremps::after{content:attr(data-t);position:absolute;inset:0;margin-right:inherit;pointer-events:none;opacity:0}
+.ps-tremps::before{color:#ff2bd6;animation:psGlA 4.5s steps(2) infinite 1.4s}
+.ps-tremps::after{color:#00f0ff;animation:psGlB 4.5s steps(2) infinite 1.4s}
+@keyframes psDrop{from{opacity:0;transform:translateY(-30px) scale(1.12);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+@keyframes psNeon{0%,18%,22%,24%,55%,57%,100%{opacity:1}20%,23%,56%{opacity:.35}}
+@keyframes psGlA{0%,88%,100%{opacity:0;transform:none}90%{opacity:.7;transform:translate(-5px,2px)}94%{opacity:.6;transform:translate(4px,-2px)}}
+@keyframes psGlB{0%,88%,100%{opacity:0;transform:none}90%{opacity:.7;transform:translate(5px,-2px)}94%{opacity:.6;transform:translate(-4px,2px)}}
+.ps-line{width:min(420px,72vw);height:2px;margin:18px 0 16px;background:rgba(57,255,20,.12);overflow:hidden;border-radius:2px}
+.ps-line i{display:block;height:100%;width:100%;background:linear-gradient(90deg,transparent,#39ff14,#ff6a00,transparent);transform-origin:center;animation:psLine 1s ease both .6s,psLineRun 3s linear infinite 1.6s}
+@keyframes psLine{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes psLineRun{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.ps-title{font-size:clamp(20px,4.6vw,40px);font-weight:900;letter-spacing:.14em;margin-right:-.14em;color:#ff6a00;text-shadow:0 0 22px rgba(255,106,0,.45);animation:psUp .8s ease both .8s}
+.ps-sub{margin-top:10px;font-family:'Share Tech Mono','Courier New',monospace;font-size:clamp(9.5px,1.6vw,12px);letter-spacing:.34em;color:#4f6a5b;text-transform:uppercase;animation:psUp .8s ease both 1s}
+.ps-btn{position:relative;overflow:hidden;margin-top:34px;display:inline-flex;align-items:center;gap:14px;padding:16px 42px;border-radius:99px;border:2px solid #39ff14;background:rgba(57,255,20,.06);color:#d9ffd0;font-family:'Share Tech Mono','Courier New',monospace;font-size:14px;letter-spacing:.24em;text-transform:uppercase;cursor:pointer;animation:psUp .8s ease both 1.2s,psPulse 2.4s ease-in-out infinite 2s;transition:transform .2s ease,background .2s ease}
+.ps-btn::before{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(90deg,transparent,rgba(57,255,20,.35),transparent);transform:skewX(-20deg);animation:psShine 3.2s ease-in-out infinite 2.2s}
+.ps-btn:hover{background:rgba(57,255,20,.14);transform:translateY(-2px)}
+.ps-btn:active{transform:scale(.97)}
+.ps-btn-ic{color:#39ff14;text-shadow:0 0 10px #39ff14}
+@keyframes psPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,255,20,.45),0 0 22px rgba(57,255,20,.25)}50%{box-shadow:0 0 0 12px rgba(57,255,20,0),0 0 34px rgba(57,255,20,.4)}}
+@keyframes psShine{0%{left:-60%}55%,100%{left:130%}}
+.ps-audio{margin-top:18px;display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono','Courier New',monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#3f5547;animation:psUp .8s ease both 1.4s}
+.ps-eq{display:inline-flex;align-items:flex-end;gap:2px;height:11px}
+.ps-eq i{width:2px;background:#39ff14;opacity:.7;animation:psEq 1s ease-in-out infinite}
+.ps-eq i:nth-child(2){animation-delay:.2s}.ps-eq i:nth-child(3){animation-delay:.4s}.ps-eq i:nth-child(4){animation-delay:.1s}
+@keyframes psEq{0%,100%{height:3px}50%{height:11px}}
+@keyframes psUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes psIn{from{opacity:0}to{opacity:1}}
+@media (max-width:600px){ .ps-hud{display:none} .ps-cn{width:24px;height:24px} .ps-btn{padding:14px 30px;font-size:12.5px} .ps-tremps{letter-spacing:.12em;margin-right:-.12em} }
+@media (prefers-reduced-motion:reduce){ .ps *,.ps::after{animation:none!important} }
+</style>
 
 <!-- ===== INTRO SCREEN ===== -->
 <div id="introScreen" style="position:fixed;inset:0;background:#04070d;z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:32px;overflow:hidden">
