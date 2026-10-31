@@ -357,7 +357,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-info { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; min-width:240px; max-width:1000px; }
 .dash-rn { font-size:clamp(18px,3vw,32px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
 .dash-nome { font-size:clamp(26px,min(5vw,6vh),58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
-.dash-cod { font-size:clamp(18px,min(3.4vw,4vh),36px); color:#ffb300; font-weight:700; }
+.dash-cod { font-size:clamp(26px,min(5vw,6.2vh),60px); color:#39ff14; font-weight:900; letter-spacing:.04em; line-height:1.1; font-family:'Orbitron','Montserrat',sans-serif; text-shadow:0 0 8px #39ff14,0 0 22px rgba(57,255,20,.6),0 0 44px rgba(57,255,20,.3); }
+.dash-cli { font-size:clamp(14px,min(2.2vw,2.8vh),26px); color:#c9d3df; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-top:4px; }
+.dash-cli b { color:#fff; }
+.dash-tremps { font-family:'Orbitron','Montserrat',sans-serif; font-weight:900; font-size:clamp(22px,2.6vw,38px); line-height:1; letter-spacing:.22em; color:#39ff14; text-shadow:0 0 6px #39ff14,0 0 18px #39ff14,0 0 40px rgba(57,255,20,.55); margin-bottom:6px; animation:dashTrempsNeon 5s linear infinite; }
+@keyframes dashTrempsNeon { 0%,46%,50%,100% { opacity:1; } 48% { opacity:.45; } }
 .dash-box { background:#080b0f; border:4px solid #1e2530; border-radius:28px; padding:clamp(10px,min(2vw,2vh),26px) clamp(24px,5vw,90px); text-align:center; width:100%; box-sizing:border-box; }
 .dash-prod-h { font-size:clamp(16px,min(2.6vw,3vh),30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
 .dash-prod-n { font-size:clamp(56px,min(15vw,20vh),170px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
@@ -1920,6 +1924,7 @@ setInterval(function(){ var el=document.getElementById("lgRelogio"), t=document.
 <div id="dashboardScreen">
   <div class="dash-header">
     <div>
+      <div class="dash-tremps">TREMPS</div>
       <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
       <div class="dash-date" id="dashDate"></div>
     </div>
@@ -8175,7 +8180,8 @@ function _dashRenderRobo(k){
       <div style="text-align:center">
         <div class="dash-rn">Robô ${rn}</div>
         <div class="dash-nome">${esc(c.nome||'')}</div>
-        <div class="dash-cod">⚙ ${esc(rd.cod||c.codigo_peca||'—')}</div>
+        <div class="dash-cod">${esc(rd.cod||c.codigo_peca||'—')}</div>
+        ${(()=>{ const _pc=(typeof _pecaDoCodigo==='function')?_pecaDoCodigo(rd.cod||c.codigo_peca):null; const _cli=String((_pc&&_pc.p&&_pc.p.cliente)||c.cliente||'').trim(); return (_cli&&_cli!=='—')?`<div class="dash-cli">Cliente: <b>${esc(_cli)}</b></div>`:''; })()}
       </div>
 
       <!-- Box principal -->
@@ -8204,7 +8210,17 @@ function _dashRenderRobo(k){
       </div>
     </div>
   </div>`;
+  _dashFitRobo();
 }
+
+// Encolhe o slide do robô até caber na altura da TV (sem rolagem)
+function _dashFitRobo(){
+  const m = document.getElementById("dashMain"), w = m && m.querySelector(".dash-robo-wrap"); if(!w) return;
+  w.style.zoom = "";
+  const H = m.clientHeight, h = w.scrollHeight;
+  if(H > 0 && h > H + 2) w.style.zoom = Math.max(0.5, (H - 4) / h).toFixed(3);
+}
+window.addEventListener("resize", () => { const d = document.getElementById("dashboardScreen"); if(d && d.style.display !== "none") _dashFitRobo(); });
 
 
 function _dashRenderGeral(){
