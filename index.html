@@ -351,6 +351,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
 .dash-exit { background:#ff4d4d15; border:1px solid #ff4d4d60; color:#ff4d4d; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; }
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
+/* Visão geral: cabeçalho da hora atual pisca de leve */
+.dash-th-atual { animation:dashThPisca 1.8s ease-in-out infinite; }
+@keyframes dashThPisca { 0%,100% { opacity:1; text-shadow:0 0 14px rgba(255,179,0,.95),0 0 4px rgba(255,179,0,.9); } 50% { opacity:.6; text-shadow:none; } }
+@media (prefers-reduced-motion:reduce){ .dash-th-atual { animation:none; } }
 /* Dashboard no celular: sem título e relógio (só as informações) e altura real da tela, pro rodapé não cortar */
 @media (max-width:700px){
   #dashboardScreen { height:100dvh; bottom:auto; }
@@ -8259,7 +8263,10 @@ function _dashRenderGeral(){
       const cor=isCafe?'#ffb300':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
     const fontSize=isAtual?'32px':'24px';
       const bgCafe=isCafe?'background:#ffb30012;':'';
-      return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${cor};${isAtual?'background:'+corAtual+'15;':bgCafe}">${v>0?v:'—'}</td>`;
+      // mapa de calor: verde quando bateu, vermelho quando não bateu; mais forte quanto maior a diferença
+      let heat='';
+      if(!isCafe&&metaH>0&&v>0){ const r=v/metaH; const a=ok?Math.min(.5,.16+(r-1)*1.2):Math.min(.55,.16+(1-r)*1.1); heat=ok?`background:rgba(0,232,122,${a.toFixed(2)});`:`background:rgba(255,77,77,${a.toFixed(2)});`; }
+      return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${heat?'#fff':cor};${heat?heat+(isAtual?'box-shadow:inset 2px 0 0 rgba(255,179,0,.6),inset -2px 0 0 rgba(255,179,0,.6);':''):(isAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':bgCafe)}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
       <td style="padding:7px 10px;font-size:22px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
@@ -8273,12 +8280,12 @@ function _dashRenderGeral(){
   const hHeaders=todasHoras.map(h=>{
     const isAtual=h===horaAtual;
     const isCafe=HORAS_CAFE.includes(h);
-    return`<th style="padding:8px 6px;font-size:22px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;color:${isAtual?'#ffb300':'#fff'};${isAtual?'':'text-shadow:0 0 6px rgba(255,255,255,.75),0 0 16px rgba(255,255,255,.35);'}${isCafe?'background:#ffb30015;':''}${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}${isCafe?' ☕':''}</th>`;
+    return`<th class="${isAtual?'dash-th-atual':''}" style="padding:8px 6px;font-size:22px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;white-space:nowrap;${isAtual?'background:rgba(255,179,0,.18);border-radius:8px 8px 0 0;':''}color:${isAtual?'#ffb300':'#fff'};${isAtual?'':'text-shadow:0 0 6px rgba(255,255,255,.75),0 0 16px rgba(255,255,255,.35);'}${isCafe?'background:#ffb30015;':''}${isAtual?'border-bottom:2px solid #ffb300':'border-bottom:1px solid #1e2530'}">${h}${isCafe?' ☕':''}</th>`;
   }).join('');
 
   const hTotais=todasHoras.map(h=>{
     const t=_dashRobos.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num;},0);
-    return`<td style="padding:8px 6px;text-align:center;font-size:18px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530">${t>0?t:'—'}</td>`;
+    return`<td style="padding:8px 6px;text-align:center;font-size:18px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530;${h===horaAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':''}">${t>0?t:'—'}</td>`;
   }).join('');
 
   main.innerHTML=`
