@@ -371,7 +371,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-rn { font-size:clamp(18px,3vw,32px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
 .dash-nome { font-size:clamp(26px,min(5vw,6vh),58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
 .dash-cod { font-size:clamp(26px,min(5vw,6.2vh),60px); color:#39ff14; font-weight:900; letter-spacing:.04em; line-height:1.1; font-family:'Orbitron','Montserrat',sans-serif; text-shadow:0 0 8px #39ff14,0 0 22px rgba(57,255,20,.6),0 0 44px rgba(57,255,20,.3); }
-.dash-cli { font-size:clamp(14px,min(2.2vw,2.8vh),26px); color:#c9d3df; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin-top:4px; }
+.dash-cli { font-size:clamp(22px,min(3.8vw,4.6vh),46px); color:#c9d3df; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:6px; line-height:1.15; font-family:'Montserrat',sans-serif; }
 .dash-cli b { color:#fff; }
 .dash-tremps { font-family:'Orbitron','Montserrat',sans-serif; font-weight:900; font-size:clamp(22px,2.6vw,38px); line-height:1; letter-spacing:.22em; color:#39ff14; text-shadow:0 0 6px #39ff14,0 0 18px #39ff14,0 0 40px rgba(57,255,20,.55); margin-bottom:6px; animation:dashTrempsNeon 5s linear infinite; }
 @keyframes dashTrempsNeon { 0%,46%,50%,100% { opacity:1; } 48% { opacity:.45; } }
@@ -8401,8 +8401,7 @@ function _dashRenderRobo(k){
     <div class="dash-info">
       <!-- Robô nome -->
       <div style="text-align:center">
-        <div class="dash-rn">Robô ${rn}</div>
-        <div class="dash-nome">${esc(c.nome||'')}</div>
+        <div class="dash-nome">${esc(c.nome||('Robô '+rn))}</div>
         <div class="dash-cod">${esc(rd.cod||c.codigo_peca||'—')}</div>
         ${(()=>{ const _pc=(typeof _pecaDoCodigo==='function')?_pecaDoCodigo(rd.cod||c.codigo_peca):null; const _cli=String((_pc&&_pc.p&&_pc.p.cliente)||c.cliente||'').trim(); return (_cli&&_cli!=='—')?`<div class="dash-cli">Cliente: <b>${esc(_cli)}</b></div>`:''; })()}
       </div>
