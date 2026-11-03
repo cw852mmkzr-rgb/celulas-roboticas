@@ -7941,17 +7941,48 @@ function startDashboard(){
   _dashLoadTimer = setInterval(_dashLoad, 3000);
   _dashClockTimer = setInterval(_dashTickClock, 1000);
   _dashSlideTimer = setInterval(_dashNextSlide, 6000);
+  _dashVerTimer = setInterval(_dashChecaVersao, 10*60*1000);
   _dashTickClock();
+  // a TV fica dias com o dashboard aberto: lembra o modo pra voltar direto nele depois de recarregar
+  try{ sessionStorage.setItem("__dash_tv","1"); }catch(_){}
 }
 
 function sairDashboard(){
-  [_dashLoadTimer,_dashClockTimer,_dashSlideTimer].forEach(t=>clearInterval(t));
+  [_dashLoadTimer,_dashClockTimer,_dashSlideTimer,_dashVerTimer].forEach(t=>clearInterval(t));
+  try{ sessionStorage.removeItem("__dash_tv"); }catch(_){}
   document.getElementById("dashboardScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   if(typeof _loginAplicaBloqueio==="function") _loginAplicaBloqueio();
 }
 
-let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null;
+// Mesma checagem do topo da página, só que repetida enquanto o dashboard está aberto
+function _dashChecaVersao(){
+  fetch('https://api.github.com/repos/cw852mmkzr-rgb/celulas-roboticas/commits/main?_=' + Date.now(), {cache:'no-store'})
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{
+      if(!d || !d.sha) return;
+      if(localStorage.getItem('__app_sha') === d.sha) return;
+      localStorage.setItem('__app_sha', d.sha);
+      const url = new URL(location.href);
+      url.searchParams.set('_v', d.sha.slice(0,7));
+      location.replace(url.toString());
+    })
+    .catch(()=>{});
+}
+
+// Depois de recarregar (versão nova), a TV volta direto para o dashboard
+(function _dashBootTV(){
+  function abrir(){
+    let tv=false; try{ tv = sessionStorage.getItem("__dash_tv")==="1"; }catch(_){}
+    if(!tv || String(location.hash||"").toLowerCase()==="#tarefas") return;
+    ["playScreen","introScreen"].forEach(function(id){ const el=document.getElementById(id); if(el) el.style.display="none"; });
+    startDashboard();
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", abrir);
+  else abrir();
+})();
+
+let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null,_dashVerTimer=null;
 let _dashIdx=0, _dashGeral=false, _dashRobos=[];
 
 function _dashGetHoraCheia(){
