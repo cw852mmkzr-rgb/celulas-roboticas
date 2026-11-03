@@ -1436,6 +1436,96 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(max-width:1100px){.catx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.catx-grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
 @media(max-width:560px){.catx-hero h1{font-size:32px}.catx-hero p{font-size:16px}.catx-btn.pri{font-size:15px;padding:11px 18px}.catx-kpis{gap:10px}.catx-kpi{padding:14px 16px}.catx-kpi span{font-size:14px}.catx-kpi b{font-size:34px}.catx-busca input{font-size:16px;padding:14px 14px 14px 48px}.catx-busca svg{left:16px;width:19px;height:19px}.catx-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.catx-busca{flex-basis:100%}.catx-chip{font-size:15px;padding:8px 14px}.catx-ctrls{width:100%}.catx-seg{flex:1}.catx-seg button{flex:1;justify-content:center;padding:8px 4px;font-size:13px}.catx-seg .n{display:none}.catx-grid{grid-template-columns:1fr;gap:14px}.catx-card{padding:18px 16px}.catx-cod{font-size:34px}.catx-met b{font-size:26px}.catx-specs{grid-template-columns:1fr}.catx-resp{flex-direction:column;align-items:stretch}.catx-ficha{width:100%}}
 @media(prefers-reduced-motion:reduce){.catx-card,#catalogoGrid.entrada .catx-card{animation:none;transition:none}.catx-ponto.vivo{animation:none}}
+/* ===== Indicadores (design Canva, 03/11/2026) ===== */
+.ix{--x-card:#11161c;--x-line:#232a33;--x-line2:#2e3743;--x-tx:#f2f4f7;--x-tx2:#c9d0d9;--x-tx3:#7c8796;--x-ac:#00e87a;--x-az:#3d9eff;--x-amb:#ffb020;--x-red:#ff5c5c;font-family:'Manrope','Segoe UI',system-ui,sans-serif;color:var(--x-tx);-webkit-font-smoothing:antialiased;padding:22px 26px 34px}
+.ix *{box-sizing:border-box}
+.ix .num{font-family:'Space Grotesk','Manrope',sans-serif;font-variant-numeric:tabular-nums}
+.ix-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid var(--x-line)}
+.ix-top h1{margin:0;font-size:40px;line-height:1.05;font-weight:800;letter-spacing:-.025em}
+.ix-top p{margin:8px 0 0;font-size:21px;font-weight:600;color:var(--x-tx3)}
+.ix-top p b{color:var(--x-ac);font-weight:800}
+.ix-acts{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ix-seg{display:inline-flex;background:var(--x-card);border:1px solid var(--x-line2);border-radius:10px;padding:4px;gap:2px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.ix-seg button{flex:0 0 auto;font-family:inherit;font-size:15px;font-weight:600;color:var(--x-tx2);background:none;border:0;border-radius:7px;padding:9px 18px;cursor:pointer;transition:background .18s ease,color .18s ease}
+.ix-seg button:hover{color:var(--x-tx)}
+.ix-seg button.on{background:var(--x-ac);color:#03140b;font-weight:800}
+.ix-btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:15px;font-weight:700;color:var(--x-tx2);background:transparent;border:1px solid var(--x-line2);border-radius:10px;padding:10px 18px;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .12s ease}
+.ix-btn:hover{background:#ffffff08;border-color:#3d4858}
+.ix-btn:active{transform:translateY(1px)}
+.ix-btn.on{color:var(--x-ac);border-color:#00e87a88}
+.ix-btn.az{color:var(--x-az);border-color:#3d9eff99}
+.ix-btn.az:hover{background:#3d9eff12}
+.ix-btn svg{width:17px;height:17px}
+.ix-seg button:focus-visible,.ix-btn:focus-visible,.ix-rk-row:focus-visible,.ix-meta:focus-visible{outline:2px solid var(--x-ac);outline-offset:2px}
+.ix .ind-sub-sel{margin:-6px 0 18px}
+.ix .ind-sel{font-family:inherit;font-size:14px;border-radius:10px;padding:10px 12px;background:var(--x-card);border-color:var(--x-line2)}
+.ix .ind-date-lbl{font-size:12px}
+.ix .ind-filtro-banner{font-size:13px;border-radius:10px;padding:10px 14px}
+.ix-kpis{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.ix-kpi{background:var(--x-card);border:1px solid var(--x-line2);border-radius:12px;padding:20px 22px;min-width:0;animation:ixIn .45s cubic-bezier(.2,.7,.2,1) both}
+.ix-kpi:nth-child(2){animation-delay:50ms}.ix-kpi:nth-child(3){animation-delay:100ms}.ix-kpi:nth-child(4){animation-delay:150ms}
+.ix-kpi-lbl{font-size:18px;font-weight:700;color:#e3e7ec}
+.ix-kpi-row{display:flex;align-items:flex-end;gap:12px;margin-top:12px;min-width:0}
+.ix-kpi-val{font-size:46px;font-weight:700;line-height:1;letter-spacing:-.02em;white-space:nowrap}
+.ix-kpi-un{font-size:17px;font-weight:600;color:var(--x-tx2);padding-bottom:4px;white-space:nowrap}
+.ix-kpi-sub{font-size:15px;font-weight:600;color:var(--x-tx2);margin-top:12px}
+.ix-kpi-sub .up{color:var(--x-ac);font-weight:800}.ix-kpi-sub .down{color:var(--x-red);font-weight:800}
+.ix-kpi.total{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:end}
+.ix-kpi.total .ix-kpi-lbl,.ix-kpi.total .ix-kpi-sub{grid-column:1}
+.ix-kpi.total .ix-spark{grid-column:2;grid-row:1/4;align-self:end;min-width:0;height:74px}
+.ix-row{display:grid;gap:16px;margin-bottom:16px}
+.ix-row.a{grid-template-columns:1.65fr 1fr}
+.ix-row.b{grid-template-columns:1.1fr 1fr}
+.ix-panel{background:var(--x-card);border:1px solid var(--x-line2);border-radius:12px;padding:20px 22px;min-width:0;animation:ixIn .5s cubic-bezier(.2,.7,.2,1) both;animation-delay:120ms}
+.ix-panel h2{margin:0 0 14px;font-size:19px;font-weight:800;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.ix-panel h2 small{font-size:13px;font-weight:600;color:var(--x-tx3);margin-left:auto}
+.ix-chart svg{display:block;width:100%;height:auto}
+.ix-chart .bar{transition:opacity .15s ease}
+.ix-chart .bar:hover{opacity:.8}
+.ix-pod{display:flex;flex-direction:column;border:1px solid var(--x-line);border-radius:10px;overflow:hidden}
+.ix-pod-row{display:grid;grid-template-columns:40px 40px 1fr auto;align-items:center;gap:10px;padding:16px 16px;cursor:pointer;transition:background .15s ease}
+.ix-pod-row+.ix-pod-row{border-top:1px solid var(--x-line)}
+.ix-pod-row:hover{background:#ffffff05}
+.ix-medal{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#1a1204;box-shadow:inset 0 -3px 0 #0003}
+.ix-pos{font-size:20px;font-weight:800}
+.ix-pod-nome{font-size:19px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ix-pod-nome small{display:block;font-size:13px;font-weight:600;color:var(--x-tx3);margin-top:2px}
+.ix-pod-val{text-align:right;white-space:nowrap}
+.ix-pod-val b{font-size:26px;font-weight:700;color:var(--x-ac)}
+.ix-pod-val span{font-size:15px;color:var(--x-tx2);margin-left:6px}
+.ix-pod-val em{display:block;font-style:normal;font-size:13px;font-weight:700;color:var(--x-ac);margin-top:2px}
+.ix-rk{width:100%;border-collapse:collapse}
+.ix-rk th{text-align:left;font-size:14px;font-weight:600;color:var(--x-tx2);padding:0 8px 10px;white-space:nowrap}
+.ix-rk th.r,.ix-rk td.r{text-align:right}
+.ix-rk td{padding:9px 8px;font-size:16px;font-weight:600;border-top:1px solid #1a2028;white-space:nowrap}
+.ix-rk-row{cursor:pointer;transition:background .15s ease}
+.ix-rk-row:hover{background:#ffffff05}
+.ix-rk .pos{font-weight:800;width:56px}
+.ix-rk .nm small{display:block;font-size:12px;color:var(--x-tx3);font-weight:600}
+.ix-rk .bar{width:38%;min-width:90px}
+.ix-rk .trilho{height:12px;border-radius:12px;background:#1e252e;overflow:hidden}
+.ix-rk .trilho i{display:block;height:100%;border-radius:12px;background:var(--x-ac);transform-origin:left;animation:indBarFill .8s cubic-bezier(.4,0,.2,1) both}
+.ix-rk .pct{color:var(--x-ac);font-weight:700;width:70px}
+.ix-mais{margin-top:12px;font-family:inherit;font-size:14px;font-weight:700;color:var(--x-az);background:none;border:0;cursor:pointer;padding:4px 0}
+.ix-metas{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;max-height:560px;overflow-y:auto;padding-right:2px}
+.ix-meta{background:#0d1217;border:1px solid var(--x-line);border-radius:12px;padding:14px 12px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease,transform .15s ease}
+.ix-meta:hover{border-color:#3d4858;transform:translateY(-2px)}
+.ix-meta-nome{font-size:15px;font-weight:800}
+.ix-meta-cod{font-size:12px;font-weight:600;color:var(--x-tx3);margin-top:2px;min-height:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ix-ring{position:relative;width:112px;height:112px;margin:10px auto 6px}
+.ix-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ix-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.ix-ring-arc{transition:stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)}
+.ix-meta-lbl{font-size:12.5px;font-weight:600;color:var(--x-tx2)}
+.ix-meta-hs{margin-top:10px;padding-top:10px;border-top:1px solid var(--x-line);font-size:12.5px;font-weight:700;line-height:1.55}
+.ix-meta-hs .ok{color:var(--x-ac)}.ix-meta-hs .no{color:var(--x-amb)}
+.ix .ind-comp-tab,.ix .ind-comp-chip{font-family:inherit}
+.ix-vazio{padding:34px 10px;text-align:center;color:var(--x-tx3);font-size:15px;font-weight:600}
+.ix-rodape{margin-top:18px;text-align:center;font-size:13px;color:var(--x-tx3)}
+@keyframes ixIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:1250px){.ix-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ix-row.a,.ix-row.b{grid-template-columns:1fr}}
+@media(max-width:620px){.ix{padding:14px 12px 28px}.ix-top h1{font-size:28px}.ix-top p{font-size:16px}.ix-acts{width:100%}.ix-seg{width:100%}.ix-seg button{padding:8px 12px;font-size:14px}.ix-btn{padding:9px 14px;font-size:14px}.ix-kpis{gap:10px}.ix-kpi{padding:14px}.ix-kpi-lbl{font-size:14px}.ix-kpi-val{font-size:30px}.ix-kpi-un{font-size:13px}.ix-kpi-sub{font-size:13px}.ix-kpi.total{grid-column:1/-1}.ix-panel{padding:16px 14px}.ix-pod-row{grid-template-columns:30px 1fr auto;padding:12px 10px;gap:8px}.ix-medal{display:none}.ix-pod-nome{font-size:16px}.ix-pod-val b{font-size:20px}.ix-pod-val span{display:none}.ix-rk th,.ix-rk td{padding-left:4px;padding-right:4px;font-size:14px}.ix-rk .bar,.ix-rk th:nth-child(4){display:none}.ix-rk th{white-space:normal;font-size:12px}.ix-rk .pos{width:34px}.ix-rk .pct{width:auto}.ix-metas{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.ix-ring{width:92px;height:92px}.ix-ring b{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.ix-kpi,.ix-panel,.ix-rk .trilho i{animation:none}}
 /* Funcionários — calendário de trabalho + horas do dia */
 .fcal-tit{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px;font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em}
 .fcal-leg{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.04em;text-transform:none;color:#6b7788}
@@ -14080,6 +14170,106 @@ function renderMapaConfiguracoes(){
   `;
 }
 
+// ── Indicadores: peças do layout (design Canva, 03/11/2026) ──
+let _ixRkTodas = false;
+const _IX_IC = {
+  filtro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg>',
+  atualizar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>'
+};
+function _ixDataDaChave(c){ const p=String(c).split('_'); return new Date(+p[0], +p[1], +p[2]); }
+function _ixFmtData(d){ return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+function _ixSubtitulo(){
+  const p = _indPeriodo, ch = _indChavesPeriodo(p);
+  const dias = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  let det = '';
+  if((p==='hoje'||p==='ontem') && ch.length){ const d=_ixDataDaChave(ch[0]); det = dias[d.getDay()]+', '+_ixFmtData(d); }
+  else if(p==='mes') det = MESES_IND[_indMesSelecionado]+'/'+_indAnoSelecionado;
+  else if(p==='ano') det = String(_indAnoSelecionado);
+  else if(ch.length){ det = _ixFmtData(_ixDataDaChave(ch[0]))+(ch.length>1?' a '+_ixFmtData(_ixDataDaChave(ch[ch.length-1])):''); }
+  else if(p==='custom') det = 'escolha as datas';
+  return `<b>${_indLabelPeriodo(p)}</b>${det?' • '+det:''}`;
+}
+// Gráfico de colunas da produção (por hora no dia, por dia na semana/mês, por mês no ano)
+function _ixColunas(serie){
+  let s = serie.slice();
+  if(_indPeriodo==='hoje'||_indPeriodo==='ontem'){
+    while(s.length && !s[0].y) s.shift();
+    while(s.length && !s[s.length-1].y) s.pop();
+  }
+  if(!s.length || !s.some(d=>d.y>0)) return '<div class="ix-vazio">Sem produção no período</div>';
+  // desenha na largura real da tela (no celular as letras não ficam miúdas)
+  const larg = (document.getElementById('mapaCanvasWrap')||{}).clientWidth || 1200;
+  const W = larg>=1250 ? 900 : Math.max(300, Math.min(900, larg-64)), H = W<560 ? 230 : 310, pL=52, pR=8, pT=14, pB=34;
+  const cw=W-pL-pR, chH=H-pT-pB;
+  const maxV=Math.max(...s.map(d=>d.y),1);
+  const mag=Math.pow(10,Math.floor(Math.log10(maxV)));
+  const passo=[1,2,2.5,5,10].map(f=>f*mag).find(st=>maxV/st<=5) || mag*10;
+  const topo=Math.ceil(maxV/passo)*passo;
+  const y=v=>pT+chH-(v/topo)*chH;
+  const step=cw/s.length, bw=Math.max(4,Math.min(46,step*0.58));
+  const cada=Math.max(1, Math.ceil(46/step)); // rótulo do eixo só onde cabe (~46px cada)
+  let g='';
+  for(let v=0; v<=topo+0.001; v+=passo){
+    g+=`<line x1="${pL}" x2="${W-pR}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#1f262f" stroke-width="1"/>`+
+       `<text x="${pL-10}" y="${(y(v)+4).toFixed(1)}" text-anchor="end" fill="#8c96a4" font-size="12" font-family="Space Grotesk,Manrope,sans-serif">${Math.round(v).toLocaleString('pt-BR')}</text>`;
+  }
+  const barras=s.map((d,i)=>{
+    const x=pL+step*i+(step-bw)/2, yy=y(d.y), h=pT+chH-yy;
+    const lbl=(i%cada===0)?`<text x="${(x+bw/2).toFixed(1)}" y="${H-10}" text-anchor="middle" fill="#8c96a4" font-size="12" font-family="Space Grotesk,Manrope,sans-serif">${esc(String(d.x))}</text>`:'';
+    return (d.y>0?`<rect class="bar" x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(h,0).toFixed(1)}" rx="3" fill="url(#ixColGrad)"><title>${esc(String(d.x))}: ${d.y.toLocaleString('pt-BR')} peças</title></rect>`:'')+lbl;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de produção">
+    <defs><linearGradient id="ixColGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00e87a"/><stop offset="1" stop-color="#00e87a" stop-opacity=".35"/></linearGradient></defs>
+    ${g}${barras}</svg>`;
+}
+function _ixPodio(top3, total){
+  if(!top3.length) return '<div class="ix-vazio">Sem produção no período</div>';
+  const cores=['#f5c542','#cfd4dc','#d0884c'];
+  return `<div class="ix-pod">${top3.map((m,i)=>{
+    const pct = total>0 ? (m.valor/total*100) : 0;
+    return `<div class="ix-pod-row" data-k="${esc(m.label)}" onclick="_indAbrirDetalhe('maquina', this.dataset.k)" title="Ver detalhes da máquina">
+      <span class="ix-medal" style="background:${cores[i]}">${i+1}</span>
+      <span class="ix-pos num" style="color:${cores[i]}">${i+1}º</span>
+      <span class="ix-pod-nome">Máquina ${esc(m.label)}${m.cod?`<small>Peça ${esc(m.cod)}</small>`:''}</span>
+      <span class="ix-pod-val"><b class="num">${m.valor.toLocaleString('pt-BR')}</b><span>peças</span><em class="num">${pct.toFixed(1).replace('.',',')}% do total</em></span>
+    </div>`;
+  }).join('')}</div>`;
+}
+function _ixRanking(items, total){
+  if(!items.length) return '<div class="ix-vazio">Sem produção no período</div>';
+  const lim = _ixRkTodas ? items.length : Math.min(items.length, 10);
+  const maxV = Math.max(...items.map(i=>i.valor),1);
+  const linhas = items.slice(0,lim).map((m,i)=>{
+    const pct = total>0 ? (m.valor/total*100) : 0;
+    return `<tr class="ix-rk-row" tabindex="0" data-k="${esc(m.label)}" onclick="_indAbrirDetalhe('maquina', this.dataset.k)" onkeydown="if(event.key==='Enter')_indAbrirDetalhe('maquina', this.dataset.k)">
+      <td class="pos num">${i+1}º</td>
+      <td class="nm">Máquina ${esc(m.label)}${m.cod?`<small>Peça ${esc(m.cod)}</small>`:''}</td>
+      <td class="r num">${m.valor.toLocaleString('pt-BR')}</td>
+      <td class="bar"><div class="trilho"><i style="width:${(m.valor/maxV*100).toFixed(1)}%;animation-delay:${i*35}ms"></i></div></td>
+      <td class="r pct num">${pct.toFixed(1).replace('.',',')}%</td>
+    </tr>`;
+  }).join('');
+  return `<table class="ix-rk"><thead><tr><th>Posição</th><th>Máquina</th><th class="r">Peças produzidas</th><th></th><th class="r">% do total</th></tr></thead><tbody>${linhas}</tbody></table>
+    ${items.length>10?`<button type="button" class="ix-mais" onclick="_ixRkTodas=!_ixRkTodas;_indPrecisaRerender=true;renderMapaIndicadores(true)">${_ixRkTodas?'Mostrar só as 10 primeiras':'Ver todas as '+items.length+' máquinas'}</button>`:''}`;
+}
+function _ixRing(pct, cor){
+  const r=46, c=2*Math.PI*r, off=c*(1-Math.max(0,Math.min(100,pct))/100);
+  return `<div class="ix-ring"><svg viewBox="0 0 112 112"><circle cx="56" cy="56" r="${r}" fill="none" stroke="#1e252e" stroke-width="11"/><circle class="ix-ring-arc" cx="56" cy="56" r="${r}" fill="none" stroke="${cor}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b class="num" style="color:${cor}">${pct}%</b></div>`;
+}
+function _ixMetas(rows){
+  if(!rows.length) return '<div class="ix-vazio">Sem meta definida no período</div>';
+  return `<div class="ix-metas">${rows.map(r=>{
+    const cor = r.pct>=80?'#00e87a':r.pct>=50?'#ffb020':'#ff5c5c';
+    return `<div class="ix-meta" tabindex="0" data-k="${esc(r.nome)}" onclick="_indAbrirDetalhe('maquina', this.dataset.k)" onkeydown="if(event.key==='Enter')_indAbrirDetalhe('maquina', this.dataset.k)" title="Ver detalhes da máquina">
+      <div class="ix-meta-nome">Máquina ${esc(r.nome)}</div>
+      <div class="ix-meta-cod">${r.cod&&r.cod!=='—'?'Peça '+esc(r.cod):'&nbsp;'}</div>
+      ${_ixRing(r.pct, cor)}
+      <div class="ix-meta-lbl">das horas na meta</div>
+      <div class="ix-meta-hs"><div class="ok">${r.atingiu} hora${r.atingiu!==1?'s':''} na meta</div><div class="no">${r.naoAtingiu} hora${r.naoAtingiu!==1?'s':''} abaixo da meta</div></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function renderMapaIndicadores(force){
   const wrap = document.getElementById('mapaCanvasWrap');
   if(!wrap) return;
@@ -14094,12 +14284,14 @@ function renderMapaIndicadores(force){
   const anterior = chavesAnt.length ? _indCalcularPorChaves(chavesAnt) : null;
   const cmpTotal = anterior ? _indComparar(atual.totalPecas, anterior.totalPecas) : null;
   const cmpMedia = anterior ? _indComparar(atual.mediaHora, anterior.mediaHora) : null;
-  let topMaquinas = Object.entries(atual.porMaquina).map(([nome,d])=>({label:nome, valor:d.total})).sort((a,b)=>b.valor-a.valor);
-  let topPecas = Object.entries(atual.porPeca).map(([cod,d])=>({label:cod, valor:d.total})).sort((a,b)=>b.valor-a.valor);
+  // peça que mais rodou em cada máquina (aparece embaixo do nome)
+  const codPrincipal = d => { let b='', bv=0; Object.entries(d.pecas||{}).forEach(([c,v])=>{ if(v>bv){bv=v;b=c;} }); return b; };
+  let topMaquinas = Object.entries(atual.porMaquina).map(([nome,d])=>({label:nome, valor:d.total, cod:codPrincipal(d)})).sort((a,b)=>b.valor-a.valor);
   // Filtro de máquinas específicas
   if(_indFiltroMaquinas && _indFiltroMaquinas.size){
     topMaquinas = topMaquinas.filter(m=>_indFiltroMaquinas.has(m.label));
   }
+  const totalRank = topMaquinas.reduce((s,m)=>s+m.valor,0);
   const antLbl = _indLabelAnterior(_indPeriodo);
   const anoAtual = new Date().getFullYear();
   const anosOpts = [anoAtual-2, anoAtual-1, anoAtual, anoAtual+1].map(a=>`<option value="${a}" ${a===_indAnoSelecionado?'selected':''}>${a}</option>`).join('');
@@ -14119,67 +14311,66 @@ function renderMapaIndicadores(force){
       <label class="ind-date-lbl">De <input type="date" class="ind-sel ind-date" value="${_indDataIni||''}" max="${hojeISO}" onchange="_indSetDataIni(this.value)"></label>
       <label class="ind-date-lbl">Até <input type="date" class="ind-sel ind-date" value="${_indDataFim||''}" max="${hojeISO}" onchange="_indSetDataFim(this.value)"></label>
     </div>` : '';
-  const lblTotal = _indPeriodo==='mes' ? `Total ${MESES_IND[_indMesSelecionado]}/${_indAnoSelecionado}`
-    : _indPeriodo==='ano' ? `Total ${_indAnoSelecionado}`
-    : _indPeriodo==='custom' ? 'Total do período'
-    : 'Total '+_indLabelPeriodo(_indPeriodo).toLowerCase();
   const filtroAtivo = _indFiltroMaquinas && _indFiltroMaquinas.size;
+  const serieTotal = _indSerie(()=>true);
+  const tituloGraf = (_indPeriodo==='hoje'||_indPeriodo==='ontem') ? 'Produção por hora' : _indPeriodo==='ano' ? 'Produção por mês' : 'Produção por dia';
+  const totalMaq = mapaDados.maquinas ? Object.keys(mapaDados.maquinas).length : 0;
+  const cmpTxt = c => c ? `<span class="${c.up?'up':'down'}">${c.up?'+':'−'}${Math.abs(c.pct)}%</span> vs ${antLbl}` : '';
+  let metasRows = _indMetasAtingidas(_indChavesPeriodo(_indPeriodo));
+  if(filtroAtivo) metasRows = metasRows.filter(r=>_indFiltroMaquinas.has(r.nome));
   wrap.innerHTML = `
-    <div class="ind-wrap" id="indWrap">
+    <div class="ind-wrap ix" id="indWrap">
       <div id="indPullInd" class="ind-pull-ind">↻</div>
-      <div class="ind-filtros">
-        ${['hoje','ontem','semana','mes','ano','custom'].map(p=>
-          `<button class="ind-fbtn ${_indPeriodo===p?'on':''}" onclick="_indSetPeriodo('${p}')">${_indLabelPeriodo(p)}</button>`
-        ).join('')}
-        <button class="ind-fbtn ${filtroAtivo?'on':''}" onclick="_indAbrirFiltro()" title="Filtrar máquinas">⚙${filtroAtivo?' '+_indFiltroMaquinas.size:''}</button>
-        <button class="ind-fbtn ind-refresh" onclick="_indForcarRerender();renderMapaIndicadores(true)" title="Atualizar">↻</button>
-      </div>
+      <header class="ix-top">
+        <div>
+          <h1>Indicadores de produção</h1>
+          <p>${_ixSubtitulo()}</p>
+        </div>
+        <div class="ix-acts">
+          <div class="ix-seg" role="group" aria-label="Período">
+            ${['hoje','ontem','semana','mes','ano','custom'].map(p=>
+              `<button type="button" class="${_indPeriodo===p?'on':''}" onclick="_indSetPeriodo('${p}')">${_indLabelPeriodo(p)}</button>`
+            ).join('')}
+          </div>
+          <button type="button" class="ix-btn ${filtroAtivo?'on':''}" onclick="_indAbrirFiltro()" title="Filtrar máquinas">${_IX_IC.filtro}Filtro${filtroAtivo?' ('+_indFiltroMaquinas.size+')':''}</button>
+          <button type="button" class="ix-btn az" onclick="_indForcarRerender();renderMapaIndicadores(true)" title="Atualizar">${_IX_IC.atualizar}Atualizar</button>
+        </div>
+      </header>
       ${seletorMes}${seletorAno}${seletorCustom}
       ${filtroAtivo?`<div class="ind-filtro-banner">Filtrando ${_indFiltroMaquinas.size} máquina(s) <button onclick="_indLimparFiltro()">limpar ✕</button></div>`:''}
-      <div class="ind-cards">
-        ${_indCard('📦', lblTotal, atual.totalPecas.toLocaleString('pt-BR'), cmpTotal?_indBadgeCmp(cmpTotal)+' vs '+antLbl:'peças', '#00e87a')}
-        ${_indCard('⏱', 'Média peças/hora', atual.mediaHora.toLocaleString('pt-BR'), cmpMedia?_indBadgeCmp(cmpMedia)+' vs '+antLbl:atual.horasTrabalhadas+'h trab.', '#3d9eff')}
-        ${_indCard('⚡', 'Média peças/min', String(atual.mediaMin).replace('.',','), 'geral', '#a78bfa')}
-        ${_indCard('🏭', 'Máquinas ativas', atual.maquinasAtivas, 'produziram no período', '#ffb300')}
+      <section class="ix-kpis">
+        <div class="ix-kpi total">
+          <div class="ix-kpi-lbl">Total produzido</div>
+          <div class="ix-kpi-row"><span class="ix-kpi-val num" style="color:#00e87a">${atual.totalPecas.toLocaleString('pt-BR')}</span><span class="ix-kpi-un">peças</span></div>
+          <div class="ix-kpi-sub">${cmpTxt(cmpTotal) || 'no período'}</div>
+          <div class="ix-spark">${_indSparkline(serieTotal, 220, 74, '#00e87a')}</div>
+        </div>
+        <div class="ix-kpi">
+          <div class="ix-kpi-lbl">Média peças/hora</div>
+          <div class="ix-kpi-row"><span class="ix-kpi-val num" style="color:#3d9eff">${atual.mediaHora.toLocaleString('pt-BR')}</span></div>
+          <div class="ix-kpi-sub">${cmpMedia ? cmpTxt(cmpMedia) : atual.horasTrabalhadas+' h trabalhadas'}</div>
+        </div>
+        <div class="ix-kpi">
+          <div class="ix-kpi-lbl">Média peças/min</div>
+          <div class="ix-kpi-row"><span class="ix-kpi-val num" style="color:#3d9eff">${String(atual.mediaMin).replace('.',',')}</span></div>
+          <div class="ix-kpi-sub">${atual.horasTrabalhadas} h trabalhadas</div>
+        </div>
+        <div class="ix-kpi">
+          <div class="ix-kpi-lbl">Máquinas ativas</div>
+          <div class="ix-kpi-row"><span class="ix-kpi-val num" style="color:#00e87a">${atual.maquinasAtivas}</span>${totalMaq?`<span class="ix-kpi-un">de ${totalMaq}</span>`:''}</div>
+          <div class="ix-kpi-sub">produziram no período</div>
+        </div>
+      </section>
+      <div class="ix-row a">
+        <div class="ix-panel"><h2>${tituloGraf}</h2><div class="ix-chart">${_ixColunas(serieTotal)}</div></div>
+        <div class="ix-panel"><h2>Pódio do período</h2>${_ixPodio(topMaquinas.slice(0,3), totalRank)}</div>
       </div>
-      <div class="ind-sec">
-        <div class="ind-sec-title">🏆 Ranking de máquinas</div>
-        ${topMaquinas.length ? _indPodio(topMaquinas.slice(0,3)) : '<div class="ind-empty">Sem produção no período</div>'}
+      <div class="ix-row b">
+        <div class="ix-panel"><h2>Ranking de máquinas <small>${topMaquinas.length} máquina${topMaquinas.length!==1?'s':''} · toque para detalhes</small></h2>${_ixRanking(topMaquinas, totalRank)}</div>
+        <div class="ix-panel"><h2>Metas atingidas por máquina <small>${metasRows.length} com meta</small></h2>${_ixMetas(metasRows)}</div>
       </div>
-      <div class="ind-sec">
-        <div class="ind-sec-title">🏭 Máquinas <span class="ind-sec-count">${topMaquinas.length}</span><span class="ind-sec-hint">toque p/ detalhe</span></div>
-        ${_indBarsHoriz(topMaquinas, 20, 'maquina')}
-      </div>
-      <div class="ind-sec">
-        <div class="ind-sec-title">⚖️ Comparativo lado a lado</div>
-        ${_indComparativoHTML(atual)}
-      </div>
-      <div class="ind-sec">
-        <div class="ind-sec-title">🎯 Metas atingidas por máquina <span class="ind-sec-count">${(_indMetasAtingidas(_indChavesPeriodo(_indPeriodo))||[]).length}</span></div>
-        ${(()=>{
-          let rows = _indMetasAtingidas(_indChavesPeriodo(_indPeriodo));
-          if(filtroAtivo) rows = rows.filter(r=>_indFiltroMaquinas.has(r.nome));
-          if(!rows.length) return '<div class="ind-empty">Sem meta definida no período</div>';
-          return rows.map((r,idx)=>{
-            const cor = r.pct>=80?'#00e87a':r.pct>=50?'#ffb300':'#ff4d4d';
-            return `<div class="ind-meta-row" style="animation-delay:${idx*40}ms">
-              <div class="ind-meta-head">
-                <div class="ind-meta-lbl">
-                  <span class="ind-meta-nome">Máq. ${esc(r.nome)}</span>
-                  <span class="ind-meta-cod">${esc(r.cod)}</span>
-                </div>
-                <span class="ind-meta-pct" style="color:${cor}">${r.pct}% de aproveitamento</span>
-              </div>
-              <div class="ind-meta-stats">
-                <div class="ind-meta-box ind-meta-ok"><div class="ind-meta-val" style="color:#00e87a">${r.atingiu}x</div><div class="ind-meta-sub">✅ Atingiu a meta</div></div>
-                <div class="ind-meta-box ind-meta-fail"><div class="ind-meta-val" style="color:#ff4d4d">${r.naoAtingiu}x</div><div class="ind-meta-sub">❌ Não atingiu</div></div>
-              </div>
-              <div class="ind-meta-bar"><div class="ind-meta-bar-fill" style="width:${r.pct}%;background:${cor};animation-delay:${idx*40+200}ms"></div></div>
-            </div>`;
-          }).join('');
-        })()}
-      </div>
-      <div class="ind-footer">Dados calculados a partir da tabela de Produção. Atualização automática.</div>
+      <div class="ix-panel"><h2>Comparativo lado a lado</h2>${_indComparativoHTML(atual)}</div>
+      <div class="ix-rodape">Dados calculados a partir da tabela de Produção. Atualização automática.</div>
     </div>
     <div id="indDetalheModal" class="ind-modal" onclick="if(event.target===this)_indFecharDetalhe()">
       <div class="ind-modal-card" id="indDetalheBody"></div>
