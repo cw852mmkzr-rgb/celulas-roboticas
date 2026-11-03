@@ -8329,8 +8329,8 @@ function _dashRenderFooter(){
     const isCafe=HORAS_CAFE.includes(h);
     const isAtual=h===horaAtual;
     const total=ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campo])||'').num,0);
-    // Meta total dessa hora: soma das metas efetivas de cada robô (meia hora = meta/2)
-    const metaT=ROBOS.reduce((s,rn)=>s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0, _dashGetChave()),0);
+    // Meta total dessa hora: soma das metas efetivas (meia hora = meta/2) só dos robôs que produziram nela
+    const metaT=ROBOS.reduce((s,rn)=>parseCelVal(((dados[rn]||{})[campo])||'').num>0?s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0, _dashGetChave()):s,0);
     const bateu=total>0&&metaT>0&&total>=metaT;
     const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
