@@ -352,6 +352,21 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-hora-card.cafe .dash-hora-label { color:#8a6200; }
 .dash-exit { background:#ff4d4d15; border:1px solid #ff4d4d60; color:#ff4d4d; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; }
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
+.dash-acts { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+.dash-exit.dash-cast { background:#3d9eff15; border-color:#3d9eff60; color:#3d9eff; }
+.dash-exit.dash-cast:hover { background:#3d9eff30; border-color:#3d9eff; color:#fff; }
+.dash-cast-ov { display:none; position:fixed; inset:0; z-index:10050; background:#000000b3; align-items:center; justify-content:center; padding:16px; }
+.dash-cast-ov.open { display:flex; }
+.dash-cast-card { width:min(560px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#0f1318; border:1px solid #2a3442; border-radius:14px; box-shadow:0 24px 60px -20px #000; font-family:'Manrope','Segoe UI',sans-serif; color:#e6eaf0; }
+.dash-cast-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 18px; border-bottom:1px solid #1e2530; font-size:18px; font-weight:800; }
+.dash-cast-head button { background:none; border:1px solid #2a3442; color:#a6b0bd; border-radius:8px; width:34px; height:34px; cursor:pointer; font-size:15px; }
+.dash-cast-body { padding:14px 18px 18px; font-size:15px; line-height:1.55; }
+.dash-cast-body p { margin:0 0 10px; color:#a6b0bd; }
+.dash-cast-body ol { margin:0 0 14px; padding-left:20px; }
+.dash-cast-body li { margin-bottom:8px; }
+.dash-cast-link { display:flex; gap:8px; }
+.dash-cast-link input { flex:1; min-width:0; background:#080b0f; border:1px solid #2a3442; color:#d8dde6; border-radius:8px; padding:10px 12px; font-size:14px; font-family:inherit; }
+.dash-cast-link button { background:#00e87a; border:0; color:#03140b; font-weight:800; border-radius:8px; padding:10px 14px; cursor:pointer; font-family:inherit; white-space:nowrap; }
 /* Visão geral: cabeçalho da hora atual pisca de leve */
 .dash-th-atual { animation:dashThPisca 1.8s ease-in-out infinite; }
 @keyframes dashThPisca { 0%,100% { opacity:1; text-shadow:0 0 14px rgba(255,179,0,.95),0 0 4px rgba(255,179,0,.9); } 50% { opacity:.6; text-shadow:none; } }
@@ -2124,7 +2139,26 @@ setInterval(function(){ var el=document.getElementById("lgRelogio"), t=document.
       <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
       <div class="dash-clock" id="dashClock" style="font-size:clamp(44px,min(15vw,15vh),150px);line-height:1">--:--:--</div>
     </div>
-    <button class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
+    <div class="dash-acts">
+      <button type="button" class="dash-exit dash-cast" onclick="dashTransmitir()" title="Transmitir o dashboard para a TV">📺 Transmitir</button>
+      <button type="button" class="dash-exit dash-cast" onclick="dashTelaCheia()" title="Tela cheia" id="dashBtnFull">⛶ Tela cheia</button>
+      <button type="button" class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
+    </div>
+  </div>
+  <div id="dashCastAjuda" class="dash-cast-ov" onclick="if(event.target===this)dashFecharAjudaCast()">
+    <div class="dash-cast-card" role="dialog" aria-modal="true" aria-labelledby="dashCastTit">
+      <div class="dash-cast-head"><span id="dashCastTit">📺 Mostrar o dashboard na TV</span><button type="button" onclick="dashFecharAjudaCast()" aria-label="Fechar">✕</button></div>
+      <div class="dash-cast-body">
+        <p id="dashCastMotivo">Este navegador não abre a lista de TVs direto. Use um destes caminhos:</p>
+        <ol>
+          <li><b>Android (Chrome):</b> menu <b>⋮</b> → <b>Transmitir…</b> → escolha a TV.</li>
+          <li><b>iPhone / iPad:</b> abra a <b>Central de Controle</b> → <b>Espelhar Tela</b> → escolha a TV.</li>
+          <li><b>Computador (Chrome ou Edge):</b> menu <b>⋮</b> → <b>Transmitir, salvar e compartilhar</b> → <b>Transmitir…</b></li>
+          <li><b>Smart TV com navegador:</b> abra o link abaixo na própria TV — ele já entra direto no dashboard.</li>
+        </ol>
+        <div class="dash-cast-link"><input id="dashCastUrl" readonly onclick="this.select()"><button type="button" onclick="dashCopiarLinkTV()">Copiar link</button></div>
+      </div>
+    </div>
   </div>
   <div id="dashMain" style="flex:1;overflow:hidden"></div>
   <div class="dash-footer">
@@ -8130,6 +8164,8 @@ function startDashboard(){
 function sairDashboard(){
   [_dashLoadTimer,_dashClockTimer,_dashSlideTimer,_dashVerTimer].forEach(t=>clearInterval(t));
   try{ sessionStorage.removeItem("__dash_tv"); }catch(_){}
+  // tira o ?tv=1 do endereço pra não voltar ao dashboard se recarregar depois de sair
+  try{ const u=new URL(location.href); if(u.searchParams.has("tv")){ u.searchParams.delete("tv"); history.replaceState(null,"",u.toString()); } }catch(_){}
   document.getElementById("dashboardScreen").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
   if(typeof _loginAplicaBloqueio==="function") _loginAplicaBloqueio();
@@ -8150,10 +8186,56 @@ function _dashChecaVersao(){
     .catch(()=>{});
 }
 
-// Depois de recarregar (versão nova), a TV volta direto para o dashboard
+// ── Transmitir para a TV ──
+// Chrome/Edge no computador: abre a lista de TVs (Chromecast/Google TV) e manda o link ?tv=1,
+// que já entra direto no dashboard. Onde não dá (iPhone, Firefox...), mostra o passo a passo.
+function _dashLinkTV(){ return location.origin + location.pathname + '?tv=1'; }
+async function dashTransmitir(){
+  const url = _dashLinkTV();
+  if('PresentationRequest' in window){
+    try{
+      const req = new PresentationRequest([url]);
+      const conn = await req.start();
+      showToast('📺 Transmitindo o dashboard para a TV');
+      conn.onterminate = ()=>showToast('Transmissão encerrada');
+      return;
+    }catch(e){
+      if(e && e.name==='AbortError') return; // fechou a lista de TVs sem escolher
+      dashAbrirAjudaCast(e && e.name==='NotFoundError' ? 'Nenhuma TV foi encontrada na rede. Confira se a TV e este aparelho estão no mesmo Wi-Fi, ou use um destes caminhos:' : null);
+      return;
+    }
+  }
+  dashAbrirAjudaCast(null);
+}
+function dashAbrirAjudaCast(motivo){
+  const ov=document.getElementById('dashCastAjuda'); if(!ov) return;
+  const inp=document.getElementById('dashCastUrl'); if(inp) inp.value=_dashLinkTV();
+  const p=document.getElementById('dashCastMotivo');
+  if(p) p.textContent = motivo || 'Este navegador não abre a lista de TVs direto. Use um destes caminhos:';
+  ov.classList.add('open');
+}
+function dashFecharAjudaCast(){ const ov=document.getElementById('dashCastAjuda'); if(ov) ov.classList.remove('open'); }
+function dashCopiarLinkTV(){
+  const url=_dashLinkTV();
+  const ok=()=>showToast('Link copiado ✓');
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok).catch(()=>{ const i=document.getElementById('dashCastUrl'); if(i){ i.select(); document.execCommand('copy'); ok(); } });
+  else { const i=document.getElementById('dashCastUrl'); if(i){ i.select(); document.execCommand('copy'); ok(); } }
+}
+function dashTelaCheia(){
+  try{
+    if(document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>showToast('Tela cheia não disponível neste aparelho', true));
+  }catch(_){ showToast('Tela cheia não disponível neste aparelho', true); }
+}
+document.addEventListener('fullscreenchange', ()=>{ const b=document.getElementById('dashBtnFull'); if(b) b.textContent = document.fullscreenElement ? '⛶ Sair da tela cheia' : '⛶ Tela cheia'; });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') dashFecharAjudaCast(); });
+
+// Depois de recarregar (versão nova), a TV volta direto para o dashboard.
+// O link ?tv=1 (usado ao transmitir) também abre direto nele.
 (function _dashBootTV(){
   function abrir(){
     let tv=false; try{ tv = sessionStorage.getItem("__dash_tv")==="1"; }catch(_){}
+    try{ if(new URLSearchParams(location.search).get("tv")==="1") tv=true; }catch(_){}
     if(!tv || String(location.hash||"").toLowerCase()==="#tarefas") return;
     ["playScreen","introScreen"].forEach(function(id){ const el=document.getElementById(id); if(el) el.style.display="none"; });
     startDashboard();
