@@ -1327,116 +1327,114 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .cc-frow .cc-field{ flex:1 1 42%; }
 }
 
-/* ===== Catálogo de Peças (layout moderno) ===== */
-.catx{--c-card:#0f141a;--c-card2:#131a22;--c-line:#1f2733;--c-line2:#2a3442;--c-tx:#eef1f5;--c-tx2:#a6b0bd;--c-tx3:#717d8d;--c-ac:#00e87a;--c-amb:#ffb020;--c-red:#ff5c5c;font-family:'Manrope','Segoe UI',system-ui,sans-serif;color:var(--c-tx);max-width:1480px;-webkit-font-smoothing:antialiased}
+/* ===== Catálogo de Peças (design Canva, 03/11/2026) ===== */
+.catx{--c-card:#11161c;--c-card2:#161c24;--c-line:#232a33;--c-line2:#2e3743;--c-tx:#f2f4f7;--c-tx2:#a9b2be;--c-tx3:#7c8796;--c-ac:#00e87a;--c-amb:#ffb020;--c-red:#ff5c5c;font-family:'Manrope','Segoe UI',system-ui,sans-serif;color:var(--c-tx);max-width:1520px;-webkit-font-smoothing:antialiased}
 .catx *{box-sizing:border-box}
-.catx .num,.catx-cod,.catx-kpi b,.catx-met b,.catx-tbl .mono{font-family:'Space Grotesk','Manrope',sans-serif;font-variant-numeric:tabular-nums}
-.catx-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
-.catx-eyebrow{font-size:12px;font-weight:700;color:var(--c-ac);letter-spacing:.08em;text-transform:uppercase}
-.catx-hero h1{margin:6px 0 0;font-size:32px;line-height:1.1;font-weight:800;letter-spacing:-.02em;color:var(--c-tx)}
-.catx-hero p{margin:6px 0 0;font-size:14px;color:var(--c-tx2)}
-.catx-hero-acts{display:flex;gap:8px;align-items:center}
-.catx-btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:14px;font-weight:700;border-radius:10px;padding:10px 16px;border:1px solid var(--c-line2);background:var(--c-card2);color:var(--c-tx);cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .12s ease}
-.catx-btn:hover{border-color:#3a4658;background:#18202a}
+.catx-cod,.catx-kpi b,.catx-met b,.catx-tbl .mono{font-family:'Space Grotesk','Manrope',sans-serif;font-variant-numeric:tabular-nums}
+.catx-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.catx-hero h1{margin:0;font-size:44px;line-height:1.05;font-weight:800;letter-spacing:-.025em;color:var(--c-tx)}
+.catx-hero p{margin:10px 0 0;font-size:18px;font-weight:600;color:var(--c-tx2)}
+.catx-hero-acts{display:flex;gap:10px;align-items:center}
+.catx-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;font-size:15px;font-weight:700;border-radius:10px;padding:11px 18px;border:1px solid var(--c-line2);background:var(--c-card2);color:var(--c-tx);cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .12s ease}
+.catx-btn:hover{border-color:#3d4858;background:#1b222c}
 .catx-btn:active{transform:translateY(1px)}
 .catx-btn:focus-visible,.catx-seg button:focus-visible,.catx-vista button:focus-visible,.catx-chip:focus-visible,.catx-card:focus-visible{outline:2px solid var(--c-ac);outline-offset:2px}
-.catx-btn.pri{background:var(--c-ac);border-color:var(--c-ac);color:#03140b}
+.catx-btn.pri{background:var(--c-ac);border-color:var(--c-ac);color:#03140b;font-size:17px;padding:13px 26px;box-shadow:0 8px 24px -10px #00e87a99}
 .catx-btn.pri:hover{background:#2bf595}
-.catx-btn.ico{padding:10px 11px}
+.catx-btn.ico{padding:11px 12px}
 .catx-btn.perigo{color:var(--c-red)}
 .catx-btn.perigo:hover{border-color:#ff5c5c66;background:#ff5c5c12}
-.catx-btn.sm{font-size:13px;padding:7px 12px;border-radius:9px}
-.catx-btn.sm.ico{padding:7px 9px}
-.catx-btn svg{width:16px;height:16px;flex-shrink:0}
-.catx-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
-.catx-kpi{background:var(--c-card);border:1px solid var(--c-line);border-radius:16px;padding:16px 18px;min-width:0}
-.catx-kpi span{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--c-tx2)}
-.catx-kpi b{display:block;font-size:30px;font-weight:700;line-height:1;margin-top:10px;color:var(--c-tx);letter-spacing:-.02em}
-.catx-kpi b small{font-size:16px;color:var(--c-tx3);font-weight:600;margin-left:2px}
-.catx-kpi .trilho{height:4px;border-radius:4px;background:var(--c-line);margin-top:12px;overflow:hidden}
-.catx-kpi .trilho i{display:block;height:100%;background:var(--c-ac);border-radius:4px;transition:width .4s ease}
-.catx-ponto{width:8px;height:8px;border-radius:50%;background:var(--c-ac);box-shadow:0 0 0 4px #00e87a22;flex-shrink:0}
+.catx-btn.borda{background:transparent;border-color:#00e87a;color:var(--c-ac)}
+.catx-btn.borda:hover{background:#00e87a14}
+.catx-btn.sm{font-size:15px;padding:8px 18px;border-radius:9px}
+.catx-btn.sm.ico{padding:8px 10px}
+.catx-btn svg{width:17px;height:17px;flex-shrink:0}
+.catx-kpis{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;gap:18px;margin-bottom:22px}
+.catx-kpi{background:var(--c-card);border:1px solid var(--c-line);border-radius:12px;padding:20px 24px;min-width:0}
+.catx-kpi span{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600;color:#d7dce3}
+.catx-kpi b{display:block;font-size:50px;font-weight:700;line-height:1;margin-top:12px;color:var(--c-tx);letter-spacing:-.02em}
+.catx-kpi .linha{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.catx-kpi .pct{font-size:16px;font-weight:700;color:var(--c-ac);font-family:'Space Grotesk',sans-serif}
+.catx-kpi .trilho{height:9px;border-radius:9px;background:#1e252e;margin-top:12px;overflow:hidden}
+.catx-kpi .trilho i{display:block;height:100%;background:var(--c-ac);border-radius:9px;transition:width .4s ease}
+.catx-ponto{width:8px;height:8px;border-radius:50%;background:var(--c-ac);flex-shrink:0}
 .catx-ponto.vivo{animation:catxPulso 2s ease-in-out infinite}
 @keyframes catxPulso{0%,100%{box-shadow:0 0 0 3px #00e87a26}50%{box-shadow:0 0 0 6px #00e87a0a}}
-.catx-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.catx-busca{flex:1;min-width:240px;position:relative}
-.catx-busca svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--c-tx3);pointer-events:none}
-.catx-busca input{width:100%;font-family:inherit;font-size:15px;font-weight:500;color:var(--c-tx);background:var(--c-card);border:1px solid var(--c-line);border-radius:12px;padding:12px 14px 12px 42px;outline:none;transition:border-color .18s ease,box-shadow .18s ease}
+.catx-busca{position:relative;flex:1 1 420px;min-width:0}
+.catx-busca svg{position:absolute;left:20px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:var(--c-tx3);pointer-events:none}
+.catx-busca input{width:100%;font-family:inherit;font-size:18px;font-weight:500;color:var(--c-tx);background:var(--c-card);border:1px solid var(--c-line);border-radius:12px;padding:17px 18px 17px 56px;outline:none;transition:border-color .18s ease,box-shadow .18s ease}
 .catx-busca input::placeholder{color:var(--c-tx3)}
-.catx-busca input:focus{border-color:#00e87a66;box-shadow:0 0 0 4px #00e87a14}
-.catx-seg,.catx-vista{display:inline-flex;background:var(--c-card);border:1px solid var(--c-line);border-radius:12px;padding:4px;gap:2px}
-.catx-seg button,.catx-vista button{font-family:inherit;font-size:14px;font-weight:600;color:var(--c-tx2);background:none;border:0;border-radius:9px;padding:8px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:background .18s ease,color .18s ease}
+.catx-busca input:focus{border-color:#00e87a77;box-shadow:0 0 0 4px #00e87a14}
+.catx-linha2{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;margin-bottom:16px}
+.catx-chips{display:flex;flex-wrap:wrap;gap:10px;padding:2px;margin-bottom:22px}
+.catx-chip{flex-shrink:0;font-family:inherit;font-size:17px;font-weight:700;color:#d7dce3;background:var(--c-card2);border:1px solid var(--c-line2);border-radius:10px;padding:9px 20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .18s ease}
+.catx-chip:hover{border-color:#3d4858;color:var(--c-tx)}
+.catx-chip.on{color:var(--c-ac);background:#00e87a12;border-color:var(--c-ac)}
+.catx-chip i{font-style:normal;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--c-tx3)}
+.catx-chip.on i{color:var(--c-ac)}
+.catx-ctrls{display:flex;gap:10px;align-items:stretch;flex-shrink:0}
+.catx-seg,.catx-vista{display:inline-flex;align-items:stretch;background:var(--c-card);border:1px solid var(--c-line);border-radius:12px;padding:5px;gap:2px}
+.catx-seg button,.catx-vista button{font-family:inherit;font-size:15px;font-weight:700;color:var(--c-tx2);background:none;border:0;border-radius:8px;padding:8px 15px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:background .18s ease,color .18s ease}
 .catx-seg button:hover,.catx-vista button:hover{color:var(--c-tx)}
-.catx-seg button.on,.catx-vista button.on{background:#1b232e;color:var(--c-tx);box-shadow:inset 0 0 0 1px var(--c-line2)}
+.catx-seg button.on,.catx-vista button.on{background:#00e87a1a;color:var(--c-ac)}
+.catx-seg .n{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;padding:1px 7px;border-radius:999px;background:#ffffff10;color:var(--c-tx2)}
 .catx-seg button.on .n{background:var(--c-ac);color:#03140b}
-.catx-seg .n{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;min-width:22px;text-align:center;padding:1px 7px;border-radius:999px;background:#ffffff10;color:var(--c-tx2)}
 .catx-vista button{padding:8px 10px}
-.catx-vista svg{width:18px;height:18px}
-.catx-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:18px;scrollbar-width:thin}
-.catx-chip{flex-shrink:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--c-tx2);background:transparent;border:1px solid var(--c-line);border-radius:999px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .18s ease}
-.catx-chip:hover{color:var(--c-tx);border-color:var(--c-line2)}
-.catx-chip.on{color:#03140b;background:var(--c-ac);border-color:var(--c-ac)}
-.catx-chip i{font-style:normal;font-family:'Space Grotesk',sans-serif;font-size:12px;opacity:.75}
-.catx-grupo{display:flex;align-items:baseline;gap:10px;margin:30px 0 14px}
-.catx-grupo:first-child{margin-top:4px}
-.catx-grupo h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em;color:var(--c-tx)}
-.catx-grupo span{font-size:13px;font-weight:600;color:var(--c-tx3)}
-.catx-grupo::after{content:"";flex:1;height:1px;background:var(--c-line);align-self:center;margin-left:6px}
-.catx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;align-items:stretch}
+.catx-vista svg{width:19px;height:19px}
+.catx-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:20px;align-items:stretch}
 #catalogoGrid.entrada .catx-card{animation:catxEntra .35s cubic-bezier(.2,.7,.2,1) both}
 @keyframes catxEntra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.catx-card{position:relative;background:var(--c-card);border:1px solid var(--c-line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;transition:transform .22s cubic-bezier(.2,.7,.2,1),border-color .22s ease,box-shadow .22s ease}
-@media(hover:hover){.catx-card:hover{transform:translateY(-3px);border-color:var(--c-line2);box-shadow:0 18px 40px -20px #000}}
-.catx-card.run{border-color:#00e87a55;box-shadow:inset 0 1px 0 #00e87a40}
-.catx-foto{aspect-ratio:16/9;background:#0a0e13;border-bottom:1px solid var(--c-line);overflow:hidden}
+.catx-card{position:relative;background:var(--c-card);border:1px solid var(--c-line2);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;cursor:pointer;padding:20px 22px 20px;transition:transform .22s cubic-bezier(.2,.7,.2,1),border-color .22s ease,box-shadow .22s ease}
+@media(hover:hover){.catx-card:hover{transform:translateY(-3px);border-color:#3d4858;box-shadow:0 18px 40px -20px #000}}
+.catx-foto{aspect-ratio:16/9;background:#0a0e13;border:1px solid var(--c-line);border-radius:10px;overflow:hidden;margin-bottom:14px}
 .catx-foto img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
-.catx-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 14px}
-.catx-cli{font-size:12px;font-weight:700;color:var(--c-tx3);letter-spacing:.06em;text-transform:uppercase}
-.catx-cod{font-size:28px;font-weight:700;line-height:1.1;letter-spacing:-.01em;color:var(--c-tx);margin-top:4px;word-break:break-all}
-.catx-nome{font-size:14px;color:var(--c-tx2);margin-top:3px}
-.catx-status{flex-shrink:0;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--c-ac);background:#00e87a14;border:1px solid #00e87a33;border-radius:999px;padding:6px 12px;white-space:nowrap}
-.catx-met{display:grid;grid-template-columns:repeat(3,1fr);margin:0 20px;background:#0a0e13;border:1px solid var(--c-line);border-radius:14px}
-.catx-met div{padding:12px 6px;text-align:center;min-width:0}
-.catx-met div+div{border-left:1px solid var(--c-line)}
-.catx-met span{display:block;font-size:12px;font-weight:600;color:var(--c-tx3)}
-.catx-met b{display:block;font-size:22px;font-weight:700;color:var(--c-tx);margin-top:4px;white-space:nowrap}
-.catx-met b.ac{color:var(--c-ac)}
-.catx-met b.vz,.catx-spec b.vz{color:#3b4555;font-weight:500}
-.catx-sub{padding:18px 20px 8px;font-size:12px;font-weight:700;color:var(--c-tx3);letter-spacing:.06em;text-transform:uppercase}
-.catx-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 20px}
-.catx-spec{background:var(--c-card2);border-radius:11px;padding:10px 12px;min-width:0}
-.catx-spec.full{grid-column:1/-1;display:flex;align-items:center;gap:11px}
-.catx-spec span{display:block;font-size:12px;font-weight:600;color:var(--c-tx3)}
-.catx-spec b{display:block;font-size:15px;font-weight:700;color:var(--c-tx);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.catx-av{width:34px;height:34px;border-radius:10px;background:#00e87a1a;color:var(--c-ac);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
-.catx-av.vz{background:#ffffff08;color:#3b4555}
-.catx-pe{margin-top:auto;display:flex;align-items:center;gap:12px;padding:18px 20px 18px}
-.catx-ficha{flex:1;min-width:0}
-.catx-ficha span{display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:var(--c-tx2)}
+.catx-status{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--c-ac);background:#00e87a10;border:1px solid #00e87a88;border-radius:8px;padding:4px 10px;margin-bottom:10px;white-space:nowrap}
+.catx-status.off{color:var(--c-tx3);background:transparent;border-color:var(--c-line2)}
+.catx-cod{font-size:42px;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:var(--c-tx);word-break:break-all}
+.catx-cli{font-size:17px;font-weight:600;color:#c9d0d9;margin-top:4px}
+.catx-nome{font-size:14px;color:var(--c-tx3);margin-top:2px}
+.catx-met{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;margin-top:14px;padding-bottom:14px;border-bottom:1px solid var(--c-line)}
+.catx-met div{min-width:0}
+.catx-met span{display:block;font-size:14px;font-weight:600;color:#c9d0d9}
+.catx-met b{display:block;font-size:32px;font-weight:700;color:var(--c-ac);margin-top:4px;white-space:nowrap;line-height:1.1}
+.catx-met b.vz,.catx-spec b.vz{color:#3e4856;font-weight:500}
+.catx-specs{display:grid;grid-template-columns:1fr 1fr;column-gap:22px;padding:12px 0 14px;border-bottom:1px solid var(--c-line)}
+.catx-spec{display:grid;grid-template-columns:auto 1fr;align-items:baseline;gap:10px;padding:6px 0;min-width:0}
+.catx-spec span{font-size:14px;font-weight:600;color:#c9d0d9;white-space:nowrap}
+.catx-spec b{font-size:15px;font-weight:700;color:var(--c-tx);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Space Grotesk','Manrope',sans-serif}
+.catx-resp{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:16px}
+.catx-pessoa{display:flex;align-items:center;gap:12px;min-width:0}
+.catx-av{width:42px;height:42px;border-radius:50%;border:2px solid var(--c-ac);color:var(--c-ac);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+.catx-av.vz{border-color:#3e4856;color:#3e4856}
+.catx-pessoa span{display:block;font-size:13px;font-weight:600;color:#c9d0d9}
+.catx-pessoa b{display:block;font-size:15px;font-weight:700;color:var(--c-tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.catx-pessoa b.vz{color:#3e4856;font-weight:500}
+.catx-ficha{width:46%;min-width:150px;flex-shrink:0}
+.catx-ficha span{display:flex;gap:6px;font-size:14px;font-weight:700;color:#c9d0d9}
 .catx-ficha span b{font-family:'Space Grotesk',sans-serif}
-.catx-ficha .trilho{height:5px;border-radius:5px;background:var(--c-line);margin-top:7px;overflow:hidden}
-.catx-ficha .trilho i{display:block;height:100%;border-radius:5px}
-.catx-pe .acts{display:flex;gap:6px}
-.catx-tblwrap{background:var(--c-card);border:1px solid var(--c-line);border-radius:16px;overflow-x:auto}
-.catx-tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:1280px}
-.catx-tbl th{position:sticky;top:0;background:#121821;text-align:left;font-size:12px;font-weight:700;color:var(--c-tx3);letter-spacing:.04em;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid var(--c-line);white-space:nowrap}
-.catx-tbl td{padding:12px 14px;border-bottom:1px solid var(--c-line);color:var(--c-tx);white-space:nowrap;font-weight:600}
+.catx-ficha .trilho{height:9px;border-radius:9px;background:#1e252e;margin-top:8px;overflow:hidden}
+.catx-ficha .trilho i{display:block;height:100%;border-radius:9px}
+.catx-pe{margin-top:auto;display:flex;justify-content:flex-end;gap:8px;padding-top:16px}
+.catx-tblwrap{background:var(--c-card);border:1px solid var(--c-line2);border-radius:12px;overflow-x:auto}
+.catx-tbl{width:100%;border-collapse:collapse;font-size:15px;min-width:1320px}
+.catx-tbl th{position:sticky;top:0;background:#161c24;text-align:left;font-size:13px;font-weight:700;color:#c9d0d9;padding:14px 16px;border-bottom:1px solid var(--c-line2);white-space:nowrap}
+.catx-tbl td{padding:13px 16px;border-bottom:1px solid var(--c-line);color:var(--c-tx);white-space:nowrap;font-weight:600}
 .catx-tbl tbody tr{transition:background .15s ease}
 .catx-tbl tbody tr:hover{background:#ffffff05}
 .catx-tbl tbody tr:last-child td{border-bottom:0}
 .catx-tbl td.c,.catx-tbl th.c{text-align:center}
-.catx-tbl td.vz{color:#3b4555;font-weight:500}
-.catx-tbl td.cod{position:sticky;left:0;background:var(--c-card);font-size:16px;font-weight:700;z-index:1}
-.catx-tbl tbody tr:hover td.cod{background:#12171d}
-.catx-tbl .cli{color:var(--c-tx2);font-weight:600}
+.catx-tbl td.vz{color:#3e4856;font-weight:500}
+.catx-tbl td.cod{position:sticky;left:0;background:var(--c-card);font-size:18px;font-weight:700;z-index:1}
+.catx-tbl tbody tr:hover td.cod{background:#14191f}
+.catx-tbl .cli{color:#c9d0d9}
 .catx-tbl .mini{display:inline-flex;align-items:center;gap:8px}
-.catx-tbl .mini .trilho{width:46px;height:5px;border-radius:5px;background:var(--c-line);overflow:hidden}
+.catx-tbl .mini .trilho{width:56px;height:7px;border-radius:7px;background:#1e252e;overflow:hidden}
 .catx-tbl .mini .trilho i{display:block;height:100%}
-.catx-tbl .tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--c-ac);background:#00e87a14;border:1px solid #00e87a33;border-radius:999px;padding:3px 10px}
-.catx-vazio{text-align:center;padding:56px 20px;border:1px dashed var(--c-line2);border-radius:18px;color:var(--c-tx2);font-size:15px}
-.catx-vazio b{display:block;font-size:18px;color:var(--c-tx);margin-bottom:6px}
-@media(max-width:900px){.catx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.catx-hero h1{font-size:26px}.catx-kpi{padding:14px}.catx-kpi b{font-size:26px}.catx-grid{grid-template-columns:1fr}.catx-busca{min-width:100%}.catx-seg{flex:1}.catx-seg button{flex:1;justify-content:center;padding:8px 6px;font-size:13px}.catx-seg .n{display:none}.catx-topo{padding:16px 16px 12px}.catx-met{margin:0 16px}.catx-specs{padding:0 16px}.catx-sub{padding:16px 16px 8px}.catx-pe{padding:16px}.catx-cod{font-size:26px}}
+.catx-tbl .tag{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--c-ac);background:#00e87a10;border:1px solid #00e87a88;border-radius:8px;padding:3px 9px}
+.catx-vazio{text-align:center;padding:56px 20px;border:1px dashed var(--c-line2);border-radius:12px;color:var(--c-tx2);font-size:16px}
+.catx-vazio b{display:block;font-size:20px;color:var(--c-tx);margin-bottom:6px}
+@media(max-width:1100px){.catx-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.catx-grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}}
+@media(max-width:560px){.catx-hero h1{font-size:32px}.catx-hero p{font-size:16px}.catx-btn.pri{font-size:15px;padding:11px 18px}.catx-kpis{gap:10px}.catx-kpi{padding:14px 16px}.catx-kpi span{font-size:14px}.catx-kpi b{font-size:34px}.catx-busca input{font-size:16px;padding:14px 14px 14px 48px}.catx-busca svg{left:16px;width:19px;height:19px}.catx-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.catx-busca{flex-basis:100%}.catx-chip{font-size:15px;padding:8px 14px}.catx-ctrls{width:100%}.catx-seg{flex:1}.catx-seg button{flex:1;justify-content:center;padding:8px 4px;font-size:13px}.catx-seg .n{display:none}.catx-grid{grid-template-columns:1fr;gap:14px}.catx-card{padding:18px 16px}.catx-cod{font-size:34px}.catx-met b{font-size:26px}.catx-specs{grid-template-columns:1fr}.catx-resp{flex-direction:column;align-items:stretch}.catx-ficha{width:100%}}
 @media(prefers-reduced-motion:reduce){.catx-card,#catalogoGrid.entrada .catx-card{animation:none;transition:none}.catx-ponto.vivo{animation:none}}
 /* Funcionários — calendário de trabalho + horas do dia */
 .fcal-tit{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px;font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em}
@@ -9292,11 +9290,13 @@ function _filtrarCatalogo(){
   _st('catStPecas', lista.length);
   _st('catStCli', Object.keys(_porCli).length);
   _st('catStRun', nRun);
-  _st('catStFicha', nOk+'<small>/'+lista.length+'</small>');
+  const pctOk = lista.length ? Math.round(nOk/lista.length*100) : 0;
+  _st('catStFicha', nOk+'/'+lista.length);
+  _st('catStFichaPct', pctOk+'%');
   _st('catNRun', nRun);
   _st('catNInc', lista.length-nOk);
   const bar = document.getElementById('catStFichaBar');
-  if(bar) bar.style.width = (lista.length ? Math.round(nOk/lista.length*100) : 0)+'%';
+  if(bar) bar.style.width = pctOk+'%';
   document.querySelectorAll('.catx-seg button').forEach(b=>b.classList.toggle('on', b.dataset.f===_catFiltro));
   document.querySelectorAll('.catx-vista button').forEach(b=>b.classList.toggle('on', b.dataset.v===_catVista));
 
@@ -9322,7 +9322,7 @@ function _filtrarCatalogo(){
   const counter = document.getElementById("catalogoCounter");
   if(counter) counter.textContent = filtradas.length!==lista.length
     ? `Mostrando ${filtradas.length} de ${lista.length} peças`
-    : `${lista.length} peça${lista.length!==1?'s':''} cadastrada${lista.length!==1?'s':''} · ficha técnica de cada uma`;
+    : `${lista.length} peça${lista.length!==1?'s':''} cadastrada${lista.length!==1?'s':''}`;
   if(!grid) return;
 
   // Só troca o HTML se algo mudou de verdade — senão a tela pisca a cada polling (3s)
@@ -9376,60 +9376,51 @@ function _filtrarCatalogo(){
   }
 
   const spec = (p,rot,f) => `<div class="catx-spec"><span>${rot}</span><b class="${tem(p,f)?'':'vz'}" title="${tem(p,f)?esc(String(p[f]).trim()):'Não informado'}">${val(p,f)}</b></div>`;
-  const agrupar = !_catCliente;
-  let html='', prevCliente=null;
+  let html='<div class="catx-grid">';
   filtradas.forEach(([cod,p])=>{
-    const curCliente=_catCliKey(p.cliente);
-    if(prevCliente===null || (agrupar && curCliente!==prevCliente)){
-      if(prevCliente!==null) html+='</div>';
-      if(agrupar){
-        const nG = filtradas.filter(([,q])=>_catCliKey(q.cliente)===curCliente).length;
-        html+=`<div class="catx-grupo"><h2>${esc(_rotCli[curCliente]||'Sem cliente')}</h2><span>${nG} peça${nG!==1?'s':''}</span></div>`;
-      }
-      html+='<div class="catx-grid">';
-      prevCliente=curCliente;
-    }
     const rob = robMap[_catCliKey(cod)]||[];
     const n = nCampos(p), cor = corFicha(n), codJs = codJsDe(cod);
     const ini = _catIniciais(tem(p,'operador') ? _catFmt('operador',p.operador) : '');
-    html+=`<article class="catx-card${rob.length?' run':''}" ${isAdmin?`onclick="abrirModalEditarPeca('${codJs}')" tabindex="0" onkeydown="if(event.key==='Enter'){abrirModalEditarPeca('${codJs}')}" title="Editar peça"`:'style="cursor:default"'}>
+    html+=`<article class="catx-card" ${isAdmin?`onclick="abrirModalEditarPeca('${codJs}')" tabindex="0" onkeydown="if(event.key==='Enter'){abrirModalEditarPeca('${codJs}')}" title="Editar peça"`:'style="cursor:default"'}>
       ${p.img?`<div class="catx-foto"><img src="${p.img}" alt="Foto da peça ${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
-      <div class="catx-topo">
-        <div style="min-width:0">
-          <div class="catx-cli">${esc(_rotCli[curCliente]||'Sem cliente')}</div>
-          <div class="catx-cod">${esc(cod)}</div>
-          ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="catx-nome">${esc(p.nome)}</div>`:''}
-        </div>
-        ${rob.length?`<span class="catx-status" title="Rodando agora no robô ${rob.join(', ')}"><i class="catx-ponto vivo"></i>${robTxt(rob)}</span>`:''}
-      </div>
+      ${rob.length?`<span class="catx-status" title="Rodando agora no robô ${rob.join(', ')}"><i class="catx-ponto vivo"></i>${robTxt(rob)} — em produção</span>`:'<span class="catx-status off">Fora de produção</span>'}
+      <div class="catx-cod">${esc(cod)}</div>
+      <div class="catx-cli">${esc(_rotCli[_catCliKey(p.cliente)]||'Sem cliente')}</div>
+      ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="catx-nome">${esc(p.nome)}</div>`:''}
       <div class="catx-met">
         <div><span>Ciclo</span><b class="${tem(p,'tempo_peca')?'':'vz'}">${val(p,'tempo_peca')}</b></div>
-        <div><span>Meta/hora</span><b class="${tem(p,'meta_hora')?'ac':'vz'}">${val(p,'meta_hora')}</b></div>
-        <div><span>Pares gab.</span><b class="${tem(p,'pares_gabarito')?'':'vz'}">${val(p,'pares_gabarito')}</b></div>
+        <div><span>Meta/hora</span><b class="${tem(p,'meta_hora')?'':'vz'}">${val(p,'meta_hora')}</b></div>
+        <div><span>Pares de gabarito</span><b class="${tem(p,'pares_gabarito')?'':'vz'}">${val(p,'pares_gabarito')}</b></div>
       </div>
-      <div class="catx-sub">Parâmetros de solda</div>
       <div class="catx-specs">
-        ${spec(p,'Corrente','corrente')}
-        ${spec(p,'Pré-pressão','pre_pressao')}
-        ${spec(p,'Tempo de solda','tempo_solda')}
-        ${spec(p,'Pontos de solda','pontos_solda')}
-        ${spec(p,'Eletrodo','tipo_eletrodo')}
-        ${spec(p,'Turno','turno')}
-        <div class="catx-spec full"><div class="catx-av${ini?'':' vz'}">${ini||'?'}</div><div style="min-width:0"><span>Responsável técnico</span><b class="${tem(p,'operador')?'':'vz'}">${val(p,'operador')}</b></div></div>
+        <div>
+          ${spec(p,'Corrente','corrente')}
+          ${spec(p,'Pré-pressão','pre_pressao')}
+          ${spec(p,'Tempo de solda','tempo_solda')}
+          ${spec(p,'Pontos de solda','pontos_solda')}
+        </div>
+        <div>
+          ${spec(p,'Eletrodo','tipo_eletrodo')}
+          ${spec(p,'Turno','turno')}
+        </div>
       </div>
-      <div class="catx-pe">
+      <div class="catx-resp">
+        <div class="catx-pessoa">
+          <div class="catx-av${ini?'':' vz'}">${ini||'?'}</div>
+          <div style="min-width:0"><span>Responsável técnico</span><b class="${tem(p,'operador')?'':'vz'}">${val(p,'operador')}</b></div>
+        </div>
         <div class="catx-ficha" title="${n} de ${TOT} campos da ficha preenchidos">
-          <span>Ficha técnica<b style="color:${cor}">${n}/${TOT}</b></span>
+          <span>Ficha técnica <b style="color:${cor}">${n}/${TOT}</b></span>
           <div class="trilho"><i style="width:${Math.round(n/TOT*100)}%;background:${cor}"></i></div>
         </div>
-        ${isAdmin?`<div class="acts">
-          <button type="button" class="catx-btn sm" onclick="event.stopPropagation();abrirModalEditarPeca('${codJs}')">${_CATX_IC.lapis}Editar</button>
-          <button type="button" class="catx-btn sm ico perigo" onclick="event.stopPropagation();excluirPeca('${codJs}')" title="Excluir peça">${_CATX_IC.lixo}</button>
-        </div>`:''}
       </div>
+      ${isAdmin?`<div class="catx-pe">
+        <button type="button" class="catx-btn sm ico perigo" onclick="event.stopPropagation();excluirPeca('${codJs}')" title="Excluir peça">${_CATX_IC.lixo}</button>
+        <button type="button" class="catx-btn sm borda" onclick="event.stopPropagation();abrirModalEditarPeca('${codJs}')">Editar</button>
+      </div>`:''}
     </article>`;
   });
-  if(prevCliente!==null) html+='</div>';
+  html+='</div>';
   grid.innerHTML=html;
 }
 
@@ -15383,8 +15374,7 @@ function renderCatalogoPecas(){
   <div class="catx">
     <header class="catx-hero">
       <div>
-        <div class="catx-eyebrow">Cadastros e recursos</div>
-        <h1>${esc(c.nome||'Catálogo de Peças')}</h1>
+        <h1>${(!c.nome||/^CATAL[AO]GO DE PECAS$/.test(_catCliKey(c.nome)))?'Catálogo de Peças':esc(c.nome)}</h1>
         <p id="catalogoCounter">${total} peça${total!==1?'s':''} cadastrada${total!==1?'s':''}</p>
       </div>
       ${isAdmin?`<div class="catx-hero-acts">
@@ -15397,14 +15387,15 @@ function renderCatalogoPecas(){
       <div class="catx-kpi"><span>Peças cadastradas</span><b id="catStPecas">—</b></div>
       <div class="catx-kpi"><span>Clientes</span><b id="catStCli">—</b></div>
       <div class="catx-kpi"><span><i class="catx-ponto vivo"></i>Em produção agora</span><b id="catStRun">—</b></div>
-      <div class="catx-kpi"><span>Fichas completas</span><b id="catStFicha">—</b><div class="trilho"><i id="catStFichaBar" style="width:0"></i></div></div>
+      <div class="catx-kpi"><span>Fichas completas</span><div class="linha"><b id="catStFicha">—</b><span class="pct" id="catStFichaPct"></span></div><div class="trilho"><i id="catStFichaBar" style="width:0"></i></div></div>
     </section>
 
-    <div class="catx-bar">
-      <label class="catx-busca">${_CATX_IC.lupa}
-        <input value="${esc(busca)}" placeholder="Buscar por código, cliente, responsável ou robô" id="buscaCatalogo"
-          oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()" aria-label="Buscar peça">
-      </label>
+    <div class="catx-linha2">
+    <label class="catx-busca">${_CATX_IC.lupa}
+      <input value="${esc(busca)}" placeholder="Buscar por código, cliente, responsável ou robô" id="buscaCatalogo"
+        oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()" aria-label="Buscar peça">
+    </label>
+    <div class="catx-ctrls">
       <div class="catx-seg" role="group" aria-label="Filtrar peças">
         <button type="button" data-f="todas" onclick="_catSetFiltro('todas')">Todas</button>
         <button type="button" data-f="producao" onclick="_catSetFiltro('producao')">Em produção <span class="n" id="catNRun"></span></button>
@@ -15414,6 +15405,7 @@ function renderCatalogoPecas(){
         <button type="button" data-v="cards" onclick="_catSetVista('cards')" title="Ver em cards">${_CATX_IC.grade}</button>
         <button type="button" data-v="lista" onclick="_catSetVista('lista')" title="Ver em lista">${_CATX_IC.lista}</button>
       </div>
+    </div>
     </div>
 
     <nav class="catx-chips" id="catClientes" aria-label="Clientes"></nav>
