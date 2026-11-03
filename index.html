@@ -8553,9 +8553,29 @@ function _dashRenderFooter(){
     const totalDia=[...HORAS_DIA,...HORAS_NOITE].reduce((soma,h)=>{
       return soma+ROBOS.reduce((s,rn)=>s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num,0);
     },0);
+    // Metas atingidas no dia: horas-robô que bateram a meta / horas-robô com meta em que o robô trabalhou
+    // (mesma regra das células verdes/vermelhas da tabela: café não conta, hora sem produção não conta)
+    let metasOk=0, metasTot=0;
+    horasDiaPara(_dashGetChave()).concat(HORAS_NOITE).forEach(h=>{
+      if(HORAS_CAFE.includes(h)) return;
+      ROBOS.forEach(rn=>{
+        const rd=dados[rn]||{};
+        const v=parseCelVal(rd[campoH(h)]||'').num;
+        const metaH=metaEfetivaHora(h, parseInt(rd.meta)||0, _dashGetChave());
+        if(v<=0||metaH<=0) return;
+        metasTot++;
+        if(v>=metaH) metasOk++;
+      });
+    });
+    const pctMetas=metasTot?Math.round(metasOk/metasTot*100):0;
+    const corMetas=!metasTot?'#4a5568':pctMetas>=80?'#00e87a':pctMetas>=50?'#ffb300':'#ff4d4d';
     return`<div class="dash-hora-card" style="border-color:#ffb30080;background:#ffb30015">
       <div class="dash-hora-label" style="color:#ffb300">∑ TOTAL</div>
       <div class="dash-hora-val" style="color:#ffb300">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
+    </div>
+    <div class="dash-hora-card" style="border-color:${corMetas}80;background:${corMetas}15" title="${metasOk} de ${metasTot} horas trabalhadas bateram a meta (${pctMetas}%)">
+      <div class="dash-hora-label" style="color:${corMetas}">🎯 METAS</div>
+      <div class="dash-hora-val" style="color:${corMetas}">${metasTot?metasOk+'/'+metasTot:'—'}</div>
     </div>`;
   })();
 }
