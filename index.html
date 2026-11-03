@@ -1330,22 +1330,56 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cat-cliente{display:flex;align-items:center;gap:10px;font-size:18px;color:#39ff14;text-transform:uppercase;letter-spacing:.14em;font-weight:800;font-family:'Courier New',monospace;text-shadow:0 0 12px #39ff1455;margin:26px 0 13px;padding-bottom:8px;border-bottom:1px solid #39ff1430}
 .cat-cliente:first-child{margin-top:0}
 .cat-cliente span{font-size:11px;letter-spacing:.06em;font-weight:700;color:#39ff14;background:#39ff1412;border:1px solid #39ff1438;border-radius:999px;padding:2px 9px;text-shadow:none}
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;align-items:stretch}
-.cat-card{background:#0f1318;border:1px solid #1e2530;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-@media(hover:hover){.cat-card:hover{transform:translateY(-3px);border-color:#39ff1455;box-shadow:0 12px 28px -12px #000,0 0 18px -8px #39ff1466}}
-.cat-foto{aspect-ratio:4/3;background:#080b0f;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cat-resumo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.cat-stat{background:linear-gradient(180deg,#10151c,#0c1015);border:1px solid #1e2530;border-radius:12px;padding:11px 14px;min-width:0}
+.cat-stat b{display:block;font-size:22px;font-weight:900;color:#e8edf3;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1}
+.cat-stat span{display:block;font-size:9.5px;font-weight:700;color:#5b6676;text-transform:uppercase;letter-spacing:.14em;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-stat.verde b{color:#00e87a}.cat-stat.ambar b{color:#ffb300}
+.cat-barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.cat-busca{flex:1;min-width:220px;background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:10px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none;transition:border-color .18s ease,box-shadow .18s ease}
+.cat-busca:focus{border-color:#00e87a55;box-shadow:0 0 0 3px #00e87a14}
+.cat-filtros{display:inline-flex;background:#080b0f;border:1px solid #1e2530;border-radius:10px;padding:3px;gap:2px}
+.cat-filtros button{background:none;border:0;color:#7a8698;font-family:'Courier New',monospace;font-size:11px;font-weight:700;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:background .18s ease,color .18s ease}
+.cat-filtros button:hover{color:#d8dde6}
+.cat-filtros button.on{background:#00e87a1c;color:#00e87a;box-shadow:inset 0 0 0 1px #00e87a40}
+.cat-filtros button:active{transform:translateY(1px)}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px;align-items:stretch}
+.cat-card{position:relative;background:linear-gradient(180deg,#11161d 0%,#0c1015 100%);border:1px solid #1e2530;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+#catalogoGrid.entrada .cat-card{animation:cardIn .25s ease both}
+.cat-card.rodando{border-color:#00e87a40}
+.cat-card.rodando::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00e87a,#00e87a30)}
+@media(hover:hover){.cat-card:hover{transform:translateY(-3px);border-color:#39ff1455;box-shadow:0 14px 30px -14px #000,0 0 20px -10px #39ff1466}}
+.cat-card:focus-visible{outline:2px solid #00e87a;outline-offset:2px}
+.cat-foto{aspect-ratio:16/9;background:#080b0f;border-bottom:1px solid #1e2530;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .cat-foto img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
-.cat-card .cat-body{padding-top:13px}
-.cat-body{padding:12px 14px;flex:1}
-.cat-cod{font-size:19px;font-weight:900;color:#39ff14;font-family:'Courier New',monospace;text-shadow:0 0 10px #39ff1444;word-break:break-all}
-.cat-nome{font-size:12px;color:#d8dde6;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.cat-chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
-.cat-chip.verde{color:#00e87a;border-color:#00e87a38;background:#00e87a12}
-.cat-chip.roxo{color:#a78bfa;border-color:#a78bfa38;background:#a78bfa12}
-.cat-chip.cinza{color:#7a8698;border-color:#2a3342;background:#ffffff06}
-.cat-acts{display:flex;gap:6px;padding:0 14px 12px}
-@media(max-width:520px){.cat-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}.cat-cod{font-size:17px}.cat-cliente{font-size:15px}}
+.cat-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 16px 12px}
+.cat-cod{font-size:21px;font-weight:900;color:#39ff14;font-family:'Courier New',monospace;text-shadow:0 0 10px #39ff1440;letter-spacing:.01em;line-height:1.1;word-break:break-all}
+.cat-nome{font-size:11.5px;color:#9aa5b4;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-run{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:800;letter-spacing:.1em;color:#00e87a;background:#00e87a12;border:1px solid #00e87a38;border-radius:6px;padding:4px 7px;white-space:nowrap}
+.cat-run i{width:6px;height:6px;border-radius:50%;background:#00e87a;color:#00e87a;animation:mrDotPulse 1.8s ease-in-out infinite}
+.cat-kpis{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #1a212b;border-bottom:1px solid #1a212b;background:#080b0f80}
+.cat-kpi{padding:10px 8px 9px;text-align:center;min-width:0}
+.cat-kpi+.cat-kpi{border-left:1px solid #1a212b}
+.cat-kpi span{display:block;font-size:8.5px;font-weight:700;color:#5b6676;text-transform:uppercase;letter-spacing:.16em}
+.cat-kpi b{display:block;font-size:17px;font-weight:900;color:#e8edf3;margin-top:4px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-kpi b.verde{color:#00e87a}
+.cat-kpi b.vazio,.cat-spec dd.vazio{color:#343d4a;font-weight:400}
+.cat-sec{padding:12px 16px 2px;font-size:9px;font-weight:800;color:#5b6676;text-transform:uppercase;letter-spacing:.18em}
+.cat-specs{margin:0;padding:0 16px}
+.cat-spec{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px dashed #1a212b;font-size:12px}
+.cat-spec:last-child{border-bottom:0}
+.cat-spec dt{color:#7a8698;white-space:nowrap}
+.cat-spec dd{margin:0;color:#d8dde6;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-rodape{margin-top:auto;padding:12px 16px 14px;display:flex;align-items:center;gap:10px}
+.cat-ficha{flex:1;min-width:0}
+.cat-ficha span{display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;color:#5b6676;letter-spacing:.08em;text-transform:uppercase}
+.cat-ficha span b{font-variant-numeric:tabular-nums}
+.cat-ficha .trilho{height:3px;border-radius:3px;background:#1a212b;margin-top:5px;overflow:hidden}
+.cat-ficha .trilho i{display:block;height:100%;border-radius:3px}
+.cat-acts{display:flex;gap:6px;flex-shrink:0}
+@media(max-width:820px){.cat-resumo{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.cat-grid{grid-template-columns:1fr;gap:11px}.cat-cod{font-size:19px}.cat-cliente{font-size:15px}.cat-filtros{width:100%}.cat-filtros button{flex:1;padding:7px 6px}.cat-busca{min-width:0;width:100%}}
+@media(prefers-reduced-motion:reduce){.cat-card{animation:none;transition:none}.cat-run i{animation:none}}
 /* Funcionários — calendário de trabalho + horas do dia */
 .fcal-tit{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:4px 0 12px;font-size:13px;color:#8a95a8;text-transform:uppercase;letter-spacing:.12em}
 .fcal-leg{display:flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.04em;text-transform:none;color:#6b7788}
@@ -9127,39 +9161,89 @@ function handleMetasInput(key,robo,campo,valor){
 function _catCliKey(v){
   return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
 }
+// Campos da ficha técnica — contam para "ficha completa"
+const _CAT_CAMPOS = ['tempo_peca','meta_hora','pares_gabarito','corrente','pre_pressao','tempo_solda','pontos_solda','tipo_eletrodo','turno','operador'];
+let _catFiltro = 'todas';
+function _catTem(v){ const t=String(v==null?'':v).trim(); return t!==''&&t!=='0'&&t!=='—'; }
+// Só formata para mostrar ("35S" → "35 s", "2,80ka" → "2,80 kA", "COBRE DURO" → "Cobre Duro"); o cadastro não muda
+function _catFmt(campo, v){
+  const t = String(v==null?'':v).trim().replace(/\s+/g,' ');
+  if(campo==='tempo_peca'||campo==='tempo_solda') return t.replace(/^([0-9]+(?:[.,][0-9]+)?) ?s$/i,'$1 s');
+  if(campo==='corrente') return t.replace(/^([0-9]+(?:[.,][0-9]+)?) ?ka$/i,'$1 kA');
+  if(campo==='pontos_solda'){ const n=_pecaPontos({pontos_solda:t}); return n?String(n):t; }
+  if(campo==='turno') return t.replace(/ (as|às|a|ate|até) /i,' – ');
+  if(campo==='tipo_eletrodo'||campo==='operador') return t.toLowerCase().replace(/(^|[ \/-])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase());
+  return t;
+}
+// Código da peça → robôs que estão com ela agora (campo "Código da peça" da tela do robô)
+function _catRobosDaPeca(){
+  const m = {};
+  Object.keys(celulas).filter(k=>getCellTipo(k)==='robo').sort().forEach(k=>{
+    const cp = _catCliKey(celulas[k].codigo_peca);
+    if(!cp||cp==='—') return;
+    (m[cp]=m[cp]||[]).push(k);
+  });
+  return m;
+}
+function _catSetFiltro(f){
+  _catFiltro = f;
+  _filtrarCatalogo();
+}
 function _filtrarCatalogo(){
   if(!selected||getCellTipo(selected)!=='catalogo_pecas') return;
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
   const busca = (c._busca||'').toLowerCase();
+  const robMap = _catRobosDaPeca();
+  const nCampos = p => _CAT_CAMPOS.filter(f=>_catTem(p[f])).length;
   const lista = Object.entries(pecas).sort((a,b)=>{
     const ca=_catCliKey(a[1].cliente), cb=_catCliKey(b[1].cliente);
     if(ca<cb)return -1; if(ca>cb)return 1;
     return a[0].localeCompare(b[0],'pt',{numeric:true});
   });
+
+  // resumo do topo (sempre do catálogo inteiro)
+  const clientes = new Set(lista.map(([,p])=>_catCliKey(p.cliente)));
+  const nRun = lista.filter(([cod])=>robMap[_catCliKey(cod)]).length;
+  const nOk = lista.filter(([,p])=>nCampos(p)===_CAT_CAMPOS.length).length;
+  const _st = (id,v)=>{ const el=document.getElementById(id); if(el && el.textContent!==String(v)) el.textContent=v; };
+  _st('catStPecas', lista.length);
+  _st('catStCli', clientes.size);
+  _st('catStRun', nRun);
+  _st('catStFicha', nOk+'/'+lista.length);
+  document.querySelectorAll('.cat-filtros button').forEach(b=>b.classList.toggle('on', b.dataset.f===_catFiltro));
+
   const buscaK = _catCliKey(busca);
-  const filtradas = busca ? lista.filter(([cod,p])=>
-    _catCliKey(cod).includes(buscaK)||_catCliKey(p.cliente).includes(buscaK)
+  let filtradas = busca ? lista.filter(([cod,p])=>
+    [cod,p.cliente,p.nome,p.operador,p.tipo_eletrodo,...(robMap[_catCliKey(cod)]||[])].some(v=>_catCliKey(v).includes(buscaK))
   ) : lista;
+  if(_catFiltro==='producao') filtradas = filtradas.filter(([cod])=>robMap[_catCliKey(cod)]);
+  else if(_catFiltro==='incompleta') filtradas = filtradas.filter(([,p])=>nCampos(p)<_CAT_CAMPOS.length);
   const grid = document.getElementById("catalogoGrid");
   const counter = document.getElementById("catalogoCounter");
-  if(counter) counter.textContent = `${filtradas.length} peça${filtradas.length!==1?'s':''} cadastrada${filtradas.length!==1?'s':''}`;
+  if(counter) counter.textContent = `${filtradas.length} peça${filtradas.length!==1?'s':''}${filtradas.length!==lista.length?' de '+lista.length:' cadastrada'+(filtradas.length!==1?'s':'')}`;
   if(!grid) return;
 
   // Só troca o HTML se algo mudou de verdade — senão a tela pisca a cada polling (3s)
-  const sig = JSON.stringify([isAdmin, busca, filtradas.map(([cod,p])=>[cod,_catCliKey(p.cliente),p.tempo_peca,p.pares_gabarito,p.meta_hora,p.pontos_solda,!!p.img])]);
+  const sig = JSON.stringify([isAdmin, busca, _catFiltro, filtradas.map(([cod,p])=>[cod,p.nome,p.cliente,..._CAT_CAMPOS.map(f=>p[f]),!!p.img,robMap[_catCliKey(cod)]||0])]);
   if(grid.dataset.sig === sig) return;
   grid.dataset.sig = sig;
 
   if(filtradas.length===0){
-    grid.innerHTML=`<div style="text-align:center;color:#2a3040;padding:40px;font-size:13px">${busca?`Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`:'Nenhuma peça cadastrada ainda.'}</div>`;
+    const msg = busca ? `Nenhuma peça encontrada para "<b style="color:#ffb300">${esc(busca)}</b>"`
+      : _catFiltro==='producao' ? 'Nenhuma peça do catálogo está rodando nos robôs agora.'
+      : _catFiltro==='incompleta' ? 'Todas as fichas estão completas ✓'
+      : 'Nenhuma peça cadastrada ainda.';
+    grid.innerHTML=`<div style="text-align:center;color:#4a5568;padding:40px;font-size:13px">${msg}</div>`;
     return;
   }
 
   // conta por cliente e guarda a grafia real pra mostrar no titulo (PRACA -> Praça)
   const _porCli = {}, _rotCli = {};
   filtradas.forEach(([,p])=>{ const k=_catCliKey(p.cliente); _porCli[k]=(_porCli[k]||0)+1; if(!_rotCli[k]) _rotCli[k]=(p.cliente||"").trim(); });
+  const val = (p,f) => _catTem(p[f]) ? esc(_catFmt(f,p[f])) : '—';
+  const spec = (p,rot,f) => `<div class="cat-spec"><dt>${rot}</dt><dd class="${_catTem(p[f])?'':'vazio'}" title="${_catTem(p[f])?esc(String(p[f]).trim()):'Não informado'}">${val(p,f)}</dd></div>`;
   let html='', prevCliente=null;
   filtradas.forEach(([cod,p])=>{
     const curCliente=_catCliKey(p.cliente);
@@ -9168,23 +9252,48 @@ function _filtrarCatalogo(){
       html+=`<div class="cat-cliente">${esc(_rotCli[curCliente]||'Sem cliente')}<span>${_porCli[curCliente]}</span></div><div class="cat-grid">`;
       prevCliente=curCliente;
     }
-    html+=`<div class="cat-card" onclick="${isAdmin?`abrirModalEditarPeca('${esc(cod)}')`:''}" ${isAdmin?'title="Editar peça"':'style="cursor:default"'}>
-      ${p.img?`<div class="cat-foto"><img src="${p.img}" alt="${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
-      <div class="cat-body">
-        <div class="cat-cod">${esc(cod)}</div>
-        ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
-        <div class="cat-chips">
-          ${p.tempo_peca?`<span class="cat-chip verde">⏱ ${esc(p.tempo_peca)}</span>`:''}
-          ${p.pares_gabarito?`<span class="cat-chip roxo">${esc(p.pares_gabarito)} par${String(p.pares_gabarito).trim()==='1'?'':'es'}</span>`:''}
-          ${p.meta_hora?`<span class="cat-chip verde">🎯 ${esc(String(p.meta_hora))}/h</span>`:''}
-          ${p.pontos_solda?`<span class="cat-chip cinza">● ${esc(/^\d+$/.test(String(p.pontos_solda).trim())?String(p.pontos_solda).trim()+' pts':String(p.pontos_solda))}</span>`:''}
+    const rob = robMap[_catCliKey(cod)]||[];
+    const n = nCampos(p), tot = _CAT_CAMPOS.length;
+    const corF = n===tot ? '#00e87a' : n>=6 ? '#ffb300' : '#ff4d4d';
+    const codJs = esc(cod).replace(/'/g,"\\'");
+    html+=`<article class="cat-card${rob.length?' rodando':''}" ${isAdmin?`onclick="abrirModalEditarPeca('${codJs}')" tabindex="0" onkeydown="if(event.key==='Enter'){abrirModalEditarPeca('${codJs}')}" title="Editar peça"`:'style="cursor:default"'}>
+      ${p.img?`<div class="cat-foto"><img src="${p.img}" alt="Foto da peça ${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
+      <div class="cat-head">
+        <div style="min-width:0">
+          <div class="cat-cod">${esc(cod)}</div>
+          ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="cat-nome">${esc(p.nome)}</div>`:''}
         </div>
+        ${rob.length?`<span class="cat-run" title="Rodando agora no robô ${rob.join(', ')}"><i></i>${rob.length>3?rob.length+' ROBÔS':(rob.length>1?'ROBÔS ':'ROBÔ ')+rob.join(' · ')}</span>`:''}
       </div>
-      ${isAdmin?`<div class="cat-acts">
-        <button class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="event.stopPropagation();abrirModalEditarPeca('${esc(cod)}')">✏ Editar</button>
-        <button class="btn btn-red" style="padding:4px 9px;font-size:10px" onclick="event.stopPropagation();excluirPeca('${esc(cod)}')">🗑</button>
-      </div>`:''}
-    </div>`;
+      <div class="cat-kpis">
+        <div class="cat-kpi"><span>Ciclo</span><b class="${_catTem(p.tempo_peca)?'':'vazio'}">${val(p,'tempo_peca')}</b></div>
+        <div class="cat-kpi"><span>Meta/h</span><b class="${_catTem(p.meta_hora)?'verde':'vazio'}">${val(p,'meta_hora')}</b></div>
+        <div class="cat-kpi"><span>Pares gab.</span><b class="${_catTem(p.pares_gabarito)?'':'vazio'}">${val(p,'pares_gabarito')}</b></div>
+      </div>
+      <div class="cat-sec">Parâmetros de solda</div>
+      <dl class="cat-specs">
+        ${spec(p,'Corrente','corrente')}
+        ${spec(p,'Pré-pressão','pre_pressao')}
+        ${spec(p,'Tempo de solda','tempo_solda')}
+        ${spec(p,'Pontos de solda','pontos_solda')}
+        ${spec(p,'Eletrodo','tipo_eletrodo')}
+      </dl>
+      <div class="cat-sec">Operação</div>
+      <dl class="cat-specs">
+        ${spec(p,'Turno','turno')}
+        ${spec(p,'Responsável','operador')}
+      </dl>
+      <div class="cat-rodape">
+        <div class="cat-ficha" title="${n} de ${tot} campos da ficha preenchidos">
+          <span>Ficha técnica<b style="color:${corF}">${n}/${tot}</b></span>
+          <div class="trilho"><i style="width:${Math.round(n/tot*100)}%;background:${corF}"></i></div>
+        </div>
+        ${isAdmin?`<div class="cat-acts">
+          <button type="button" class="btn btn-gray" style="padding:4px 10px;font-size:10px" onclick="event.stopPropagation();abrirModalEditarPeca('${codJs}')">✏ Editar</button>
+          <button type="button" class="btn btn-red" style="padding:4px 9px;font-size:10px" onclick="event.stopPropagation();excluirPeca('${codJs}')" title="Excluir peça">🗑</button>
+        </div>`:''}
+      </div>
+    </article>`;
   });
   if(prevCliente!==null) html+='</div>';
   grid.innerHTML=html;
@@ -15144,23 +15253,36 @@ function renderCatalogoPecas(){
         <div style="font-size:11px;color:#4a5568;margin-top:2px" id="catalogoCounter">${total} peça${total!==1?'s':''} cadastrada${total!==1?'s':''}</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        ${isAdmin?`<button class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
-        ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
+        ${isAdmin?`<button type="button" class="btn btn-gray" style="background:#00e87a20;border:1px solid #00e87a40;color:#00e87a;padding:5px 12px;font-size:11px" onclick="abrirModalNovaPeca()">+ Nova Peça</button>`:''}
+        ${isAdmin?`<button type="button" class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:''}
       </div>
     </div>
 
-    <div style="margin-bottom:16px">
-      <input value="${esc(busca)}" placeholder="🔍 Buscar por código ou cliente..."
-        style="width:100%;background:#080b0f;border:1px solid #1e2530;border-radius:8px;padding:9px 14px;color:#d8dde6;font-family:'Courier New',monospace;font-size:13px;box-sizing:border-box;outline:none"
-        oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()"
-        id="buscaCatalogo"
-        onfocus="this.style.borderColor='#00e87a40'" onblur="this.style.borderColor='#1e2530'">
+    <div class="cat-resumo">
+      <div class="cat-stat"><b id="catStPecas">—</b><span>Peças</span></div>
+      <div class="cat-stat"><b id="catStCli">—</b><span>Clientes</span></div>
+      <div class="cat-stat verde"><b id="catStRun">—</b><span>Em produção agora</span></div>
+      <div class="cat-stat"><b id="catStFicha">—</b><span>Fichas completas</span></div>
     </div>
 
-    <div id="catalogoGrid"></div>
+    <div class="cat-barra">
+      <input value="${esc(busca)}" placeholder="🔍 Buscar por código, cliente, responsável, robô..."
+        class="cat-busca" id="buscaCatalogo"
+        oninput="celulas['${selected}']._busca=this.value;_filtrarCatalogo()">
+      <div class="cat-filtros" role="group" aria-label="Filtrar peças">
+        <button type="button" data-f="todas" onclick="_catSetFiltro('todas')">Todas</button>
+        <button type="button" data-f="producao" onclick="_catSetFiltro('producao')">Em produção</button>
+        <button type="button" data-f="incompleta" onclick="_catSetFiltro('incompleta')">Ficha incompleta</button>
+      </div>
+    </div>
+
+    <div id="catalogoGrid" class="entrada"></div>
   </div>`;
-  document.getElementById("catalogoGrid").dataset.casca = casca;
+  const grid = document.getElementById("catalogoGrid");
+  grid.dataset.casca = casca;
   _filtrarCatalogo();
+  // a animação de entrada dos cards só roda quando a aba abre, não a cada busca/polling
+  setTimeout(()=>grid.classList.remove("entrada"), 600);
 }
 
 // ═══════════ MAPA DOS ROBÔS ═══════════
