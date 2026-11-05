@@ -4395,6 +4395,8 @@ async function loadFromAPI(){
   // Debounce: não recarregar se houve ação do usuário nos últimos 2s, OU se há input com foco
   const agora = Date.now();
   if(agora - lastUserAction < 2000) return;
+  // Tem produção digitada ainda não gravada: não traz o banco por cima (senão o número some da tela)
+  if(_temGravacaoPendente()) return;
 
   // Se há input com foco, SEMPRE marca lastUserAction pra manter debounce ativo
   const active=document.activeElement;
@@ -4479,7 +4481,41 @@ async function loadFromAPI(){
 }
 
 let _tamServidor = 0;   // tamanho do conteúdo que veio do banco (trava contra gravar dados incompletos)
+// Fila de gravação (05/11/2026): o banco tem limite de 3 s por comando e às vezes fica lento.
+// Antes, duas gravações juntas (hora + equipe) disputavam a mesma linha e estouravam o tempo → "Erro ao salvar".
+// Agora sai uma por vez, sempre com os dados mais novos; se falhar, tenta de novo sozinho.
+// Enquanto houver gravação pendente, a leitura automática (loadFromAPI) não traz o banco por cima — senão
+// a produção digitada sumia da tela.
+var _saveEmVoo = false, _saveDados = null, _saveSeq = 0, _saveFalhas = 0, _saveRetryT = null; // var: o loadFromAPI pode rodar antes desta linha
+function _temGravacaoPendente(){ return _saveEmVoo || _saveDados !== null; }
 async function saveToAPI(data){
+  _saveDados = data; _saveSeq++;          // sempre grava a versão mais nova
+  if(_saveEmVoo) return;                  // a gravação em andamento manda esta logo em seguida
+  clearTimeout(_saveRetryT); _saveRetryT = null;
+  _saveEmVoo = true;
+  try{
+    while(_saveDados !== null){
+      const seq = _saveSeq;
+      const r = await _saveToAPIUmaVez(_saveDados);
+      if(r === 'falhou'){
+        // banco lento/fora: mantém os dados marcados como pendentes e tenta de novo (2 s, 4 s, 8 s... até 30 s)
+        _saveFalhas++;
+        if(_saveFalhas === 1) showToast("Banco lento — salvando de novo…", true);
+        if(_saveFalhas === 5) showToast("⚠ Ainda não salvou. Não feche a página — o sistema continua tentando.", true);
+        const espera = Math.min(30000, 1000 * Math.pow(2, _saveFalhas));
+        _saveRetryT = setTimeout(()=>{ _saveRetryT = null; if(_saveDados !== null) saveToAPI(_saveDados); }, espera);
+        return;
+      }
+      if(_saveFalhas > 0 && r === 'ok') showToast("Salvo ✓ (depois de tentar de novo)");
+      _saveFalhas = 0;
+      if(_saveSeq === seq) _saveDados = null; // nada novo chegou enquanto gravava
+    }
+  } finally { _saveEmVoo = false; }
+}
+// fechar a página com produção ainda não gravada pede confirmação
+window.addEventListener('beforeunload', e=>{ if(_temGravacaoPendente()){ e.preventDefault(); e.returnValue=''; } });
+// Uma tentativa de gravação. Devolve 'ok', 'falhou' (vale tentar de novo) ou 'bloqueado' (não adianta repetir).
+async function _saveToAPIUmaVez(data){
   try{
     // Anti-conflito: SÓ ativa quando realmente teve queda de internet detectada
     // (não pelo tempo de sync — polling pode estar pausado por debounce do usuário)
@@ -4511,12 +4547,16 @@ async function saveToAPI(data){
     const _tamNovo = JSON.stringify(semImg).length;
     if(_tamServidor > 200000 && _tamNovo < _tamServidor/2){
       showToast("⚠ Gravação bloqueada: os dados estavam incompletos. Recarregando…",true);
-      lastUserAction = 0; loadFromAPI();
-      return false;
+      _saveDados = null; lastUserAction = 0; loadFromAPI();
+      return 'bloqueado';
     }
     // Salva dados
-    const _rs = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()})});
-    if(!_rs.ok){ showToast("Erro ao salvar — o banco recusou ("+_rs.status+")",true); return false; }
+    const _rs = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()}),signal:AbortSignal.timeout(25000)});
+    if(!_rs.ok){
+      // 500/503/504 = banco demorou (tempo esgotado) ou caiu: tenta de novo. Outros = recusa de verdade (ex.: trava de encolher)
+      if(_rs.status>=500 || _rs.status===408 || _rs.status===429) return 'falhou';
+      showToast("Erro ao salvar — o banco recusou ("+_rs.status+")",true); return 'bloqueado';
+    }
     _tamServidor = _tamNovo;
     // Salva imagens preservando _gabaritagem
     if(Object.keys(imgs).length>0){
@@ -4533,7 +4573,8 @@ async function saveToAPI(data){
     const now=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     document.getElementById("savedLabel").textContent="salvo "+now;
     showToast("Salvo ✓");
-  }catch(e){showToast("Erro ao salvar",true);}
+    return 'ok';
+  }catch(e){ return 'falhou'; } // sem internet / tempo esgotado: a fila tenta de novo
 }
 
 // ──── Gerenciamento de Lembretes WhatsApp ────
