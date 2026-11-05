@@ -4346,12 +4346,19 @@ function parseCelVal(raw) {
   return {num:parseInt(s)||0, tipo:'normal'};
 }
 
+// Data escolhida na Meta Diária: é de CADA APARELHO (05/11/2026).
+// Antes ficava gravada no banco (metas_dia/mes/ano): o último que salvava mudava a data de todo mundo,
+// e a produção de hoje ia parar no dia de ontem. Escolha feita em outro dia volta sozinha para hoje.
+const _metasSelLocal = {};
+function _metasHojeTxt(){ const h=new Date(); return h.getFullYear()+"_"+h.getMonth()+"_"+h.getDate(); }
+function _metasSel(key){
+  const s=_metasSelLocal[key];
+  if(s && s.em===_metasHojeTxt()) return s;
+  const h=new Date(); return {ano:h.getFullYear(), mes:h.getMonth(), dia:h.getDate()};
+}
 function getMetasChave(key) {
-  const c=celulas[key];
-  const ano=c.metas_ano||new Date().getFullYear();
-  const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
-  const dia=c.metas_dia||new Date().getDate();
-  return `${ano}_${mes}_${dia}`;
+  const s=_metasSel(key);
+  return `${s.ano}_${s.mes}_${s.dia}`;
 }
 
 function campoH(h){ return 'h'+h.replace(':',''); }
@@ -4446,6 +4453,7 @@ async function loadFromAPI(){
       _tamServidor = JSON.stringify(d[0].conteudo).length;
       const anterior=JSON.stringify(celulas);
       const novo=JSON.stringify(d[0].conteudo);
+      _baseSrvTxt = novo; _ficouOculto = false; // última versão do banco que esta tela conhece
       if(anterior&&anterior!=='{}'&&novo!==anterior){
         // badge removido — não exibe mais o alerta piscando
       }
@@ -4481,6 +4489,41 @@ async function loadFromAPI(){
 }
 
 let _tamServidor = 0;   // tamanho do conteúdo que veio do banco (trava contra gravar dados incompletos)
+// Tela velha (05/11/2026): um celular bloqueado desde ontem acordou, a pessoa digitou direto e o site gravou
+// a cópia velha inteira por cima — o dia de hoje sumiu. Agora, se a cópia desta tela pode estar velha,
+// a gravação busca o banco e aplica só o que ESTA tela mudou desde a última leitura (_mesclar3).
+var _baseSrvTxt = "", _ficouOculto = false;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){ _ficouOculto = true; return; }
+  lastUserAction = 0; loadFromAPI();   // voltou para a tela: atualiza na hora
+  _appChecaVersao();
+});
+// Aba esquecida aberta por dias fica com o código velho: confere se saiu versão nova (a cada 10 min e ao
+// voltar para a tela) e recarrega só quando é seguro — sem gravação pendente e sem ninguém digitando.
+let _appVerUlt = 0;
+function _appChecaVersao(){
+  if(Date.now() - _appVerUlt < 120000) return; _appVerUlt = Date.now();
+  const a = document.activeElement;
+  if(_temGravacaoPendente() || (a && ['INPUT','TEXTAREA','SELECT'].includes(a.tagName))) return;
+  if(typeof _dashChecaVersao === 'function') _dashChecaVersao();
+}
+setInterval(_appChecaVersao, 10*60*1000);
+// base = como estava no banco · local = como está nesta tela · srv = como está no banco agora
+function _mesclar3(base, local, srv){
+  if(local === base) return srv;
+  const obj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  if(!obj(local) || !obj(base)) return JSON.stringify(local) === JSON.stringify(base) ? srv : local;
+  if(JSON.stringify(local) === JSON.stringify(base)) return srv;          // esta tela não mexeu aqui
+  const tem = (o,k) => Object.prototype.hasOwnProperty.call(o,k);
+  const out = obj(srv) ? Object.assign({}, srv) : {};
+  new Set([...Object.keys(base), ...Object.keys(local)]).forEach(k=>{
+    if(!tem(local,k)){ delete out[k]; return; }                           // apagado nesta tela
+    if(!tem(base,k)){ out[k] = local[k]; return; }                        // criado nesta tela
+    const r = _mesclar3(base[k], local[k], out[k]);
+    if(r === undefined) delete out[k]; else out[k] = r;
+  });
+  return out;
+}
 // Fila de gravação (05/11/2026): o banco tem limite de 3 s por comando e às vezes fica lento.
 // Antes, duas gravações juntas (hora + equipe) disputavam a mesma linha e estouravam o tempo → "Erro ao salvar".
 // Agora sai uma por vez, sempre com os dados mais novos; se falhar, tenta de novo sozinho.
@@ -4542,22 +4585,42 @@ async function _saveToAPIUmaVez(data){
     const semImg = JSON.parse(JSON.stringify(data));
     const imgs = {};
     Object.keys(semImg).forEach(k=>{ if(semImg[k]&&semImg[k].img_peca){imgs[k]=semImg[k].img_peca;semImg[k].img_peca="";} });
+    // a data escolhida na Meta Diária é de cada aparelho: nunca vai para o banco
+    Object.keys(semImg).forEach(k=>{ const c=semImg[k]; if(c && typeof c==='object' && c.metas_dias){ delete c.metas_dia; delete c.metas_mes; delete c.metas_ano; } });
+    // Cópia possivelmente velha (tela ficou escondida ou sem ler o banco há mais de 8 s):
+    // busca o banco e manda só as mudanças desta tela, sem apagar o que os outros gravaram.
+    let enviar = semImg, mesclou = false;
+    if(_baseSrvTxt && (_ficouOculto || Date.now() - lastServerSync > 8000)){
+      const rf = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main&select=conteudo",{headers:HEADERS_SB, signal:AbortSignal.timeout(12000)});
+      if(!rf.ok) return 'falhou';
+      const df = await rf.json();
+      if(!(Array.isArray(df) && df[0] && df[0].conteudo && Object.keys(df[0].conteudo).length)) return 'falhou';
+      enviar = _mesclar3(JSON.parse(_baseSrvTxt), semImg, df[0].conteudo);
+      mesclou = true;
+    }
     // Trava: nunca grava se os dados ficariam menos da metade do que veio do banco
     // (mesma regra do gatilho trg_trava_conteudo_encolher no Supabase)
-    const _tamNovo = JSON.stringify(semImg).length;
+    const _tamNovo = JSON.stringify(enviar).length;
     if(_tamServidor > 200000 && _tamNovo < _tamServidor/2){
       showToast("⚠ Gravação bloqueada: os dados estavam incompletos. Recarregando…",true);
       _saveDados = null; lastUserAction = 0; loadFromAPI();
       return 'bloqueado';
     }
     // Salva dados
-    const _rs = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:semImg,atualizado_em:new Date().toISOString()}),signal:AbortSignal.timeout(25000)});
+    const _rs = await fetch(SUPABASE_URL+"/rest/v1/dados?id=eq.main",{method:"PATCH",headers:HEADERS_SB,body:JSON.stringify({conteudo:enviar,atualizado_em:new Date().toISOString()}),signal:AbortSignal.timeout(25000)});
     if(!_rs.ok){
       // 500/503/504 = banco demorou (tempo esgotado) ou caiu: tenta de novo. Outros = recusa de verdade (ex.: trava de encolher)
       if(_rs.status>=500 || _rs.status===408 || _rs.status===429) return 'falhou';
       showToast("Erro ao salvar — o banco recusou ("+_rs.status+")",true); return 'bloqueado';
     }
     _tamServidor = _tamNovo;
+    if(mesclou){
+      // a tela ainda está com a cópia velha: puxa o banco já (a base antiga continua valendo até lá,
+      // então uma gravação no meio do caminho mescla de novo, sem estrago)
+      setTimeout(()=>{ lastUserAction = 0; loadFromAPI(); }, 300);
+    } else {
+      _baseSrvTxt = JSON.stringify(enviar); // o banco agora está igual a esta tela
+    }
     // Salva imagens preservando _gabaritagem
     if(Object.keys(imgs).length>0){
       try{
@@ -4832,9 +4895,7 @@ function aplicarCor(inp,rawVal,meta,isCafe,hora,chave){
 
 function syncMetasToProducao(metasKey){
   const mc=celulas[metasKey];
-  const ano=mc.metas_ano||new Date().getFullYear();
-  const mes=mc.metas_mes!==undefined?mc.metas_mes:new Date().getMonth();
-  const dia=mc.metas_dia||new Date().getDate();
+  const {ano,mes,dia}=_metasSel(metasKey);
   const chave=`${ano}_${mes}_${dia}`;
   const data=(mc.metas_dias&&mc.metas_dias[chave])?mc.metas_dias[chave]:{};
   const totalGeral=ROBOS.reduce((sum,r)=>sum+[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
@@ -4932,7 +4993,10 @@ function updateMetasCell(key,robo,campo,valor){
 
 function updateMetasData(key,campo,valor){
   lastUserAction = Date.now(); // Debounce: não recarregar polling por 2s
-  celulas[key][campo]=valor;syncMetasToProducao(key);saveToAPI(celulas);renderMetasDiaria();
+  // a data escolhida fica só neste aparelho (não vai para o banco)
+  const s=Object.assign({}, _metasSel(key)); s[{metas_ano:"ano",metas_mes:"mes",metas_dia:"dia"}[campo]]=valor; s.em=_metasHojeTxt();
+  _metasSelLocal[key]=s;
+  renderMetasDiaria();
 }
 
 // Faixa de status do robô em cima do número, na planilha da Meta Diária.
@@ -5405,9 +5469,7 @@ function renderMetasDiaria(){
   const podeEditar = isAdmin || isAdminMetas;
   fixTouchScroll();
   const anoAtual=new Date().getFullYear();
-  const ano=c.metas_ano||anoAtual;
-  const mes=c.metas_mes!==undefined?c.metas_mes:new Date().getMonth();
-  const dia=c.metas_dia||new Date().getDate();
+  const {ano,mes,dia}=_metasSel(selected);
   const chave=`${ano}_${mes}_${dia}`;
   const data=(c.metas_dias&&c.metas_dias[chave])?c.metas_dias[chave]:{};
   const totalDia=ROBOS.reduce((s,r)=>s+HORAS_DIA.reduce((ss,h)=>ss+(parseCelVal(((data[r]||{})[campoH(h)])||'').num),0),0);
@@ -8847,9 +8909,7 @@ function exportarPDFDia() {
   const metasKey = Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   if (!metasKey) { showToast("Célula Metas não encontrada", true); return; }
   const mc = celulas[metasKey];
-  const ano = mc.metas_ano  || new Date().getFullYear();
-  const mes = mc.metas_mes  !== undefined ? mc.metas_mes : new Date().getMonth();
-  const dia = mc.metas_dia  || new Date().getDate();
+  const {ano,mes,dia} = _metasSel(metasKey);
   const chave = `${ano}_${mes}_${dia}`;
   const data  = (mc.metas_dias && mc.metas_dias[chave]) ? mc.metas_dias[chave] : {};
   const dataFmt = `${String(dia).padStart(2,'0')}/${String(mes+1).padStart(2,'0')}/${ano}`;
@@ -9007,9 +9067,7 @@ function exportarPDFDia() {
 
 function copiarDiaAnterior(key){
   const c = celulas[key];
-  const ano = c.metas_ano || new Date().getFullYear();
-  const mes = c.metas_mes !== undefined ? c.metas_mes : new Date().getMonth();
-  const dia = c.metas_dia || new Date().getDate();
+  const {ano,mes,dia} = _metasSel(key);
 
   // Encontra o dia anterior com dados
   let diaAnt = dia - 1;
