@@ -5155,8 +5155,20 @@ function renomearFuncionarioT(nomeAntigo){
   if(lista.some((x,j)=>j!==i && x.toLowerCase()===n.toLowerCase())){ showToast('Já existe um funcionário com esse nome',true); return; }
   lista[i]=n;
   const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
-  Object.values(md).forEach(dia=>Object.values(dia).forEach(rd=>{ if(rd&&typeof rd==='object') Object.keys(rd).forEach(k=>{ if(k.startsWith('func_')&&rd[k]===nomeAntigo) rd[k]=n; }); }));
-  saveToAPI(celulas); renderFuncionarios(); showToast('Nome atualizado ✓');
+  // troca também nos registros de quem estava presente na hora (eqp_), senão a produção continuava no nome antigo
+  const troca=arr=>Array.isArray(arr)?arr.map(x=>x===nomeAntigo?n:x):arr;
+  Object.values(md).forEach(dia=>Object.values(dia).forEach(rd=>{ if(rd&&typeof rd==='object') Object.keys(rd).forEach(k=>{
+    if(k.startsWith('func_')&&rd[k]===nomeAntigo) rd[k]=n;
+    else if(k.startsWith('eqp_')&&rd[k]&&typeof rd[k]==='object'){ rd[k].membros=troca(rd[k].membros); rd[k].presentes=troca(rd[k].presentes); }
+  }); }));
+  saveToAPI(celulas);
+  // e nas equipes (06/11/2026: NOVATA virou GREICE em Funcionários mas a equipe continuava com NOVATA)
+  if(typeof equipesData!=='undefined' && Array.isArray(equipesData.lista)){
+    let mudouEq=false;
+    equipesData.lista.forEach(eq=>{ if(Array.isArray(eq.membros)) eq.membros=eq.membros.map(m=>{ if(String(m).trim().toLowerCase()===nomeAntigo.trim().toLowerCase()){ mudouEq=true; return n; } return m; }); });
+    if(mudouEq) saveEquipes(true);
+  }
+  renderFuncionarios(); showToast('Nome atualizado ✓ (também nas equipes)');
 }
 function removerFuncionarioT(nome){
   if(!_funcPodeEditar()) return;
