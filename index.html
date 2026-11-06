@@ -11780,6 +11780,18 @@ function eqAddMembro(){
   inp.focus();
 }
 function eqRemoverMembro(i){ _eqModalMembros.splice(i,1); _eqRenderMembros(); }
+// Membro novo de equipe entra também no cadastro de funcionários (antes só com "Importar das Equipes",
+// e quem esquecia de clicar ficava fora da aba Funcionários — ex.: NOVATA em 06/11/2026)
+function _eqSyncFuncionarios(nomes){
+  try{
+    if(typeof metaApKey!=='function' || !metaApKey()) return;
+    const lista=funcT(); const existentes=new Set(lista.map(n=>String(n).trim().toLowerCase())); let add=0;
+    (nomes||[]).map(n=>String(n).trim()).filter(Boolean).forEach(n=>{
+      if(!existentes.has(n.toLowerCase())){ lista.push(n); existentes.add(n.toLowerCase()); add++; }
+    });
+    if(add){ saveToAPI(celulas); showToast(add===1?'Também cadastrado(a) em Funcionários ✓':add+' pessoas também cadastradas em Funcionários ✓'); }
+  }catch(e){}
+}
 function eqSalvarModal(){
   const nome=(document.getElementById('eqNomeInput').value||'').trim();
   const cor=document.getElementById('eqCorInput').value || _eqRandomColor();
@@ -11791,6 +11803,7 @@ function eqSalvarModal(){
     equipesData.lista.push({ id:_eqUUID(), nome, cor, membros });
   }
   saveEquipes(true);
+  _eqSyncFuncionarios(membros); // quem entrou na equipe já aparece na aba Funcionários
   eqFecharModal();
   if(selected==='__equipes') renderEquipes();
   showToast('Equipe salva ✓');
