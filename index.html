@@ -87,6 +87,27 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .badge-metas { background: #a78bfa20; border: 1px solid #a78bfa40; color: #a78bfa; }
 
 .layout { display: flex; height: calc(100vh - 52px); }
+/* ===== Zoom por aparelho (10/11/2026) =====
+   O zoom do navegador vale por endereço e a Tremps e a Cromo estão no mesmo (github.io): dar zoom numa mudava a outra.
+   Este zoom é só do site e só deste aparelho (localStorage). Vale no app e no Mapa da Produção.
+   Com zoom, 100vh também cresce — por isso a altura do layout divide pela escala. */
+#appScreen, #mapaScreen { zoom: var(--uiz, 1); }
+#appScreen .layout { height: calc(100vh / var(--uiz, 1) - 52px); }
+.zoom-wrap{position:relative;display:inline-flex}
+.zoom-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;border:1px solid #2a3442;background:#0f1318;color:#9fb0c4;cursor:pointer;font-family:'Courier New',monospace;font-size:11px;white-space:nowrap}
+.zoom-btn:hover{border-color:#3d9eff80;color:#d8dde6}
+.zoom-btn b{font-weight:700}
+.zoom-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:300;width:260px;padding:14px;border-radius:10px;border:1px solid #2a3442;background:#0f1318;box-shadow:0 18px 40px #000a}
+.zoom-pop[hidden]{display:none}
+.zp-t{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#7a8698;margin-bottom:10px}
+.zp-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.zp-row button{width:46px;height:40px;border-radius:8px;border:1px solid #3d9eff60;background:#3d9eff15;color:#3d9eff;font-size:22px;font-weight:800;cursor:pointer;line-height:1}
+.zp-row button:hover{background:#3d9eff30}
+.zp-row b{font-size:22px;color:#fff}
+.zp-auto{margin-top:10px;width:100%;padding:9px;border-radius:8px;border:1px solid #2a3442;background:transparent;color:#d8dde6;font-family:inherit;font-size:12px;cursor:pointer}
+.zp-auto.on{border-color:#00e87a80;color:#00e87a;background:#00e87a12}
+.zp-dica{margin-top:10px;font-size:10px;color:#4a5568;line-height:1.5}
+@media(max-width:600px){.zoom-btn b{display:none}.zoom-pop{position:fixed;top:60px;left:10px;right:10px;width:auto}}
 .sidebar { width: 210px; background: #0c1016; border-right: 1px solid #1b2330; overflow-y: auto; flex-shrink: 0; transition: transform 0.25s; }
 .sidebar-hdr { padding: 12px 14px; font-size: 10.5px; color: #6b7788; text-transform: uppercase; letter-spacing: 0.14em; font-weight: 700; border-bottom: 1px solid #1b2330; display: flex; justify-content: space-between; align-items: center; }
 .cell-item { padding: 12px 14px; border-bottom: 1px solid #141b24; cursor: pointer; display: flex; align-items: center; gap: 9px; border-left: 3px solid transparent; transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, padding-left var(--dur-ui) var(--ease-out); }
@@ -2257,6 +2278,15 @@ setInterval(function(){ var el=document.getElementById("lgRelogio"), t=document.
     <div style="display:flex;align-items:center;gap:8px">
       <span id="savedLabel" style="font-size:10px;color:#4a5568"></span>
       <span id="newDataBadge" style="display:none"></span>
+      <span class="zoom-wrap">
+        <button type="button" class="zoom-btn" id="zoomBtn" onclick="zoomMenu(event)" title="Tamanho da tela neste aparelho">🔍 <b id="zoomPct">100%</b></button>
+        <div class="zoom-pop" id="zoomPop" hidden>
+          <div class="zp-t">Tamanho da tela · só neste aparelho</div>
+          <div class="zp-row"><button type="button" onclick="zoomAjustar(-0.05)" aria-label="Diminuir">−</button><b id="zoomPct2">100%</b><button type="button" onclick="zoomAjustar(0.05)" aria-label="Aumentar">+</button></div>
+          <button type="button" class="zp-auto" id="zoomAutoBtn" onclick="zoomPadrao()">↺ Voltar ao padrão (100%)</button>
+          <div class="zp-dica">Atalhos: Ctrl + · Ctrl − · Ctrl + rodinha · Ctrl 0 = padrão</div>
+        </div>
+      </span>
       <span class="badge" id="modeBadge"></span>
       <button type="button" id="hdrAdmTg" class="btn btn-gray hdr-adm-tg" onclick="toggleHdrAdm(event)" title="Ações do host" aria-label="Ações do host">⋮</button>
       <div class="hdr-adm" id="hdrAdm">
@@ -4508,6 +4538,44 @@ function _appChecaVersao(){
   if(typeof _dashChecaVersao === 'function') _dashChecaVersao();
 }
 setInterval(_appChecaVersao, 10*60*1000);
+
+// ── Zoom do site por aparelho (10/11/2026) — ver CSS "Zoom por aparelho" ──
+// Fica no localStorage deste aparelho (chave própria: a Cromo está no mesmo endereço e usa outra).
+const ZOOM_KEY_T = 'tremps_zoom_aparelho';
+function _zoomValor(){ try{ const v = parseFloat(localStorage.getItem(ZOOM_KEY_T)); return (v >= 0.5 && v <= 2.5) ? v : 1; }catch(_){ return 1; } }
+function _zoomAplica(){
+  const z = _zoomValor(), v = z.toFixed(3);
+  if(document.documentElement.style.getPropertyValue('--uiz') !== v) document.documentElement.style.setProperty('--uiz', v);
+  const pct = Math.round(z*100) + '%';
+  const b = document.getElementById('zoomPct'), b2 = document.getElementById('zoomPct2'), a = document.getElementById('zoomAutoBtn');
+  if(b) b.textContent = pct; if(b2) b2.textContent = pct; if(a) a.classList.toggle('on', z === 1);
+}
+function zoomAjustar(passo){
+  let n = Math.round((_zoomValor() + passo) * 20) / 20;   // de 5 em 5%
+  n = Math.min(2.5, Math.max(0.5, n));
+  try{ if(n === 1) localStorage.removeItem(ZOOM_KEY_T); else localStorage.setItem(ZOOM_KEY_T, String(n)); }catch(_){}
+  _zoomAplica();
+}
+function zoomPadrao(){ try{ localStorage.removeItem(ZOOM_KEY_T); }catch(_){} _zoomAplica(); }
+function zoomMenu(ev){ if(ev) ev.stopPropagation(); const p = document.getElementById('zoomPop'); if(!p) return; p.hidden = !p.hidden; _zoomAplica(); }
+document.addEventListener('click', e => { const p = document.getElementById('zoomPop'); if(p && !p.hidden && !e.target.closest('.zoom-wrap')) p.hidden = true; });
+function _zoomTelaAtiva(){ const vis = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).display !== 'none'; }; return vis('appScreen') || vis('mapaScreen'); }
+// Ctrl + / Ctrl − e Ctrl + rodinha mexem no zoom DO SITE (o do navegador vazaria para a Cromo). Ctrl 0 = padrão.
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ const p = document.getElementById('zoomPop'); if(p) p.hidden = true; }
+  if(!(e.ctrlKey || e.metaKey) || e.altKey || !_zoomTelaAtiva()) return;
+  if(e.key === '+' || e.key === '=' || e.code === 'NumpadAdd'){ e.preventDefault(); zoomAjustar(0.05); }
+  else if(e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract'){ e.preventDefault(); zoomAjustar(-0.05); }
+  else if(e.key === '0' || e.code === 'Numpad0'){ zoomPadrao(); }
+});
+let _zoomRodaT = 0;
+window.addEventListener('wheel', e => {
+  if(!e.ctrlKey || !_zoomTelaAtiva()) return;
+  e.preventDefault();
+  const agora = Date.now(); if(agora - _zoomRodaT < 90) return; _zoomRodaT = agora;
+  zoomAjustar(e.deltaY < 0 ? 0.05 : -0.05);
+}, {passive:false});
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _zoomAplica); else _zoomAplica();
 // base = como estava no banco · local = como está nesta tela · srv = como está no banco agora
 function _mesclar3(base, local, srv){
   if(local === base) return srv;
