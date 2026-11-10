@@ -491,6 +491,38 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.robo-label { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:0; z-index:1; font-family:'Courier New',monospace; }
 .metas-table td.meta-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; position:sticky; left:100px; z-index:1; font-family:'Courier New',monospace; }
 .metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:175px; z-index:1; }
+/* Troca de peça no meio do dia */
+.metas-table td.troca-ini { box-shadow: inset 3px 0 0 #ffb300; background: #ffb3000a; }
+.metas-table .troca-tag { font-size: 9px; font-weight: 800; color: #ffb300; font-family: 'Courier New', monospace; letter-spacing: .02em; margin-bottom: 2px; white-space: nowrap; }
+.metas-table .troca-chip { margin-top: 3px; font-size: 10px; color: #ffb300; background: #ffb30014; border: 1px solid #ffb30055; border-radius: 6px; padding: 2px 5px; white-space: nowrap; font-family: 'Courier New', monospace; cursor: default; }
+.metas-table .troca-chip[onclick] { cursor: pointer; }
+.metas-table .troca-chip b { color: #fff; }
+.metas-table .troca-btn { margin-top: 3px; font-size: 9px; color: #8a95a8; background: transparent; border: 1px dashed #2a3040; border-radius: 6px; padding: 1px 6px; cursor: pointer; opacity: .55; font-family: 'Courier New', monospace; white-space: nowrap; }
+.metas-table tr:hover .troca-btn, .metas-table .troca-btn:focus { opacity: 1; color: #ffb300; border-color: #ffb30080; }
+.troca-ov { display: none; position: fixed; inset: 0; background: #000000cc; z-index: 10000; align-items: center; justify-content: center; padding: 16px; }
+.troca-box { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 20px; width: 100%; max-width: 520px; max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; }
+.troca-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+.troca-t { font-size: 17px; font-weight: 800; color: #fff; }
+.troca-s { font-size: 11px; color: #8a95a8; margin-top: 3px; }
+.troca-x { background: transparent; border: 1px solid #2a3040; color: #8a95a8; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; flex: none; }
+.troca-linha { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #1e2530; border-radius: 10px; margin-bottom: 6px; font-size: 13px; color: #d8dde6; background: #080b0f; }
+.troca-linha b { color: #39ff14; font-family: 'Courier New', monospace; font-size: 15px; }
+.troca-linha.nova { border-color: #ffb30055; background: #ffb3000d; }
+.troca-linha.nova b { color: #ffb300; }
+.troca-h { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #8a95a8; min-width: 112px; }
+.troca-rm { margin-left: auto; background: transparent; border: 1px solid #ff4d4d66; color: #ff4d4d; border-radius: 7px; padding: 3px 9px; font-size: 11px; cursor: pointer; }
+.troca-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.troca-f { display: flex; flex-direction: column; gap: 4px; flex: 1 1 130px; }
+.troca-f.sm { flex: 0 1 80px; }
+.troca-f label { font-size: 10px; color: #8a95a8; text-transform: uppercase; letter-spacing: .08em; }
+.troca-f input, .troca-f select { background: #080b0f; border: 1px solid #1e2530; color: #d8dde6; padding: 8px 10px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
+.troca-f input:focus, .troca-f select:focus { border-color: #ffb300; }
+.troca-prev { margin-top: 10px; font-size: 12px; color: #8a95a8; line-height: 1.5; min-height: 18px; }
+.troca-prev b { color: #ffb300; }
+.troca-bt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.troca-bt button { border-radius: 9px; padding: 9px 16px; font-weight: 800; cursor: pointer; font-size: 13px; }
+.troca-cancel { background: transparent; border: 1px solid #2a3040; color: #8a95a8; }
+.troca-ok { background: #ffb300; border: 1px solid #ffb300; color: #111; }
 .metas-table td.pontos-val { color: #39ff14; font-weight: 700; font-size: 19px; background: #04070d; min-width: 50px; font-family:'Courier New',monospace; }
 .metas-table td.sub-noite-val { font-weight: 800; font-size: 16px; background: #a78bfa08; border-left: 1px solid #a78bfa20; padding: 6px 8px; }
 .metas-table td.total-geral-val { font-weight: 900; font-size: 18px; background: #ffb30012; border-left: 2px solid #ffb30040; color: #ffb300; padding: 6px 10px; }
@@ -2528,6 +2560,50 @@ function metaTotalDia(meta, chave){
   const horas = chave ? horasDiaPara(chave) : HORAS_DIA;
   return horas.reduce((s,h) => s + metaEfetivaHora(h, meta, chave), 0);
 }
+// ===== TROCA DE PEÇA NO MEIO DO DIA (10/11/2026) =====
+// rd.trocas = [{h:'h1100', cod:'15745', meta:'60', pontos:'14'}]: da hora h (inclusive) em diante o robô está
+// nessa peça. rd.cod / rd.meta / rd.pontos continuam sendo a peça do COMEÇO do dia. Sem trocas tudo fica igual.
+function _trocasRd(rd){
+  if(!rd || !Array.isArray(rd.trocas)) return [];
+  return rd.trocas.filter(t => t && /^h[0-9]{4}$/.test(t.h)).slice().sort((a,b) => a.h < b.h ? -1 : a.h > b.h ? 1 : 0);
+}
+// a parte (peça) que vale numa hora: {cod, meta, pontos}
+function _parteRdCampo(rd, campo){ let p = rd || {}; _trocasRd(rd).forEach(t => { if(campo >= t.h) p = t; }); return p; }
+function codRdHora(rd, campo){ return String((_parteRdCampo(rd, campo).cod) || '').trim(); }
+function metaRdHora(rd, campo){ return parseInt(_parteRdCampo(rd, campo).meta) || 0; }
+// Divide a linha do dia em uma linha por peça (cada uma só com as horas dela). Sem troca devolve [rd] (o mesmo objeto).
+function _partesRd(rd){
+  const ts = _trocasRd(rd); if(!ts.length) return [rd];
+  const cortes = [{h:'', cod:rd.cod, meta:rd.meta, pontos:rd.pontos}, ...ts];
+  return cortes.map((c, i) => {
+    const fim = cortes[i+1] ? cortes[i+1].h : 'h9999', o = {};
+    Object.keys(rd).forEach(k => {
+      if(k === 'trocas') return;
+      const m = k.match(/^(?:func_|eqp_)?(h[0-9]{4})$/);
+      if(m){ if(m[1] >= c.h && m[1] < fim) o[k] = rd[k]; } else o[k] = rd[k];
+    });
+    delete o.cod; delete o.meta; delete o.pontos;
+    if(c.cod) o.cod = c.cod; if(c.meta) o.meta = c.meta; if(c.pontos) o.pontos = c.pontos;
+    return o;
+  });
+}
+// [robo, linha] de todos os robôs do dia, já divididos por peça
+function _robosPartes(dia){ return ROBOS.flatMap(r => _partesRd((dia && dia[r]) || {}).map(p => [r, p])); }
+// meta total do turno dia respeitando a troca (sem troca = metaTotalDia de sempre)
+function metaTotalDiaRd(rd, chave){
+  if(!_trocasRd(rd).length) return metaTotalDia(parseInt((rd||{}).meta) || 0, chave);
+  const horas = chave ? horasDiaPara(chave) : HORAS_DIA;
+  return horas.reduce((s,h) => s + metaEfetivaHora(h, metaRdHora(rd, campoH(h)), chave), 0);
+}
+// "15744 → 15745" (para listas e relatórios que mostram uma linha por dia)
+function _codRdTexto(rd){
+  const out = [];
+  [String((rd||{}).cod || '').trim(), ..._trocasRd(rd).map(t => String(t.cod || '').trim())].forEach(c => { if(c && out[out.length-1] !== c) out.push(c); });
+  return out.join(' → ');
+}
+// peça com que o robô terminou o dia (para "copiar dia anterior")
+function _ultimaParteRd(rd){ const ts = _trocasRd(rd); return ts.length ? ts[ts.length-1] : (rd || {}); }
+function _horaDoCampo(c){ return String(c).slice(1,3) + ':' + String(c).slice(3,5); }
 // Horário do turno dia só para a planilha de Produção (Mapa → Produção, 50 máquinas) — com 09:30 e 14:30 extras
 const MAPA_HORAS_DIA = ["08:00","09:00","09:30","10:00","11:00","12:00","13:00","14:00","14:30","15:00","16:00","17:00"];
 const HORAS_NOITE = ["18:00","19:00","21:00","22:00"];   // 20:00 = janta, não tem produção
@@ -4992,7 +5068,7 @@ function _arredMetaHora(key, robo, campo, chave, valor){
   const pv = parseCelVal(valor||''); if(pv.tipo === 'ajuste' || String(valor).includes('#') || pv.num <= 0) return valor;
   const hora = [...HORAS_DIA, ...HORAS_NOITE].find(h => campoH(h) === campo) || ''; if(!hora || HORAS_CAFE.includes(hora)) return valor;
   const rd = (((celulas[key]||{}).metas_dias||{})[chave]||{})[robo] || {};
-  const metaH = metaEfetivaHora(hora, parseInt(rd.meta) || 0, chave);
+  const metaH = metaEfetivaHora(hora, metaRdHora(rd, campo), chave);
   return (metaH > 1 && pv.num === metaH - 1) ? String(metaH) : valor;
 }
 function updateMetasCell(key,robo,campo,valor){
@@ -5014,7 +5090,7 @@ function updateMetasCell(key,robo,campo,valor){
   if(campo.startsWith('h')){
     const _compNovo = parseCelVal(valor||'').num;
     const _compDelta = _compNovo - _compAnterior;
-    const _compCod = (celulas[key].metas_dias[chave][robo].cod||'').trim();
+    const _compCod = codRdHora(celulas[key].metas_dias[chave][robo], campo); // peça daquela hora (troca no meio do dia)
     if(_compDelta!==0 && _compCod && _compCod!=='—') subtrairComponentesProducao(_compCod, _compDelta);
     // (Automação de status desligada — o status manual não é mais destravado ao lançar hora.)
   }
@@ -5052,18 +5128,158 @@ function updateMetasCell(key,robo,campo,valor){
     const horaOrigem=[...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
     const isCafe=HORAS_CAFE.includes(horaOrigem);
     const inp=document.getElementById(`inp-${robo}-${campo}`);
-    if(inp)aplicarCor(inp,valor,meta,isCafe,horaOrigem,chave);
+    if(inp)aplicarCor(inp,valor,metaRdHora(rd,campo),isCafe,horaOrigem,chave);
   }
   if(campo==='meta'){
     [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
       const c=campoH(h);const isCafe=HORAS_CAFE.includes(h);
       const inp=document.getElementById(`inp-${robo}-${c}`);
-      if(inp)aplicarCor(inp,rd[c]||'',parseInt(valor)||0,isCafe,h,chave);
+      if(inp)aplicarCor(inp,rd[c]||'',metaRdHora(rd,c),isCafe,h,chave);
     });
   }
   avaliarStatusAutomatico();
   if(typeof _eletrodoAlertaCheck==='function') _eletrodoAlertaCheck();
   if(_pecaRedesenha) renderMetasDiaria();
+}
+
+/* ===== Troca de peça no meio do dia — tela (10/11/2026) ===== */
+function _trocaCodHtml(key, robo, rd, pode, isNoite){
+  const ts = _trocasRd(rd);
+  const chips = ts.map(t => `<div class="troca-chip" title="Troca de peça: da ${_horaDoCampo(t.h)} em diante vale a peça ${esc(t.cod||'—')}${t.meta?' (meta '+esc(String(t.meta))+'/h)':''}"${pode?` onclick="abrirTrocaPeca('${key}','${robo}')"`:''}>⇄ ${_horaDoCampo(t.h)} <b>${esc(t.cod||'—')}</b>${t.meta?' · '+esc(String(t.meta))+'/h':''}</div>`).join('');
+  const btn = (pode && !isNoite && !ts.length) ? `<button type="button" class="troca-btn" title="Trocou de peça no meio do dia? Marque a partir de que hora vale a peça nova" onclick="abrirTrocaPeca('${key}','${robo}')">⇄ trocar peça</button>` : '';
+  return chips + btn;
+}
+let _trocaCtx = null;
+function _trocaLinha(){
+  if(!_trocaCtx) return null;
+  const {key, robo, chave} = _trocaCtx, c = celulas[key]; if(!c) return null;
+  if(!c.metas_dias) c.metas_dias = {};
+  if(!c.metas_dias[chave]) c.metas_dias[chave] = {};
+  if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo] = {};
+  return c.metas_dias[chave][robo];
+}
+function abrirTrocaPeca(key, robo){
+  if(!(isAdmin || isAdminMetas)) return;
+  _trocaCtx = {key, robo:String(robo), chave:getMetasChave(key)};
+  let m = document.getElementById('modalTrocaPeca');
+  if(!m){
+    m = document.createElement('div'); m.id = 'modalTrocaPeca'; m.className = 'troca-ov';
+    m.addEventListener('mousedown', e => { if(e.target === m) fecharTrocaPeca(); });
+    document.body.appendChild(m);
+  }
+  _trocaRender();
+  m.style.display = 'flex'; document.body.style.overflow = 'hidden';
+  setTimeout(() => { const i = document.getElementById('trocaCod'); if(i) i.focus(); }, 30);
+}
+function fecharTrocaPeca(){
+  const m = document.getElementById('modalTrocaPeca'); if(m) m.style.display = 'none';
+  document.body.style.overflow = ''; _trocaCtx = null;
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && _trocaCtx) fecharTrocaPeca(); });
+function _trocaRender(){
+  const m = document.getElementById('modalTrocaPeca'); const rd = _trocaLinha(); if(!m || !rd) return;
+  const {robo, chave} = _trocaCtx, ts = _trocasRd(rd), usadas = new Set(ts.map(t => t.h));
+  const horas = [...horasDiaPara(chave), ...HORAS_NOITE];
+  const p = chave.split('_').map(Number), hoje = new Date();
+  const ehHoje = p[0] === hoje.getFullYear() && p[1] === hoje.getMonth() && p[2] === hoje.getDate();
+  const cAgora = campoH(String(hoje.getHours()).padStart(2,'0') + ':00');
+  const livres = horas.slice(1).filter(h => !usadas.has(campoH(h)));
+  // sugestão: a hora de agora (hoje) ou a primeira depois da última hora lançada
+  let sug = ehHoje ? livres.find(h => campoH(h) >= cAgora) : null;
+  if(!sug){ const lanc = horas.filter(h => parseCelVal(rd[campoH(h)] || '').num > 0); const ult = lanc.length ? campoH(lanc[lanc.length-1]) : ''; sug = livres.find(h => campoH(h) > ult) || livres[0]; }
+  const opts = livres.map(h => { const v = parseCelVal(rd[campoH(h)] || '').num; return `<option value="${campoH(h)}"${h===sug?' selected':''}>${h}${v>0?'  (já tem '+v+')':''}</option>`; }).join('');
+  const dataTxt = String(p[2]).padStart(2,'0') + '/' + String(p[1]+1).padStart(2,'0') + '/' + p[0];
+  const cods = Object.keys(getPecas() || {}).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
+  m.innerHTML = `<div class="troca-box" role="dialog" aria-label="Troca de peça">
+    <div class="troca-top"><div><div class="troca-t">⇄ Troca de peça — Robô ${esc(robo)}</div>
+      <div class="troca-s">${dataTxt} · cada hora conta para a peça que estava no robô naquela hora (meta, cores, Produção por Peça e relatórios)</div></div>
+      <button type="button" class="troca-x" onclick="fecharTrocaPeca()" aria-label="Fechar">✕</button></div>
+    <div class="troca-linha"><span class="troca-h">Começo do dia</span><b>${esc(rd.cod || '—')}</b><span>${rd.meta ? esc(String(rd.meta)) + '/h' : 'sem meta'}</span></div>
+    ${ts.map(t => `<div class="troca-linha nova"><span class="troca-h">A partir das ${_horaDoCampo(t.h)}</span><b>${esc(t.cod || '—')}</b><span>${t.meta ? esc(String(t.meta)) + '/h' : 'sem meta'}${t.pontos ? ' · ' + esc(String(t.pontos)) + ' pts' : ''}</span><button type="button" class="troca-rm" onclick="removerTrocaPeca('${t.h}')">remover</button></div>`).join('')}
+    ${livres.length ? `<div class="troca-form">
+      <div class="troca-f"><label>A partir de</label><select id="trocaHora" onchange="_trocaPrev()">${opts}</select></div>
+      <div class="troca-f"><label>Peça nova (código)</label><input id="trocaCod" list="trocaCodsDL" autocomplete="off" placeholder="ex.: 15745" oninput="_trocaAutoMeta()"></div>
+      <div class="troca-f sm"><label>Meta/h</label><input id="trocaMeta" type="number" min="0"></div>
+      <div class="troca-f sm"><label>Pts</label><input id="trocaPts" type="number" min="0"></div>
+    </div>
+    <datalist id="trocaCodsDL">${cods.map(c => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+    <div id="trocaPrev" class="troca-prev"></div>
+    <div class="troca-bt"><button type="button" class="troca-cancel" onclick="fecharTrocaPeca()">Cancelar</button><button type="button" class="troca-ok" onclick="salvarTrocaPeca()">Salvar troca</button></div>`
+    : `<div class="troca-bt"><button type="button" class="troca-cancel" onclick="fecharTrocaPeca()">Fechar</button></div>`}
+  </div>`;
+  _trocaPrev();
+}
+// código digitado → meta e pontos do cadastro
+function _trocaAutoMeta(){
+  const cod = (document.getElementById('trocaCod') || {}).value || '';
+  const a = _pecaDoCodigo(cod.trim());
+  if(a){
+    const im = document.getElementById('trocaMeta'), ip = document.getElementById('trocaPts');
+    if(im && a.p.meta_hora) im.value = parseInt(a.p.meta_hora) || '';
+    const pts = _pecaPontos(a.p); if(ip && pts) ip.value = pts;
+  }
+  _trocaPrev();
+}
+// mostra quais horas já lançadas vão para a peça nova
+function _trocaPrev(){
+  const el = document.getElementById('trocaPrev'), sel = document.getElementById('trocaHora'), rd = _trocaLinha();
+  if(!el || !sel || !rd) return;
+  const h = sel.value, prox = _trocasRd(rd).find(t => t.h > h), fim = prox ? prox.h : 'h9999';
+  const todas = [...horasDiaPara(_trocaCtx.chave), ...HORAS_NOITE];
+  const horas = todas.filter(x => campoH(x) >= h && campoH(x) < fim);
+  const anteriores = todas.filter(x => campoH(x) < h), cAnt = anteriores.length ? campoH(anteriores[anteriores.length-1]) : 'h0000';
+  const lanc = horas.filter(x => parseCelVal(rd[campoH(x)] || '').num > 0);
+  const cod = ((document.getElementById('trocaCod') || {}).value || '').trim() || 'a peça nova';
+  el.innerHTML = lanc.length
+    ? `Já lançado que passa para <b>${esc(cod)}</b>: ${lanc.map(x => x + ' (' + parseCelVal(rd[campoH(x)]).num + ')').join(', ')}. As horas antes das ${_horaDoCampo(h)} continuam na peça ${esc(codRdHora(rd, cAnt) || '—')}.`
+    : `Nenhuma hora lançada a partir das ${_horaDoCampo(h)} ainda — o que for lançado daí em diante conta para <b>${esc(cod)}</b>.`;
+}
+function _trocaHorasPeca(rd){ const o = {}; Object.keys(rd).forEach(k => { if(/^h[0-9]{4}$/.test(k)) o[k] = {cod: codRdHora(rd, k), v: parseCelVal(rd[k] || '').num}; }); return o; }
+// depois de mudar a troca: componentes das horas que mudaram de peça, grava e redesenha
+function _trocaAplica(rd, antes, msg){
+  Object.entries(antes).forEach(([k, a]) => {
+    const novo = codRdHora(rd, k);
+    if(a.v > 0 && novo !== a.cod && typeof subtrairComponentesProducao === 'function'){
+      if(a.cod && a.cod !== '—') subtrairComponentesProducao(a.cod, -a.v);   // devolve na peça antiga
+      if(novo && novo !== '—') subtrairComponentesProducao(novo, a.v);      // desconta na peça nova
+    }
+  });
+  lastUserAction = Date.now();
+  saveToAPI(celulas);
+  renderMetasDiaria();
+  showToast(msg);
+}
+function salvarTrocaPeca(){
+  if(!(isAdmin || isAdminMetas)) return;
+  const rd = _trocaLinha(); if(!rd) return;
+  const h = (document.getElementById('trocaHora') || {}).value || '';
+  const codDig = ((document.getElementById('trocaCod') || {}).value || '').trim();
+  const meta = parseInt((document.getElementById('trocaMeta') || {}).value) || 0;
+  const pts = parseInt((document.getElementById('trocaPts') || {}).value) || 0;
+  if(!/^h[0-9]{4}$/.test(h)){ showToast('Escolha a hora da troca', true); return; }
+  if(!codDig){ showToast('Informe o código da peça nova', true); return; }
+  const achado = _pecaDoCodigo(codDig), cod = achado ? achado.cod : codDig;
+  if(cod === codRdHora(rd, h)){ showToast('O robô já está na peça ' + cod + ' nessa hora', true); return; }
+  const antes = _trocaHorasPeca(rd);
+  const t = {h, cod}; if(meta > 0) t.meta = String(meta); if(pts > 0) t.pontos = String(pts);
+  rd.trocas = [..._trocasRd(rd).filter(x => x.h !== h), t].sort((a,b) => a.h < b.h ? -1 : 1);
+  // hoje e é a última troca: a tela do robô passa para a peça nova
+  const ult = rd.trocas[rd.trocas.length-1];
+  if(achado && ult === t && typeof _metaSyncPecaRobo === 'function'){ try{ _metaSyncPecaRobo(_trocaCtx.robo, achado, _trocaCtx.chave); }catch(e){} }
+  const robo = _trocaCtx.robo;
+  fecharTrocaPeca();
+  _trocaAplica(rd, antes, 'Robô ' + robo + ': peça ' + cod + ' a partir das ' + _horaDoCampo(h) + (achado ? '' : ' (código fora do cadastro)') + ' ✓');
+}
+function removerTrocaPeca(h){
+  if(!(isAdmin || isAdminMetas)) return;
+  const rd = _trocaLinha(); if(!rd) return;
+  const t = _trocasRd(rd).find(x => x.h === h); if(!t) return;
+  if(!confirm('Remover a troca para a peça ' + (t.cod || '—') + ' das ' + _horaDoCampo(h) + '?\nAs horas voltam para a peça anterior.')) return;
+  const antes = _trocaHorasPeca(rd);
+  const resto = _trocasRd(rd).filter(x => x.h !== h);
+  if(resto.length) rd.trocas = resto; else delete rd.trocas;
+  _trocaRender();
+  _trocaAplica(rd, antes, 'Troca removida ✓');
 }
 
 function updateMetasData(key,campo,valor){
@@ -5120,7 +5336,7 @@ function buildTurnoTable(c,turno,chave){
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
       const isCafe=HORAS_CAFE.includes(h);
-      const metaAtual = metaEfetivaHora(h, meta, chave); // meia hora = meta/2; sexta 15:00 = cheia
+      const metaAtual = metaEfetivaHora(h, metaRdHora(rd, campo), chave); // meia hora = meta/2; sexta 15:00 = cheia; troca de peça
       let cc='';
       if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
@@ -5130,7 +5346,9 @@ function buildTurnoTable(c,turno,chave){
       // nome do funcionário embaixo do número (do apontamento por equipe ou do campo direto)
       const nomeEx=_funcHoraExibT(rd,campo); const showF=displayVal!=='';
       const funcHtml=(nomeEx&&showF)?`<div title="${esc(nomeEx)}" style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace;line-height:1.15;max-width:72px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
-      return`<td ${tdStyle}><input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
+      const trocaIni=_trocasRd(rd).find(t=>t.h===campo);
+      const trocaAttr=trocaIni?` class="troca-ini" title="Troca de peça: a partir daqui vale a peça ${esc(trocaIni.cod||'—')}${trocaIni.meta?' (meta '+esc(String(trocaIni.meta))+'/h)':''}"`:'';
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -5138,7 +5356,7 @@ function buildTurnoTable(c,turno,chave){
     return`<tr>
       ${_statusBandRoboHTML(robo)}
       <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCell('${selected}',${robo},'cod',this.value)">${_trocaCodHtml(selected,robo,rd,podeEditar,isNoite)}</td>
       ${pontosCell}
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
@@ -5264,7 +5482,7 @@ function desempenhoFuncT(ano,mes){
         const o=garante(nome);
         o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
         o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
-        const metaH=_funcMetaHoraT(h,meta,chave);
+        const metaH=_funcMetaHoraT(h,metaRdHora(rd,campo),chave);
         if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; o.pecasM+=val; o.metaSoma+=metaH; }
       });
     });
@@ -5414,8 +5632,8 @@ function desempenhoFuncDetalheT(nome,ano,mes){
         pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
         if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0,itens:[]};
         porDia[chave].pecas+=val; porDia[chave].horas+=1;
-        const metaH=_funcMetaHoraT(h,meta,chave);
-        porDia[chave].itens.push({h, robo:String(r), val, meta:metaH, cod:String(rd.cod||'').trim()});
+        const metaH=_funcMetaHoraT(h,metaRdHora(rd,campo),chave);
+        porDia[chave].itens.push({h, robo:String(r), val, meta:metaH, cod:codRdHora(rd,campo)});
         if(metaH>0){ horasMeta+=1; pecasM+=val; metaSoma+=metaH; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
       });
     });
@@ -5641,8 +5859,7 @@ function calcProducaoPorPeca(){
   if(!metasKey||!celulas[metasKey].metas_dias)return{};
   const resultado={};
   Object.entries(celulas[metasKey].metas_dias).forEach(([chave,diaData])=>{
-    ROBOS.forEach(robo=>{
-      const rd=(diaData[robo])||{};
+    _robosPartes(diaData).forEach(([robo,rd])=>{
       const cod=(rd.cod||'').trim();
       if(!cod||cod==='—'||cod==='')return;
       const totalRobo=[...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
@@ -5714,8 +5931,7 @@ function _ppmAgregar(per){
   const HORAS=[...HORAS_DIA,...HORAS_NOITE];
   Object.entries(celulas[metasKey].metas_dias).forEach(([chave,diaData])=>{
     if(!diaData || !_ppecaEmPeriodo(chave, per)) return;
-    ROBOS.forEach(robo=>{
-      const rd=diaData[robo]||{};
+    _robosPartes(diaData).forEach(([robo,rd])=>{
       const cod=(rd.cod||'').trim();
       if(!cod || cod==='—') return;
       const meta=parseInt(rd.meta)||0;
@@ -6376,7 +6592,7 @@ function renderHistoricoRobo(key) {
     const [ano, mes, dia] = chave.split('_');
     const rd = (diaData[roboNum]) || {};
     const meta = parseInt(rd.meta) || 0;
-    const cod  = rd.cod || '—';
+    const cod  = _codRdTexto(rd) || '—';
     const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const totalGeral = totalDia + totalNoite;
@@ -6384,7 +6600,7 @@ function renderHistoricoRobo(key) {
 
     registros.push({
       chave, ano:parseInt(ano), mes:parseInt(mes), dia:parseInt(dia),
-      cod, meta, totalDia, totalNoite, totalGeral
+      cod, meta, totalDia, totalNoite, totalGeral, metaDia: metaTotalDiaRd(rd, chave)
     });
   });
 
@@ -6414,13 +6630,13 @@ function renderHistoricoRobo(key) {
   const totalAcumulado = registros.reduce((s,r) => s+r.totalGeral, 0);
   const registrosComProd = registros.filter(r => r.totalGeral > 0);
   const mediaDiaria = registrosComProd.length>0 ? Math.round(totalAcumulado / registrosComProd.length) : 0;
-  const diasBateuMeta = registros.filter(r => r.meta > 0 && r.totalGeral >= metaTotalDia(r.meta, r.chave)).length;
+  const diasBateuMeta = registros.filter(r => r.metaDia > 0 && r.totalGeral >= r.metaDia).length;
   const melhorDia = registros.reduce((best, r) => r.totalGeral > best.totalGeral ? r : best, registros[0]);
 
   const linhas = registros.map(r => {
     const pct = Math.round(r.totalGeral / maxTotal * 100);
     const dataFmt = `${String(r.dia).padStart(2,'0')}/${String(r.mes+1).padStart(2,'0')}/${r.ano}`;
-    const metaTotal = metaTotalDia(r.meta, r.chave);
+    const metaTotal = r.metaDia;
     const atingiu = metaTotal > 0 && r.totalGeral >= metaTotal;
     const corTotal = atingiu ? '#00e87a' : (metaTotal > 0 ? '#ff4d4d' : '#d8dde6');
     return `<tr style="border-bottom:1px solid #1e2530">
@@ -6513,11 +6729,11 @@ function renderRelatorioAnual(){
         mesData[mes].totalGeral += total;
         mesData[mes].totalDia += totalDia;
         mesData[mes].totalNoite += totalNoite;
-        const cod = rd.cod||'';
-        if(cod && cod!=='—' && total>0){
-          if(!mesData[mes].pecas[cod]) mesData[mes].pecas[cod]=0;
-          mesData[mes].pecas[cod]+=total;
-        }
+        _partesRd(rd).forEach(pt=>{ // troca de peça no meio do dia: cada peça com as horas dela
+          const cod = pt.cod||'';
+          const tp = pt===rd ? total : [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((pt[campoH(h)])||'').num),0);
+          if(cod && cod!=='—' && tp>0) mesData[mes].pecas[cod]=(mesData[mes].pecas[cod]||0)+tp;
+        });
       });
       if(algumaProducao) mesData[mes].dias.add(chave);
     });
@@ -6721,7 +6937,7 @@ function _projTotDia(dd){
 function _projRoboProduziu(rd){ return !!rd && _projHoras().some(h => parseCelVal(rd[campoH(h)] || '').num > 0); }
 function _projMetaDia(dd, chave){
   if(!dd) return 0; let m = 0;
-  ROBOS.forEach(r => { const rd = dd[r] || dd[String(r)]; const meta = rd ? (parseInt(rd.meta) || 0) : 0; if(meta > 0 && _projRoboProduziu(rd)) m += metaTotalDia(meta, chave); });
+  ROBOS.forEach(r => { const rd = dd[r] || dd[String(r)]; if(rd && _projRoboProduziu(rd)) m += metaTotalDiaRd(rd, chave); });
   return m;
 }
 function _projData(ch){ const p = ch.split('_').map(Number); return new Date(p[0], p[1], p[2]); }
@@ -6782,7 +6998,7 @@ function _projStats(md){
       _projHoras().forEach(h => {
         const v = parseCelVal(rd[campoH(h)] || '').num; if(v <= 0) return;
         t += v; hm++; rodou = true;
-        if(meta > 0){ const m = metaEfetivaHora(h, meta, ch); if(m > 0){ metaH += m; prodMeta += v; } }
+        { const m = metaEfetivaHora(h, metaRdHora(rd, campoH(h)), ch); if(m > 0){ metaH += m; prodMeta += v; } }
       });
       if(rodou) rob++;
     });
@@ -7101,7 +7317,7 @@ function _pnDia(md, d, turnos, agora, semMeta){
       const v = parseCelVal(rd[campoH(h)] || '').num; res.porHora[h].feito += v;
       const roda = res.util && t && _pnIdx(h) >= _pnIdx(t.ini) && _pnIdx(h) <= _pnIdx(t.fim);
       if(roda && mh > 0){
-        const m = metaEfetivaHora(h, mh, ch); rr.meta += m; rr.horas++; res.porHora[h].meta += m; res.porHora[h].robos++;
+        const m = metaEfetivaHora(h, (rd.trocas ? (metaRdHora(rd, campoH(h)) || mh) : mh), ch); rr.meta += m; rr.horas++; res.porHora[h].meta += m; res.porHora[h].robos++;
         if(agora && _horaVenceu(h, agora)) rr.metaAteAgora += m;
       }
     });
@@ -7178,7 +7394,10 @@ function _prbDiaRobo(ch, dd, r){
 // Todos os dias com produção de um robô, em ordem
 function _prbDiasRobo(r){
   const md = _prbMd(), out = [];
-  Object.keys(md).forEach(ch => { if(!/^[0-9]{4}_[0-9]{1,2}_[0-9]{1,2}$/.test(ch)) return; const x = _prbDiaRobo(ch, md[ch] || {}, r); if(x) out.push(x); });
+  Object.keys(md).forEach(ch => { if(!/^[0-9]{4}_[0-9]{1,2}_[0-9]{1,2}$/.test(ch)) return;
+    const dd = md[ch] || {}, rd0 = dd[r] || dd[String(r)]; if(!rd0 || typeof rd0 !== 'object') return;
+    // troca de peça no meio do dia: cada peça vira um "dia" separado, na ordem das horas
+    _partesRd(rd0).forEach(pt => { const x = _prbDiaRobo(ch, {[r]: pt}, r); if(x) out.push(x); }); });
   return out.sort((a, b) => a.d - b.d);
 }
 // Agrupa os dias em lotes
@@ -7605,7 +7824,8 @@ function renderRelatorio(){
         const totalDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
         const totalNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
         const total = totalDia+totalNoite;
-        diasDoMes[dia].robos[robo] = {total, meta, cod, totalDia, totalNoite};
+        const partes = _partesRd(rd).map(pt=>({cod:pt.cod||'—', total: pt===rd ? total : [...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((pt[campoH(h)])||'').num),0)}));
+        diasDoMes[dia].robos[robo] = {total, meta, cod, totalDia, totalNoite, partes, metaDia: metaTotalDiaRd(rd, `${anoSel}_${mesIdx}_${dia}`)};
         diasDoMes[dia].totalGeral += total;
       });
     });
@@ -7624,7 +7844,7 @@ function renderRelatorio(){
       const r = (diasDoMes[d].robos[robo])||{};
       if(r.total>0){totalProd+=r.total;diasAtivo++;}
       if(r.meta>0){metaMedia+=r.meta;metaCount++;}
-      const metaEstimada = metaTotalDia(r.meta, `${anoSel}_${mesIdx}_${d}`);
+      const metaEstimada = r.metaDia!=null ? r.metaDia : metaTotalDia(r.meta, `${anoSel}_${mesIdx}_${d}`);
       if(metaEstimada>0&&r.total>=metaEstimada)diasBateu++;
     });
     const mediaMetaHora = metaCount>0?Math.round(metaMedia/metaCount):0;
@@ -7638,9 +7858,7 @@ function renderRelatorio(){
   diasComDados.forEach(d=>{
     ROBOS.forEach(robo=>{
       const r=(diasDoMes[d].robos[robo])||{};
-      if(!r.cod||r.cod==='—'||r.total<=0)return;
-      if(!pecas[r.cod])pecas[r.cod]=0;
-      pecas[r.cod]+=r.total;
+      (r.partes||[r]).forEach(pt=>{ if(!pt.cod||pt.cod==='—'||pt.total<=0)return; pecas[pt.cod]=(pecas[pt.cod]||0)+pt.total; });
     });
   });
   const topPecas = Object.entries(pecas).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -7891,12 +8109,12 @@ function renderRelatorio(){
           let atingiu=0, naoAtingiu=0, cod='—';
           diasMes2.forEach(([,dia])=>{
             const rd=dia[robo]||{};
-            const meta=parseInt(rd.meta)||0;
             if(rd.cod&&rd.cod!=='—') cod=rd.cod;
-            if(meta<=0) return;
+            _trocasRd(rd).forEach(t=>{ if(t.cod) cod=t.cod; });
             [...HORAS_DIA,...HORAS_NOITE].forEach(h=>{
               const v=parseCelVal((rd[campoH(h)])||'').num;
-              if(v<=0) return;
+              const meta=metaRdHora(rd,campoH(h));
+              if(v<=0||meta<=0) return;
               if(v>=meta) atingiu++; else naoAtingiu++;
             });
           });
@@ -8606,8 +8824,8 @@ function _dashRenderRobo(k){
   const dados=_dashGetDados();
   const rn=k.replace(/\D/g,'');
   const rd=dados[rn]||{};
-  const metaBase=parseInt(rd.meta)||0;
   const hora=_dashGetHoraCheia();
+  const metaBase=metaRdHora(rd, campoH(hora)); // troca de peça no meio do dia: meta da peça daquela hora
   const isCafe=HORAS_CAFE.includes(hora);
   const meta=metaEfetivaHora(hora, metaBase, _dashGetChave()); // meia hora = meta/2; sexta 15:00 = cheia
   const prod=parseCelVal((rd[campoH(hora)])||'').num;
@@ -8731,7 +8949,7 @@ function _dashRenderGeral(){
   const linhas=_dashRobos.map(k=>{
     const rn=k.replace(/\D/g,'');
     const rd=dados[rn]||{};
-    const metaBase=parseInt(rd.meta)||0;
+    const metaBase=metaRdHora(rd, campoH(horaAtual));
     const metaAtual=metaEfetivaHora(horaAtual, metaBase, _dashGetChave()); // meia hora = meta/2; sexta 15:00 = cheia
     const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
     const bateu=metaAtual>0&&prodAtual>=metaAtual;
@@ -8742,7 +8960,7 @@ function _dashRenderGeral(){
       const v=parseCelVal((rd[campoH(h)])||'').num;
       const isCafe=HORAS_CAFE.includes(h);
       const isAtual=h===horaAtual;
-      const metaH=metaEfetivaHora(h, metaBase, _dashGetChave()); // meta ajustada por hora; sexta 15:00 = cheia
+      const metaH=metaEfetivaHora(h, metaRdHora(rd, campoH(h)), _dashGetChave()); // meta ajustada por hora; sexta 15:00 = cheia; troca de peça
       const ok=!isCafe&&metaH>0&&v>=metaH;
       const fail=!isCafe&&metaH>0&&v>0&&v<metaH;
       const cor=isCafe?'#ffb300':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
@@ -8835,7 +9053,7 @@ function _dashRenderFooter(){
       ROBOS.forEach(rn=>{
         const rd=dados[rn]||{};
         const v=parseCelVal(rd[campoH(h)]||'').num;
-        const metaH=metaEfetivaHora(h, parseInt(rd.meta)||0, _dashGetChave());
+        const metaH=metaEfetivaHora(h, metaRdHora(rd, campoH(h)), _dashGetChave());
         if(v<=0||metaH<=0) return;
         metasTot++;
         if(v>=metaH) metasOk++;
@@ -9013,11 +9231,11 @@ function exportarPDFDia() {
   const linhasRobos = ROBOS.map(robo => {
     const rd = (data[robo]) || {};
     const meta = parseInt(rd.meta) || 0;
-    const cod  = rd.cod || '—';
+    const cod  = _codRdTexto(rd) || '—';
     const subDia   = HORAS_DIA.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const subNoite = HORAS_NOITE.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
     const total    = subDia + subNoite;
-    const metaEstimada = metaTotalDia(meta, chave);
+    const metaEstimada = metaTotalDiaRd(rd, chave);
     const efic = metaEstimada > 0 ? Math.round(total / metaEstimada * 100) : null;
     const corEfic = efic === null ? '#888' : efic >= 100 ? '#00b84a' : efic >= 80 ? '#ff8c00' : '#cc0000';
     if (total === 0 && !meta) return '';
@@ -9192,7 +9410,7 @@ function copiarDiaAnterior(key){
 
   // Copia só cod e meta — não copia as horas
   ROBOS.forEach(robo => {
-    const ant = dadosAnt[robo] || {};
+    const ant = _ultimaParteRd(dadosAnt[robo] || {}); // trocou de peça no meio do dia: copia a peça com que terminou
     if(ant.cod || ant.meta){
       if(!celulas[key].metas_dias[chaveAtual][robo]) celulas[key].metas_dias[chaveAtual][robo] = {};
       if(ant.cod) celulas[key].metas_dias[chaveAtual][robo].cod  = ant.cod;
@@ -9487,7 +9705,7 @@ function handleMetasInputEl(el, key, robo, campo){
   if(!c.metas_dias[chave]) c.metas_dias[chave]={};
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
   const rd = c.metas_dias[chave][robo];
-  const pontos = parseInt(rd.pontos)||0;
+  const pontos = parseInt(_parteRdCampo(rd, campo).pontos)||0; // troca de peça: pontos da peça daquela hora
   const valor = el.value;
   const numVal = parseInt(valor)||0;
   let valorFinal = valor;
@@ -9505,7 +9723,7 @@ function handleMetasInputEl(el, key, robo, campo){
   const _arr = _arredMetaHora(key, robo, campo, chave, valorFinal);
   if(_arr !== valorFinal){ valorFinal = _arr; el.value = valorFinal; }
   // Atualiza cor do input
-  const meta = parseInt(rd.meta)||0;
+  const meta = metaRdHora(rd, campo);
   const {num, tipo} = parseCelVal(valorFinal);
   const horaOrigem = [...HORAS_DIA,...HORAS_NOITE].find(h=>campoH(h)===campo)||'';
   const isCafe = HORAS_CAFE.includes(horaOrigem);
@@ -9551,7 +9769,7 @@ function handleMetasInput(key,robo,campo,valor){
   if(!c.metas_dias[chave]) c.metas_dias[chave]={};
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
   const rd = c.metas_dias[chave][robo];
-  const pontos = parseInt(rd.pontos)||0;
+  const pontos = parseInt(_parteRdCampo(rd, campo).pontos)||0; // troca de peça: pontos da peça daquela hora
   const numVal = parseInt(valor)||0;
   let valorFinal = valor;
 
@@ -9569,7 +9787,7 @@ function handleMetasInput(key,robo,campo,valor){
   const _arr = _arredMetaHora(key, robo, campo, chave, valorFinal);
   if(_arr !== valorFinal){ valorFinal = _arr; const _i = document.getElementById(`inp-${robo}-${campo}`); if(_i) _i.value = valorFinal; }
   // aplica cor correta sem rerenderizar
-  const meta = parseInt(rd.meta)||0;
+  const meta = metaRdHora(rd, campo);
   const {num, tipo} = parseCelVal(valorFinal);
   const inp = document.getElementById(`inp-${robo}-${campo}`);
   if(inp){
@@ -11105,7 +11323,7 @@ function _eqDesRecords(){
         if(Array.isArray(eq.presentes) && eq.presentes.length===0) return;
         const qtd=parseCelVal(rd[campoH(h)]||'').num;
         if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(rd.cod||'—'),qtd,meta:metaEfetivaHora(h, parseInt(rd.meta)||0, chave),eq});
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(codRdHora(rd,campoH(h))||'—'),qtd,meta:metaEfetivaHora(h, metaRdHora(rd,campoH(h)), chave),eq});
       });
     });
   });
@@ -15938,10 +16156,13 @@ function mapaRobosProducaoHoje(robo){
     if(String(raw||'').trim()!=='') horasLancadas++;
     produzido += parseCelVal(raw||'').num;
   });
-  const metaHora = parseInt(rd.meta) || parseInt((celulas[String(robo)]||{}).meta_hora) || 0;
-  const esperado = metaHora * horasLancadas;
+  const _cAgora = campoH(String(hoje.getHours()).padStart(2,'0')+':00');
+  const metaHora = metaRdHora(rd, _cAgora) || parseInt((celulas[String(robo)]||{}).meta_hora) || 0;
+  const esperado = _trocasRd(rd).length
+    ? [...HORAS_DIA, ...HORAS_NOITE].reduce((s,h)=>s+(String(rd[campoH(h)]||'').trim()!=='' ? (metaRdHora(rd, campoH(h)) || metaHora) : 0), 0)
+    : metaHora * horasLancadas;
   const pct = esperado>0 ? Math.round(produzido/esperado*100) : null;
-  return {produzido, metaHora, horasLancadas, esperado, pct, cod:rd.cod||''};
+  return {produzido, metaHora, horasLancadas, esperado, pct, cod:codRdHora(rd, _cAgora)||rd.cod||''};
 }
 
 function mapaRobosManuPendentes(robo){
@@ -20875,7 +21096,7 @@ function _relCalcular(codigoPeca, chaves){
         chaves.forEach(chave => {
           const dia = metaCel.metas_dias[chave];
           if(!dia) return;
-          Object.entries(dia).forEach(([robo, rd]) => {
+          Object.entries(dia).flatMap(([robo, rd0]) => (rd0 && typeof rd0 === 'object') ? _partesRd(rd0).map(p => [robo, p]) : [[robo, rd0]]).forEach(([robo, rd]) => {
             const rdCod = String((rd && rd.cod)||'').trim().toUpperCase();
             if(rdCod !== cod) return;
             const nomeRobo = 'Robô '+robo;
