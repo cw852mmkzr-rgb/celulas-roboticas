@@ -5145,9 +5145,8 @@ function updateMetasCell(key,robo,campo,valor){
 /* ===== Troca de peça no meio do dia — tela (10/11/2026) ===== */
 function _trocaCodHtml(key, robo, rd, pode, isNoite){
   const ts = _trocasRd(rd);
-  // usuário metas / visualizador: a linha mostra a peça do começo do dia e aqui só o aviso da troca ("⇄ 13:00 3799 · 85/h")
-  if(!pode) return ts.map(t => `<div class="troca-chip" title="Troca de peça: da ${_horaDoCampo(t.h)} em diante vale a peça ${esc(t.cod||'—')}${t.meta?' (meta '+esc(String(t.meta))+'/h)':''}">⇄ ${_horaDoCampo(t.h)} <b>${esc(t.cod||'—')}</b>${t.meta?' · '+esc(String(t.meta))+'/h':''}</div>`).join('');
-  // HOST: a linha mostra a peça atual; aqui embaixo ficam as peças de ANTES da troca (ex.: "antes das 08:00: 15744 · 55/h")
+  // a linha mostra a peça atual; aqui embaixo ficam as peças de ANTES da troca (ex.: "antes das 08:00: 15744 · 55/h").
+  // Para usuário metas / visualizador é só o aviso (sem clique); o HOST clica para mudar a troca.
   const partes = [{h:'', cod:rd.cod, meta:rd.meta}, ...ts];
   const chips = partes.slice(0, -1).map((p, i) => { const ate = _horaDoCampo(partes[i+1].h);
     return `<div class="troca-chip" title="Troca de peça às ${ate}: antes vale a peça ${esc(p.cod||'—')}${p.meta?' (meta '+esc(String(p.meta))+'/h)':''}; daí em diante vale a peça ${esc(partes[i+1].cod||'—')}"${pode?` onclick="abrirTrocaPeca('${key}','${robo}')"`:''}>⇄ antes das ${ate}: <b>${esc(p.cod||'—')}</b>${p.meta?' · '+esc(String(p.meta))+'/h':''}</div>`; }).join('');
@@ -5159,7 +5158,8 @@ function updateMetasCampoAtual(key, robo, campo, valor){
   const chave = getMetasChave(key);
   const rd = (((celulas[key]||{}).metas_dias||{})[chave]||{})[robo];
   const ts = _trocasRd(rd);
-  if(!ts.length || !isAdmin) return updateMetasCell(key, robo, campo, valor);
+  if(!ts.length) return updateMetasCell(key, robo, campo, valor);
+  if(!(isAdmin || isAdminMetas)) return;
   lastUserAction = Date.now();
   const ult = rd.trocas.find(t => t && t.h === ts[ts.length-1].h); if(!ult) return;
   const v = String(valor == null ? '' : valor).trim();
@@ -5364,9 +5364,9 @@ function buildTurnoTable(c,turno,chave){
     return`<th class="${isNoite?'col-hora-noite':'col-hora'}">${h}</th>`;
   }).join('');
   const linhas=ROBOS.map(robo=>{
-    // com troca de peça, o HOST vê (e edita) a peça MAIS RECENTE e as anteriores ficam no aviso embaixo do código.
-    // Usuário metas e visualizador continuam vendo a peça do começo do dia, só com o aviso da troca embaixo.
-    const rd=(data[robo])||{};const _ult=isAdmin?_ultimaParteRd(rd):rd;const meta=parseInt(_ult.meta)||0;const cod=_ult.cod||'';
+    // com troca de peça, a linha mostra (e edita) a peça MAIS RECENTE para todos; as anteriores ficam no aviso embaixo.
+    // Só o HOST abre a troca (botão / clique no aviso).
+    const rd=(data[robo])||{};const _ult=_ultimaParteRd(rd);const meta=parseInt(_ult.meta)||0;const cod=_ult.cod||'';
     const pontos=parseInt(_ult.pontos)||0;
     const horasCells=HORAS.map(h=>{
       const campo=campoH(h);const rawVal=rd[campo]||'';const{num,tipo}=parseCelVal(rawVal);
@@ -5390,8 +5390,8 @@ function buildTurnoTable(c,turno,chave){
     const pontosCell=isAdmin?`<td class="pontos-val"><input class="meta-inp" type="number" min="0" value="${pontos>0?pontos:''}" placeholder="pts" title="Pontos de solda da peça" style="width:44px" onchange="updateMetasCampoAtual('${selected}',${robo},'pontos',this.value)"></td>`:'';
     return`<tr>
       ${_statusBandRoboHTML(robo)}
-      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="${isAdmin?'updateMetasCampoAtual':'updateMetasCell'}('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
-      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="${isAdmin?'updateMetasCampoAtual':'updateMetasCell'}('${selected}',${robo},'cod',this.value)">${_trocaCodHtml(selected,robo,rd,isAdmin,isNoite)}</td>
+      <td class="meta-val"><input class="meta-inp" type="number" min="0" value="${meta>0?meta:''}" placeholder="—" ${ro} onchange="updateMetasCampoAtual('${selected}',${robo},'meta',this.value);renderMetasDiaria()"></td>
+      <td class="cod-val"><input class="cod-inp" type="text" value="${esc(cod)}" placeholder="—" ${ro} onchange="updateMetasCampoAtual('${selected}',${robo},'cod',this.value)">${_trocaCodHtml(selected,robo,rd,isAdmin,isNoite)}</td>
       ${pontosCell}
       ${horasCells}
       <td id="${subId}-${robo}" class="${subClass}" style="color:${subRow>0?subColor:'#4a5568'}">${subRow>0?subRow:'—'}</td>
