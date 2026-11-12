@@ -493,6 +493,12 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:175px; z-index:1; }
 /* Troca de peça no meio do dia */
 .metas-table td.troca-ini { box-shadow: inset 3px 0 0 #ffb300; background: #ffb3000a; }
+/* nome embaixo do número com a cor da hora (igual à Cromo) */
+.metas-table .fh-tag { color: #8a95a8; font-weight: 700; }
+.metas-table .hora-inp.cell-ok ~ .fh-tag { color: #00e87a; }
+.metas-table .hora-inp.cell-fail ~ .fh-tag { color: #ff6b6b; }
+.metas-table .hora-inp.cafe ~ .fh-tag { color: #ffb300; }
+.metas-table .hora-inp.cell-adj ~ .fh-tag, .metas-table .pj-wrap ~ .fh-tag { color: #c99bff; }
 .metas-table .hora-inp.cell-auto { cursor: default; }
 .metas-table .hora-inp.cell-auto-ed { cursor: pointer; }
 /* janela de ajuste do HOST na hora automática */
@@ -5640,7 +5646,8 @@ function buildTurnoTable(c,turno,chave){
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
       // nome do funcionário embaixo do número (do apontamento por equipe ou do campo direto)
       const nomeEx=_funcHoraExibT(rd,campo); const showF=displayVal!=='';
-      const funcHtml=(nomeEx&&showF)?`<div title="${esc(nomeEx)}" style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace;line-height:1.15;max-width:72px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
+      // a cor do nome acompanha a cor da hora (verde bateu, vermelho não bateu, roxo parada, amarelo café) — pelo CSS .fh-tag
+      const funcHtml=(nomeEx&&showF)?`<div class="fh-tag" title="${esc(nomeEx)}" style="font-size:10px;margin-top:4px;font-family:'Courier New',monospace;line-height:1.15;max-width:72px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
       const trocaIni=_trocasRd(rd).find(t=>t.h===campo);
       const trocaAttr=trocaIni?` class="troca-ini" title="Troca de peça: a partir daqui vale a peça ${esc(trocaIni.cod||'—')}${trocaIni.meta?' (meta '+esc(String(trocaIni.meta))+'/h)':''}"`:'';
       // contagem automática (robô mandando dados): o número vem do contador e não se digita;
@@ -10755,7 +10762,7 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       if(isCafe&&!isAjuste){bg='#ffb30018';cor='#ffb300';}
       const isAtual = parseInt(h)===horaAtual;
       const nomeEx=_funcHoraExibT(rd,campo);
-      const funcTag=(num>0&&nomeEx)?`<div title="${esc(nomeEx)}" style="font-size:9px;color:#00e87a;margin-top:3px;line-height:1.1;max-width:62px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
+      const funcTag=(num>0&&nomeEx)?`<div title="${esc(nomeEx)}" style="font-size:9px;color:${cor};margin-top:3px;line-height:1.1;max-width:62px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
       const auto = rd['auto_'+campo]==='1';  // hora contada pelo robô: não se digita; o toque abre equipe + parada justificada
       return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${(h2 => isAjuste&&num>0 ? _ajComBalaoT(h2,rd,campo,robo,selected) : h2)(podeEditar
         ?`<input class="hora-inp ${isCafe?'cafe':''}${isAjuste?' cell-adj':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${auto?`readonly onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
