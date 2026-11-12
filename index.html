@@ -495,9 +495,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.troca-ini { box-shadow: inset 3px 0 0 #ffb300; background: #ffb3000a; }
 .metas-table .hora-inp.cell-auto { cursor: default; }
 .metas-table .hora-inp.cell-auto-ed { cursor: pointer; }
-.metas-table .auto-wrap { position: relative; display: inline-block; }
-.metas-table .auto-edit { position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 1px solid #38bdf8aa; background: #0b1622; color: #7dd3fc; font-size: 10px; line-height: 16px; cursor: pointer; opacity: .75; z-index: 2; }
-.metas-table .auto-edit:hover { opacity: 1; background: #38bdf8; color: #05060d; }
 /* janela de ajuste do HOST na hora automática */
 .aja-ov { position: fixed; inset: 0; background: #000000c4; z-index: 10050; display: none; align-items: center; justify-content: center; padding: 16px; }
 .aja-ov.on { display: flex; }
@@ -507,6 +504,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .aja-atual { display: flex; justify-content: space-between; align-items: center; background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; color: #9aa6b6; }
 .aja-atual b { font-size: 20px; color: #00e87a; font-weight: 800; }
 .aja-card label { display: block; font-size: 11px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 5px; }
+.aja-2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-bottom: 12px; }
+.aja-2 label { margin-top: 0 !important; }
+.aja-card select { width: 100%; box-sizing: border-box; background: #080b0f; border: 1px solid #1e2530; color: #e5ebf3; padding: 9px 10px; border-radius: 9px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.aja-card select:focus { outline: none; border-color: #38bdf8; }
+@media (max-width: 420px) { .aja-2 { grid-template-columns: 1fr; } }
 .aja-card input { width: 100%; box-sizing: border-box; background: #080b0f; border: 1px solid #1e2530; color: #e5ebf3; padding: 10px 12px; border-radius: 9px; font: inherit; font-size: 15px; }
 .aja-card input:focus { outline: none; border-color: #38bdf8; }
 .aja-err { min-height: 18px; font-size: 12.5px; color: #fca5a5; margin-top: 10px; }
@@ -5164,13 +5166,29 @@ function _horaAutomatica(key, robo, campo, chave){
 // Ajuste do HOST numa hora automática (12/11/2026): pede a senha (conferida no servidor, função
 // tremps_ajuste_auto) e grava a diferença como "AJUSTE HOST" em producao_robos — aparece no Histórico de Metas.
 let _ajaCtx = null;
+function _ajaHorasAuto(key, chave, robo){
+  const rd = ((((celulas[key]||{}).metas_dias||{})[chave])||{})[robo] || {};
+  return [...horasDiaPara(chave), ...HORAS_NOITE].map(h => campoH(h)).filter(c => rd['auto_' + c] === '1');
+}
+// botão "✎ Ajustar produção automática" do topo da Meta Diária: escolhe robô e hora na própria janela
 function abrirAjusteAuto(key, robo, campo){
   if(!isAdmin){ showToast('Só o HOST pode alterar a produção automática', true); return; }
   const chave = getMetasChave(key);
-  const rd = ((((celulas[key]||{}).metas_dias||{})[chave])||{})[robo] || {};
+  const dia = (((celulas[key]||{}).metas_dias||{})[chave]) || {};
+  const robos = ROBOS.map(String).filter(r => _ajaHorasAuto(key, chave, r).length);
+  if(!robos.length){ showToast('Nenhuma hora automática neste dia', true); return; }
+  if(!robo || !robos.includes(String(robo))) robo = robos[0];
+  robo = String(robo);
+  const horas = _ajaHorasAuto(key, chave, robo);
+  if(!campo || !horas.includes(campo)){
+    // padrão: a hora de agora (se for hoje e for automática), senão a última hora automática do robô
+    const agora = _cntSlot(new Date()), hoje = _cntChave(_cntHojeISO()) === chave;
+    campo = (hoje && agora && horas.includes(agora)) ? agora : horas[horas.length - 1];
+  }
+  const rd = dia[robo] || {};
   const atual = parseCelVal(rd[campo] || '').num;
-  const hora = _horaDoCampo(campo), p = chave.split('_').map(Number);
-  _ajaCtx = { key, robo: String(robo), campo, chave };
+  const p = chave.split('_').map(Number);
+  _ajaCtx = { key, robo, campo, chave };
   let ov = document.getElementById('ajaOv');
   if(!ov){
     ov = document.createElement('div'); ov.id = 'ajaOv'; ov.className = 'aja-ov';
@@ -5178,16 +5196,24 @@ function abrirAjusteAuto(key, robo, campo){
     document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('on')) fecharAjusteAuto(); });
     document.body.appendChild(ov);
   }
+  // guarda o que já foi digitado ao trocar robô/hora
+  const motivoAnt = (document.getElementById('ajaMotivo') || {}).value || '', senhaAnt = (document.getElementById('ajaSenha') || {}).value || '';
+  const optRob = robos.map(r => `<option value="${r}" ${r === robo ? 'selected' : ''}>Robô ${r}</option>`).join('');
+  const optHora = horas.map(c => { const h = _horaDoCampo(c), v = parseCelVal(rd[c] || '').num; return `<option value="${c}" ${c === campo ? 'selected' : ''}>${h} (${_cntIntervalo(h, chave)}) — ${v} peça${v === 1 ? '' : 's'}</option>`; }).join('');
   ov.innerHTML = `<div class="aja-card" role="dialog" aria-modal="true" aria-labelledby="ajaTit">
-    <h3 id="ajaTit">✎ Alterar produção automática</h3>
-    <div class="aja-sub">Robô ${esc(String(robo))} · coluna ${hora} (${esc(_cntIntervalo(hora, chave))}) · ${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}/${p[0]}<br>A mudança fica registrada no Histórico de Metas como ajuste do HOST.</div>
+    <h3 id="ajaTit">✎ Ajustar produção automática</h3>
+    <div class="aja-sub">Dia ${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}/${p[0]} · a mudança fica registrada no Histórico de Metas como ajuste do HOST.</div>
+    <div class="aja-2">
+      <div><label for="ajaRobo">Robô</label><select id="ajaRobo" onchange="abrirAjusteAuto('${key}', this.value)">${optRob}</select></div>
+      <div><label for="ajaHora">Hora</label><select id="ajaHora" onchange="abrirAjusteAuto('${key}', '${robo}', this.value)">${optHora}</select></div>
+    </div>
     <div class="aja-atual"><span>Contado pelo robô</span><b>${atual.toLocaleString('pt-BR')}</b></div>
     <label for="ajaNovo">Quantidade certa da hora</label>
     <input id="ajaNovo" type="number" min="0" max="5000" inputmode="numeric" value="${atual}">
     <label for="ajaMotivo">Motivo — aparece no Histórico de Metas</label>
-    <input id="ajaMotivo" type="text" maxlength="200" placeholder="Ex.: peças refugadas, contador travou…">
+    <input id="ajaMotivo" type="text" maxlength="200" placeholder="Ex.: peças refugadas, contador travou…" value="${esc(motivoAnt)}">
     <label for="ajaSenha">Senha do HOST</label>
-    <input id="ajaSenha" type="password" autocomplete="off" inputmode="numeric">
+    <input id="ajaSenha" type="password" autocomplete="off" inputmode="numeric" value="${esc(senhaAnt)}">
     <div class="aja-err" id="ajaErr"></div>
     <div class="aja-bts"><button type="button" onclick="fecharAjusteAuto()">Cancelar</button><button type="button" class="ok" id="ajaOk" onclick="salvarAjusteAuto()">Salvar ajuste</button></div>
   </div>`;
@@ -5539,11 +5565,10 @@ function buildTurnoTable(c,turno,chave){
       // contagem automática (robô mandando dados): o número vem do contador e não se digita;
       // clicar abre o mesmo seletor de equipe/pessoa da hora manual (o nome continua sendo registrado à mão)
       const auto=rd['auto_'+campo]==='1';
-      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar quem trabalhou':''}${isAdmin?' · ✎ para o HOST alterar (pede senha)':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
+      // só o HOST altera a produção automática — pelo botão "✎ Ajustar produção automática" do topo (pede senha)
+      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar quem trabalhou':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
       const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
-      // só o HOST altera a produção automática (com senha, conferida no servidor) — o ajuste fica no Histórico de Metas
-      const cellHtml=(auto&&isAdmin)?`<div class="auto-wrap">${inpHtml}<button type="button" class="auto-edit" title="Alterar a produção automática (HOST, pede senha)" aria-label="Alterar produção automática" onclick="event.stopPropagation();abrirAjusteAuto('${selected}','${robo}','${campo}')">✎</button></div>`:inpHtml;
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${cellHtml}${funcHtml}</td>`;
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${inpHtml}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -5986,6 +6011,7 @@ function renderMetasDiaria(){
         ${podeEditar?`<button class="btn metas-apontar-desktop" style="padding:5px 14px;font-size:11px;background:linear-gradient(180deg,#00f082,#00c46a);color:#04120a;border:none;font-weight:800" onclick="metaApAbrir()">📊 Apontar Produção</button>`:""}
         ${podeEditar?(()=>{ const on=c.divisao_pontos!==false; return `<button class="btn" style="padding:5px 12px;font-size:10px;background:${on?'#00e87a20':'#ff4d4d20'};border:1px solid ${on?'#00e87a50':'#ff4d4d50'};color:${on?'#00e87a':'#ff6b6b'};font-weight:800" onclick="toggleDivisaoPontos()" title="Liga/desliga a divisão automática pela quantidade de pontos de solda">➗ Divisão pts: ${on?'ON':'OFF'}</button>`; })():""}
         <button class="btn btn-gray" style="padding:5px 12px;font-size:10px" onclick="exportarPDFDia()">🖨 Exportar PDF</button>
+        ${(isAdmin && ROBOS.some(r=>Object.keys(data[r]||{}).some(k=>/^auto_h[0-9]{4}$/.test(k))))?`<button type="button" class="btn" style="padding:5px 12px;font-size:10px;background:#38bdf81f;border:1px solid #38bdf866;color:#7dd3fc;font-weight:800" onclick="abrirAjusteAuto('${selected}')" title="Corrigir a produção de uma hora contada pelo robô (pede senha; fica no Histórico de Metas)">✎ Ajustar produção automática</button>`:""}
         ${isAdmin?`<button class="btn btn-gray" style="padding:5px 12px;font-size:10px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="copiarDiaAnterior('${selected}')">📋 Copiar dia anterior</button>`:""}
         ${isAdmin?`<button class="btn btn-red" onclick="deleteCell('${selected}')">🗑</button>`:""}
       </div>
