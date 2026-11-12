@@ -5632,7 +5632,8 @@ function buildTurnoTable(c,turno,chave){
       if(isCafe) cc='cafe';
       else if(tipo==='ajuste')cc='cell-adj';
       else if(num>0){if(metaAtual>0&&num>=metaAtual)cc='cell-ok';else if(metaAtual>0&&num<metaAtual)cc='cell-fail';else cc='cell-ok';}
-      const displayVal=rawVal!==''&&rawVal!=='0'?rawVal:'';
+      // parada justificada: a célula mostra só o número (sem o "#"); o balão 💬 em cima avisa
+      const displayVal=rawVal!==''&&rawVal!=='0'?(tipo==='ajuste'?String(num):rawVal):'';
       const tdStyle=isCafe?'style="background:#ffb30008;"':'';
       // nome do funcionário embaixo do número (do apontamento por equipe ou do campo direto)
       const nomeEx=_funcHoraExibT(rd,campo); const showF=displayVal!=='';
@@ -10333,6 +10334,8 @@ function handleMetasInput(key,robo,campo,valor){
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
   const rd = c.metas_dias[chave][robo];
   const pontos = parseInt(_parteRdCampo(rd, campo).pontos)||0; // troca de peça: pontos da peça daquela hora
+  // a célula esconde o "#": se a hora já é parada justificada, editar o número mantém a parada (ela sai pela chave da janela)
+  if(String(valor).trim()!=='' && !String(valor).includes('#') && (parseInt(valor)||0)>0 && _ehAjusteT(rd[campo])) valor = String(parseInt(valor))+'#';
   const numVal = parseInt(valor)||0;
   let valorFinal = valor;
 
@@ -11536,7 +11539,7 @@ function metaApEnviar(){
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   // Se for parada justificada, mantém o marcador # no valor salvo
-  updateMetasCell(key,robo,campo,isAjuste?String(somado)+'#':String(somado));
+  updateMetasCell(key,robo,campo,(isAjuste||_ehAjusteT(rd[campo]))?String(somado)+'#':String(somado));
   if(equipesData.vincular_metas && _metaApEquipeSel) _eqAlertaCheck(_metaApEquipeSel, _metaApHora);
   _metaApEditIdx=null;
   _metaApLog.unshift({robo, hora:_metaApHora, campo, totalDigitado, pontos, pecas:novasPecas, dividiu});
