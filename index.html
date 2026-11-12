@@ -5566,7 +5566,7 @@ function buildTurnoTable(c,turno,chave){
       // clicar abre o mesmo seletor de equipe/pessoa da hora manual (o nome continua sendo registrado à mão)
       const auto=rd['auto_'+campo]==='1';
       // só o HOST altera a produção automática — pelo botão "✎ Ajustar produção automática" do topo (pede senha)
-      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar quem trabalhou':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
+      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar a equipe e o ajuste técnico':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
       const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
       return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${inpHtml}${funcHtml}</td>`;
     }).join('');
@@ -6032,7 +6032,7 @@ function renderMetasDiaria(){
       <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
       <span><span style="color:#ffb300;font-weight:800;font-size:14px">■</span> Horário de café — meta reduzida</span>
       <span><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico na célula</span>
-      <span style="color:#4a5568;font-size:11px">← Digite <b style="color:#3d9eff">43#</b> para marcar ajuste</span>
+      <span style="color:#4a5568;font-size:11px">← Clique na hora e marque <b style="color:#3d9eff">🔧 ajuste técnico</b></span>
     </div>
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -12805,14 +12805,21 @@ function metaApToggleMembro(nome){
 let _metaEqCtx = null;    // {key, robo, campo, hora}
 let _metaEqSel = null;    // snapshot da equipe
 let _metaEqMembros = [];  // presentes marcados
+// Ajuste técnico da hora (12/11/2026): marcado aqui na janela, no lugar de digitar o número com "#".
+// Hora manual: o valor passa a terminar com "#". Hora automática: grava adj_hXXXX = '1' e o job
+// tremps_auto_metas escreve o número já com "#".
+let _metaEqAdj = false, _metaEqAdjOrig = false;
 function metaEqAbrir(key, robo, campo){
   if(!(isAdmin||isAdminMetas)) return;
-  if(!equipesData || !equipesData.vincular_metas || !equipesData.lista.length) return;
+  const _temEq = !!(equipesData && equipesData.vincular_metas && equipesData.lista.length);
   const horas=[...HORAS_DIA,...HORAS_NOITE];
   const hora=horas.find(h=>campoH(h)===campo)||campo;
-  _metaEqCtx={key,robo,campo,hora};
   const chave=getMetasChave(key);
   const rd=(celulas[key].metas_dias&&celulas[key].metas_dias[chave]&&celulas[key].metas_dias[chave][robo])||{};
+  // sem equipes ligadas, só abre na hora automática (para o ajuste técnico)
+  if(!_temEq && rd['auto_'+campo]!=='1') return;
+  _metaEqCtx={key,robo,campo,hora};
+  _metaEqAdj = _metaEqAdjOrig = (rd['adj_'+campo]==='1') || String(rd[campo]||'').trim().endsWith('#');
   const ja=rd['eqp_'+campo];
   if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
   else {
@@ -12823,7 +12830,7 @@ function metaEqAbrir(key, robo, campo){
     if(!lembrado){ lembrado=_eqUltimaDoRobo(robo, hora); }
     let eqId=lembrado?lembrado.equipeId:null;
     if(!eqId && _eqCedoAtiva() && _eqHoraCedo(hora)) eqId=EQ_CEDO_ID;   // 06/07: já vem a equipe da manhã
-    if(eqId){
+    if(eqId && _temEq){
       const eq=equipesData.lista.find(e=>e.id===eqId);
       if(eq){
         _metaEqSel={id:eq.id,cor:eq.cor,nome:(eq.nome||'').trim(),membros:(eq.membros||[]).slice()};
@@ -12855,7 +12862,8 @@ function metaEqRender(){
   } else {
     membrosHTML=`<div class="metaap-eqnomes" style="color:#5a6678;margin-top:6px">Toque numa cor (opcional)</div>`;
   }
-  document.getElementById('metaEqChips').innerHTML=`<div class="metaap-eqchips">${chips}</div>${membrosHTML}`;
+  const _temEqR = !!(equipesData && equipesData.vincular_metas && equipesData.lista.length);
+  document.getElementById('metaEqChips').innerHTML=(_temEqR?`<div class="metaap-eqchips">${chips}</div>${membrosHTML}`:'')+_metaEqAdjHtml();
 }
 function metaEqSelEquipe(id){
   if(_metaEqSel&&_metaEqSel.id===id){ _metaEqSel=null; _metaEqMembros=[]; }
@@ -12863,6 +12871,11 @@ function metaEqSelEquipe(id){
   metaEqRender();
 }
 function metaEqToggleMembro(nome){ _metaEqMembros = (_metaEqMembros[0]===nome) ? [] : [nome]; metaEqRender(); }
+function metaEqToggleAdj(){ _metaEqAdj = !_metaEqAdj; metaEqRender(); }
+function _metaEqAdjHtml(){
+  return `<div class="meq-adj${_metaEqAdj?' on':''}" role="switch" aria-checked="${_metaEqAdj}" tabindex="0" onclick="metaEqToggleAdj()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();metaEqToggleAdj()}">
+    <span class="sw"><i></i></span><span class="tx"><b>🔧 Teve ajuste técnico nesta hora</b><small>a hora fica azul (no lugar do antigo # no número)</small></span></div>`;
+}
 function metaEqSalvar(){
   if(!_metaEqCtx) return;
   const {key,robo,campo}=_metaEqCtx;
@@ -12878,10 +12891,18 @@ function metaEqSalvar(){
   } else {
     delete rd['eqp_'+campo];
   }
+  // ajuste técnico marcado/desmarcado na janela
+  let _adjMsg = '';
+  if(_metaEqAdj !== _metaEqAdjOrig){
+    const num = parseCelVal(rd[campo]||'').num, auto = rd['auto_'+campo]==='1';
+    if(auto){ if(_metaEqAdj) rd['adj_'+campo]='1'; else delete rd['adj_'+campo]; }
+    if(num>0 || auto){ rd[campo] = String(num) + (_metaEqAdj ? '#' : ''); _adjMsg = _metaEqAdj ? ' · ajuste técnico marcado' : ' · ajuste técnico removido'; }
+  }
   saveToAPI(celulas);
   const _alertaEq=_metaEqSel, _alertaHora=_metaEqCtx.hora;
   metaEqFechar();
-  showToast('Equipe registrada ✓');
+  showToast((_alertaEq ? 'Equipe registrada ✓' : 'Salvo ✓') + _adjMsg);
+  if(_adjMsg && getCellTipo(selected)==='metas') renderMetasDiaria();
   if(_alertaEq) _eqAlertaCheck(_alertaEq, _alertaHora);
 }
 function metaEqFechar(){ const m=document.getElementById('metaEqModal'); if(m) m.style.display='none'; _metaEqCtx=null; _metaEqSel=null; _metaEqMembros=[]; }
@@ -20037,6 +20058,16 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 .eq-membro{ font-size:16px; font-weight:800; padding:7px 14px; border-radius:99px; border:1px solid; background:#00000018; letter-spacing:0.02em; }
 .eq-membro-vazio{ font-size:14px; font-style:italic; }
 /* Modal equipe */
+.meq-adj{ display:flex; align-items:center; gap:12px; margin-top:16px; padding:12px 14px; border-radius:12px; border:1px solid #26303f; background:#0b1018; cursor:pointer; user-select:none; transition:border-color .15s, background .15s; }
+.meq-adj:hover{ border-color:#3d9eff66; }
+.meq-adj.on{ border-color:#3d9eff; background:#3d9eff14; }
+.meq-adj .sw{ flex:none; width:38px; height:22px; border-radius:99px; background:#26303f; position:relative; transition:background .15s; }
+.meq-adj .sw i{ position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#8792a6; transition:transform .18s, background .15s; }
+.meq-adj.on .sw{ background:#3d9eff; }
+.meq-adj.on .sw i{ transform:translateX(16px); background:#fff; }
+.meq-adj .tx b{ display:block; font-size:13.5px; color:#e5ebf3; font-weight:800; }
+.meq-adj .tx small{ display:block; font-size:11.5px; color:#8792a6; margin-top:2px; }
+.meq-adj:focus-visible{ outline:2px solid #3d9eff; outline-offset:2px; }
 .eq-modal-card{ background:linear-gradient(180deg,#0f1420,#0b0f16); border:1px solid #1e2530; border-radius:18px; padding:22px; width:100%; max-width:440px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px -20px #000; animation:eqModalIn .28s var(--ease-out); }
 @keyframes eqModalIn{ from{ opacity:0; transform:translateY(14px) scale(.97); } to{ opacity:1; transform:none; } }
 .eq-modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
