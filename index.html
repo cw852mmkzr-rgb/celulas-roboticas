@@ -504,6 +504,16 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .aja-atual { display: flex; justify-content: space-between; align-items: center; background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; color: #9aa6b6; }
 .aja-atual b { font-size: 20px; color: #00e87a; font-weight: 800; }
 .aja-card label { display: block; font-size: 11px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 5px; }
+.adj-tag { line-height: 1; margin-bottom: 2px; }
+.adj-b { font: inherit; font-family: 'Montserrat', sans-serif; font-size: 9.5px; font-weight: 800; color: #7cc0ff; background: #3d9eff1c; border: 1px solid #3d9eff55; border-radius: 99px; padding: 1px 7px; cursor: pointer; white-space: nowrap; }
+.adj-b.has { background: #3d9eff; color: #04101e; border-color: #3d9eff; }
+.adj-b:hover { filter: brightness(1.15); }
+.aji-x { background: none; border: 1px solid #1e2530; color: #8a94a6; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; flex: none; }
+.aji-txt { background: #080b0f; border: 1px solid #3d9eff55; border-left: 3px solid #3d9eff; border-radius: 10px; padding: 12px 14px; font-size: 14.5px; line-height: 1.5; color: #e5ebf3; white-space: pre-wrap; word-break: break-word; }
+.aji-txt.vazio { color: #8a94a6; font-style: italic; border-color: #1e2530; border-left-color: #26303f; }
+.aji-quem { font-size: 11.5px; color: #8a94a6; margin-top: 8px; }
+.meq-adjtxt { width: 100%; box-sizing: border-box; margin-top: 10px; min-height: 64px; resize: vertical; background: #080b0f; border: 1px solid #3d9eff66; color: #e5ebf3; border-radius: 10px; padding: 9px 11px; font: inherit; font-size: 13.5px; }
+.meq-adjtxt:focus { outline: none; border-color: #3d9eff; }
 .aja-2 { display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; margin-bottom: 12px; }
 .aja-2 label { margin-top: 0 !important; }
 .aja-card select { width: 100%; box-sizing: border-box; background: #080b0f; border: 1px solid #1e2530; color: #e5ebf3; padding: 9px 10px; border-radius: 9px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
@@ -1813,6 +1823,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prb-hs span{font-size:11px;border-radius:5px;padding:2px 6px;background:#22c55e1a;color:#4ade80}
 .prb-hs span.f{background:#ef44441a;color:#f87171}
 .prb-hs span.n{background:#1b2431;color:#c9d3df}
+.prb-hs span.aj{background:#3d9eff1f;color:#7cc0ff}
 .prb-quem{margin-top:12px;font-size:12px;color:var(--mut);line-height:1.8}
 /* ===== Contagem Automática (robôs FANUC → producao_robos, 12/11/2026) ===== */
 .cnt{--ln:#1d2633;--pn:#0e131b;--mut:#7d8899;color:#e5ebf3;padding-bottom:40px;font-family:'Montserrat',sans-serif}
@@ -4531,6 +4542,41 @@ function parseCelVal(raw) {
   if (s.endsWith('#')) return {num:parseInt(s)||0, tipo:'ajuste'};
   return {num:parseInt(s)||0, tipo:'normal'};
 }
+// ===== AJUSTE TÉCNICO (#) — 12/11/2026, igual à "parada justificada" da Cromo =====
+// A hora com ajuste técnico NÃO conta como meta batida nem como não batida (fica fora da conta de metas,
+// mas as peças somam normal) e aparece à parte. O motivo fica em rd['just_'+campo] = {txt, por, em}
+// e aparece no balãozinho 💬 em cima do número (todos leem; HOST/Metas escrevem na janela da hora).
+function _ehAjusteT(raw){ return parseCelVal(raw||'').tipo === 'ajuste'; }
+function _ajObjT(rd, campo){ const j = rd && rd['just_'+campo]; return (j && typeof j === 'object') ? j : (typeof j === 'string' && j ? {txt:j} : null); }
+function _ajTxtT(rd, campo){ const j = _ajObjT(rd, campo); return j ? String(j.txt || '') : ''; }
+function _ajBalaoT(rd, campo, robo, key){
+  const t = _ajTxtT(rd, campo);
+  return `<div class="adj-tag"><button type="button" class="adj-b${t ? ' has' : ''}" title="🔧 Ajuste técnico — ${esc(t || 'sem motivo informado')}" onclick="event.stopPropagation();abrirAjusteInfoT('${key}','${robo}','${campo}')">💬 ajuste</button></div>`;
+}
+// janela de leitura do ajuste técnico (todos); HOST/Metas têm "Editar" (abre a janela da hora)
+function abrirAjusteInfoT(key, robo, campo){
+  const chave = getMetasChave(key);
+  const rd = ((((celulas[key]||{}).metas_dias||{})[chave])||{})[robo] || {};
+  const j = _ajObjT(rd, campo), hora = _horaDoCampo(campo), p = chave.split('_').map(Number);
+  const pode = isAdmin || isAdminMetas;
+  let ov = document.getElementById('ajiOv');
+  if(!ov){
+    ov = document.createElement('div'); ov.id = 'ajiOv'; ov.className = 'aja-ov';
+    ov.addEventListener('click', e => { if(e.target === ov) fecharAjusteInfoT(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('on')) fecharAjusteInfoT(); });
+    document.body.appendChild(ov);
+  }
+  const quem = j && j.txt ? 'Escrito por ' + esc(j.por || 'HOST') + (j.em ? ' em ' + new Date(j.em).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '') : '';
+  ov.innerHTML = `<div class="aja-card" role="dialog" aria-modal="true" aria-labelledby="ajiTit">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><h3 id="ajiTit">🔧 Ajuste técnico</h3><button type="button" class="aji-x" aria-label="Fechar" onclick="fecharAjusteInfoT()">✕</button></div>
+    <div class="aja-sub">Robô ${esc(String(robo))} · coluna ${hora} · ${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}/${p[0]}<br>Esta hora fica fora da conta de metas (nem batida, nem não batida).</div>
+    <div class="aji-txt${j && j.txt ? '' : ' vazio'}">${j && j.txt ? esc(j.txt) : 'Sem motivo informado.'}</div>
+    ${quem ? `<div class="aji-quem">${quem}</div>` : ''}
+    <div class="aja-bts">${pode ? `<button type="button" onclick="fecharAjusteInfoT();metaEqAbrir('${key}','${robo}','${campo}')">✎ Editar</button>` : ''}<button type="button" class="ok" onclick="fecharAjusteInfoT()">Fechar</button></div>
+  </div>`;
+  ov.classList.add('on'); document.body.style.overflow = 'hidden';
+}
+function fecharAjusteInfoT(){ const ov = document.getElementById('ajiOv'); if(ov) ov.classList.remove('on'); document.body.style.overflow = ''; }
 
 // Data escolhida na Meta Diária: é de CADA APARELHO (05/11/2026).
 // Antes ficava gravada no banco (metas_dia/mes/ano): o último que salvava mudava a data de todo mundo,
@@ -5260,6 +5306,8 @@ function updateMetasCell(key,robo,campo,valor){
   const _compAnterior = campo.startsWith('h') ? parseCelVal(celulas[key].metas_dias[chave][robo][campo]||'').num : 0;
   const _compCodAntes = (celulas[key].metas_dias[chave][robo].cod||'').trim();
   celulas[key].metas_dias[chave][robo][campo]=valor;
+  // sem ajuste técnico (#) o motivo do balãozinho sai junto
+  if(campo.startsWith('h') && parseCelVal(valor||'').tipo!=='ajuste') delete celulas[key].metas_dias[chave][robo]['just_'+campo];
   // Se a hora foi apagada (vazio/0), remove o snapshot de equipe daquela hora
   // — evita que apontamentos zerados continuem aparecendo no buscador/relatórios
   if(campo.startsWith('h') && parseCelVal(valor||'').num===0){
@@ -5568,7 +5616,7 @@ function buildTurnoTable(c,turno,chave){
       // só o HOST altera a produção automática — pelo botão "✎ Ajustar produção automática" do topo (pede senha)
       const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar a equipe e o ajuste técnico':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
       const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${inpHtml}${funcHtml}</td>`;
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${tipo==='ajuste'&&num>0?_ajBalaoT(rd,campo,robo,selected):''}${inpHtml}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -5689,7 +5737,7 @@ function _funcMetaHoraT(h, meta, chave){
   return HORAS_CAFE.includes(h) ? Math.round(base*0.6) : base;
 }
 function desempenhoFuncT(ano,mes){
-  const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,pecasM:0,metaSoma:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
+  const res={}; const garante=n=>{ if(!res[n]) res[n]={nome:n,pecas:0,horas:0,metasOk:0,horasMeta:0,pecasM:0,metaSoma:0,just:0,dias:new Set(),diaPecas:{},robos:new Set()}; return res[n]; };
   funcT().forEach(n=>garante(n));
   const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
   Object.entries(md).forEach(([chave,dia])=>{
@@ -5703,7 +5751,9 @@ function desempenhoFuncT(ano,mes){
         o.pecas+=val; o.horas+=1; o.dias.add(chave); o.robos.add(r);
         o.diaPecas[chave]=(o.diaPecas[chave]||0)+val;
         const metaH=_funcMetaHoraT(h,metaRdHora(rd,campo),chave);
-        if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; o.pecasM+=val; o.metaSoma+=metaH; }
+        // ajuste técnico (#): fora da conta de metas (nem batida, nem não batida) — contado à parte
+        if(_ehAjusteT(rd[campo])){ if(metaH>0) o.just+=1; }
+        else if(metaH>0){ o.horasMeta+=1; if(val>=metaH) o.metasOk+=1; o.pecasM+=val; o.metaSoma+=metaH; }
       });
     });
   });
@@ -5803,7 +5853,7 @@ function renderFuncionarios(){
         <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${barPct}%;background:${st.cor};border-radius:99px"></div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           ${_funcStatT('Média/hora',f.media.toLocaleString("pt-BR"),'#3d9eff')}
-          ${_funcStatT('Metas batidas',f.horasMeta>0?`${f.metasOk}/${f.horasMeta} · ${f.taxa}%`:'—','#00e87a')}
+          ${_funcStatT('Metas batidas',(f.horasMeta>0?`${f.metasOk}/${f.horasMeta} · ${f.taxa}%`:'—')+(f.just?`<div style="font-size:11px;font-weight:700;color:#7cc0ff;margin-top:3px" title="Horas com ajuste técnico (#) — fora da conta de metas">🔧 ${f.just}h ajuste técnico</div>`:''),'#00e87a')}
           ${_funcStatT('Horas',f.horas.toLocaleString("pt-BR"),'#a78bfa')}
           ${_funcStatT('Dias / Robôs',`${f.dias} / ${f.robos}`,'#ffb300')}
           ${_funcStatT('Melhor dia',f.melhorDia?`${f.melhorP} pç`:'—','#00e87a')}
@@ -5841,7 +5891,7 @@ function renderFuncionarios(){
 function desempenhoFuncDetalheT(nome,ano,mes){
   const mk=metaApKey(); const md=(mk&&celulas[mk].metas_dias)||{};
   const porRobo={}; ROBOS.forEach(r=>porRobo[r]={pecas:0,horas:0,metasOk:0,horasMeta:0});
-  const porDia={}; let pecas=0,horas=0,metasOk=0,horasMeta=0,pecasM=0,metaSoma=0;
+  const porDia={}; let pecas=0,horas=0,metasOk=0,horasMeta=0,pecasM=0,metaSoma=0,just=0;
   Object.entries(md).forEach(([chave,dia])=>{
     const p=chave.split('_').map(Number); if(p.length!==3) return;
     if(p[0]!==ano) return; if(mes!=null && p[1]!==mes) return;
@@ -5850,11 +5900,13 @@ function desempenhoFuncDetalheT(nome,ano,mes){
         if(_funcHoraCredT(rd,campo)!==nome) return;
         const val=parseCelVal(rd[campo]||'').num; if(val<=0) return;
         pecas+=val; horas+=1; porRobo[r].pecas+=val; porRobo[r].horas+=1;
-        if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0,itens:[]};
+        if(!porDia[chave]) porDia[chave]={pecas:0,horas:0,metasOk:0,horasMeta:0,just:0,itens:[]};
         porDia[chave].pecas+=val; porDia[chave].horas+=1;
         const metaH=_funcMetaHoraT(h,metaRdHora(rd,campo),chave);
-        porDia[chave].itens.push({h, robo:String(r), val, meta:metaH, cod:codRdHora(rd,campo)});
-        if(metaH>0){ horasMeta+=1; pecasM+=val; metaSoma+=metaH; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
+        const _aj=_ehAjusteT(rd[campo]);
+        porDia[chave].itens.push({h, robo:String(r), val, meta:_aj?0:metaH, cod:codRdHora(rd,campo), aj:_aj, motivo:_aj?_ajTxtT(rd,campo):''});
+        if(_aj){ if(metaH>0){ just+=1; porDia[chave].just+=1; } }
+        else if(metaH>0){ horasMeta+=1; pecasM+=val; metaSoma+=metaH; porRobo[r].horasMeta+=1; porDia[chave].horasMeta+=1; if(val>=metaH){ metasOk+=1; porRobo[r].metasOk+=1; porDia[chave].metasOk+=1; } }
       });
     });
   });
@@ -5863,7 +5915,7 @@ function desempenhoFuncDetalheT(nome,ano,mes){
   const diasList=Object.keys(porDia).map(ch=>{const p=ch.split('_').map(Number);return {chave:ch,ano:p[0],mes:p[1],dia:p[2],...porDia[ch]};}).sort((a,b)=>b.ano-a.ano||b.mes-a.mes||b.dia-a.dia);
   let melhorDia=null,melhorP=0; diasList.forEach(d=>{ if(d.pecas>melhorP){melhorP=d.pecas;melhorDia=d;} });
   const efic=metaSoma>0?Math.round(pecasM/metaSoma*100):null;
-  return {nome,pecas,horas,media,metasOk,horasMeta,taxa,efic,dias:diasList.length,robos:robosList.length,robosList,diasList,melhorDia,melhorP};
+  return {nome,pecas,horas,media,metasOk,horasMeta,taxa,efic,just,dias:diasList.length,robos:robosList.length,robosList,diasList,melhorDia,melhorP};
 }
 function fecharFuncDet(){ const ov=document.getElementById('funcDetOv'); if(ov) ov.style.display='none'; document.body.style.overflow=''; }
 function abrirFuncDetalheT(nomeEnc){
@@ -5887,7 +5939,7 @@ function abrirFuncDetalheT(nomeEnc){
       ${_funcStatT('Peças',d.pecas.toLocaleString("pt-BR"),'#00e87a',true)}
       ${_funcStatT('Média/hora',d.media.toLocaleString("pt-BR"),'#3d9eff',true)}
       ${_funcStatT('Eficiência da meta',d.efic!=null?d.efic+'%':'—',st.cor,true)}
-      ${_funcStatT('Metas batidas',d.horasMeta>0?`${d.metasOk}/${d.horasMeta} · ${d.taxa}%`:'—','#00e87a',true)}
+      ${_funcStatT('Metas batidas',(d.horasMeta>0?`${d.metasOk}/${d.horasMeta} · ${d.taxa}%`:'—')+(d.just?`<div style="font-size:12px;font-weight:700;color:#7cc0ff;margin-top:4px" title="Horas com ajuste técnico (#) — fora da conta de metas">🔧 ${d.just}h ajuste técnico</div>`:''),'#00e87a',true)}
       ${_funcStatT('Horas',d.horas.toLocaleString("pt-BR"),'#a78bfa',true)}
       ${_funcStatT('Dias / Robôs',`${d.dias} / ${d.robos}`,'#ffb300',true)}
     </div>`;
@@ -5959,17 +6011,17 @@ function _funcVerDiaT(ch,rolar){
   const sem=dt.toLocaleDateString('pt-BR',{weekday:'long'});
   const itens=(x.itens||[]).slice().sort((a,b)=>a.h.localeCompare(b.h)||a.robo.localeCompare(b.robo));
   const mx=Math.max(...itens.map(i=>i.val),1), {tx,cor}=_funcCorTxT(x);
-  const linhas=itens.map(i=>{ const ok=i.meta>0&&i.val>=i.meta, c=i.meta>0?(ok?'#00e87a':'#ff4d4d'):'#3d9eff';
+  const linhas=itens.map(i=>{ const ok=i.meta>0&&i.val>=i.meta, c=i.aj?'#3d9eff':(i.meta>0?(ok?'#00e87a':'#ff4d4d'):'#3d9eff');
     return `<div class="fdet-r">
       <span class="fdet-h">${i.h}${HORAS_CAFE.includes(i.h)?' ☕':''}</span>
       <span class="fdet-rb">R${esc(i.robo)}${i.cod?` · <em>${esc(i.cod)}</em>`:''}</span>
       <div class="fdet-bar"><i style="width:${Math.max(Math.round(i.val/mx*100),4)}%;background:${c}"></i></div>
       <span class="fdet-v" style="color:${c}">${i.val.toLocaleString('pt-BR')}</span>
-      <span class="fdet-m">${i.meta>0?(ok?'✓':'✗')+' meta '+i.meta:'sem meta'}</span>
+      <span class="fdet-m"${i.aj?` title="🔧 Ajuste técnico — ${esc(i.motivo||'sem motivo informado')}" style="color:#7cc0ff"`:''}>${i.aj?'🔧 ajuste técnico'+(i.motivo?' 💬':''):(i.meta>0?(ok?'✓':'✗')+' meta '+i.meta:'sem meta')}</span>
     </div>`; }).join('');
   box.innerHTML=`<div class="fdet-top" style="--fc:${cor}">
       <div><div class="fdet-data">${dataFmt}</div><div class="fdet-sem">${sem}</div></div>
-      <div class="fdet-res"><b>${x.pecas.toLocaleString('pt-BR')}</b> peças · <b>${x.horas}</b>h${itens.length?` · das <b>${itens[0].h}</b> às <b>${itens[itens.length-1].h}</b>`:''}${tx!=null?` · metas <b>${x.metasOk}/${x.horasMeta}</b> (${tx}%)`:''}</div>
+      <div class="fdet-res"><b>${x.pecas.toLocaleString('pt-BR')}</b> peças · <b>${x.horas}</b>h${itens.length?` · das <b>${itens[0].h}</b> às <b>${itens[itens.length-1].h}</b>`:''}${tx!=null?` · metas <b>${x.metasOk}/${x.horasMeta}</b> (${tx}%)`:''}${x.just?` · <b style="color:#7cc0ff">🔧 ${x.just}h ajuste técnico</b>`:''}</div>
     </div>
     <div class="fdet-list">${linhas||'<div class="fdet-vazio">Sem horas registradas.</div>'}</div>`;
   if(rolar) box.scrollIntoView({block:'nearest',behavior:'smooth'});
@@ -6031,7 +6083,7 @@ function renderMetasDiaria(){
       <span><span style="color:#00e87a;font-weight:800;font-size:14px">■</span> Atingiu a meta</span>
       <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
       <span><span style="color:#ffb300;font-weight:800;font-size:14px">■</span> Horário de café — meta reduzida</span>
-      <span><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico na célula</span>
+      <span title="Não conta como meta batida nem como não batida. O 💬 em cima do número mostra o motivo."><span style="color:#3d9eff;font-weight:800;font-size:14px">■</span> Ajuste técnico — fora da conta de metas 💬</span>
       <span style="color:#4a5568;font-size:11px">← Clique na hora e marque <b style="color:#3d9eff">🔧 ajuste técnico</b></span>
     </div>
     <div style="margin-bottom:6px">
@@ -7220,7 +7272,7 @@ function _projStats(md){
       _projHoras().forEach(h => {
         const v = parseCelVal(rd[campoH(h)] || '').num; if(v <= 0) return;
         t += v; hm++; rodou = true;
-        { const m = metaEfetivaHora(h, metaRdHora(rd, campoH(h)), ch); if(m > 0){ metaH += m; prodMeta += v; } }
+        { const m = metaEfetivaHora(h, metaRdHora(rd, campoH(h)), ch); if(m > 0 && !_ehAjusteT(rd[campoH(h)])){ metaH += m; prodMeta += v; } } // ajuste técnico fora da eficiência
       });
       if(rodou) rob++;
     });
@@ -7606,8 +7658,8 @@ function _prbDiaRobo(ch, dd, r){
     const campo = campoH(h), v = parseCelVal(rd[campo] || '').num; if(v <= 0) return;
     const mh = _funcMetaHoraT(h, meta, ch);
     const quem = _funcHoraExibT(rd, campo);
-    hs.push({h, v, mh, quem}); total += v;
-    if(mh > 0){ ms += mh; pm += v; hm++; if(v >= mh) ok++; }
+    hs.push({h, v, mh: _ehAjusteT(rd[campo]) ? 0 : mh, quem, aj: _ehAjusteT(rd[campo])}); total += v;
+    if(mh > 0 && !_ehAjusteT(rd[campo])){ ms += mh; pm += v; hm++; if(v >= mh) ok++; } // ajuste técnico fora da conta de metas
     if(quem) quem.split(',').map(s => s.trim()).filter(Boolean).forEach(n => { pes[n] = (pes[n] || 0) + v; });
   });
   if(total <= 0) return null;
@@ -8001,7 +8053,7 @@ function renderProdRobo(){
       const det = aberto ? `<tr class="prb-det"><td colspan="9">
           <table class="prb-dd"><thead><tr><th>Dia</th><th>Horas apontadas (verde = bateu a meta)</th><th style="text-align:right">Peças</th><th style="text-align:right">Meta/h</th></tr></thead><tbody>
           ${l.dias.map(x => `<tr><td style="white-space:nowrap"><b>${_prbDiaSem(x.d)}</b></td>
-            <td><div class="prb-hs">${x.hs.map(o => `<span class="${o.mh > 0 ? (o.v >= o.mh ? '' : 'f') : 'n'}" title="${o.quem ? esc(o.quem) : ''}">${o.h} · ${o.v}</span>`).join('')}</div></td>
+            <td><div class="prb-hs">${x.hs.map(o => `<span class="${o.aj ? 'aj' : o.mh > 0 ? (o.v >= o.mh ? '' : 'f') : 'n'}" title="${o.aj ? '🔧 Ajuste técnico (fora da conta de metas)' + (o.quem ? ' · ' : '') : ''}${o.quem ? esc(o.quem) : ''}">${o.h} · ${o.v}${o.aj ? ' 🔧' : ''}</span>`).join('')}</div></td>
             <td style="text-align:right;font-weight:800">${_prbFmt(x.total)}</td><td style="text-align:right">${x.meta || '—'}</td></tr>`).join('')}
           </tbody></table>
           ${Object.keys(l.pes).length ? `<div class="prb-quem">Quem trabalhou: ${Object.entries(l.pes).sort((a, b) => b[1] - a[1]).map(([n, v]) => `<b>${esc(n)}</b> (${_prbFmt(v)})`).join(' · ')}</div>` : ''}
@@ -8575,7 +8627,7 @@ function renderRelatorio(){
           return parseInt(p[0])===anoSel && parseInt(p[1])===mesIdx;
         });
         const rows2 = ROBOS.map(robo=>{
-          let atingiu=0, naoAtingiu=0, cod='—';
+          let atingiu=0, naoAtingiu=0, ajuste=0, cod='—';
           diasMes2.forEach(([,dia])=>{
             const rd=dia[robo]||{};
             if(rd.cod&&rd.cod!=='—') cod=rd.cod;
@@ -8584,13 +8636,14 @@ function renderRelatorio(){
               const v=parseCelVal((rd[campoH(h)])||'').num;
               const meta=metaRdHora(rd,campoH(h));
               if(v<=0||meta<=0) return;
+              if(_ehAjusteT(rd[campoH(h)])){ ajuste++; return; } // ajuste técnico: fora da conta de metas
               if(v>=meta) atingiu++; else naoAtingiu++;
             });
           });
-          if(atingiu===0&&naoAtingiu===0) return null;
+          if(atingiu===0&&naoAtingiu===0&&ajuste===0) return null;
           const total=atingiu+naoAtingiu;
-          const pct=Math.round(atingiu/total*100);
-          return {robo,cod,atingiu,naoAtingiu,total,pct};
+          const pct=total?Math.round(atingiu/total*100):0;
+          return {robo,cod,atingiu,naoAtingiu,ajuste,total,pct};
         }).filter(Boolean).sort((a,b)=>b.pct-a.pct);
         if(!rows2.length) return '<div style="font-size:12px;color:#2a3040">Sem dados de meta no mês.</div>';
         return rows2.map(r=>{
@@ -8612,6 +8665,10 @@ function renderRelatorio(){
                 <div style="font-size:22px;font-weight:900;color:#ff4d4d">${r.naoAtingiu}x</div>
                 <div style="font-size:11.5px;color:#6b7788;margin-top:3px">❌ Não atingiu</div>
               </div>
+              ${r.ajuste?`<div style="flex:1;background:#3d9eff15;border:1px solid #3d9eff40;border-radius:8px;padding:8px;text-align:center" title="Horas com ajuste técnico (#) — fora da conta de metas">
+                <div style="font-size:22px;font-weight:900;color:#7cc0ff">${r.ajuste}x</div>
+                <div style="font-size:11.5px;color:#6b7788;margin-top:3px">🔧 Ajuste técnico</div>
+              </div>`:''}
             </div>
             <div style="background:#1e2530;border-radius:99px;height:6px;overflow:hidden">
               <div style="height:100%;width:${r.pct}%;background:${cor};border-radius:99px"></div>
@@ -9302,7 +9359,9 @@ function _dashRenderRobo(k){
   const bateu = meta>0 && prod>=meta;
   const faltam = meta>0 ? Math.max(meta-prod,0) : 0;
   // Horário de café (10:00) — sempre amarelo (meta reduzida naturalmente)
-  const cor = isCafe?'#ffb300':(prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff6a00');
+  // ajuste técnico (#): azul, fora da conta (nem batida nem não batida); mostra a eficiência e o que faltou igual
+  const ajH = _ehAjusteT(rd[campoH(hora)]), ajMot = ajH ? _ajTxtT(rd, campoH(hora)) : '';
+  const cor = ajH?'#3d9eff':isCafe?'#ffb300':(prod===0&&meta===0?'#4a5568':bateu?'#00e87a':'#ff6a00');
   const idx=_dashRobos.indexOf(k);
 
   // Robô neutro — sempre dançando sem expressão
@@ -9373,7 +9432,8 @@ function _dashRenderRobo(k){
         <div class="dash-prod-h">Produção ${hora}</div>
         <div class="dash-prod-n" style="color:${cor}">${prod>0?prod:'—'}</div>
         ${meta>0?`<div class="dash-meta-txt">Meta: <b style="color:${cor}">${meta}</b> peças/hora</div>`:''}
-        ${meta>0&&prod>0&&!bateu&&faltam>0?`<div class="dash-meta-txt" style="color:#ff6a00;font-weight:700">Faltou ${faltam} peça${faltam===1?'':'s'}</div>`:''}
+        ${meta>0&&prod>0&&!bateu&&faltam>0?`<div class="dash-meta-txt" style="color:${ajH?'#7cc0ff':'#ff6a00'};font-weight:700">Faltou ${faltam} peça${faltam===1?'':'s'}</div>`:''}
+        ${ajH&&prod>0?`<div class="dash-meta-txt" style="color:#3d9eff;font-weight:800">🔧 AJUSTE TÉCNICO${ajMot?' — '+esc(ajMot):''}</div>`:''}
       </div>
 
       <!-- Eficiência em % -->
@@ -9422,7 +9482,7 @@ function _dashRenderGeral(){
     const metaAtual=metaEfetivaHora(horaAtual, metaBase, _dashGetChave()); // meia hora = meta/2; sexta 15:00 = cheia
     const prodAtual=parseCelVal((rd[campoH(horaAtual)])||'').num;
     const bateu=metaAtual>0&&prodAtual>=metaAtual;
-    const corAtual=metaAtual===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
+    const corAtual=_ehAjusteT(rd[campoH(horaAtual)])?'#3d9eff':metaAtual===0?'#4a5568':prodAtual===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     const totalRobo=todasHoras.reduce((s,h)=>s+parseCelVal((rd[campoH(h)])||'').num,0);
     totalGeral+=totalRobo;
     const hCells=todasHoras.map(h=>{
@@ -9430,14 +9490,15 @@ function _dashRenderGeral(){
       const isCafe=HORAS_CAFE.includes(h);
       const isAtual=h===horaAtual;
       const metaH=metaEfetivaHora(h, metaRdHora(rd, campoH(h)), _dashGetChave()); // meta ajustada por hora; sexta 15:00 = cheia; troca de peça
-      const ok=!isCafe&&metaH>0&&v>=metaH;
-      const fail=!isCafe&&metaH>0&&v>0&&v<metaH;
-      const cor=isCafe?'#ffb300':isAtual?corAtual:ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
+      const _ajC=_ehAjusteT(rd[campoH(h)]);  // ajuste técnico: nem verde nem vermelho
+      const ok=!_ajC&&!isCafe&&metaH>0&&v>=metaH;
+      const fail=!_ajC&&!isCafe&&metaH>0&&v>0&&v<metaH;
+      const cor=isCafe?'#ffb300':isAtual?corAtual:_ajC&&v>0?'#3d9eff':ok?'#00e87a':fail?'#ff4d4d':'#4a5568';
     const fontSize=isAtual?'32px':'24px';
       const bgCafe=isCafe?'background:#ffb30012;':'';
       // fundo da hora: verde quando bateu a meta, vermelho quando não bateu (mesmo tom em todas as células)
       let heat='';
-      if(!isCafe&&metaH>0&&v>0) heat=ok?'background:rgba(0,232,122,.38);':'background:rgba(255,77,77,.42);';
+      if(!isCafe&&metaH>0&&v>0) heat=_ajC?'background:rgba(61,158,255,.38);':ok?'background:rgba(0,232,122,.38);':'background:rgba(255,77,77,.42);';
       return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${heat?'#fff':cor};${heat?heat+(isAtual?'box-shadow:inset 2px 0 0 rgba(255,179,0,.6),inset -2px 0 0 rgba(255,179,0,.6);':''):(isAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':bgCafe)}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
@@ -9524,6 +9585,7 @@ function _dashRenderFooter(){
         const v=parseCelVal(rd[campoH(h)]||'').num;
         const metaH=metaEfetivaHora(h, metaRdHora(rd, campoH(h)), _dashGetChave());
         if(v<=0||metaH<=0) return;
+        if(_ehAjusteT(rd[campoH(h)])) return; // ajuste técnico fora da conta de metas
         metasTot++;
         if(v>=metaH) metasOk++;
       });
@@ -10178,9 +10240,11 @@ function handleMetasInputEl(el, key, robo, campo){
   const valor = el.value;
   const numVal = parseInt(valor)||0;
   let valorFinal = valor;
+  // o campo do celular é só número: se a hora já tinha ajuste técnico, mantém o # (o ajuste sai pela chave da janela)
+  if(numVal>0 && !String(valor).includes('#') && _ehAjusteT(rd[campo])) valorFinal = String(numVal)+'#';
 
   // Divide por pontos se aplicável
-  if(_divisaoPontosAtiva() && pontos>1 && numVal>0 && !String(valor).includes('#')){
+  if(_divisaoPontosAtiva() && pontos>1 && numVal>0 && !String(valorFinal).includes('#')){
     const dividido = Math.round(numVal/pontos);
     if(dividido>=1 && dividido<=999 && dividido!==numVal){
       valorFinal = String(dividido);
@@ -10646,7 +10710,7 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       const isCafe = HORAS_CAFE.includes(h);
       const campo = campoH(h);
       const rawVal = (rd[campo])||'';
-      const {num,isAjuste} = parseCelVal(rawVal);
+      const {num,tipo} = parseCelVal(rawVal); const isAjuste = tipo==='ajuste'; // (antes lia "isAjuste", que não existe — o azul do ajuste nunca aparecia no celular)
       // Meta ajustada: café = 60% da meta, meia hora (:30) = 50% da meta; sexta 15:00 = cheia
       const metaBase = metaEfetivaHora(h, meta, chave);
       const metaH = isCafe ? Math.round(metaBase*0.6) : metaBase;
@@ -10657,8 +10721,9 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       const isAtual = parseInt(h)===horaAtual;
       const nomeEx=_funcHoraExibT(rd,campo);
       const funcTag=(num>0&&nomeEx)?`<div title="${esc(nomeEx)}" style="font-size:9px;color:#00e87a;margin-top:3px;line-height:1.1;max-width:62px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
-      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${podeEditar
-        ?`<input class="hora-inp ${isCafe?'cafe':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
+      const auto = rd['auto_'+campo]==='1';  // hora contada pelo robô: não se digita; o toque abre equipe + ajuste técnico
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${isAjuste&&num>0?_ajBalaoT(rd,campo,robo,selected):''}${podeEditar
+        ?`<input class="hora-inp ${isCafe?'cafe':''}${isAjuste?' cell-adj':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${auto?`readonly onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
         :`${num>0?num:'—'}`}${funcTag}</td>`;
     }).join('');
 
@@ -11810,7 +11875,9 @@ function _eqDesRecords(){
         if(Array.isArray(eq.presentes) && eq.presentes.length===0) return;
         const qtd=parseCelVal(rd[campoH(h)]||'').num;
         if(qtd<=0) return; // hora zerada/apagada — não conta apontamento
-        out.push({ano,mes,dia,hora:h,robo:r,cod:(codRdHora(rd,campoH(h))||'—'),qtd,meta:metaEfetivaHora(h, metaRdHora(rd,campoH(h)), chave),eq});
+        // ajuste técnico (#): meta 0 = fica fora de toda conta de meta das Equipes (nem batida, nem não batida)
+        const _aj=_ehAjusteT(rd[campoH(h)]);
+        out.push({ano,mes,dia,hora:h,robo:r,cod:(codRdHora(rd,campoH(h))||'—'),qtd,meta:_aj?0:metaEfetivaHora(h, metaRdHora(rd,campoH(h)), chave),eq,aj:_aj});
       });
     });
   });
@@ -12808,7 +12875,7 @@ let _metaEqMembros = [];  // presentes marcados
 // Ajuste técnico da hora (12/11/2026): marcado aqui na janela, no lugar de digitar o número com "#".
 // Hora manual: o valor passa a terminar com "#". Hora automática: grava adj_hXXXX = '1' e o job
 // tremps_auto_metas escreve o número já com "#".
-let _metaEqAdj = false, _metaEqAdjOrig = false;
+let _metaEqAdj = false, _metaEqAdjOrig = false, _metaEqAdjTxt = '', _metaEqAdjTxtOrig = '';
 function metaEqAbrir(key, robo, campo){
   if(!(isAdmin||isAdminMetas)) return;
   const _temEq = !!(equipesData && equipesData.vincular_metas && equipesData.lista.length);
@@ -12820,6 +12887,7 @@ function metaEqAbrir(key, robo, campo){
   if(!_temEq && rd['auto_'+campo]!=='1') return;
   _metaEqCtx={key,robo,campo,hora};
   _metaEqAdj = _metaEqAdjOrig = (rd['adj_'+campo]==='1') || String(rd[campo]||'').trim().endsWith('#');
+  _metaEqAdjTxt = _metaEqAdjTxtOrig = _ajTxtT(rd, campo);
   const ja=rd['eqp_'+campo];
   if(ja){ _metaEqSel={id:ja.id,cor:ja.cor,nome:ja.nome,membros:(ja.membros||[]).slice()}; _metaEqMembros=(ja.presentes||[]).slice(); }
   else {
@@ -12874,7 +12942,8 @@ function metaEqToggleMembro(nome){ _metaEqMembros = (_metaEqMembros[0]===nome) ?
 function metaEqToggleAdj(){ _metaEqAdj = !_metaEqAdj; metaEqRender(); }
 function _metaEqAdjHtml(){
   return `<div class="meq-adj${_metaEqAdj?' on':''}" role="switch" aria-checked="${_metaEqAdj}" tabindex="0" onclick="metaEqToggleAdj()" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();metaEqToggleAdj()}">
-    <span class="sw"><i></i></span><span class="tx"><b>🔧 Teve ajuste técnico nesta hora</b><small>a hora fica azul (no lugar do antigo # no número)</small></span></div>`;
+    <span class="sw"><i></i></span><span class="tx"><b>🔧 Teve ajuste técnico nesta hora</b><small>fica azul e fora da conta de metas (nem batida, nem não batida)</small></span></div>`
+    + (_metaEqAdj ? `<textarea class="meq-adjtxt" id="meqAdjTxt" maxlength="200" placeholder="Motivo do ajuste (aparece no balãozinho 💬 da hora)" oninput="_metaEqAdjTxt=this.value">${esc(_metaEqAdjTxt)}</textarea>` : '');
 }
 function metaEqSalvar(){
   if(!_metaEqCtx) return;
@@ -12891,18 +12960,27 @@ function metaEqSalvar(){
   } else {
     delete rd['eqp_'+campo];
   }
-  // ajuste técnico marcado/desmarcado na janela
+  // ajuste técnico marcado/desmarcado na janela (+ motivo do balãozinho)
   let _adjMsg = '';
   if(_metaEqAdj !== _metaEqAdjOrig){
     const num = parseCelVal(rd[campo]||'').num, auto = rd['auto_'+campo]==='1';
     if(auto){ if(_metaEqAdj) rd['adj_'+campo]='1'; else delete rd['adj_'+campo]; }
     if(num>0 || auto){ rd[campo] = String(num) + (_metaEqAdj ? '#' : ''); _adjMsg = _metaEqAdj ? ' · ajuste técnico marcado' : ' · ajuste técnico removido'; }
   }
+  const _txt = String(_metaEqAdjTxt || '').trim().slice(0, 200);
+  if(_metaEqAdj && parseCelVal(rd[campo]||'').tipo === 'ajuste'){
+    if(_txt !== String(_metaEqAdjTxtOrig || '').trim()){
+      if(_txt) rd['just_'+campo] = { txt:_txt, por:isAdmin ? 'HOST' : 'Metas', em:new Date().toISOString() };
+      else delete rd['just_'+campo];
+      if(!_adjMsg) _adjMsg = ' · motivo do ajuste salvo';
+    }
+  } else if(!_metaEqAdj){ delete rd['just_'+campo]; }
   saveToAPI(celulas);
   const _alertaEq=_metaEqSel, _alertaHora=_metaEqCtx.hora;
   metaEqFechar();
   showToast((_alertaEq ? 'Equipe registrada ✓' : 'Salvo ✓') + _adjMsg);
   if(_adjMsg && getCellTipo(selected)==='metas') renderMetasDiaria();
+  _metaEqAdjTxt = _metaEqAdjTxtOrig = '';
   if(_alertaEq) _eqAlertaCheck(_alertaEq, _alertaHora);
 }
 function metaEqFechar(){ const m=document.getElementById('metaEqModal'); if(m) m.style.display='none'; _metaEqCtx=null; _metaEqSel=null; _metaEqMembros=[]; }
