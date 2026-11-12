@@ -1859,7 +1859,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .hm-tag.host{background:#a78bfa26;color:#c4b5fd;margin-left:0;margin-right:6px}
 .hm-row.aj{background:#a78bfa0d;border-left:3px solid #a78bfa;padding-left:8px}
 .hm-row.aj .p b{color:#fff}
-.hm-mot{display:block;font-size:12px;color:#c4b5fd;margin-top:3px;font-style:italic}
+.hm-mot{display:block;font-size:12.5px;color:#ddd6fe;margin-top:4px;font-style:italic}
+.hm-mot.vazio{color:#8a94a6}
+.hm-motbt{font:inherit;font-style:normal;font-size:11.5px;font-weight:700;color:#c4b5fd;background:#a78bfa1f;border:1px solid #a78bfa55;border-radius:7px;padding:2px 8px;margin-left:6px;cursor:pointer}
+.hm-motbt:hover{background:#a78bfa;color:#0b0f14}
 .hm-row.novo{animation:hmNovo 2.4s ease-out}
 @keyframes hmNovo{0%{background:#00e87a26}100%{background:transparent}}
 .hm-mais{display:block;margin:14px auto 0;background:var(--pn);color:#c9d3df;border:1px solid var(--ln);border-radius:9px;padding:9px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
@@ -5181,7 +5184,7 @@ function abrirAjusteAuto(key, robo, campo){
     <div class="aja-atual"><span>Contado pelo robô</span><b>${atual.toLocaleString('pt-BR')}</b></div>
     <label for="ajaNovo">Quantidade certa da hora</label>
     <input id="ajaNovo" type="number" min="0" max="5000" inputmode="numeric" value="${atual}">
-    <label for="ajaMotivo">Motivo (opcional)</label>
+    <label for="ajaMotivo">Motivo — aparece no Histórico de Metas</label>
     <input id="ajaMotivo" type="text" maxlength="200" placeholder="Ex.: peças refugadas, contador travou…">
     <label for="ajaSenha">Senha do HOST</label>
     <input id="ajaSenha" type="password" autocomplete="off" inputmode="numeric">
@@ -7753,6 +7756,54 @@ function _hmLiveUI(){
 function _hmSetDia(v){ if(!v || v === _hm.dia) return; _hm.dia = v; _hm.rows = []; _hm.carregado = false; _hm.fim = false; _hm.erro = ''; _hm.sig = ''; renderHistMetas(); _hmCarregar(false); }
 function _hmSetRobo(r){ r = r || null; if(r === _hm.robo) return; _hm.robo = r; _hm.rows = []; _hm.carregado = false; _hm.fim = false; _hm.sig = ''; renderHistMetas(); _hmCarregar(false); }
 
+// escrever/editar o motivo de um ajuste do HOST já feito (senha conferida no servidor: tremps_ajuste_motivo)
+let _ajmId = null;
+function abrirMotivoAjuste(id){
+  if(!isAdmin){ showToast('Só o HOST pode escrever o motivo', true); return; }
+  const x = _hm.rows.find(r => r.id === id); if(!x) return;
+  _ajmId = id;
+  let ov = document.getElementById('ajmOv');
+  if(!ov){
+    ov = document.createElement('div'); ov.id = 'ajmOv'; ov.className = 'aja-ov';
+    ov.addEventListener('click', e => { if(e.target === ov) fecharMotivoAjuste(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('on')) fecharMotivoAjuste(); });
+    document.body.appendChild(ov);
+  }
+  const d = new Date(x.data_hora), campo = _cntSlot(d) || '';
+  ov.innerHTML = `<div class="aja-card" role="dialog" aria-modal="true" aria-labelledby="ajmTit">
+    <h3 id="ajmTit">✎ Motivo do ajuste</h3>
+    <div class="aja-sub">${esc(x.robo)} · coluna ${campo ? _horaDoCampo(campo) : '—'} · de ${x.ajuste_de != null ? x.ajuste_de : '?'} para ${x.ajuste_para != null ? x.ajuste_para : '?'}</div>
+    <label for="ajmTxt">Motivo</label>
+    <input id="ajmTxt" type="text" maxlength="200" value="${esc(x.motivo || '')}" placeholder="Ex.: peças refugadas, contador travou…">
+    <label for="ajmSenha">Senha do HOST</label>
+    <input id="ajmSenha" type="password" autocomplete="off" inputmode="numeric">
+    <div class="aja-err" id="ajmErr"></div>
+    <div class="aja-bts"><button type="button" onclick="fecharMotivoAjuste()">Cancelar</button><button type="button" class="ok" id="ajmOk" onclick="salvarMotivoAjuste()">Salvar motivo</button></div>
+  </div>`;
+  ov.classList.add('on'); document.body.style.overflow = 'hidden';
+  ov.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if(e.key === 'Enter') salvarMotivoAjuste(); }));
+  setTimeout(() => { const t = document.getElementById('ajmTxt'); if(t) t.focus(); }, 30);
+}
+function fecharMotivoAjuste(){ const ov = document.getElementById('ajmOv'); if(ov) ov.classList.remove('on'); document.body.style.overflow = ''; _ajmId = null; }
+async function salvarMotivoAjuste(){
+  if(_ajmId == null) return;
+  const err = document.getElementById('ajmErr'), bt = document.getElementById('ajmOk');
+  const motivo = (document.getElementById('ajmTxt').value || '').trim(), senha = document.getElementById('ajmSenha').value;
+  if(!motivo){ err.textContent = 'Escreva o motivo.'; return; }
+  if(!senha){ err.textContent = 'Digite a senha do HOST.'; return; }
+  err.textContent = ''; bt.disabled = true; bt.textContent = 'Salvando…';
+  const id = _ajmId;
+  try{
+    const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/tremps_ajuste_motivo', { method: 'POST', headers: HEADERS_SB, signal: AbortSignal.timeout(15000),
+      body: JSON.stringify({ p_senha: senha, p_id: id, p_motivo: motivo }) });
+    const j = r.ok ? await r.json() : null;
+    if(!j) throw new Error('http ' + r.status);
+    if(!j.ok){ err.textContent = j.erro || 'Não foi possível salvar.'; document.getElementById('ajmSenha').value = ''; bt.disabled = false; bt.textContent = 'Salvar motivo'; return; }
+    const x = _hm.rows.find(rr => rr.id === id); if(x) x.motivo = j.motivo;
+    fecharMotivoAjuste(); showToast('Motivo salvo ✓'); _hm.sig = ''; renderHistMetas();
+  }catch(e){ err.textContent = 'Sem conexão com o banco agora. Tente de novo.'; bt.disabled = false; bt.textContent = 'Salvar motivo'; }
+}
+
 function renderHistMetas(){
   const mp = document.getElementById('mainPanel'); if(!mp) return;
   if(!_hm.dia) _hm.dia = _cntHojeISO();
@@ -7810,7 +7861,8 @@ function renderHistMetas(){
         const p = parseInt(x.pecas) || 0, q = new Date(x.recebido_em || x.data_hora);
         const quando = q.toLocaleTimeString('pt-BR', { hour12: false }) + (_hmIsoDe(q) !== _hmIsoDe(d) ? ' de ' + q.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '');
         h += `<div class="hm-row aj${_hm.novos.has(x.id) ? ' novo' : ''}"><span class="t">${quando}</span><span class="r">${esc(x.robo)}</span>
-          <span class="p"><span class="hm-tag host">✎ HOST</span> mudou a coluna de <b>${x.ajuste_de != null ? x.ajuste_de : '?'}</b> para <b>${x.ajuste_para != null ? x.ajuste_para : '?'}</b> <small>(${p > 0 ? '+' : ''}${p})</small>${x.motivo ? `<span class="hm-mot">“${esc(x.motivo)}”</span>` : ''}</span>
+          <span class="p"><span class="hm-tag host">✎ HOST</span> mudou a coluna de <b>${x.ajuste_de != null ? x.ajuste_de : '?'}</b> para <b>${x.ajuste_para != null ? x.ajuste_para : '?'}</b> <small>(${p > 0 ? '+' : ''}${p})</small>
+            <span class="hm-mot${x.motivo ? '' : ' vazio'}">${x.motivo ? 'Motivo: “' + esc(x.motivo) + '”' : 'sem motivo informado'}${isAdmin ? ` <button type="button" class="hm-motbt" onclick="abrirMotivoAjuste(${parseInt(x.id) || 0})">✎ ${x.motivo ? 'editar motivo' : 'escrever motivo'}</button>` : ''}</span></span>
           <span class="x">ajuste manual</span></div>`;
         return;
       }
