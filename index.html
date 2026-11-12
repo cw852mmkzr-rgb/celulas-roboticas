@@ -1814,27 +1814,6 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cnt-kpi small{font-size:11.5px;color:var(--mut)}
 .cnt-kpi.ok b{color:#00e87a}.cnt-kpi.al b{color:#fbbf24}
 .cnt-card{background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:14px 14px 12px;margin-bottom:16px}
-.cnt-tw{overflow-x:auto}
-.cnt-t{border-collapse:collapse;font-size:13px;width:100%;min-width:760px}
-.cnt-t th,.cnt-t td{padding:8px 6px;border-bottom:1px solid #161d28;text-align:center;white-space:nowrap}
-.cnt-t th{font-size:10.5px;font-weight:700;color:var(--mut);letter-spacing:.04em}
-.cnt-t th.rb,.cnt-t td.rb{text-align:left;position:sticky;left:0;background:var(--pn);z-index:1;padding-left:4px;padding-right:12px}
-.cnt-t td.rb b{font-size:14px;color:#fff}
-.cnt-t td.rb small{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--mut);font-weight:600;margin-top:2px}
-.cnt-t td.rb small i{width:7px;height:7px;border-radius:50%;background:#475569;flex-shrink:0}
-.cnt-t td.rb small.on{color:#00e87a}.cnt-t td.rb small.on i{background:#00e87a}
-.cnt-t td.v{font-weight:800;color:#e5ebf3;font-variant-numeric:tabular-nums}
-.cnt-t td.z{color:#36414f}
-.cnt-t th.ag{color:#00e87a;background:#00e87a14;border-radius:8px 8px 0 0}
-.cnt-t td.ag{background:#00e87a0f}
-.cnt-t td.ag.v{color:#00e87a}
-.cnt-t td.ver{background:#f59e0b1f;color:#fbbf24;box-shadow:inset 0 0 0 1px #f59e0b77}
-.cnt-t td.ver .w{font-size:10px;margin-left:2px}
-.cnt-t td.tot,.cnt-t th.tot{font-weight:800;color:#fff;background:#ffffff06}
-.cnt-t tfoot td{font-weight:800;color:#c9d3df;border-top:1px solid var(--ln);border-bottom:0}
-.cnt-md{display:block;font-size:10px;color:var(--mut);font-weight:600;margin-top:1px}
-.cnt-leg{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:12px;line-height:1.4}
-.cnt-leg b{color:#c9d3df}
 .cnt-msg{background:var(--pn);border:1px dashed #2a3646;border-radius:14px;padding:22px;text-align:center;color:#9aa6b6;font-size:13.5px;line-height:1.6;margin-bottom:16px}
 .cnt-msg.err{border-color:#ef444466;color:#fca5a5}
 /* ===== Histórico de Metas (peça a peça dos robôs automáticos, 12/11/2026) ===== */
@@ -4502,7 +4481,6 @@ function getCellTipo(k) {
   if (k === '__maparobos') return 'mapa_robos';
   if (k === '__painel') return 'painel';
   if (k === '__prodrobo') return 'prod_robo';
-  if (k === '__contagem') return 'contagem';
   if (k === '__histmetas') return 'hist_metas';
   if (k === '__gerenciar') return 'gerenciar';
   if (!celulas[k]) return 'robo';
@@ -4898,7 +4876,6 @@ const SB_IC = {
   mapa: '<path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   painel: '<path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4.2-4.2"/><circle cx="12" cy="15" r="1.3"/>',
   prodrobo: '<path d="M3 21h18"/><path d="M5 21v-9l4 2.5V12l4 2.5V12l4 2.5V7l3 1.5V21"/>',
-  contagem: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M6.5 12h2.5l1.5-3.5 3 7 1.5-3.5h2.5"/>',
   histmetas: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2M22 12h-1.5"/>',
   metas: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
   producao_mensal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
@@ -4957,7 +4934,6 @@ function renderSidebar(){
   html += item('__maparobos', 'mapa', 'Mapa dos Robôs', 'Chão de fábrica ao vivo');
   html += item('__painel', 'painel', 'Painel', isAdmin ? 'Metas do dia e do mês' : 'Visão geral');
   html += item('__prodrobo', 'prodrobo', 'Produção por Robô', 'Lotes e trocas de peça');
-  html += item('__contagem', 'contagem', 'Contagem Automática', 'Peças dos robôs ao vivo');
   html += item('__histmetas', 'histmetas', 'Histórico de Metas', 'Peça a peça dos robôs');
 
   if(porGrupo.prod.length){ html += grupo('Produção') + porGrupo.prod.join(''); }
@@ -6512,7 +6488,6 @@ function _renderDetailInner(){
   }
   if(selected==='__painel'){renderPainel();return;}
   if(selected==='__prodrobo'){renderProdRobo();return;}
-  if(selected==='__contagem'){renderContagem();return;}
   if(selected==='__histmetas'){renderHistMetas();return;}
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
@@ -7583,14 +7558,12 @@ function _prbTrocaHtml(r, de, para, mostraRobo){
     A <b>${esc(de.cod)}</b> teve o último apontamento em <b>${_prbQuando(de.fim, de.fimH)}</b> e a <b>${esc(para.cod)}</b> começou a ter apontamento em <b>${_prbQuando(para.ini, para.iniH)}</b> — <b>${inter}</b> entre uma e outra.</div></div>`;
 }
 
-// ===== CONTAGEM AUTOMÁTICA (12/11/2026) =====
-// O script Python do Leonardo lê o contador dos robôs FANUC e grava 1 linha por peça em producao_robos.
-// A view producao_por_slot já entrega por dia / robô ("601") / coluna da Meta Diária ("h0930"),
-// com o rótulo = FIM do intervalo (09:00 = 08:00–09:00). Fora dos intervalos (janta, madrugada) = "fora".
-// Tempo real: Supabase Realtime (INSERT em producao_robos) + releitura a cada 30 s como reserva.
-const CNT_ROBOS = [600, 601, 602, 603, 604];
-const _cnt = { dia: null, rows: [], carregado: false, carregando: false, erro: '', sb: null, canal: null, vivo: false, timer: null, tick: 0, sig: '' };
-let _cntDebounce = null;
+// ===== APOIO DA CONTAGEM AUTOMÁTICA (12/11/2026) =====
+// O script Python do Leonardo lê o contador dos robôs FANUC e grava 1 linha por peça em producao_robos;
+// o job tremps_auto_metas (Supabase, 30 s) leva as peças para a Meta Diária. A aba "Contagem Automática"
+// foi removida a pedido (12/11/2026); estas funções ficam porque o Histórico de Metas usa.
+// Coluna da Meta Diária: rótulo = FIM do intervalo (09:00 = 08:00–09:00).
+const _cnt = { sb: null }; // cliente Supabase (Realtime), criado só quando precisa
 function _cntHojeISO(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function _cntChave(iso){ const p = iso.split('-').map(Number); return p[0] + '_' + (p[1] - 1) + '_' + p[2]; }
 // coluna da Meta Diária de um horário — mesma regra da função tremps_slot do banco
@@ -7607,19 +7580,6 @@ function _cntIntervalo(h, chave){
   const ant = h === '21:00' ? '20:00' : (i > 0 ? cols[i - 1] : String(parseInt(h) - 1).padStart(2, '0') + ':00');
   return ant + '–' + h;
 }
-async function _cntCarregar(){
-  if(_cnt.carregando) return; _cnt.carregando = true;
-  const dia = _cnt.dia;
-  try{
-    const r = await fetch(SUPABASE_URL + '/rest/v1/producao_por_slot?dia=eq.' + dia + '&select=robo,campo,pecas,verificar,zerado,eventos,ultima', { headers: HEADERS_SB, signal: AbortSignal.timeout(12000) });
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    const rows = await r.json();
-    if(dia === _cnt.dia){ _cnt.rows = Array.isArray(rows) ? rows : []; _cnt.erro = ''; _cnt.carregado = true; }
-  }catch(e){ if(dia === _cnt.dia) _cnt.erro = 'Não foi possível ler a contagem agora. Tentando de novo em instantes.'; }
-  _cnt.carregando = false;
-  if(selected === '__contagem') renderContagem();
-}
-function _cntAgenda(){ clearTimeout(_cntDebounce); _cntDebounce = setTimeout(_cntCarregar, 700); }
 function _cntCarregaLib(){
   return new Promise((ok, er) => {
     if(window.supabase && window.supabase.createClient) return ok();
@@ -7628,113 +7588,6 @@ function _cntCarregaLib(){
     s.onload = () => ok(); s.onerror = () => er(new Error('lib')); document.head.appendChild(s);
   });
 }
-async function _cntConectar(){
-  if(_cnt.canal) return;
-  try{
-    await _cntCarregaLib();
-    if(selected !== '__contagem' || _cnt.canal) return;
-    if(!_cnt.sb) _cnt.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
-    _cnt.canal = _cnt.sb.channel('contagem-robos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'producao_robos' }, () => { if(_cnt.dia === _cntHojeISO()) _cntAgenda(); })
-      .subscribe(st => { _cnt.vivo = st === 'SUBSCRIBED'; _cntLiveUI(); });
-  }catch(e){ _cnt.vivo = false; _cntLiveUI(); }
-}
-function _cntDesconectar(){
-  if(_cnt.canal && _cnt.sb){ try{ _cnt.sb.removeChannel(_cnt.canal); }catch(e){} }
-  _cnt.canal = null; _cnt.vivo = false;
-  if(_cnt.timer){ clearInterval(_cnt.timer); _cnt.timer = null; }
-}
-function _cntLiveUI(){
-  const el = document.getElementById('cntLive'); if(!el) return;
-  el.className = 'cnt-live' + (_cnt.vivo ? ' on' : '');
-  el.title = _cnt.vivo ? 'Conectado: cada peça nova aparece sozinha' : 'Sem conexão ao vivo: a tela relê a contagem a cada 30 s';
-  const sp = el.querySelector('span'); if(sp) sp.textContent = _cnt.vivo ? 'Ao vivo' : 'Atualiza a cada 30 s';
-}
-function _cntSetDia(v){ if(!v || v === _cnt.dia) return; _cnt.dia = v; _cnt.rows = []; _cnt.carregado = false; _cnt.erro = ''; _cnt.sig = ''; renderContagem(); _cntCarregar(); }
-function _cntHora(iso){ const d = new Date(iso); return isNaN(d) ? '' : String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-
-function renderContagem(){
-  const mp = document.getElementById('mainPanel'); if(!mp) return;
-  if(!_cnt.dia) _cnt.dia = _cntHojeISO();
-  if(!_cnt.timer){
-    _cnt.tick = 0;
-    // a cada 5 s: sai sozinho quando trocam de aba; a cada 30 s relê (reserva do tempo real)
-    _cnt.timer = setInterval(() => {
-      if(selected !== '__contagem'){ _cntDesconectar(); return; }
-      _cnt.tick++;
-      if(_cnt.tick % 6 === 0 && _cnt.dia === _cntHojeISO()) _cntCarregar(); else renderContagem();
-    }, 5000);
-    _cntCarregar(); _cntConectar();
-  }
-  const hoje = _cntHojeISO(), ehHoje = _cnt.dia === hoje, chave = _cntChave(_cnt.dia);
-  const agora = new Date(), slotAg = ehHoje ? _cntSlot(agora) : null, minuto = Math.floor(Date.now() / 60000);
-  const horas = [...horasDiaPara(chave), ...HORAS_NOITE].map(h => ({ h, c: campoH(h) }));
-  const temFora = _cnt.rows.some(x => x.campo === 'fora');
-  const mk = metaApKey(), mdia = ((mk && celulas[mk] && celulas[mk].metas_dias) || {})[chave] || {};
-  const set = new Set(CNT_ROBOS.map(String)); _cnt.rows.forEach(x => set.add(String(x.robo)));
-  const robos = [...set].sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
-  const M = {}; _cnt.rows.forEach(x => { (M[x.robo] = M[x.robo] || {})[x.campo] = x; });
-  const manual = (r, c) => parseCelVal(((mdia[r] || {})[c]) || '').num;
-
-  const sig = JSON.stringify([_cnt.dia, slotAg, minuto, _cnt.rows, _cnt.erro, _cnt.carregado, robos.map(r => horas.map(h => manual(r, h.c)))]);
-  if(sig === _cnt.sig && mp.querySelector('.cnt')){ _cntLiveUI(); return; }
-  // escolhendo a data: não redesenha por baixo do campo
-  const fo = document.activeElement;
-  if(fo && fo.tagName === 'INPUT' && mp.contains(fo) && mp.querySelector('.cnt')) return;
-  _cnt.sig = sig;
-
-  // totais
-  const totR = {}, totC = {}, ultR = {}; let tot = 0, nVer = 0;
-  _cnt.rows.forEach(x => {
-    const p = parseInt(x.pecas) || 0; tot += p;
-    totR[x.robo] = (totR[x.robo] || 0) + p; totC[x.campo] = (totC[x.campo] || 0) + p;
-    if(x.verificar) nVer++;
-    if(x.ultima && (!ultR[x.robo] || x.ultima > ultR[x.robo])) ultR[x.robo] = x.ultima;
-  });
-  const contando = robos.filter(r => ultR[r] && ehHoje && (Date.now() - new Date(ultR[r]).getTime()) < 3 * 60000).length;
-  const hAg = slotAg ? horas.find(x => x.c === slotAg) : null;
-  const dataTxt = _cnt.dia.split('-').reverse().join('/');
-
-  const cel = (r, c, ag) => {
-    const x = (M[r] || {})[c], v = x ? (parseInt(x.pecas) || 0) : 0, mv = manual(r, c);
-    const cls = [v > 0 ? 'v' : 'z', ag ? 'ag' : '', x && x.verificar ? 'ver' : ''].filter(Boolean).join(' ');
-    const tit = x ? `${v} peça${v === 1 ? '' : 's'} · ${x.eventos} leitura${x.eventos == 1 ? '' : 's'} · última às ${_cntHora(x.ultima)}${x.verificar ? ' · ⚠ VERIFICAR: o contador pulou 2 ou mais de uma vez' : ''}${x.zerado ? ' · contador ZERADO e voltou a contar' : ''}` : 'sem peças';
-    return `<td class="${cls}" title="${esc(tit + (mv > 0 ? ' · Meta Diária (lançado à mão): ' + mv : ''))}">${v > 0 ? v.toLocaleString('pt-BR') : '·'}${x && x.verificar ? '<span class="w">⚠</span>' : ''}${x && x.zerado ? '<span class="w">↺</span>' : ''}${mv > 0 ? `<span class="cnt-md">manual ${mv}</span>` : ''}</td>`;
-  };
-  const linhas = robos.map(r => {
-    const u = ultR[r], on = u && ehHoje && (Date.now() - new Date(u).getTime()) < 3 * 60000;
-    const sub = !u ? (CNT_ROBOS.includes(parseInt(r)) ? 'sem leitura' : '') : on ? 'contando · ' + _cntHora(u) : 'última peça ' + _cntHora(u);
-    return `<tr><td class="rb"><b>R-${esc(r)}</b><small class="${on ? 'on' : ''}"><i></i>${esc(sub)}</small></td>${horas.map(h => cel(r, h.c, h.c === slotAg)).join('')}${temFora ? cel(r, 'fora', false) : ''}<td class="tot">${(totR[r] || 0).toLocaleString('pt-BR')}</td></tr>`;
-  }).join('');
-  const rodape = `<tr><td class="rb">Total</td>${horas.map(h => `<td class="${h.c === slotAg ? 'ag' : ''}">${totC[h.c] ? totC[h.c].toLocaleString('pt-BR') : '·'}</td>`).join('')}${temFora ? `<td>${(totC.fora || 0).toLocaleString('pt-BR')}</td>` : ''}<td class="tot">${tot.toLocaleString('pt-BR')}</td></tr>`;
-  const cab = `<tr><th class="rb">Robô</th>${horas.map(h => `<th class="${h.c === slotAg ? 'ag' : ''}" title="${esc(_cntIntervalo(h.h, chave))}">${h.h}${h.c === slotAg ? '<br>agora' : ''}</th>`).join('')}${temFora ? '<th title="Peças fora dos horários da Meta Diária (janta, antes das 05:00 ou depois das 22:00)">Fora do<br>horário</th>' : ''}<th class="tot">Total</th></tr>`;
-
-  let corpo;
-  if(_cnt.erro && !_cnt.carregado) corpo = `<div class="cnt-msg err">${esc(_cnt.erro)}</div>`;
-  else if(!_cnt.carregado) corpo = `<div class="cnt-msg">Carregando a contagem dos robôs…</div>`;
-  else {
-    corpo = (_cnt.rows.length ? '' : `<div class="cnt-msg">Nenhuma peça recebida em ${dataTxt}.<br>Assim que o script do Leonardo enviar as peças, elas aparecem aqui sozinhas.</div>`)
-      + `<div class="cnt-card"><div class="cnt-tw"><table class="cnt-t"><thead>${cab}</thead><tbody>${linhas}</tbody><tfoot>${rodape}</tfoot></table></div>
-         <div class="cnt-leg"><span><b>Coluna</b> = fim do intervalo (09:00 = das 08:00 às 09:00)</span><span><b>⚠</b> verificar: o contador pulou 2 ou mais de uma vez</span><span><b>↺</b> contador zerado</span><span><b>manual</b> = o que foi lançado à mão na Meta Diária</span></div></div>`;
-  }
-  mp.innerHTML = `<div class="cnt">
-    <div class="cnt-top"><div><div class="cnt-tt">Contagem Automática</div>
-      <div class="cnt-st">Peças lidas direto dos robôs FANUC, sem digitação. ${ehHoje ? 'A coluna da hora atual fica em verde e cada hora nova começa do zero.' : 'Dia ' + dataTxt + '.'}</div></div>
-      <div class="cnt-ctl"><span id="cntLive" class="cnt-live"><i></i><span>Conectando…</span></span>
-        <input type="date" value="${_cnt.dia}" max="${hoje}" onchange="this.blur();_cntSetDia(this.value)" aria-label="Dia">
-        ${ehHoje ? '' : `<button type="button" onclick="_cntSetDia('${hoje}')">Hoje</button>`}</div></div>
-    ${_cnt.erro && _cnt.carregado ? `<div class="cnt-msg err">${esc(_cnt.erro)}</div>` : ''}
-    <div class="cnt-kpis">
-      <div class="cnt-kpi"><span>Total ${ehHoje ? 'hoje' : 'no dia'}</span><b>${tot.toLocaleString('pt-BR')}</b><small>peças contadas</small></div>
-      ${ehHoje ? `<div class="cnt-kpi ok"><span>Hora atual${hAg ? ' · ' + esc(_cntIntervalo(hAg.h, chave)) : ''}</span><b>${hAg ? (totC[hAg.c] || 0).toLocaleString('pt-BR') : '—'}</b><small>${hAg ? 'peças nesta hora' : 'fora do horário de produção'}</small></div>
-      <div class="cnt-kpi"><span>Robôs contando</span><b>${contando}</b><small>peça nos últimos 3 min</small></div>` : ''}
-      <div class="cnt-kpi ${nVer ? 'al' : ''}"><span>Para verificar</span><b>${nVer}</b><small>${nVer ? 'células com ⚠' : 'nada a conferir'}</small></div>
-    </div>
-    ${corpo}
-  </div>`;
-  _cntLiveUI();
-}
-
 // ===== HISTÓRICO DE METAS (12/11/2026) =====
 // Peça a peça dos robôs automáticos (tabela producao_robos): robô, "+1 peça" e a hora exata (HH:MM:SS)
 // em que a peça foi completada. Lê só; peças novas entram ao vivo pelo Realtime.
