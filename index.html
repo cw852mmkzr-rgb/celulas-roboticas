@@ -511,10 +511,11 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .aja-volta { margin-left: auto; font: inherit; font-size: 12px; font-weight: 800; color: #c4b5fd; background: #a78bfa22; border: 1px solid #a78bfa66; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
 .aja-volta:hover { background: #a78bfa; color: #0b0f14; }
 .aja-card label { display: block; font-size: 11px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 5px; }
-.adj-tag { line-height: 1; margin-bottom: 2px; }
-.adj-b { font: inherit; font-family: 'Montserrat', sans-serif; font-size: 9.5px; font-weight: 800; color: #c99bff; background: #b46cff1c; border: 1px solid #b46cff55; border-radius: 99px; padding: 1px 7px; cursor: pointer; white-space: nowrap; }
-.adj-b.has { background: #b46cff; color: #04101e; border-color: #b46cff; }
-.adj-b:hover { filter: brightness(1.15); }
+/* balão 💬 da parada justificada no canto do número (igual à Cromo): tracejado sem motivo, cheio com motivo */
+.pj-wrap { position: relative; display: inline-block; }
+.adj-b { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; padding: 0; border-radius: 6px; border: 1px dashed #b46cff88; background: #0b0f14; font-size: 11px; line-height: 20px; cursor: pointer; opacity: .7; filter: grayscale(1); z-index: 2; }
+.adj-b.has { border-style: solid; border-color: #b46cff; opacity: 1; filter: none; box-shadow: 0 0 8px -2px #b46cff; }
+.adj-b:hover { opacity: 1; filter: none; }
 .aji-x { background: none; border: 1px solid #1e2530; color: #8a94a6; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; flex: none; }
 .aji-txt { background: #080b0f; border: 1px solid #b46cff55; border-left: 3px solid #b46cff; border-radius: 10px; padding: 12px 14px; font-size: 14.5px; line-height: 1.5; color: #e5ebf3; white-space: pre-wrap; word-break: break-word; }
 .aji-txt.vazio { color: #8a94a6; font-style: italic; border-color: #1e2530; border-left-color: #26303f; }
@@ -4558,8 +4559,10 @@ function _ajObjT(rd, campo){ const j = rd && rd['just_'+campo]; return (j && typ
 function _ajTxtT(rd, campo){ const j = _ajObjT(rd, campo); return j ? String(j.txt || '') : ''; }
 function _ajBalaoT(rd, campo, robo, key){
   const t = _ajTxtT(rd, campo);
-  return `<div class="adj-tag"><button type="button" class="adj-b${t ? ' has' : ''}" title="⏸ Parada justificada — ${esc(t || 'sem motivo informado')}" onclick="event.stopPropagation();abrirAjusteInfoT('${key}','${robo}','${campo}')">💬 parada</button></div>`;
+  return `<button type="button" class="adj-b${t ? ' has' : ''}" aria-label="Motivo da parada justificada" title="⏸ Parada justificada — ${esc(t || 'sem motivo informado')}" onclick="event.stopPropagation();abrirAjusteInfoT('${key}','${robo}','${campo}')">💬</button>`;
 }
+// número da hora + balão 💬 no canto (igual à Cromo)
+function _ajComBalaoT(html, rd, campo, robo, key){ return `<div class="pj-wrap">${html}${_ajBalaoT(rd, campo, robo, key)}</div>`; }
 // janela de leitura do parada justificada (todos); HOST/Metas têm "Editar" (abre a janela da hora)
 function abrirAjusteInfoT(key, robo, campo){
   const chave = getMetasChave(key);
@@ -5646,7 +5649,7 @@ function buildTurnoTable(c,turno,chave){
       // só o HOST altera a produção automática — pelo botão "✎ Ajustar produção automática" do topo (pede senha)
       const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar a equipe e a parada justificada':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
       const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${tipo==='ajuste'&&num>0?_ajBalaoT(rd,campo,robo,selected):''}${inpHtml}${funcHtml}</td>`;
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${tipo==='ajuste'&&num>0?_ajComBalaoT(inpHtml,rd,campo,robo,selected):inpHtml}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -10754,9 +10757,9 @@ function _renderCarrossel(HORAS, data, isNoite, subLabel, subColor, subId, isAdm
       const nomeEx=_funcHoraExibT(rd,campo);
       const funcTag=(num>0&&nomeEx)?`<div title="${esc(nomeEx)}" style="font-size:9px;color:#00e87a;margin-top:3px;line-height:1.1;max-width:62px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
       const auto = rd['auto_'+campo]==='1';  // hora contada pelo robô: não se digita; o toque abre equipe + parada justificada
-      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${isAjuste&&num>0?_ajBalaoT(rd,campo,robo,selected):''}${podeEditar
+      return`<td style="background:${bg};color:${cor};font-weight:700;${isAtual?'border:2px solid #ffb300;':''}">${(h2 => isAjuste&&num>0 ? _ajComBalaoT(h2,rd,campo,robo,selected) : h2)(podeEditar
         ?`<input class="hora-inp ${isCafe?'cafe':''}${isAjuste?' cell-adj':''}" type="number" min="0" value="${num>0?num:''}" placeholder="—" ${auto?`readonly onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:ro} onchange="handleMetasInputEl(this,'${selected}',${robo},'${campo}')">`
-        :`${num>0?num:'—'}`}${funcTag}</td>`;
+        :`${num>0?num:'—'}`)}${funcTag}</td>`;
     }).join('');
 
     const subRow = HORAS.reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0);
