@@ -493,6 +493,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.cod-val { color: #ffb300; font-size: 12px; background: #04070d; position:sticky; left:175px; z-index:1; }
 /* Troca de peça no meio do dia */
 .metas-table td.troca-ini { box-shadow: inset 3px 0 0 #ffb300; background: #ffb3000a; }
+.metas-table .auto-tag { font-size: 9px; font-weight: 800; color: #38bdf8; font-family: 'Courier New', monospace; margin-top: 3px; white-space: nowrap; letter-spacing: .02em; }
+.metas-table .hora-inp.cell-auto { cursor: default; box-shadow: inset 0 0 0 1px #38bdf855; }
 .metas-table .troca-tag { font-size: 9px; font-weight: 800; color: #ffb300; font-family: 'Courier New', monospace; letter-spacing: .02em; margin-bottom: 2px; white-space: nowrap; }
 .metas-table .troca-chip { margin-top: 3px; font-size: 10px; color: #ffb300; background: #ffb30014; border: 1px solid #ffb30055; border-radius: 6px; padding: 2px 5px; white-space: nowrap; font-family: 'Courier New', monospace; cursor: default; }
 .metas-table .troca-chip[onclick] { cursor: pointer; }
@@ -5118,8 +5120,19 @@ function _arredMetaHora(key, robo, campo, chave, valor){
   const metaH = metaEfetivaHora(hora, metaRdHora(rd, campo), chave);
   return (metaH > 1 && pv.num === metaH - 1) ? String(metaH) : valor;
 }
+// Contagem automática (12/11/2026): hora marcada auto_hXXXX vem do contador do robô (job tremps_auto_metas a cada 30 s).
+// Não deixa digitar por cima — senão o automático voltaria o valor e o desconto de componentes ficaria confuso.
+function _horaAutomatica(key, robo, campo, chave){
+  if(!/^h[0-9]{4}$/.test(String(campo))) return false;
+  const rd = ((((celulas[key]||{}).metas_dias||{})[chave||getMetasChave(key)])||{})[robo];
+  if(!rd || rd['auto_'+campo] !== '1') return false;
+  const inp = document.getElementById(`inp-${robo}-${campo}`); if(inp) inp.value = rd[campo] || '';
+  showToast('🤖 Essa hora é automática — vem direto do contador do robô', true);
+  return true;
+}
 function updateMetasCell(key,robo,campo,valor){
   const chave=getMetasChave(key);
+  if(_horaAutomatica(key, robo, campo, chave)) return;
   valor=_arredMetaHora(key,robo,campo,chave,valor);
   if(!celulas[key].metas_dias)celulas[key].metas_dias={};
   if(!celulas[key].metas_dias[chave])celulas[key].metas_dias[chave]={};
@@ -5430,7 +5443,10 @@ function buildTurnoTable(c,turno,chave){
       const funcHtml=(nomeEx&&showF)?`<div title="${esc(nomeEx)}" style="font-size:10px;color:#00e87a;margin-top:4px;font-family:'Courier New',monospace;line-height:1.15;max-width:72px;margin-left:auto;margin-right:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(nomeEx)}</div>`:'';
       const trocaIni=_trocasRd(rd).find(t=>t.h===campo);
       const trocaAttr=trocaIni?` class="troca-ini" title="Troca de peça: a partir daqui vale a peça ${esc(trocaIni.cod||'—')}${trocaIni.meta?' (meta '+esc(String(trocaIni.meta))+'/h)':''}"`:'';
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}" value="${esc(String(displayVal))}" placeholder="—" ${ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
+      // contagem automática (robô mandando dados): a célula vem do contador e fica travada
+      const auto=rd['auto_'+campo]==='1';
+      const autoTag=auto?`<div class="auto-tag" title="Automático: contado direto pelo robô (atualiza a cada 30 s)">🤖 auto</div>`:'';
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto':''}" value="${esc(String(displayVal))}" placeholder="—" ${auto?'readonly title="Automático: contado direto pelo robô"':ro} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${autoTag}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -10000,6 +10016,7 @@ function toggleDivisaoPontos(){
 function handleMetasInput(key,robo,campo,valor){
   const c = celulas[key];
   const chave = getMetasChave(key);
+  if(_horaAutomatica(key, robo, campo, chave)) return;
   if(!c.metas_dias) c.metas_dias={};
   if(!c.metas_dias[chave]) c.metas_dias[chave]={};
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
