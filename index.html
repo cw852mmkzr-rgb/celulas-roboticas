@@ -4561,6 +4561,13 @@ function parseCelVal(raw) {
 // mas as peças somam normal) e aparece à parte. O motivo fica em rd['just_'+campo] = {txt, por, em}
 // e aparece no balãozinho 💬 em cima do número (todos leem; HOST/Metas escrevem na janela da hora).
 function _ehAjusteT(raw){ return parseCelVal(raw||'').tipo === 'ajuste'; }
+// Tablet/celular (12/11/2026): o teclado numérico não tem "#", então o "-" vale como "#":
+// "43-" ou "-43" = 43# (parada justificada). Vale para HOST e Metas em todos os campos de hora.
+function _normParadaT(v){
+  const s = String(v == null ? '' : v).trim();
+  const m = s.match(/^-[ ]*([0-9]+)$/) || s.match(/^([0-9]+)[ ]*-$/);
+  return m ? m[1] + '#' : s;
+}
 function _ajObjT(rd, campo){ const j = rd && rd['just_'+campo]; return (j && typeof j === 'object') ? j : (typeof j === 'string' && j ? {txt:j} : null); }
 function _ajTxtT(rd, campo){ const j = _ajObjT(rd, campo); return j ? String(j.txt || '') : ''; }
 function _ajBalaoT(rd, campo, robo, key){
@@ -6124,7 +6131,7 @@ function renderMetasDiaria(){
       <span><span style="color:#ff4d4d;font-weight:800;font-size:14px">■</span> Abaixo da meta</span>
       <span><span style="color:#ffb300;font-weight:800;font-size:14px">■</span> Horário de café — meta reduzida</span>
       <span title="Não conta como meta batida nem como não batida. O 💬 em cima do número mostra o motivo."><span style="color:#b46cff;font-weight:800;font-size:14px">■</span> Parada justificada — fora da conta de metas 💬</span>
-      <span style="color:#4a5568;font-size:11px">← Clique na hora e marque <b style="color:#b46cff">⏸ parada justificada</b></span>
+      <span style="color:#4a5568;font-size:11px">← Clique na hora e marque <b style="color:#b46cff">⏸ parada justificada</b> · no tablet/celular digite o número com <b style="color:#b46cff">-</b> (ex.: 43-)</span>
     </div>
     <div style="margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -10277,7 +10284,10 @@ function handleMetasInputEl(el, key, robo, campo){
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
   const rd = c.metas_dias[chave][robo];
   const pontos = parseInt(_parteRdCampo(rd, campo).pontos)||0; // troca de peça: pontos da peça daquela hora
-  const valor = el.value;
+  // campo de número do celular: "43-" não é número válido (o navegador entrega vazio) — avisa em vez de apagar a hora
+  if(el.validity && el.validity.badInput){ showToast('Para parada justificada, digite o - ANTES do número (ex.: -43)', true); el.value = parseCelVal(rd[campo]||'').num || ''; return; }
+  const valor = _normParadaT(el.value);   // "-43" = parada justificada (teclado sem #)
+  if(String(valor).endsWith('#')) el.value = parseInt(valor) || '';
   const numVal = parseInt(valor)||0;
   let valorFinal = valor;
   // o campo do celular é só número: se a hora já tinha parada justificada, mantém o # (o ajuste sai pela chave da janela)
@@ -10339,6 +10349,8 @@ function handleMetasInput(key,robo,campo,valor){
   const c = celulas[key];
   const chave = getMetasChave(key);
   if(_horaAutomatica(key, robo, campo, chave)) return;
+  valor = _normParadaT(valor);   // "43-" / "-43" = parada justificada (teclado sem #)
+  { const _i = document.getElementById(`inp-${robo}-${campo}`); if(_i && String(valor).endsWith('#')) _i.value = String(parseInt(valor)||''); }
   if(!c.metas_dias) c.metas_dias={};
   if(!c.metas_dias[chave]) c.metas_dias[chave]={};
   if(!c.metas_dias[chave][robo]) c.metas_dias[chave][robo]={};
@@ -11401,7 +11413,7 @@ function mapaApontarEnviar(){
   const metaEl=document.getElementById('apMeta');
   const codEl=document.getElementById('apCod');
   const numero=maqEl.value.trim();
-  const qtdRaw=qtdEl.value.trim();
+  const qtdRaw=_normParadaT(qtdEl.value.trim());   // "43-" / "-43" = parada justificada (teclado sem #)
   if(!numero){ showToast('Informe o número da máquina',true); maqEl.focus(); return; }
   if(qtdRaw===''||isNaN(parseInt(qtdRaw))||parseInt(qtdRaw)<0){ showToast('Informe uma quantidade válida',true); qtdEl.focus(); return; }
   if(!_apHora){ showToast('Escolha a hora primeiro',true); return; }
@@ -11501,7 +11513,7 @@ function metaApEnviar(){
   if(_metaApHora===null){ showToast('Escolha a hora primeiro',true); return; }
   const robo=parseInt(document.getElementById('metaApRobo').value);
   const qtdEl=document.getElementById('metaApQtd');
-  const qtdRaw=qtdEl.value.trim();
+  const qtdRaw=_normParadaT(qtdEl.value.trim());   // "43-" / "-43" = parada justificada (teclado sem #)
   if(!robo){ showToast('Escolha o robô',true); return; }
   // hora automática (contador do robô): não soma peças — só registra a equipe/pessoa da hora
   {
