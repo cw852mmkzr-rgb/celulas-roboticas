@@ -5260,7 +5260,7 @@ function abrirAjusteAuto(key, robo, campo){
       <div><label for="ajaRobo">Robô</label><select id="ajaRobo" onchange="abrirAjusteAuto('${key}', this.value)">${optRob}</select></div>
       <div><label for="ajaHora">Hora</label><select id="ajaHora" onchange="abrirAjusteAuto('${key}', '${robo}', this.value)">${optHora}</select></div>
     </div>
-    <div class="aja-atual" id="ajaLive"><span>Contado pelo robô <i class="aja-dot" title="Atualiza sozinho enquanto a janela está aberta"></i><small class="aja-viv">ao vivo</small></span><b id="ajaRobo">…</b></div>
+    <div class="aja-atual" id="ajaLive"><span>Contado pelo robô <i class="aja-dot" title="Atualiza sozinho enquanto a janela está aberta"></i><small class="aja-viv">ao vivo</small></span><b id="ajaContRobo">…</b></div>
     <div class="aja-extra" id="ajaExtra" hidden><span>Ajustes do HOST: <b id="ajaAj">0</b></span><span>Na Meta Diária agora: <b id="ajaMd">${atual.toLocaleString('pt-BR')}</b></span>
       <button type="button" class="aja-volta" onclick="_ajaVoltarRobo()" title="Coloca no campo o número que o robô contou (desfaz os ajustes ao salvar)">↺ Voltar ao contado pelo robô</button></div>
     <label for="ajaNovo">Quantidade certa da hora</label>
@@ -5288,7 +5288,7 @@ async function _ajaLerVivo(){
     const x = (Array.isArray(j) && j[0]) || { pecas: 0, pecas_robo: 0, ajuste_host: 0 };
     const rob = parseInt(x.pecas_robo) || 0, aj = parseInt(x.ajuste_host) || 0, tot = parseInt(x.pecas) || 0;
     _ajaRoboN = rob;
-    const eR = document.getElementById('ajaRobo'), eA = document.getElementById('ajaAj'), eM = document.getElementById('ajaMd'), eX = document.getElementById('ajaExtra');
+    const eR = document.getElementById('ajaContRobo'), eA = document.getElementById('ajaAj'), eM = document.getElementById('ajaMd'), eX = document.getElementById('ajaExtra');
     if(eR) eR.textContent = rob.toLocaleString('pt-BR');
     if(eA) eA.textContent = (aj > 0 ? '+' : '') + aj.toLocaleString('pt-BR');
     if(eM) eM.textContent = tot.toLocaleString('pt-BR');
