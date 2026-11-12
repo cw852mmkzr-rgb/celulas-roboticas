@@ -495,6 +495,25 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .metas-table td.troca-ini { box-shadow: inset 3px 0 0 #ffb300; background: #ffb3000a; }
 .metas-table .hora-inp.cell-auto { cursor: default; }
 .metas-table .hora-inp.cell-auto-ed { cursor: pointer; }
+.metas-table .auto-wrap { position: relative; display: inline-block; }
+.metas-table .auto-edit { position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; border-radius: 50%; border: 1px solid #38bdf8aa; background: #0b1622; color: #7dd3fc; font-size: 10px; line-height: 16px; cursor: pointer; opacity: .75; z-index: 2; }
+.metas-table .auto-edit:hover { opacity: 1; background: #38bdf8; color: #05060d; }
+/* janela de ajuste do HOST na hora automática */
+.aja-ov { position: fixed; inset: 0; background: #000000c4; z-index: 10050; display: none; align-items: center; justify-content: center; padding: 16px; }
+.aja-ov.on { display: flex; }
+.aja-card { background: #0f1318; border: 1px solid #1e2530; border-radius: 16px; padding: 20px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; font-family: 'Montserrat', sans-serif; color: #e5ebf3; }
+.aja-card h3 { margin: 0 0 4px; font-size: 17px; font-weight: 800; color: #fff; }
+.aja-sub { font-size: 12.5px; color: #8a94a6; margin-bottom: 14px; line-height: 1.5; }
+.aja-atual { display: flex; justify-content: space-between; align-items: center; background: #080b0f; border: 1px solid #1e2530; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 13px; color: #9aa6b6; }
+.aja-atual b { font-size: 20px; color: #00e87a; font-weight: 800; }
+.aja-card label { display: block; font-size: 11px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: .06em; margin: 10px 0 5px; }
+.aja-card input { width: 100%; box-sizing: border-box; background: #080b0f; border: 1px solid #1e2530; color: #e5ebf3; padding: 10px 12px; border-radius: 9px; font: inherit; font-size: 15px; }
+.aja-card input:focus { outline: none; border-color: #38bdf8; }
+.aja-err { min-height: 18px; font-size: 12.5px; color: #fca5a5; margin-top: 10px; }
+.aja-bts { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+.aja-bts button { border-radius: 9px; padding: 9px 16px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: 1px solid #1e2530; background: #141a22; color: #c9d3df; }
+.aja-bts button.ok { background: #38bdf8; border-color: #38bdf8; color: #05060d; }
+.aja-bts button:disabled { opacity: .55; cursor: wait; }
 .metas-table .troca-tag { font-size: 9px; font-weight: 800; color: #ffb300; font-family: 'Courier New', monospace; letter-spacing: .02em; margin-bottom: 2px; white-space: nowrap; }
 .metas-table .troca-chip { margin-top: 3px; font-size: 10px; color: #ffb300; background: #ffb30014; border: 1px solid #ffb30055; border-radius: 6px; padding: 2px 5px; white-space: nowrap; font-family: 'Courier New', monospace; cursor: default; }
 .metas-table .troca-chip[onclick] { cursor: pointer; }
@@ -1837,6 +1856,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .hm-tag{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px;margin-left:8px;vertical-align:1px}
 .hm-tag.ver{background:#f59e0b22;color:#fbbf24}
 .hm-tag.zer{background:#38bdf822;color:#7dd3fc}
+.hm-tag.host{background:#a78bfa26;color:#c4b5fd;margin-left:0;margin-right:6px}
+.hm-row.aj{background:#a78bfa0d;border-left:3px solid #a78bfa;padding-left:8px}
+.hm-row.aj .p b{color:#fff}
+.hm-mot{display:block;font-size:12px;color:#c4b5fd;margin-top:3px;font-style:italic}
 .hm-row.novo{animation:hmNovo 2.4s ease-out}
 @keyframes hmNovo{0%{background:#00e87a26}100%{background:transparent}}
 .hm-mais{display:block;margin:14px auto 0;background:var(--pn);color:#c9d3df;border:1px solid var(--ln);border-radius:9px;padding:9px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
@@ -5135,6 +5158,68 @@ function _horaAutomatica(key, robo, campo, chave){
   showToast('🤖 Essa hora é automática — vem direto do contador do robô', true);
   return true;
 }
+// Ajuste do HOST numa hora automática (12/11/2026): pede a senha (conferida no servidor, função
+// tremps_ajuste_auto) e grava a diferença como "AJUSTE HOST" em producao_robos — aparece no Histórico de Metas.
+let _ajaCtx = null;
+function abrirAjusteAuto(key, robo, campo){
+  if(!isAdmin){ showToast('Só o HOST pode alterar a produção automática', true); return; }
+  const chave = getMetasChave(key);
+  const rd = ((((celulas[key]||{}).metas_dias||{})[chave])||{})[robo] || {};
+  const atual = parseCelVal(rd[campo] || '').num;
+  const hora = _horaDoCampo(campo), p = chave.split('_').map(Number);
+  _ajaCtx = { key, robo: String(robo), campo, chave };
+  let ov = document.getElementById('ajaOv');
+  if(!ov){
+    ov = document.createElement('div'); ov.id = 'ajaOv'; ov.className = 'aja-ov';
+    ov.addEventListener('click', e => { if(e.target === ov) fecharAjusteAuto(); });
+    document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('on')) fecharAjusteAuto(); });
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div class="aja-card" role="dialog" aria-modal="true" aria-labelledby="ajaTit">
+    <h3 id="ajaTit">✎ Alterar produção automática</h3>
+    <div class="aja-sub">Robô ${esc(String(robo))} · coluna ${hora} (${esc(_cntIntervalo(hora, chave))}) · ${String(p[2]).padStart(2,'0')}/${String(p[1]+1).padStart(2,'0')}/${p[0]}<br>A mudança fica registrada no Histórico de Metas como ajuste do HOST.</div>
+    <div class="aja-atual"><span>Contado pelo robô</span><b>${atual.toLocaleString('pt-BR')}</b></div>
+    <label for="ajaNovo">Quantidade certa da hora</label>
+    <input id="ajaNovo" type="number" min="0" max="5000" inputmode="numeric" value="${atual}">
+    <label for="ajaMotivo">Motivo (opcional)</label>
+    <input id="ajaMotivo" type="text" maxlength="200" placeholder="Ex.: peças refugadas, contador travou…">
+    <label for="ajaSenha">Senha do HOST</label>
+    <input id="ajaSenha" type="password" autocomplete="off" inputmode="numeric">
+    <div class="aja-err" id="ajaErr"></div>
+    <div class="aja-bts"><button type="button" onclick="fecharAjusteAuto()">Cancelar</button><button type="button" class="ok" id="ajaOk" onclick="salvarAjusteAuto()">Salvar ajuste</button></div>
+  </div>`;
+  ov.classList.add('on'); document.body.style.overflow = 'hidden';
+  ov.querySelectorAll('input').forEach(i => i.addEventListener('keydown', e => { if(e.key === 'Enter') salvarAjusteAuto(); }));
+  setTimeout(() => { const n = document.getElementById('ajaNovo'); if(n){ n.focus(); n.select(); } }, 30);
+}
+function fecharAjusteAuto(){ const ov = document.getElementById('ajaOv'); if(ov) ov.classList.remove('on'); document.body.style.overflow = ''; _ajaCtx = null; }
+async function salvarAjusteAuto(){
+  if(!_ajaCtx) return;
+  const err = document.getElementById('ajaErr'), bt = document.getElementById('ajaOk');
+  const novoTxt = (document.getElementById('ajaNovo').value || '').trim(), novo = parseInt(novoTxt, 10);
+  const senha = document.getElementById('ajaSenha').value, motivo = (document.getElementById('ajaMotivo').value || '').trim();
+  if(novoTxt === '' || isNaN(novo) || novo < 0 || novo > 5000){ err.textContent = 'Informe a quantidade certa (0 a 5000).'; return; }
+  if(!senha){ err.textContent = 'Digite a senha do HOST.'; return; }
+  err.textContent = ''; bt.disabled = true; bt.textContent = 'Salvando…';
+  const c = _ajaCtx;
+  try{
+    const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/tremps_ajuste_auto', { method: 'POST', headers: HEADERS_SB, signal: AbortSignal.timeout(15000),
+      body: JSON.stringify({ p_senha: senha, p_chave: c.chave, p_robo: c.robo, p_campo: c.campo, p_novo: novo, p_motivo: motivo || null }) });
+    const j = r.ok ? await r.json() : null;
+    if(!j){ throw new Error('http ' + r.status); }
+    if(!j.ok){ err.textContent = j.erro || 'Não foi possível salvar.'; document.getElementById('ajaSenha').value = ''; bt.disabled = false; bt.textContent = 'Salvar ajuste'; return; }
+    fecharAjusteAuto();
+    if(j.sem_mudanca){ showToast('Nada mudou — o robô já contou ' + j.atual); return; }
+    // mostra já na tela (o banco já recebeu); a próxima leitura confirma
+    const rd = ((((celulas[c.key]||{}).metas_dias||{})[c.chave])||{})[c.robo];
+    if(rd){ rd[c.campo] = String(j.para); }
+    showToast(`Robô ${c.robo} · ${_horaDoCampo(c.campo)}: ${j.de} → ${j.para} ✓ (registrado no Histórico de Metas)`);
+    if(getCellTipo(selected) === 'metas') renderMetasDiaria();
+    lastUserAction = 0; setTimeout(loadFromAPI, 300);
+  }catch(e){
+    err.textContent = 'Sem conexão com o banco agora. Tente de novo.'; bt.disabled = false; bt.textContent = 'Salvar ajuste';
+  }
+}
 function updateMetasCell(key,robo,campo,valor){
   const chave=getMetasChave(key);
   if(_horaAutomatica(key, robo, campo, chave)) return;
@@ -5451,8 +5536,11 @@ function buildTurnoTable(c,turno,chave){
       // contagem automática (robô mandando dados): o número vem do contador e não se digita;
       // clicar abre o mesmo seletor de equipe/pessoa da hora manual (o nome continua sendo registrado à mão)
       const auto=rd['auto_'+campo]==='1';
-      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar quem trabalhou':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">${funcHtml}</td>`;
+      const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar quem trabalhou':''}${isAdmin?' · ✎ para o HOST alterar (pede senha)':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
+      const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
+      // só o HOST altera a produção automática (com senha, conferida no servidor) — o ajuste fica no Histórico de Metas
+      const cellHtml=(auto&&isAdmin)?`<div class="auto-wrap">${inpHtml}<button type="button" class="auto-edit" title="Alterar a produção automática (HOST, pede senha)" aria-label="Alterar produção automática" onclick="event.stopPropagation();abrirAjusteAuto('${selected}','${robo}','${campo}')">✎</button></div>`:inpHtml;
+      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${cellHtml}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
@@ -7605,7 +7693,7 @@ async function _hmCarregar(mais){
   if(_hm.carregando) return; _hm.carregando = true;
   const dia = _hm.dia, robo = _hm.robo, lim = _hmLimites(dia), off = mais ? _hm.rows.length : 0;
   try{
-    let q = SUPABASE_URL + '/rest/v1/producao_robos?select=id,robo,valor_registrador,pecas,obs,data_hora'
+    let q = SUPABASE_URL + '/rest/v1/producao_robos?select=id,robo,valor_registrador,pecas,obs,data_hora,recebido_em,motivo,ajuste_de,ajuste_para'
       + '&data_hora=gte.' + encodeURIComponent(lim[0]) + '&data_hora=lt.' + encodeURIComponent(lim[1])
       + '&order=data_hora.desc,id.desc&limit=' + HM_PAG + '&offset=' + off;
     if(robo) q += '&robo=eq.' + encodeURIComponent(robo);
@@ -7692,14 +7780,16 @@ function renderHistMetas(){
   const pills = `<div class="hm-pills"><button type="button" class="hm-pill ${!_hm.robo ? 'on' : ''}" onclick="_hmSetRobo(null)">Todos <small>${totDia.toLocaleString('pt-BR')}</small></button>${robosDia.map(r =>
     `<button type="button" class="hm-pill ${_hm.robo === r ? 'on' : ''}" onclick="_hmSetRobo('${esc(r)}')">${esc(r)} <small>${(_hm.totRobo[r] || 0).toLocaleString('pt-BR')}</small></button>`).join('')}</div>`;
 
-  // intervalo desde a peça anterior do MESMO robô (lista vem da mais nova para a mais antiga)
-  const rows = _hm.rows, intv = {}, ultPor = {};
-  for(let i = rows.length - 1; i >= 0; i--){ const x = rows[i], t = _hmT(x); if(ultPor[x.robo] != null) intv[x.id] = (t - ultPor[x.robo]) / 1000; ultPor[x.robo] = t; }
+  // intervalo desde a peça anterior do MESMO robô (lista vem da mais nova para a mais antiga).
+  // Ajustes do HOST (obs 'AJUSTE HOST') não são peça: ficam fora do intervalo, do ritmo e da "última peça".
+  const rows = _hm.rows, ehAj = x => x.obs === 'AJUSTE HOST', pecasRows = rows.filter(x => !ehAj(x)), intv = {}, ultPor = {};
+  for(let i = pecasRows.length - 1; i >= 0; i--){ const x = pecasRows[i], t = _hmT(x); if(ultPor[x.robo] != null) intv[x.id] = (t - ultPor[x.robo]) / 1000; ultPor[x.robo] = t; }
   // ritmo: mediana dos últimos 20 intervalos (só com um robô escolhido)
   let ritmo = null;
-  if(_hm.robo){ const v = rows.slice(0, 21).map(x => intv[x.id]).filter(s => s != null && s > 0).sort((a, b) => a - b); if(v.length >= 3) ritmo = v[Math.floor(v.length / 2)]; }
-  const ult = rows[0] || null;
-  const contando = ehHoje ? new Set(rows.filter(x => Date.now() - _hmT(x) < 3 * 60000).map(x => x.robo)).size : 0;
+  if(_hm.robo){ const v = pecasRows.slice(0, 21).map(x => intv[x.id]).filter(s => s != null && s > 0).sort((a, b) => a - b); if(v.length >= 3) ritmo = v[Math.floor(v.length / 2)]; }
+  const ult = pecasRows[0] || null;
+  const contando = ehHoje ? new Set(pecasRows.filter(x => Date.now() - _hmT(x) < 3 * 60000).map(x => x.robo)).size : 0;
+  const nAj = rows.filter(ehAj).length;
 
   let lista = '';
   if(_hm.erro && !_hm.carregado) lista = `<div class="cnt-msg err">${esc(_hm.erro)}</div>`;
@@ -7714,6 +7804,15 @@ function renderHistMetas(){
         const tot = _hm.robo ? (_hm.totSlot[_hm.robo + '|' + campo] || 0) : robosDia.reduce((s, r) => s + (_hm.totSlot[r + '|' + campo] || 0), 0);
         const hr = campo === 'fora' ? '' : campo.slice(1, 3) + ':' + campo.slice(3);
         h += `<div class="hm-grp"><div><b>${campo === 'fora' ? 'Fora do horário' : 'Coluna ' + hr}</b> <span>${campo === 'fora' ? 'janta, antes das 05:00 ou depois das 22:00' : 'das ' + esc(_cntIntervalo(hr, chave)).replace('–', ' às ')}</span></div><em>${tot.toLocaleString('pt-BR')} peça${tot === 1 ? '' : 's'}</em></div>`;
+      }
+      if(ehAj(x)){
+        // ajuste do HOST: mostra de quanto para quanto, o motivo e QUANDO foi feito (recebido_em)
+        const p = parseInt(x.pecas) || 0, q = new Date(x.recebido_em || x.data_hora);
+        const quando = q.toLocaleTimeString('pt-BR', { hour12: false }) + (_hmIsoDe(q) !== _hmIsoDe(d) ? ' de ' + q.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '');
+        h += `<div class="hm-row aj${_hm.novos.has(x.id) ? ' novo' : ''}"><span class="t">${quando}</span><span class="r">${esc(x.robo)}</span>
+          <span class="p"><span class="hm-tag host">✎ HOST</span> mudou a coluna de <b>${x.ajuste_de != null ? x.ajuste_de : '?'}</b> para <b>${x.ajuste_para != null ? x.ajuste_para : '?'}</b> <small>(${p > 0 ? '+' : ''}${p})</small>${x.motivo ? `<span class="hm-mot">“${esc(x.motivo)}”</span>` : ''}</span>
+          <span class="x">ajuste manual</span></div>`;
+        return;
       }
       const p = parseInt(x.pecas) || 0, iv = intv[x.id];
       const tags = (x.obs === 'VERIFICAR' ? '<span class="hm-tag ver" title="O contador pulou 2 ou mais de uma vez (perda de comunicação ou mudança manual)">⚠ verificar</span>' : '')
@@ -7734,10 +7833,11 @@ function renderHistMetas(){
     ${_hm.erro && _hm.carregado ? `<div class="cnt-msg err">${esc(_hm.erro)}</div>` : ''}
     ${pills}
     <div class="cnt-kpis">
-      <div class="cnt-kpi"><span>Peças ${ehHoje ? 'hoje' : 'no dia'}${_hm.robo ? ' · ' + esc(_hm.robo) : ''}</span><b>${totSel.toLocaleString('pt-BR')}</b><small>contadas pelo robô</small></div>
+      <div class="cnt-kpi"><span>Peças ${ehHoje ? 'hoje' : 'no dia'}${_hm.robo ? ' · ' + esc(_hm.robo) : ''}</span><b>${totSel.toLocaleString('pt-BR')}</b><small>${nAj ? 'contadas pelo robô + ajustes do HOST' : 'contadas pelo robô'}</small></div>
       <div class="cnt-kpi ok"><span>Última peça</span><b>${ult ? new Date(ult.data_hora).toLocaleTimeString('pt-BR', { hour12: false }) : '—'}</b><small>${ult ? esc(ult.robo) : 'nenhuma ainda'}</small></div>
       ${_hm.robo ? `<div class="cnt-kpi"><span>Ritmo</span><b>${ritmo != null ? _hmDur(ritmo) : '—'}</b><small>${ritmo != null ? 'entre uma peça e outra (últimas 20)' : 'precisa de mais peças'}</small></div>`
         : (ehHoje ? `<div class="cnt-kpi"><span>Robôs contando</span><b>${contando}</b><small>peça nos últimos 3 min</small></div>` : '')}
+      ${nAj ? `<div class="cnt-kpi"><span>Ajustes do HOST</span><b style="color:#c4b5fd">${nAj}</b><small>mudança${nAj === 1 ? '' : 's'} manual${nAj === 1 ? '' : 'is'} no dia</small></div>` : ''}
     </div>
     ${lista}
   </div>`;
