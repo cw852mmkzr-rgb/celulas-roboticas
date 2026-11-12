@@ -11488,6 +11488,7 @@ function metaApAbrir(){
 }
 function metaApFechar(){
   if(_metaApBlockClose) return;
+  _metaApMotivo = null;
   document.getElementById('metaApOverlay').classList.remove('open');
   // reflete os apontamentos na planilha ao fechar
   if(selected && celulas[selected] && getCellTipo(selected)==='metas'){ try{ renderMetasDiaria(); }catch(e){} }
@@ -11561,6 +11562,10 @@ function metaApEnviar(){
   }
   // updateMetasCell grava, aplica delta no estoque (subtrairComponentesProducao) e salva
   // Se for parada justificada, mantém o marcador # no valor salvo
+  // motivo escrito na tela da parada (botão #) vai junto; com "-" digitado (sem a tela), ela abre logo depois
+  if((isAjuste||_ehAjusteT(rd[campo])) && _metaApMotivo){ rd['just_'+campo] = { txt:_metaApMotivo, por:isAdmin?'HOST':'Metas', em:new Date().toISOString() }; }
+  const _pjDepois = isAjuste && _metaApMotivo === null;
+  _metaApMotivo = null;
   updateMetasCell(key,robo,campo,(isAjuste||_ehAjusteT(rd[campo]))?String(somado)+'#':String(somado));
   if(equipesData.vincular_metas && _metaApEquipeSel) _eqAlertaCheck(_metaApEquipeSel, _metaApHora);
   _metaApEditIdx=null;
@@ -11568,7 +11573,66 @@ function metaApEnviar(){
   _metaApRenderLog();
   showToast(`Robô ${robo}: +${novasPecas} peça${novasPecas!==1?'s':''} às ${_metaApHora} ✓`);
   qtdEl.value='';
-  qtdEl.focus();
+  if(_pjDepois) abrirParadaMotivoT({ modo:'direto', key, robo:String(robo), campo });
+  else qtdEl.focus();
+}
+// ===== Parada justificada no Apontar Produção (12/11/2026) =====
+// Tocar no # marca a parada e abre a tela do motivo (igual à Cromo). O motivo fica guardado e é gravado
+// junto do apontamento (rd.just_hXXXX). Com "-" digitado no lugar do #, a tela abre logo depois de apontar.
+let _metaApMotivo = null, _pjCtx = null;   // null = não passou pela tela; '' = sem motivo
+function metaApHash(){
+  const el = document.getElementById('metaApQtd'); if(!el) return;
+  const v = String(el.value || '');
+  if(v.endsWith('#')){ el.value = v.slice(0, -1); _metaApMotivo = null; el.focus(); return; }   // tocou de novo: tira a parada
+  el.value = v + '#';
+  abrirParadaMotivoT({ modo:'pend' });
+}
+function abrirParadaMotivoT(o){
+  _pjCtx = o;
+  const robo = o.robo || ((document.getElementById('metaApRobo') || {}).value || '');
+  const hora = o.campo ? _horaDoCampo(o.campo) : (_metaApHora || '');
+  let txt = '';
+  if(o.modo === 'pend') txt = _metaApMotivo || '';
+  else { const rd = ((((celulas[o.key]||{}).metas_dias||{})[getMetasChave(o.key)])||{})[o.robo] || {}; txt = _ajTxtT(rd, o.campo); }
+  let ov = document.getElementById('pjOv');
+  if(!ov){
+    ov = document.createElement('div'); ov.id = 'pjOv'; ov.className = 'aja-ov';
+    // nada vaza para o "Apontar Produção" que está por baixo (padrão dos bottom sheets no iOS)
+    ['pointerdown','touchstart','touchend','mousedown','click'].forEach(ev => ov.addEventListener(ev, e => e.stopPropagation()));
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div class="aja-card" role="dialog" aria-modal="true" aria-labelledby="pjTit">
+    <h3 id="pjTit">⏸ Parada justificada</h3>
+    <div class="aja-sub">${robo ? 'Robô ' + esc(String(robo)) : 'Robô'}${hora ? ' · ' + esc(hora) : ''} · esta hora fica fora da conta de metas (nem batida, nem não batida).</div>
+    <label for="pjTxt">Motivo da parada (aparece no 💬 da hora)</label>
+    <textarea id="pjTxt" class="meq-adjtxt" maxlength="200" placeholder="Ex.: troca de eletrodo, falta de peça, manutenção…">${esc(txt)}</textarea>
+    <div class="aja-bts"><button type="button" onclick="salvarParadaMotivoT(true)">Sem motivo</button><button type="button" class="ok" onclick="salvarParadaMotivoT(false)">Salvar motivo</button></div>
+  </div>`;
+  ov.classList.add('on');
+  setTimeout(() => { const t = document.getElementById('pjTxt'); if(t) t.focus(); }, 60);
+}
+function salvarParadaMotivoT(semMotivo){
+  const o = _pjCtx; if(!o) return;
+  const txt = semMotivo ? '' : String((document.getElementById('pjTxt') || {}).value || '').trim().slice(0, 200);
+  if(o.modo === 'pend'){
+    _metaApMotivo = txt;
+    showToast(txt ? '⏸ Motivo guardado — vai junto ao apontar' : '⏸ Parada justificada sem motivo');
+  } else {
+    const rd = ((((celulas[o.key]||{}).metas_dias||{})[getMetasChave(o.key)])||{})[o.robo];
+    if(rd && _ehAjusteT(rd[o.campo])){
+      if(txt) rd['just_'+o.campo] = { txt, por:isAdmin ? 'HOST' : 'Metas', em:new Date().toISOString() };
+      else delete rd['just_'+o.campo];
+      saveToAPI(celulas);
+      if(txt) showToast('⏸ Motivo da parada salvo ✓');
+    }
+  }
+  fecharParadaMotivoT();
+}
+function fecharParadaMotivoT(){
+  const ov = document.getElementById('pjOv'); if(ov) ov.classList.remove('on');
+  _pjCtx = null;
+  _metaApSetBlockClose();   // o toque que fechou esta tela não pode fechar o Apontar Produção que está por baixo
+  const q = document.getElementById('metaApQtd'); if(q && document.getElementById('metaApOverlay') && document.getElementById('metaApOverlay').classList.contains('open')) q.focus();
 }
 // Renderiza a lista "Enviados nesta sessão" com a conta e o botão de editar
 function _metaApRenderLog(){
@@ -20005,7 +20069,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
       <div class="ap-label" style="margin-top:15px">Quantidade total produzida</div>
       <div style="display:flex;gap:8px;align-items:stretch">
         <input id="metaApQtd" class="ap-input" type="text" inputmode="numeric" pattern="[0-9#]*" placeholder="Ex: 128" style="flex:1" onfocus="_metaApSetBlockClose()" onblur="_metaApSetBlockClose()" onkeydown="if(event.key==='Enter')metaApEnviar()">
-        <button type="button" onclick="_apAddHash('metaApQtd')" title="Parada justificada" style="flex-shrink:0;min-width:56px;padding:0 16px;background:#b46cff20;border:1px solid #b46cff60;color:#b46cff;font-size:22px;font-weight:900;border-radius:10px;cursor:pointer;font-family:'Courier New',monospace">#</button>
+        <button type="button" onclick="metaApHash()" title="Parada justificada" style="flex-shrink:0;min-width:56px;padding:0 16px;background:#b46cff20;border:1px solid #b46cff60;color:#b46cff;font-size:22px;font-weight:900;border-radius:10px;cursor:pointer;font-family:'Courier New',monospace">#</button>
       </div>
       <div style="font-size:11px;color:#5a6678;margin-top:6px">Se o robô tiver pontos de solda cadastrados, o valor é dividido automaticamente.</div>
       <div id="metaApEquipeBox" style="display:none;margin-top:16px"></div>
