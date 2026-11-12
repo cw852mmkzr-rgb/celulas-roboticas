@@ -1837,6 +1837,32 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .cnt-leg b{color:#c9d3df}
 .cnt-msg{background:var(--pn);border:1px dashed #2a3646;border-radius:14px;padding:22px;text-align:center;color:#9aa6b6;font-size:13.5px;line-height:1.6;margin-bottom:16px}
 .cnt-msg.err{border-color:#ef444466;color:#fca5a5}
+/* ===== Histórico de Metas (peça a peça dos robôs automáticos, 12/11/2026) ===== */
+.hm-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.hm-pill{display:inline-flex;align-items:center;gap:7px;background:var(--pn);border:1px solid var(--ln);color:#c9d3df;border-radius:99px;padding:7px 13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.hm-pill:hover{border-color:#34445a;background:#131a24}
+.hm-pill.on{background:#00e87a18;border-color:#00e87a;color:#fff}
+.hm-pill small{font-size:11px;color:var(--mut);font-weight:700}
+.hm-pill.on small{color:#00e87a}
+.hm-grp{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 4px 6px;border-bottom:1px solid var(--ln);margin-top:6px}
+.hm-grp b{font-size:13.5px;color:#fff}
+.hm-grp span{font-size:12px;color:var(--mut)}
+.hm-grp em{font-style:normal;font-size:12.5px;font-weight:800;color:#00e87a}
+.hm-row{display:grid;grid-template-columns:92px 64px 1fr auto;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #141a24;font-size:13px}
+.hm-row .t{font-family:'Courier New',monospace;font-size:15px;font-weight:800;color:#fff;letter-spacing:.02em}
+.hm-row .r{font-weight:800;color:#c9d3df}
+.hm-row .p{color:#e5ebf3}
+.hm-row .p b{color:#00e87a;font-weight:800}
+.hm-row .p small{color:var(--mut);margin-left:8px;font-size:11.5px}
+.hm-row .x{font-size:11.5px;color:var(--mut);text-align:right;white-space:nowrap}
+.hm-tag{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px;margin-left:8px;vertical-align:1px}
+.hm-tag.ver{background:#f59e0b22;color:#fbbf24}
+.hm-tag.zer{background:#38bdf822;color:#7dd3fc}
+.hm-row.novo{animation:hmNovo 2.4s ease-out}
+@keyframes hmNovo{0%{background:#00e87a26}100%{background:transparent}}
+.hm-mais{display:block;margin:14px auto 0;background:var(--pn);color:#c9d3df;border:1px solid var(--ln);border-radius:9px;padding:9px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.hm-mais:hover{border-color:#34445a}
+@media(max-width:560px){.hm-row{grid-template-columns:78px 52px 1fr;gap:8px}.hm-row .x{grid-column:1/-1;text-align:left;padding-left:86px;margin-top:-4px}.hm-row .t{font-size:14px}}
 .prb-quem b{color:#e5ebf3;font-weight:700}
 /* mapa do mês */
 .prb-g{min-width:680px}
@@ -4477,6 +4503,7 @@ function getCellTipo(k) {
   if (k === '__painel') return 'painel';
   if (k === '__prodrobo') return 'prod_robo';
   if (k === '__contagem') return 'contagem';
+  if (k === '__histmetas') return 'hist_metas';
   if (k === '__gerenciar') return 'gerenciar';
   if (!celulas[k]) return 'robo';
   const n = (celulas[k].nome||'').toLowerCase();
@@ -4872,6 +4899,7 @@ const SB_IC = {
   painel: '<path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4.2-4.2"/><circle cx="12" cy="15" r="1.3"/>',
   prodrobo: '<path d="M3 21h18"/><path d="M5 21v-9l4 2.5V12l4 2.5V12l4 2.5V7l3 1.5V21"/>',
   contagem: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M6.5 12h2.5l1.5-3.5 3 7 1.5-3.5h2.5"/>',
+  histmetas: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2M22 12h-1.5"/>',
   metas: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
   producao_mensal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   producao_peca: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>',
@@ -4930,6 +4958,7 @@ function renderSidebar(){
   html += item('__painel', 'painel', 'Painel', isAdmin ? 'Metas do dia e do mês' : 'Visão geral');
   html += item('__prodrobo', 'prodrobo', 'Produção por Robô', 'Lotes e trocas de peça');
   html += item('__contagem', 'contagem', 'Contagem Automática', 'Peças dos robôs ao vivo');
+  html += item('__histmetas', 'histmetas', 'Histórico de Metas', 'Peça a peça dos robôs');
 
   if(porGrupo.prod.length){ html += grupo('Produção') + porGrupo.prod.join(''); }
 
@@ -6484,6 +6513,7 @@ function _renderDetailInner(){
   if(selected==='__painel'){renderPainel();return;}
   if(selected==='__prodrobo'){renderProdRobo();return;}
   if(selected==='__contagem'){renderContagem();return;}
+  if(selected==='__histmetas'){renderHistMetas();return;}
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
     if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
@@ -7703,6 +7733,162 @@ function renderContagem(){
     ${corpo}
   </div>`;
   _cntLiveUI();
+}
+
+// ===== HISTÓRICO DE METAS (12/11/2026) =====
+// Peça a peça dos robôs automáticos (tabela producao_robos): robô, "+1 peça" e a hora exata (HH:MM:SS)
+// em que a peça foi completada. Lê só; peças novas entram ao vivo pelo Realtime.
+const HM_PAG = 300;
+const _hm = { dia: null, robo: null, rows: [], fim: false, carregando: false, carregado: false, erro: '', totRobo: {}, totSlot: {}, canal: null, vivo: false, timer: null, tick: 0, sig: '', novos: new Set() };
+function _hmIsoDe(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function _hmLimites(iso){ const p = iso.split('-').map(Number); return [iso + 'T00:00:00-03:00', _hmIsoDe(new Date(p[0], p[1] - 1, p[2] + 1)) + 'T00:00:00-03:00']; }
+function _hmT(x){ return new Date(x.data_hora).getTime(); }
+function _hmDur(s){
+  s = Math.round(s); if(s < 60) return s + ' s';
+  if(s < 3600) return Math.floor(s / 60) + ' min' + (s % 60 ? ' ' + String(s % 60).padStart(2, '0') + ' s' : '');
+  return Math.floor(s / 3600) + ' h ' + String(Math.floor(s % 3600 / 60)).padStart(2, '0') + ' min';
+}
+async function _hmCarregar(mais){
+  if(_hm.carregando) return; _hm.carregando = true;
+  const dia = _hm.dia, robo = _hm.robo, lim = _hmLimites(dia), off = mais ? _hm.rows.length : 0;
+  try{
+    let q = SUPABASE_URL + '/rest/v1/producao_robos?select=id,robo,valor_registrador,pecas,obs,data_hora'
+      + '&data_hora=gte.' + encodeURIComponent(lim[0]) + '&data_hora=lt.' + encodeURIComponent(lim[1])
+      + '&order=data_hora.desc,id.desc&limit=' + HM_PAG + '&offset=' + off;
+    if(robo) q += '&robo=eq.' + encodeURIComponent(robo);
+    const [r1, r2] = await Promise.all([
+      fetch(q, { headers: HEADERS_SB, signal: AbortSignal.timeout(15000) }),
+      mais ? null : fetch(SUPABASE_URL + '/rest/v1/producao_por_slot?dia=eq.' + dia + '&select=robo,campo,pecas', { headers: HEADERS_SB, signal: AbortSignal.timeout(15000) })
+    ]);
+    if(!r1.ok || (r2 && !r2.ok)) throw new Error('http');
+    const lin = await r1.json();
+    if(dia === _hm.dia && robo === _hm.robo){
+      const ja = new Set(mais ? _hm.rows.map(x => x.id) : []);
+      _hm.rows = mais ? _hm.rows.concat(lin.filter(x => !ja.has(x.id))) : lin;
+      _hm.fim = lin.length < HM_PAG;
+      if(r2){
+        const s = await r2.json(); _hm.totRobo = {}; _hm.totSlot = {};
+        s.forEach(x => { const rb = 'R-' + x.robo, p = parseInt(x.pecas) || 0; _hm.totRobo[rb] = (_hm.totRobo[rb] || 0) + p; const k = rb + '|' + x.campo; _hm.totSlot[k] = (_hm.totSlot[k] || 0) + p; });
+      }
+      _hm.erro = ''; _hm.carregado = true;
+    }
+  }catch(e){ _hm.erro = 'Não foi possível ler o histórico agora. Tentando de novo em instantes.'; }
+  _hm.carregando = false; _hm.sig = '';
+  if(selected === '__histmetas') renderHistMetas();
+}
+function _hmNovo(x){
+  if(!x || !x.data_hora) return;
+  const d = new Date(x.data_hora); if(_hmIsoDe(d) !== _hm.dia) return;
+  const rb = x.robo, p = parseInt(x.pecas) || 0, k = rb + '|' + (_cntSlot(d) || 'fora');
+  _hm.totRobo[rb] = (_hm.totRobo[rb] || 0) + p; _hm.totSlot[k] = (_hm.totSlot[k] || 0) + p;
+  if((!_hm.robo || _hm.robo === rb) && !_hm.rows.some(r => r.id === x.id)){
+    _hm.rows.unshift(x); _hm.rows.sort((a, b) => (_hmT(b) - _hmT(a)) || (b.id - a.id));
+    _hm.novos.add(x.id); setTimeout(() => { _hm.novos.delete(x.id); }, 2600);
+  }
+  _hm.sig = ''; if(selected === '__histmetas') renderHistMetas();
+}
+async function _hmConectar(){
+  if(_hm.canal) return;
+  try{
+    await _cntCarregaLib();
+    if(selected !== '__histmetas' || _hm.canal) return;
+    if(!_cnt.sb) _cnt.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+    _hm.canal = _cnt.sb.channel('historico-robos')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'producao_robos' }, pl => _hmNovo(pl && pl.new))
+      .subscribe(st => { _hm.vivo = st === 'SUBSCRIBED'; _hmLiveUI(); });
+  }catch(e){ _hm.vivo = false; _hmLiveUI(); }
+}
+function _hmDesconectar(){
+  if(_hm.canal && _cnt.sb){ try{ _cnt.sb.removeChannel(_hm.canal); }catch(e){} }
+  _hm.canal = null; _hm.vivo = false;
+  if(_hm.timer){ clearInterval(_hm.timer); _hm.timer = null; }
+}
+function _hmLiveUI(){
+  const el = document.getElementById('hmLive'); if(!el) return;
+  el.className = 'cnt-live' + (_hm.vivo ? ' on' : '');
+  el.title = _hm.vivo ? 'Conectado: cada peça nova aparece sozinha no topo' : 'Sem conexão ao vivo: a lista é relida a cada 30 s';
+  const sp = el.querySelector('span'); if(sp) sp.textContent = _hm.vivo ? 'Ao vivo' : 'Atualiza a cada 30 s';
+}
+function _hmSetDia(v){ if(!v || v === _hm.dia) return; _hm.dia = v; _hm.rows = []; _hm.carregado = false; _hm.fim = false; _hm.erro = ''; _hm.sig = ''; renderHistMetas(); _hmCarregar(false); }
+function _hmSetRobo(r){ r = r || null; if(r === _hm.robo) return; _hm.robo = r; _hm.rows = []; _hm.carregado = false; _hm.fim = false; _hm.sig = ''; renderHistMetas(); _hmCarregar(false); }
+
+function renderHistMetas(){
+  const mp = document.getElementById('mainPanel'); if(!mp) return;
+  if(!_hm.dia) _hm.dia = _cntHojeISO();
+  if(!_hm.timer){
+    _hm.tick = 0;
+    // a cada 5 s: sai sozinho quando trocam de aba; sem tempo real, relê a cada 30 s
+    _hm.timer = setInterval(() => {
+      if(selected !== '__histmetas'){ _hmDesconectar(); return; }
+      _hm.tick++;
+      if(!_hm.vivo && _hm.tick % 6 === 0 && _hm.dia === _cntHojeISO()) _hmCarregar(false);
+    }, 5000);
+    _hmCarregar(false); _hmConectar();
+  }
+  const sig = JSON.stringify([_hm.dia, _hm.robo, _hm.rows.length, _hm.rows[0] && _hm.rows[0].id, _hm.erro, _hm.carregado, _hm.fim, _hm.totRobo, [..._hm.novos]]);
+  if(sig === _hm.sig && mp.querySelector('.hm-wrap')){ _hmLiveUI(); return; }
+  const fo = document.activeElement;
+  if(fo && fo.tagName === 'INPUT' && mp.contains(fo) && mp.querySelector('.hm-wrap')) return;
+  _hm.sig = sig;
+
+  const hoje = _cntHojeISO(), ehHoje = _hm.dia === hoje, chave = _cntChave(_hm.dia), dataTxt = _hm.dia.split('-').reverse().join('/');
+  const robosDia = Object.keys(_hm.totRobo).sort();
+  if(_hm.robo && !robosDia.includes(_hm.robo)) robosDia.push(_hm.robo);
+  const totDia = robosDia.reduce((s, r) => s + (_hm.totRobo[r] || 0), 0);
+  const totSel = _hm.robo ? (_hm.totRobo[_hm.robo] || 0) : totDia;
+  const pills = `<div class="hm-pills"><button type="button" class="hm-pill ${!_hm.robo ? 'on' : ''}" onclick="_hmSetRobo(null)">Todos <small>${totDia.toLocaleString('pt-BR')}</small></button>${robosDia.map(r =>
+    `<button type="button" class="hm-pill ${_hm.robo === r ? 'on' : ''}" onclick="_hmSetRobo('${esc(r)}')">${esc(r)} <small>${(_hm.totRobo[r] || 0).toLocaleString('pt-BR')}</small></button>`).join('')}</div>`;
+
+  // intervalo desde a peça anterior do MESMO robô (lista vem da mais nova para a mais antiga)
+  const rows = _hm.rows, intv = {}, ultPor = {};
+  for(let i = rows.length - 1; i >= 0; i--){ const x = rows[i], t = _hmT(x); if(ultPor[x.robo] != null) intv[x.id] = (t - ultPor[x.robo]) / 1000; ultPor[x.robo] = t; }
+  // ritmo: mediana dos últimos 20 intervalos (só com um robô escolhido)
+  let ritmo = null;
+  if(_hm.robo){ const v = rows.slice(0, 21).map(x => intv[x.id]).filter(s => s != null && s > 0).sort((a, b) => a - b); if(v.length >= 3) ritmo = v[Math.floor(v.length / 2)]; }
+  const ult = rows[0] || null;
+  const contando = ehHoje ? new Set(rows.filter(x => Date.now() - _hmT(x) < 3 * 60000).map(x => x.robo)).size : 0;
+
+  let lista = '';
+  if(_hm.erro && !_hm.carregado) lista = `<div class="cnt-msg err">${esc(_hm.erro)}</div>`;
+  else if(!_hm.carregado) lista = `<div class="cnt-msg">Carregando o histórico…</div>`;
+  else if(!rows.length) lista = `<div class="cnt-msg">Nenhuma peça ${_hm.robo ? 'do ' + esc(_hm.robo) + ' ' : ''}registrada em ${dataTxt}.<br>Quando os robôs automáticos contarem peças, cada uma aparece aqui com a hora exata.</div>`;
+  else {
+    let grpAtual = null, h = '';
+    rows.forEach(x => {
+      const d = new Date(x.data_hora), campo = _cntSlot(d) || 'fora';
+      if(campo !== grpAtual){
+        grpAtual = campo;
+        const tot = _hm.robo ? (_hm.totSlot[_hm.robo + '|' + campo] || 0) : robosDia.reduce((s, r) => s + (_hm.totSlot[r + '|' + campo] || 0), 0);
+        const hr = campo === 'fora' ? '' : campo.slice(1, 3) + ':' + campo.slice(3);
+        h += `<div class="hm-grp"><div><b>${campo === 'fora' ? 'Fora do horário' : 'Coluna ' + hr}</b> <span>${campo === 'fora' ? 'janta, antes das 05:00 ou depois das 22:00' : 'das ' + esc(_cntIntervalo(hr, chave)).replace('–', ' às ')}</span></div><em>${tot.toLocaleString('pt-BR')} peça${tot === 1 ? '' : 's'}</em></div>`;
+      }
+      const p = parseInt(x.pecas) || 0, iv = intv[x.id];
+      const tags = (x.obs === 'VERIFICAR' ? '<span class="hm-tag ver" title="O contador pulou 2 ou mais de uma vez (perda de comunicação ou mudança manual)">⚠ verificar</span>' : '')
+        + (x.obs === 'ZERADO' ? '<span class="hm-tag zer" title="O contador do robô foi zerado e voltou a contar">↺ zerado</span>' : '');
+      h += `<div class="hm-row${_hm.novos.has(x.id) ? ' novo' : ''}"><span class="t">${d.toLocaleTimeString('pt-BR', { hour12: false })}</span><span class="r">${esc(x.robo)}</span>
+        <span class="p"><b>+${p}</b> peça${p === 1 ? '' : 's'}${x.valor_registrador != null ? `<small>contador ${esc(String(x.valor_registrador))}</small>` : ''}${tags}</span>
+        <span class="x">${iv != null ? _hmDur(iv) + ' depois da anterior' : ''}</span></div>`;
+    });
+    lista = `<div class="cnt-card">${h}${_hm.fim ? '' : `<button type="button" class="hm-mais" onclick="_hmCarregar(true)">Carregar peças mais antigas</button>`}</div>`;
+  }
+
+  mp.innerHTML = `<div class="cnt hm-wrap">
+    <div class="cnt-top"><div><div class="cnt-tt">Histórico de Metas</div>
+      <div class="cnt-st">Cada peça contada pelos robôs automáticos, com a hora exata em que foi completada${ehHoje ? '. As novas entram no topo sozinhas.' : ' · dia ' + dataTxt + '.'}</div></div>
+      <div class="cnt-ctl"><span id="hmLive" class="cnt-live"><i></i><span>Conectando…</span></span>
+        <input type="date" value="${_hm.dia}" max="${hoje}" onchange="this.blur();_hmSetDia(this.value)" aria-label="Dia">
+        ${ehHoje ? '' : `<button type="button" onclick="_hmSetDia('${hoje}')">Hoje</button>`}</div></div>
+    ${_hm.erro && _hm.carregado ? `<div class="cnt-msg err">${esc(_hm.erro)}</div>` : ''}
+    ${pills}
+    <div class="cnt-kpis">
+      <div class="cnt-kpi"><span>Peças ${ehHoje ? 'hoje' : 'no dia'}${_hm.robo ? ' · ' + esc(_hm.robo) : ''}</span><b>${totSel.toLocaleString('pt-BR')}</b><small>contadas pelo robô</small></div>
+      <div class="cnt-kpi ok"><span>Última peça</span><b>${ult ? new Date(ult.data_hora).toLocaleTimeString('pt-BR', { hour12: false }) : '—'}</b><small>${ult ? esc(ult.robo) : 'nenhuma ainda'}</small></div>
+      ${_hm.robo ? `<div class="cnt-kpi"><span>Ritmo</span><b>${ritmo != null ? _hmDur(ritmo) : '—'}</b><small>${ritmo != null ? 'entre uma peça e outra (últimas 20)' : 'precisa de mais peças'}</small></div>`
+        : (ehHoje ? `<div class="cnt-kpi"><span>Robôs contando</span><b>${contando}</b><small>peça nos últimos 3 min</small></div>` : '')}
+    </div>
+    ${lista}
+  </div>`;
+  _hmLiveUI();
 }
 
 function renderProdRobo(){
