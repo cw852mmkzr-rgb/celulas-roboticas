@@ -445,6 +445,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .prod-day-input:focus { color: #00e87a; }
 .prod-day-input[readonly] { cursor: default; color: #d8dde6; }
 .prod-day-input.has-value { color: #00e87a; }
+.prod-day-link { width: 100%; font: inherit; color: inherit; cursor: pointer; text-align: center; }
+.prod-day-link:hover { border-color: #00e87a80; background: #00e87a0d; }
+.prod-day-link:focus-visible { outline: 2px solid #00e87a; outline-offset: 2px; }
+.prod-day-link .prod-day-input { cursor: pointer; }
 .prod-day-bar-wrap { width: 100%; height: 4px; background: #1e2530; border-radius: 99px; overflow: hidden; }
 .prod-day-bar { height: 100%; border-radius: 99px; background: #00e87a; width: 100%; transform-origin: left; transition: transform 360ms var(--ease-out); }
 .prod-total-box { background: #00e87a15; border: 1px solid #00e87a30; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -5140,14 +5144,13 @@ function renderProducaoDiaria(){
     const val=parseInt(dias[d])||0;
     const isHoje=d===hoje&&mesIdx===new Date().getMonth()&&anoSel===anoAtual;
     const pct=maxVal>0?Math.round(val/maxVal*100):0;
-    diasHTML+=`<div class="prod-day-card ${isHoje?'today':''}">
+    // 13/11/2026: o total do dia vem sozinho da Meta Diária (syncMetasToProducao) — só leitura; clicar abre o dia na Meta Diária
+    if(d>new Date(anoSel,mesIdx+1,0).getDate()) continue;
+    diasHTML+=`<button type="button" class="prod-day-card prod-day-link ${isHoje?'today':''}" onclick="irMetaDiariaDia(${anoSel},${mesIdx},${d})" title="Abrir o dia ${d} na Meta Diária">
       <div class="prod-day-num">DIA ${d}</div>
-      <input id="inp-dia-${d}" type="number" min="0"
-        class="prod-day-input${val>0?' has-value':''}${!isAdmin?' readonly':''}"
-        value="${val>0?val:''}" placeholder="0" ${ro}
-        onchange="updateDia('${selected}',${d},this.value)">
+      <div id="inp-dia-${d}" class="prod-day-input${val>0?' has-value':''}">${val>0?val.toLocaleString('pt-BR'):'0'}</div>
       <div class="prod-day-bar-wrap"><div id="bar-dia-${d}" class="prod-day-bar" style="transform:scaleX(${pct/100})"></div></div>
-    </div>`;
+    </button>`;
   }
   document.getElementById("mainPanel").innerHTML=`
   <div>
@@ -5177,7 +5180,16 @@ function renderProducaoDiaria(){
       </div>
     </div>
     <div class="prod-day-grid">${diasHTML}</div>
+    <div style="font-size:11.5px;color:#4a5568;margin-top:12px;text-align:center">🤖 Valores automáticos — somam a Meta Diária de cada dia · clique num dia para abrir na Meta Diária</div>
   </div>`;
+}
+// abre a Meta Diária já no dia clicado (a data escolhida fica só neste aparelho, igual ao seletor da própria Meta Diária)
+function irMetaDiariaDia(ano,mes,dia){
+  const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
+  if(!mk){ showToast('Aba Meta Diária não encontrada', true); return; }
+  _metasSelLocal[mk]={ano,mes,dia,em:_metasHojeTxt()};
+  window.scrollTo(0,0);
+  selectCell(mk);
 }
 
 // ── METAS ────────────────────────────────────
