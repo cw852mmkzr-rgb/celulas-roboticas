@@ -1850,7 +1850,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .vv-load{margin:auto;display:flex;flex-direction:column;align-items:center;gap:16px;font-family:'Share Tech Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#5c6890}
 .vv-load i{width:46px;height:46px;border:3px solid #16233c;border-top-color:#00f0ff;border-radius:50%;animation:vvSpin 1s linear infinite}
 @keyframes vvSpin{to{transform:rotate(360deg)}}
-.vv-hd{display:grid;grid-template-columns:auto minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr) auto;gap:1vw;align-items:stretch}
+.vv-hd{display:grid;grid-template-columns:auto minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) auto;gap:1vw;align-items:stretch}
 .vv-brand{display:flex;flex-direction:column;justify-content:center;gap:.5vh;padding-right:.6vw}
 .vv-tt{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(20px,3.6vh,46px);letter-spacing:.12em;color:#00ff66;text-shadow:0 0 18px rgba(0,255,102,.55)}
 .vv-sub{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.35vh,15px);color:#6b7aa0;letter-spacing:.12em;text-transform:uppercase}
@@ -1940,6 +1940,22 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .vv-simbar button{background:#0a0d12;border:1px solid #ffb30060;color:#ffb300;border-radius:6px;padding:5px 9px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px}
 .vv-simbar button.on{background:#ffb300;color:#1a1200}
 .vv-simbar button.stop{background:#ff2b5e;border-color:#ff2b5e;color:#fff}
+/* v2 limpa (15/11: "muita informação"): número grande no meio, uma barra e uma palavra de status */
+.vv-brand{flex-direction:row;align-items:center;gap:1vw}
+.vv-hrow{display:flex;align-items:baseline;gap:1vw}
+.vv-hrow .vv-hs{margin:0;font-size:clamp(12px,2vh,24px)}
+.vv-card{padding:1.4vh 1.2vw;gap:1vh;justify-content:space-between}
+.vv-ch{justify-content:space-between}
+.vv-ch .vv-pc{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.8vh,20px);color:#6b7aa0;letter-spacing:.06em;display:block}
+.vv-num{justify-content:center;margin:0;gap:.4vw}
+.vv-n{font-size:clamp(40px,10.5vh,150px);transform-origin:center bottom}
+.vv-m{font-size:clamp(16px,3.4vh,44px);color:#4f5d80}
+.vv-bar{height:max(10px,1.5vh)}
+.vv-st{margin:0;max-width:none;align-self:center;display:flex;align-items:center;gap:.6vw;border:0;background:none;padding:0;
+  font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(13px,2.3vh,30px);letter-spacing:.08em;color:var(--c)}
+.vv-st i{width:max(10px,1.2vh);height:max(10px,1.2vh);border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex-shrink:0}
+.vv-card.st-man .vv-st,.vv-card.st-fora .vv-st{font-size:clamp(11px,1.7vh,22px);opacity:.8}
+.vv-plus{top:30%;right:1.2vw}
 @media(max-width:1000px){
   #vivoScreen{overflow:auto}
   .vv-root{flex:none;min-height:100%;padding:12px;gap:10px}
@@ -9809,18 +9825,18 @@ function _vvCalc(rn, now, sl, chave, md){
     o.proj = o.meta > 0 && o.cnt >= o.meta ? o.cnt : (g ? Math.round(o.cnt + rest / Math.max(g, o.desde || 0)) : o.cnt);
     const parado = auto && pass > 240 && (o.desde == null ? o.cnt === 0 : o.desde > Math.max(4 * (o.gap || 60), 240));
     const stTxt = (c.status && c.status !== 'Produzindo') ? mapaRobosStatusInfo(c.status) : null;
+    // textos curtos (15/11: "muita informação") — uma palavra que dá para ler de longe
     if(!auto) o.st = {k: 'man', txt: 'MANUAL', cor: '#7d8bb0'};
-    else if(o.aj) o.st = {k: 'aj', txt: '⏸ PARADA JUSTIFICADA', cor: '#b46cff'};
-    else if(o.meta > 0 && o.cnt >= o.meta) o.st = {k: 'ok', txt: '✓ META BATIDA', cor: '#00ffae'};
+    else if(o.aj) o.st = {k: 'aj', txt: 'PARADA JUSTIFICADA', cor: '#b46cff'};
+    else if(o.meta > 0 && o.cnt >= o.meta) o.st = {k: 'ok', txt: 'META BATIDA', cor: '#00ff66'};
     else if(stTxt && !o.ticks.length) o.st = {k: 'par2', txt: stTxt.label, cor: stTxt.cor};
-    else if(o.cafe) o.st = {k: 'cafe', txt: '☕ CAFÉ', cor: '#ffb300'};   // no café o robô para de propósito: sem alerta de parado
-    else if(_vv.modo === 'real' && !o.ticks.length && rd['auto_' + cp] !== '1' && parseCelVal(rd[cp] || '').num > 0) o.st = {k: 'man', txt: 'MANUAL NESTA HORA', cor: '#7d8bb0'};
-    else if(parado) o.st = {k: (o.desde || pass) > 600 ? 'par2' : 'par', txt: o.desde == null ? '⚠ SEM PEÇA NESTA HORA' : '⚠ SEM PEÇA HÁ ' + _vvDur(o.desde).toUpperCase(), cor: (o.desde || pass) > 600 ? '#ff2b5e' : '#ff9f1a'};
-    else if(o.cafe) o.st = {k: 'cafe', txt: '☕ CAFÉ', cor: '#ffb300'};
+    else if(o.cafe) o.st = {k: 'cafe', txt: 'CAFÉ', cor: '#ffb300'};   // no café o robô para de propósito: sem alerta de parado
+    else if(_vv.modo === 'real' && !o.ticks.length && rd['auto_' + cp] !== '1' && parseCelVal(rd[cp] || '').num > 0) o.st = {k: 'man', txt: 'MANUAL', cor: '#7d8bb0'};
+    else if(parado) o.st = {k: (o.desde || pass) > 600 ? 'par2' : 'par', txt: o.desde == null ? 'SEM PEÇA' : 'PARADO ' + _vvDur(o.desde).toUpperCase(), cor: (o.desde || pass) > 600 ? '#ff2b5e' : '#ff9f1a'};
     else if(o.meta <= 0) o.st = {k: 'sm', txt: 'SEM META', cor: '#00f0ff'};
-    else if(o.proj >= o.meta) o.st = {k: 'rit', txt: 'NO RITMO', cor: '#00ffae'};
-    else if(o.proj >= o.meta * 0.9) o.st = {k: 'ap', txt: 'APERTADO', cor: '#f9f871'};
-    else o.st = {k: 'ab', txt: 'ABAIXO DO RITMO', cor: '#ff2b5e'};
+    else if(o.proj >= o.meta) o.st = {k: 'rit', txt: 'NO RITMO', cor: '#00e87a'};
+    else if(o.proj >= o.meta * 0.9) o.st = {k: 'ap', txt: 'ATENÇÃO', cor: '#f9f871'};
+    else o.st = {k: 'ab', txt: 'ATRASADO', cor: '#ff2b5e'};
   } else o.st = {k: 'fora', txt: auto ? 'FORA DO TURNO' : 'MANUAL', cor: '#5c6890'};
   return o;
 }
@@ -9839,33 +9855,23 @@ function _vvTick(){
   // cabeçalho
   _vvSet(q('live'), _vv.modo === 'sim' ? '<i></i>SIMULAÇÃO' : (_vv.vivo ? '<i></i>AO VIVO' : (_vv.erro ? '<i></i>SEM CONEXÃO' : '<i></i>CONECTANDO')));
   q('live').className = 'vv-live ' + (_vv.modo === 'sim' ? 'sim' : _vv.vivo ? 'on' : 'off');
-  q('clk').textContent = _vvHMS(nowT);
-  _vvSet(q('dt'), now.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: '2-digit'}));
+  q('clk').textContent = _vvHMS(nowT).slice(0, 5);
   if(sl){
     const rest = (sl.fim - now) / 1000, hora = _horaDoCampo(sl.campo);
     _vvSet(q('hora'), hora + (HORAS_CAFE.includes(hora) ? ' <small>☕</small>' : ''));
     q('hfill').style.transform = 'scaleX(' + Math.min(1, (now - sl.ini) / (sl.fim - sl.ini)).toFixed(4) + ')';
-    _vvSet(q('hsub'), `${_horaDoCampo('h' + String(sl.ini.getHours()).padStart(2, '0') + String(sl.ini.getMinutes()).padStart(2, '0'))} → ${hora} · faltam <b>${_vvMMSS(rest)}</b>`);
+    _vvSet(q('hsub'), `faltam <b>${Math.max(1, Math.ceil(rest / 60))} min</b>`);
   } else {
     const px = _vvProxSlot(now);
     _vvSet(q('hora'), '—'); q('hfill').style.transform = 'scaleX(0)';
-    _vvSet(q('hsub'), px ? 'fora do turno · próxima hora começa às <b>' + String(px.ini.getHours()).padStart(2, '0') + ':' + String(px.ini.getMinutes()).padStart(2, '0') + '</b>' : 'fora do turno');
+    _vvSet(q('hsub'), px ? 'volta às <b>' + String(px.ini.getHours()).padStart(2, '0') + ':' + String(px.ini.getMinutes()).padStart(2, '0') + '</b>' : 'fora do turno');
   }
-  // topo: todos os robôs com meta na hora; o "esperado agora" só vale para os automáticos (o manual só é lançado no fim da hora)
-  const comMeta = lista.filter(o => o.meta > 0 && !o.aj), autoMeta = comMeta.filter(o => o.auto);
+  const comMeta = lista.filter(o => o.meta > 0 && !o.aj);
   const kh = lista.reduce((s, o) => s + o.cnt, 0), mh = comMeta.reduce((s, o) => s + o.meta, 0);
-  const khA = autoMeta.reduce((s, o) => s + o.cnt, 0), esp = autoMeta.reduce((s, o) => s + o.meta * o.frac, 0);
-  const noRit = autoMeta.filter(o => ['ok', 'rit'].includes(o.st.k)).length;
   _vvSet(q('kh'), kh.toLocaleString('pt-BR') + (mh ? `<small>/ ${mh.toLocaleString('pt-BR')}</small>` : ''));
-  _vvSet(q('khs'), sl ? (autoMeta.length ? `esperado agora <b>${Math.round(esp).toLocaleString('pt-BR')}</b> · <b style="color:${khA >= esp ? '#00ffae' : '#ff2b5e'}">${khA >= esp ? '+' : ''}${Math.round(khA - esp).toLocaleString('pt-BR')}</b>${autoMeta.length < comMeta.length ? ' <small>(automáticos)</small>' : ''}` : (mh ? 'meta da hora' : 'sem meta nesta hora')) : '—');
   _vvSet(q('kd'), lista.reduce((s, o) => s + o.hoje, 0).toLocaleString('pt-BR'));
-  const nA = lista.filter(o => o.auto).length;
-  _vvSet(q('kds'), `<b>${noRit}</b> de ${autoMeta.length} no ritmo · ${nA} automático${nA === 1 ? '' : 's'}${lista.length - nA ? ' · ' + (lista.length - nA) + (lista.length - nA === 1 ? ' manual' : ' manuais') : ''}`);
   // robôs
   lista.forEach(o => _vvCard(root, o, sl));
-  // últimas peças
-  const ultV = _vv.ult.filter(e => e.t <= nowT);
-  _vvSet(q('tk'), ultV.length ? '<span class="vv-tk-l">Últimas peças</span>' + ultV.slice(0, 12).map((e, i) => `<span class="vv-ev${i === 0 ? ' new' : ''}"><b>${esc(e.rn)}</b> +${e.p}<i>${_vvHMS(e.t)}</i></span>`).join('') : '<span class="vv-tk-l">Últimas peças</span><span class="vv-ev vazio">aguardando a primeira peça…</span>');
   // horas do dia
   const cols = [...horasDiaPara(chave), ...HORAS_NOITE];
   _vvSet(q('strip'), cols.map(h => {
@@ -9883,23 +9889,20 @@ function _vvMonta(root, robos){
   const n = robos.length, cols = n <= 4 ? 2 : n <= 6 ? 3 : n <= 12 ? 4 : 5;
   root.innerHTML = `
     <header class="vv-hd">
-      <div class="vv-brand"><span class="vv-live" data-g="live"></span><div class="vv-tt">TREMPS</div><div class="vv-sub">Produção dos robôs · contagem automática</div></div>
-      <div class="vv-box vv-hb"><div class="vv-lb">Hora em andamento</div><div class="vv-hv" data-g="hora">—</div>
-        <div class="vv-hbar"><i data-g="hfill"></i></div><div class="vv-hs" data-g="hsub"></div></div>
-      <div class="vv-box"><div class="vv-lb">Peças nesta hora</div><div class="vv-kv" data-g="kh">0</div><div class="vv-hs" data-g="khs"></div></div>
-      <div class="vv-box"><div class="vv-lb">Total do dia</div><div class="vv-kv big" data-g="kd">0</div><div class="vv-hs" data-g="kds"></div></div>
-      <div class="vv-clk"><div class="vv-cv" data-g="clk">--:--:--</div><div class="vv-hs" data-g="dt"></div>
+      <div class="vv-brand"><span class="vv-live" data-g="live"></span><div class="vv-tt">TREMPS</div></div>
+      <div class="vv-box vv-hb"><div class="vv-lb">Hora</div><div class="vv-hrow"><div class="vv-hv" data-g="hora">—</div><div class="vv-hs" data-g="hsub"></div></div>
+        <div class="vv-hbar"><i data-g="hfill"></i></div></div>
+      <div class="vv-box"><div class="vv-lb">Peças nesta hora</div><div class="vv-kv" data-g="kh">0</div></div>
+      <div class="vv-box"><div class="vv-lb">Total do dia</div><div class="vv-kv big" data-g="kd">0</div></div>
+      <div class="vv-clk"><div class="vv-cv" data-g="clk">--:--</div>
         <div class="vv-acts"><button type="button" onclick="dashTelaCheia()" title="Tela cheia">⛶</button><button type="button" onclick="vivoFechar()" title="Sair">✕</button></div></div>
     </header>
-    <div class="vv-tk" data-g="tk"></div>
     <div class="vv-grid" style="--cols:${cols}">${robos.map(rn => `
       <div class="vv-card" id="vv-c-${rn}">
-        <div class="vv-ch"><span class="vv-rn">${esc(rn)}</span><span class="vv-mk" data-r="mk"></span><span class="vv-st" data-r="st"></span></div>
-        <div class="vv-pc" data-r="pc"></div>
-        <div class="vv-num"><span class="vv-n" data-r="n">0</span><span class="vv-m" data-r="m"></span><span class="vv-pct" data-r="pct"></span></div>
-        <div class="vv-bar" data-r="bar"><i data-r="fill"></i><em data-r="exp" title="Onde deveria estar agora"></em></div>
-        <div class="vv-tl" data-r="tl"></div>
-        <div class="vv-ft"><span data-r="rit"></span><span data-r="hj"></span></div>
+        <div class="vv-ch"><span class="vv-rn">${esc(rn)}</span><span class="vv-pc" data-r="pc"></span></div>
+        <div class="vv-num"><span class="vv-n" data-r="n">0</span><span class="vv-m" data-r="m"></span></div>
+        <div class="vv-bar" data-r="bar"><i data-r="fill"></i></div>
+        <div class="vv-st" data-r="st"></div>
       </div>`).join('')}</div>
     <footer class="vv-strip" data-g="strip"></footer>`;
 }
@@ -9908,25 +9911,13 @@ function _vvCard(root, o, sl){
   const r = k => el.querySelector('[data-r="' + k + '"]');
   el.style.setProperty('--c', o.st.cor);
   el.className = 'vv-card st-' + o.st.k;
-  _vvSet(r('mk'), o.marca); _vvSet(r('st'), esc(o.st.txt));
-  const pj = (o.auto && sl && o.meta > 0 && o.cnt < o.meta && o.proj != null && !o.aj && ['rit', 'ap', 'ab'].includes(o.st.k)) ? `<span class="vv-pj ${o.proj >= o.meta ? 'ok' : 'no'}">vai fechar em <b>${o.proj}</b></span>` : '';
-  _vvSet(r('pc'), '<span class="vv-pcn">peça <b>' + esc(o.cod) + '</b>' + (o.aj && o.ajTxt ? ' · <span class="vv-aj">' + esc(o.ajTxt) + '</span>' : '') + '</span>' + pj);
+  _vvSet(r('st'), '<i></i>' + esc(o.st.txt));
+  _vvSet(r('pc'), esc(o.cod));
   const temV = sl && (o.auto || o.cnt > 0);   // manual sem lançamento nesta hora: "—" (ainda não apontado)
   _vvSet(r('n'), temV ? o.cnt.toLocaleString('pt-BR') : '—');
-  _vvSet(r('m'), sl && o.meta > 0 ? '/ ' + o.meta : '');
-  _vvSet(r('pct'), temV && o.meta > 0 && !o.aj ? Math.round(o.cnt / o.meta * 100) + '%' : '');
-  const auto = o.auto && sl;
+  _vvSet(r('m'), sl && o.meta > 0 ? '/' + o.meta : '');
   r('bar').style.visibility = temV && o.meta > 0 ? 'visible' : 'hidden';
   r('fill').style.transform = 'scaleX(' + (o.meta > 0 ? Math.min(1, o.cnt / o.meta) : 0).toFixed(4) + ')';
-  r('exp').style.left = (o.frac * 100).toFixed(2) + '%';
-  r('exp').style.display = auto && o.meta > 0 ? '' : 'none';
-  _vvSet(r('tl'), auto ? o.ticks.map(p => `<i style="left:${p.toFixed(2)}%"></i>`).join('') + `<b style="left:${(o.frac * 100).toFixed(2)}%"></b>` : `<span>${o.auto ? 'fora do turno' : 'apontado à mão na Meta Diária'}</span>`);
-  let rit = '';
-  if(auto){
-    rit = (o.gap ? `⏱ <b>${Math.round(o.gap)} s</b>/peça` : '⏱ medindo o ritmo…') + (o.desde != null ? ` · última há <b>${_vvDur(o.desde)}</b>` : '');
-  } else if(sl) rit = o.auto ? '' : 'lançado nesta hora: <b>' + (o.cnt || '—') + '</b>';
-  _vvSet(r('rit'), rit);
-  _vvSet(r('hj'), 'hoje <b>' + o.hoje.toLocaleString('pt-BR') + '</b>');
   // peça nova: o número pula e sobe um "+1"
   const f = _vv.flash[o.rn];
   if(f){
