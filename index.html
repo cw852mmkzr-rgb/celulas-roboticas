@@ -8260,12 +8260,10 @@ function renderPainelVivo(){
         if(_ehAjusteT(rd[campo])){ if(mh > 0) o.just++; }   // parada justificada: fora da conta, mas aparece
         else if(mh > 0){ o.hMeta++; o.metaSoma += mh; o.pecasM += val; if(val >= mh) o.ok++; }
       }); });
-    // quem fez só 1 hora não passa na frente de quem fez o dia todo: depois que alguém completa 4 h, mínimo de 4 h
+    // 15/11/2026: sem mínimo de horas (pedido do usuário) — ordem só por % da meta, metas batidas e peças
     const lista = Object.values(res).map(o => ({...o, pct: o.metaSoma ? Math.round(o.pecasM / o.metaSoma * 100) : null}));
-    const maxH = lista.reduce((m, o) => Math.max(m, o.horas), 0), minH = maxH >= 4 ? 4 : 1;
     const ord = (x, y) => (y.pct == null ? -1 : y.pct) - (x.pct == null ? -1 : x.pct) || y.ok - x.ok || y.pecas - x.pecas;
-    const out = [...lista.filter(o => o.horas >= minH).sort(ord), ...lista.filter(o => o.horas < minH).sort(ord)];
-    out.minH = minH; return out;
+    return lista.sort(ord);
   };
   let rk = rankDia(hoje0), rkDe = 'hoje';
   if(!rk.length && antDt){ rk = rankDia(antDt); rkDe = antNome; }
@@ -8274,7 +8272,7 @@ function renderPainelVivo(){
     : `<table class="pv2-rank"><thead><tr><th></th><th>Funcionário</th><th>Robô</th><th class="r">Horas</th><th class="r">Peças</th><th class="r">Metas</th><th>% da meta</th></tr></thead><tbody>${
       rk.slice(0, 3).map((f, i) => `<tr class="top"><td class="pos">${medalha(i)}</td><td class="nm">${esc(f.nome)}</td><td class="rb">${[...f.robos].sort().join(' · ')}</td><td class="r">${f.horas}</td><td class="r pc">${F(f.pecas)}</td><td class="r">${f.hMeta ? f.ok + '/' + f.hMeta : '—'}${f.just ? `<div class="pv2-just" title="Horas com parada justificada (fora da conta de metas)">⏸ ${f.just} just.</div>` : ''}</td>
         <td><div class="pv2-pct"><div class="tr"><i style="width:${Math.min(100, f.pct || 0)}%;background:${corPct(f.pct)}"></i></div><b style="color:${corPct(f.pct)}">${f.pct == null ? '—' : f.pct + '%'}</b></div></td></tr>`).join('')
-    }</tbody></table><div class="pv2-mais">${rk.length > 3 ? `top 3 de ${rk.length} funcionários no dia · ` : ''}${rk.minH > 1 ? `mínimo de ${rk.minH} h trabalhadas para entrar no ranking` : 'começo do dia: sem mínimo de horas até alguém completar 4 h'}</div>`;
+    }</tbody></table>${rk.length > 3 ? `<div class="pv2-mais">top 3 de ${rk.length} funcionários no dia</div>` : ''}`;
   // alertas: robôs fora de produção + chamados de manutenção abertos
   const alerta = ROBOS.filter(r => celulas[String(r)] && (celulas[String(r)].status || '') !== 'Produzindo');
   let alertHtml = alerta.slice(0, 6).map(r => { const i = mapaRobosStatusInfo(celulas[String(r)].status);
