@@ -1801,6 +1801,53 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(max-width:1250px){.pv-robos{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){.pv-bento{grid-template-columns:1fr 1fr}.pv-bento>.pv-card:first-child{grid-column:1/-1}}
 @media(max-width:560px){.pv-bento{grid-template-columns:1fr}.pv-robos{grid-template-columns:repeat(2,1fr);gap:10px}.pv-big{font-size:38px}.pv-rc{min-height:100px;padding:14px}.pv-rc .n{font-size:22px}.pv-rc .v{font-size:24px}}
+/* Painel v2 (15/11/2026) — igual ao Painel da Cromo: KPIs, Top 3 funcionários, alertas e robôs com dia anterior */
+.pv2{--txt:#eaf2ff;--ny:#f9f871;display:flex;flex-direction:column;gap:14px;container-type:inline-size;container-name:pvarea}
+.pv2 .pv-lbl{font-size:13px;letter-spacing:.14em}
+.pv2-kpis{display:grid;grid-template-columns:1.15fr 1.3fr 1fr 1fr;gap:14px}
+.pv2-num{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(34px,5.2cqw,60px);line-height:1.05;color:var(--nc);text-shadow:0 0 22px rgba(0,240,255,.45);margin-top:8px;letter-spacing:.01em;white-space:nowrap}
+.pv2-sub{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--mut);margin-top:6px;line-height:1.35}
+.pv2-sub b{color:var(--txt)}
+.pv2-cmp{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--mut)}
+.pv2-chip{font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;padding:3px 10px;border-radius:4px}
+.pv2-chip.up{color:#00ffae;background:rgba(0,255,174,.12);border:1px solid rgba(0,255,174,.45)}
+.pv2-chip.down{color:#ff2b5e;background:rgba(255,43,94,.12);border:1px solid rgba(255,43,94,.45)}
+.pv2-k.meta{display:flex;align-items:center;gap:18px}
+.pv2-ring{width:118px;height:118px;flex-shrink:0}
+.pv2-bar{height:9px;background:#16233c;border-radius:6px;margin-top:12px;overflow:hidden}
+.pv2-bar i{display:block;height:100%;border-radius:6px}
+.pv2-row{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);gap:14px}
+.pv2-graf{min-width:0;overflow-x:auto}
+.pv2-graf-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pv2-aviso{font-family:'Share Tech Mono',monospace;font-size:12.5px;color:var(--ny);border:1px solid rgba(249,248,113,.35);border-radius:4px;padding:3px 9px}
+.pv2-rank{width:100%;border-collapse:collapse;margin-top:12px;font-family:'Chakra Petch','Share Tech Mono',sans-serif}
+.pv2-rank th{text-align:left;font-family:'Share Tech Mono',monospace;font-size:12.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;padding:0 10px 10px;border-bottom:1px solid rgba(0,240,255,.15);white-space:nowrap}
+.pv2-rank td{padding:11px 10px;font-size:18px;font-weight:600;color:var(--txt);border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
+.pv2-rank .r{text-align:right}
+.pv2-rank .pos{font-size:22px;width:44px;text-align:center;font-family:'Orbitron',sans-serif;color:var(--mut)}
+.pv2-rank .nm{font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;max-width:240px;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.pv2-rank .rb{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--nc)}
+.pv2-rank .pc{font-family:'Orbitron',sans-serif;color:var(--nc)}
+.pv2-pct{display:flex;align-items:center;gap:10px;min-width:150px}
+.pv2-pct .tr{flex:1;height:9px;background:#16233c;border-radius:6px;overflow:hidden}
+.pv2-pct .tr i{display:block;height:100%;border-radius:6px}
+.pv2-pct b{font-family:'Orbitron',sans-serif;font-size:17px;min-width:58px;text-align:right}
+.pv2-just{font-size:10px;color:#c99bff;font-family:'Share Tech Mono',monospace;white-space:nowrap;margin-top:2px;font-weight:400}
+.pv2-mais{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--faint);margin-top:8px}
+.pv2-vazio{padding:36px 10px;text-align:center;font-size:17px;color:var(--mut)}
+.pv2-vazio span{font-size:14px;color:var(--faint)}
+.pv2 .pv-alert{font-size:16px}
+.pv-rc-ant{font-family:'Share Tech Mono',monospace;font-size:13px;color:#ff6be0;margin-top:8px}
+.pv-rc-ant b{color:#ff9cec}
+@container pvarea (max-width:1000px){.pv2-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.pv2-row{grid-template-columns:minmax(0,1fr)}}
+@container pvarea (max-width:900px){.pv2 .pv-robos{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container pvarea (max-width:760px){
+  .pv2-rank th:nth-child(3),.pv2-rank td:nth-child(3),.pv2-rank th:nth-child(4),.pv2-rank td:nth-child(4){display:none}
+  .pv2-rank td{font-size:15px;padding:9px 6px}.pv2-rank .nm{font-size:15px;max-width:160px}.pv2-pct .tr{display:none}.pv2-pct{min-width:0}
+  .pv2-k.meta{flex-direction:column;align-items:flex-start}
+}
+@container pvarea (max-width:640px){.pv2-kpis{grid-template-columns:minmax(0,1fr)}.pv2-num{font-size:40px}.pv2 .pv-robos{grid-template-columns:repeat(2,minmax(0,1fr))}.pv2-ring{width:84px;height:84px}}
+@container pvarea (max-width:460px){.pv2-rank th:nth-child(6),.pv2-rank td:nth-child(6){display:none}.pv2-rank .nm{max-width:120px}.pv2-rank th{padding:0 5px 8px;font-size:11px}.pv2-rank .pos{width:30px;font-size:16px}.pv2-pct b{min-width:0;font-size:15px}}
 /* ===== Aba Produção por Robô (v2: leitura simples — tabelas, frases e poucos números) ===== */
 .prb{--ln:#1d2633;--pn:#0e131b;--mut:#7d8899;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;color:#e5ebf3;padding-bottom:40px;font-family:'Montserrat',sans-serif}
 .prb-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -8163,21 +8210,71 @@ function renderProdRobo(){
 
 // ===== Painel "Visão geral" (quem não é host) — estilo Painel da Cromo Azul =====
 // O painel de metas (dia/mês, projeção, turnos, feriados) só o host vê; os outros veem este resumo.
+// 15/11/2026: refeito igual ao Painel da Cromo — 4 cartões (hoje × dia anterior até a mesma hora, meta do dia com ritmo,
+// dia anterior, média diária), Top 3 funcionários do dia + Alertas, e robôs com hoje + dia anterior.
 function renderPainelVivo(){
   const mp = document.getElementById('mainPanel'); if(!mp) return;
   const h = new Date(), A = h.getFullYear(), Mi = h.getMonth(), F = _projFmt;
+  const DSEM = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'], dd2 = n => String(n).padStart(2, '0');
   const M = _pnMes(A, Mi), D = M.hojeD;
-  // produção do mês + gráfico dos últimos 14 dias
-  const serie = M.dias.filter(x => x.d <= h).map(x => x.feito);
-  const dcp = M.dias.filter(x => x.feito > 0).length, media = dcp ? Math.round(M.feito / dcp) : 0;
-  const jan = serie.slice(-14), mx = Math.max(1, ...jan);
-  const pts = jan.length > 1 ? jan.map((v, i) => (i / (jan.length - 1) * 320).toFixed(0) + ',' + (40 - (v / mx) * 34).toFixed(1)).join(' ') : '0,38 320,38';
+  const mc = _pnMetaCel(), md = (mc && mc.metas_dias) || {}, semMeta = (mc && mc.dias_sem_meta) || {};
+  const hoje0 = new Date(A, Mi, h.getDate());
+  // hoje: última hora com peça lançada
+  const hrs = D ? D.horas : [];
+  let ultIdx = -1; hrs.forEach((x, i) => { if(D.porHora[x].feito > 0) ultIdx = i; });
+  const ultHora = ultIdx >= 0 ? hrs[ultIdx] : null;
+  const robosAtivos = D ? ROBOS.filter(r => D.robos[r] && D.robos[r].feito > 0).length : 0;
+  // dia anterior: último dia útil (seg–sex, sem feriado/folga) antes de hoje que teve produção — na segunda é a sexta
+  let antDt = null, an = null;
+  for(let i = 1; i <= 31; i++){
+    const x = new Date(A, Mi, h.getDate() - i); if(!_pnUtil(x) || semMeta[_pnChave(x)]) continue;
+    const dx = _pnDia(md, x, M.turnos, null, semMeta); if(dx.feito > 0){ antDt = x; an = dx; break; }
+  }
+  const antNome = antDt ? (Math.round((hoje0 - antDt) / 864e5) === 1 ? 'Ontem' : DSEM[antDt.getDay()].charAt(0) + DSEM[antDt.getDay()].slice(1).toLowerCase()) + ' ' + dd2(antDt.getDate()) + '/' + dd2(antDt.getMonth() + 1) : '';
+  // comparação justa: hoje até a última hora lançada × dia anterior até a MESMA hora
+  const ateH = (dx, campo) => (dx && ultHora) ? dx.horas.filter(x => _pnIdx(x) <= _pnIdx(ultHora)).reduce((s, x) => s + dx.porHora[x][campo], 0) : 0;
+  const ateHj = ateH(D, 'feito'), ateAnt = ateH(an, 'feito'), metaAteAgora = ateH(D, 'meta');
+  const delta = ateAnt > 0 ? Math.round((ateHj - ateAnt) / ateAnt * 100) : null;
   // meta do dia (mesma regra do painel do host: seg–sex, turno de cada robô)
-  const temMeta = D && D.util && D.meta > 0, pct = temMeta ? Math.round(D.feito / D.meta * 100) : null;
-  const corAnel = pct != null && pct >= 100 ? '#00ffae' : '#00f0ff';
-  const dash = 232, off = dash - dash * Math.min(pct || 0, 100) / 100;
-  const subMeta = temMeta ? F(D.feito) + ' / ' + F(D.meta) + ' PÇ HOJE'
-    : (D && D.folga ? 'FERIADO / FOLGA — SEM META' : 'FIM DE SEMANA — SEM META') + (D && D.feito ? ' · ' + F(D.feito) + ' PÇ' : '');
+  const feitoHj = D ? D.feito : 0, temMeta = !!(D && D.util && D.meta > 0);
+  const pctHoje = temMeta ? Math.round(feitoHj / D.meta * 100) : 0;
+  const ritmo = temMeta && metaAteAgora ? Math.round(ateHj / metaAteAgora * 100) : null;
+  const pctAnt = an && an.meta ? Math.round(an.feito / an.meta * 100) : null;
+  const corPct = p => p == null ? '#5c6890' : p >= 100 ? '#00ffae' : p >= 80 ? '#f9f871' : '#ff2b5e';
+  const corMeta = (!temMeta || !feitoHj) ? '#5c6890' : corPct(ritmo != null ? ritmo : pctHoje);   // sem lançamento ainda: cinza
+  const dash = 264, off = dash - dash * Math.min(100, pctHoje) / 100;
+  const subMeta = temMeta ? `${F(feitoHj)} de ${F(D.meta)} pç${feitoHj < D.meta ? ' · faltam ' + F(D.meta - feitoHj) : ''}`
+    : `${D && D.folga ? 'feriado / folga' : (h.getDay() === 6 ? 'sábado' : 'domingo')}: sem meta · só as peças (${F(feitoHj)} pç)`;
+  // média diária: só dias úteis já fechados (sem hoje, sem sábado/domingo e sem folga); o total do mês conta tudo
+  const dcp = M.dias.filter(x => x.util && x.d < hoje0 && x.feito > 0).length, media = M.mediaDia;
+  // Top 3 funcionários do dia (mesma conta da aba Funcionários: func_ da hora ou equipe com 1 pessoa só)
+  const rankDia = dt => {
+    const ch = _pnChave(dt), dia = md[ch] || {}, res = {};
+    ROBOS.forEach(r => { const rd = dia[r] || dia[String(r)]; if(!rd) return;
+      _pnHorasDia(ch).forEach(hr => { const campo = campoH(hr), val = parseCelVal(rd[campo] || '').num; if(val <= 0) return;
+        const nome = String(_funcHoraCredT(rd, campo) || '').trim(); if(!nome) return;
+        const kn = nome.toUpperCase();   // "angela" e "ANGELA" são a mesma pessoa
+        const o = res[kn] || (res[kn] = {nome, pecas: 0, horas: 0, ok: 0, hMeta: 0, metaSoma: 0, pecasM: 0, just: 0, robos: new Set()});
+        o.pecas += val; o.horas++; o.robos.add(String(r));
+        const mh = _funcMetaHoraT(hr, metaRdHora(rd, campo), ch);
+        if(_ehAjusteT(rd[campo])){ if(mh > 0) o.just++; }   // parada justificada: fora da conta, mas aparece
+        else if(mh > 0){ o.hMeta++; o.metaSoma += mh; o.pecasM += val; if(val >= mh) o.ok++; }
+      }); });
+    // quem fez só 1 hora não passa na frente de quem fez o dia todo: depois que alguém completa 4 h, mínimo de 4 h
+    const lista = Object.values(res).map(o => ({...o, pct: o.metaSoma ? Math.round(o.pecasM / o.metaSoma * 100) : null}));
+    const maxH = lista.reduce((m, o) => Math.max(m, o.horas), 0), minH = maxH >= 4 ? 4 : 1;
+    const ord = (x, y) => (y.pct == null ? -1 : y.pct) - (x.pct == null ? -1 : x.pct) || y.ok - x.ok || y.pecas - x.pecas;
+    const out = [...lista.filter(o => o.horas >= minH).sort(ord), ...lista.filter(o => o.horas < minH).sort(ord)];
+    out.minH = minH; return out;
+  };
+  let rk = rankDia(hoje0), rkDe = 'hoje';
+  if(!rk.length && antDt){ rk = rankDia(antDt); rkDe = antNome; }
+  const medalha = i => ['🥇','🥈','🥉'][i] || (i + 1) + 'º';
+  const rankHtml = !rk.length ? `<div class="pv2-vazio">Nenhum funcionário marcado nas horas ainda.<br><span>Na Meta Diária, marque quem estava em cada hora para aparecer aqui.</span></div>`
+    : `<table class="pv2-rank"><thead><tr><th></th><th>Funcionário</th><th>Robô</th><th class="r">Horas</th><th class="r">Peças</th><th class="r">Metas</th><th>% da meta</th></tr></thead><tbody>${
+      rk.slice(0, 3).map((f, i) => `<tr class="top"><td class="pos">${medalha(i)}</td><td class="nm">${esc(f.nome)}</td><td class="rb">${[...f.robos].sort().join(' · ')}</td><td class="r">${f.horas}</td><td class="r pc">${F(f.pecas)}</td><td class="r">${f.hMeta ? f.ok + '/' + f.hMeta : '—'}${f.just ? `<div class="pv2-just" title="Horas com parada justificada (fora da conta de metas)">⏸ ${f.just} just.</div>` : ''}</td>
+        <td><div class="pv2-pct"><div class="tr"><i style="width:${Math.min(100, f.pct || 0)}%;background:${corPct(f.pct)}"></i></div><b style="color:${corPct(f.pct)}">${f.pct == null ? '—' : f.pct + '%'}</b></div></td></tr>`).join('')
+    }</tbody></table><div class="pv2-mais">${rk.length > 3 ? `top 3 de ${rk.length} funcionários no dia · ` : ''}${rk.minH > 1 ? `mínimo de ${rk.minH} h trabalhadas para entrar no ranking` : 'começo do dia: sem mínimo de horas até alguém completar 4 h'}</div>`;
   // alertas: robôs fora de produção + chamados de manutenção abertos
   const alerta = ROBOS.filter(r => celulas[String(r)] && (celulas[String(r)].status || '') !== 'Produzindo');
   let alertHtml = alerta.slice(0, 6).map(r => { const i = mapaRobosStatusInfo(celulas[String(r)].status);
@@ -8187,23 +8284,56 @@ function renderPainelVivo(){
   const nCh = Object.values(mn).reduce((s, l) => s + (Array.isArray(l) ? l.filter(m => m && !m.concluido).length : 0), 0);
   if(nCh) alertHtml += `<div class="pv-alert" style="--c:#ff2bd6"><span class="pv-dot"></span>${nCh} CHAMADO${nCh > 1 ? 'S' : ''} ABERTO${nCh > 1 ? 'S' : ''}</div>`;
   if(!alertHtml) alertHtml = `<div class="pv-alert" style="--c:#00ffae"><span class="pv-dot"></span>TUDO OPERANDO</div>`;
-  // robôs: status + produção de hoje
+  // robôs: status + produção de hoje + dia anterior
   const robosHtml = ROBOS.filter(r => celulas[String(r)]).map(r => {
     const i = mapaRobosStatusInfo(celulas[String(r)].status), t = mapaRobosProducaoHoje(r).produzido;
-    return `<div class="pv-rc" onclick="selectCell('${r}')"><div class="n">${r}</div><div class="s"><span class="pv-dot" style="--c:${i.cor}"></span>${esc(i.label)}</div><div class="v">${F(t)}</div></div>`;
+    const ta = an && an.robos[r] ? an.robos[r].feito : 0;
+    return `<div class="pv-rc" onclick="selectCell('${r}')"><div class="n">${r}</div><div class="s"><span class="pv-dot" style="--c:${i.cor}"></span>${esc(i.label)}</div><div class="v">${F(t)}</div>
+      ${antDt ? `<div class="pv-rc-ant">${esc(antNome)}: <b>${F(ta)}</b></div>` : ''}</div>`;
   }).join('');
+  const chip = delta == null ? '' : `<span class="pv2-chip ${delta >= 0 ? 'up' : 'down'}">${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta)}%</span>`;
   mp.innerHTML = `<div class="pv">
     <div class="pv-head"><div class="pv-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
-      <div><div class="pv-t">Painel</div><div class="pv-s">Visão geral · ${MESES[Mi]} ${A}</div></div></div>
-    <div class="pv-bento">
-      <div class="pv-card"><div class="pv-lbl">Produção do mês</div><div class="pv-big">${F(M.feito)}</div>
-        <div class="pv-sub">Média ${F(media)}/dia · ${dcp} dia${dcp === 1 ? '' : 's'} ativo${dcp === 1 ? '' : 's'}</div>
-        <svg viewBox="0 0 320 44" width="100%" height="42" preserveAspectRatio="none" style="margin-top:12px;display:block"><polyline points="${pts}" fill="none" stroke="#ff2bd6" stroke-width="2.5" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 5px rgba(255,43,214,.8))"/></svg></div>
-      <div class="pv-card cen"><div class="pv-lbl">Meta do dia</div>
-        <svg viewBox="0 0 90 90" width="90" height="90" style="margin-top:8px"><circle cx="45" cy="45" r="37" fill="none" stroke="#16233c" stroke-width="8"/>${temMeta ? `<circle cx="45" cy="45" r="37" fill="none" stroke="${corAnel}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 45 45)" style="filter:drop-shadow(0 0 6px ${corAnel})"/>` : ''}</svg>
-        <div class="pv-big" style="font-size:26px;margin-top:8px;color:${corAnel}">${pct != null ? pct + '%' : '—'}</div><div class="pv-sub">${subMeta}</div></div>
-      <div class="pv-card"><div class="pv-lbl" style="color:#ff2bd6">// Alertas</div>${alertHtml}</div>
-      <div class="pv-card span"><div class="pv-h3">🤖 Robôs · produção de hoje</div><div class="pv-robos">${robosHtml}</div></div>
+      <div><div class="pv-t">Painel</div><div class="pv-s">Visão geral · ${DSEM[h.getDay()].toLowerCase()}, ${dd2(h.getDate())}/${dd2(Mi + 1)} · ${MESES[Mi]} ${A}</div></div></div>
+    <div class="pv2">
+      <div class="pv2-kpis">
+        <div class="pv-card pv2-k">
+          <div class="pv-lbl">Produção de hoje</div>
+          <div class="pv2-num">${F(feitoHj)}</div>
+          <div class="pv2-sub">${ultHora ? `até ${ultHora} · ${robosAtivos} robô${robosAtivos !== 1 ? 's' : ''}` : 'sem apontamento ainda'}</div>
+          ${delta != null ? `<div class="pv2-cmp">${chip}<span>vs ${esc(antNome)} até ${ultHora} (${F(ateAnt)})</span></div>` : ''}
+        </div>
+        <div class="pv-card pv2-k meta">
+          <svg viewBox="0 0 100 100" class="pv2-ring"><circle cx="50" cy="50" r="42" fill="none" stroke="#16233c" stroke-width="9"/><circle cx="50" cy="50" r="42" fill="none" stroke="${corMeta}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${dash}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 6px ${corMeta})"/></svg>
+          <div>
+            <div class="pv-lbl">Meta do dia</div>
+            <div class="pv2-num" style="color:${corMeta}">${temMeta ? pctHoje + '%' : '—'}</div>
+            <div class="pv2-sub">${subMeta}</div>
+            ${ritmo != null ? `<div class="pv2-sub">ritmo até agora: <b style="color:${corPct(ritmo)}">${ritmo}% da meta</b></div>` : ''}
+          </div>
+        </div>
+        <div class="pv-card pv2-k">
+          <div class="pv-lbl" style="color:var(--nm)">${antDt ? esc(antNome) + ' · dia anterior' : 'Dia anterior'}</div>
+          <div class="pv2-num" style="color:#ff6be0;text-shadow:0 0 22px rgba(255,43,214,.4)">${an ? F(an.feito) : '—'}</div>
+          ${an ? `<div class="pv2-sub">${an.meta ? `<b style="color:${corPct(pctAnt)}">${pctAnt}% da meta</b> (${F(an.meta)} pç)` : 'sem meta lançada'}</div>
+          <div class="pv2-bar"><i style="width:${Math.min(100, pctAnt || 0)}%;background:${corPct(pctAnt)}"></i></div>` : '<div class="pv2-sub">sem produção nos últimos dias</div>'}
+        </div>
+        <div class="pv-card pv2-k">
+          <div class="pv-lbl" style="color:var(--ny)">Média diária · ${MESES[Mi]}</div>
+          <div class="pv2-num" style="color:var(--ny);text-shadow:0 0 22px rgba(249,248,113,.35)">${dcp ? F(media) : '—'}</div>
+          <div class="pv2-sub">${dcp ? dcp + (dcp !== 1 ? ' dias úteis' : ' dia útil') + ' · sem hoje e sem fim de semana' : 'ainda sem dias fechados no mês'}</div>
+          <div class="pv2-sub">total do mês: <b>${F(M.feito)}</b></div>
+        </div>
+      </div>
+      <div class="pv2-row">
+        <div class="pv-card pv2-graf">
+          <div class="pv2-graf-h"><div class="pv-lbl" style="font-size:14px">🏆 Top 3 funcionários · ${rkDe === 'hoje' ? 'hoje' : esc(rkDe)}</div>
+            ${rkDe !== 'hoje' ? `<div class="pv2-aviso">hoje ainda sem funcionário marcado — mostrando ${esc(rkDe)}</div>` : ''}</div>
+          ${rankHtml}
+        </div>
+        <div class="pv-card"><div class="pv-lbl" style="color:var(--nm)">// Alertas</div>${alertHtml}</div>
+      </div>
+      <div class="pv-card"><div class="pv-h3">🤖 Robôs · produção de hoje</div><div class="pv-robos">${robosHtml}</div></div>
     </div></div>`;
 }
 
