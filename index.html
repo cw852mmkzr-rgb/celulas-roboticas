@@ -1801,6 +1801,43 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(max-width:1250px){.pv-robos{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){.pv-bento{grid-template-columns:1fr 1fr}.pv-bento>.pv-card:first-child{grid-column:1/-1}}
 @media(max-width:560px){.pv-bento{grid-template-columns:1fr}.pv-robos{grid-template-columns:repeat(2,1fr);gap:10px}.pv-big{font-size:38px}.pv-rc{min-height:100px;padding:14px}.pv-rc .n{font-size:22px}.pv-rc .v{font-size:24px}}
+/* Simulação do Dashboard (só HOST, 15/11/2026) */
+.sd-wrap{color:#d8dde6}
+.sd-top{margin-bottom:14px}
+.sd-tt{font-size:24px;font-weight:800;color:#fff;letter-spacing:.04em}
+.sd-st{font-size:12.5px;color:#7a8698;margin-top:5px;max-width:780px;line-height:1.5}
+.sd-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.sd-lb{display:flex;align-items:center;gap:8px;font-size:12px;color:#8a95a8;text-transform:uppercase;letter-spacing:.08em;margin-right:6px}
+.sd-lb select{background:#0f1318;border:1px solid #ffb30070;border-radius:8px;padding:8px 10px;color:#ffb300;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;outline:none}
+.sd-btn{background:#0f1318;border:1px solid #2e3b4e;border-radius:8px;padding:9px 14px;color:#d8dde6;font-weight:700;cursor:pointer;font-family:inherit;font-size:13px}
+.sd-btn:hover{border-color:#00e87a80}
+.sd-btn.pri{background:#00e87a;border-color:#00e87a;color:#04120a}
+.sd-btn.pri:hover{filter:brightness(1.1)}
+.sd-tw{overflow-x:auto;border:1px solid #1e2530;border-radius:10px;background:#080b0f;max-width:100%}
+.sd-t{border-collapse:collapse;width:100%;min-width:980px}
+.sd-t th{font-size:11px;color:#8a95a8;padding:9px 3px;border-bottom:1px solid #1e2530;white-space:nowrap;font-weight:700;text-align:center}
+.sd-t th.at{color:#ffb300;background:rgba(255,179,0,.14)}
+.sd-t td{padding:3px 2px;border-bottom:1px solid #0f1318;text-align:center}
+.sd-t td.at{background:rgba(255,179,0,.07)}
+.sd-t .l{text-align:left}
+.sd-t .rn{font-weight:900;color:#fff;padding:0 10px;font-size:15px}
+.sd-t .tot{font-weight:900;color:#00e87a;padding:0 10px;white-space:nowrap}
+.sd-in{width:50px;background:#0f1318;border:1px solid #1e2530;border-radius:6px;padding:6px 3px;color:#d8dde6;text-align:center;font-family:inherit;font-size:14px;font-weight:700;outline:none}
+.sd-in:focus{border-color:#00e87a;box-shadow:0 0 0 2px #00e87a30}
+.sd-in.cod{width:82px;text-align:left;padding-left:7px}
+.sd-in.meta{width:54px;color:#00e5ff}
+.sd-in.ok{background:rgba(0,232,122,.24);border-color:#00e87a70;color:#fff}
+.sd-in.fail{background:rgba(255,77,77,.24);border-color:#ff4d4d70;color:#fff}
+.sd-in.aj{background:rgba(180,108,255,.28);border-color:#b46cff80;color:#fff}
+.sd-in.cafe{background:rgba(255,179,0,.15);border-color:#ffb30070;color:#ffb300}
+.sd-dica{font-size:12px;color:#7a8698;margin-top:10px;line-height:1.7}
+.sd-dica b{color:#d8dde6}
+#dashboardScreen.sim{z-index:9000}   /* na simulação o app fica aberto atrás: o dashboard cobre também o topo do app */
+.dash-sim-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:repeating-linear-gradient(135deg,#2a1d00,#2a1d00 12px,#211700 12px,#211700 24px);border-bottom:2px solid #ffb300;color:#ffcf66;font-size:13px;flex-shrink:0}
+.dash-sim-bar b{color:#ffb300;letter-spacing:.12em}
+.dash-sim-bar span{flex:1;min-width:160px}
+.dash-sim-bar button{background:#0a0d12;border:1px solid #ffb30080;color:#ffb300;border-radius:7px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12.5px}
+.dash-sim-bar button:hover{background:#ffb30018}
 /* Painel v2 (15/11/2026) — igual ao Painel da Cromo: KPIs, Top 3 funcionários, alertas e robôs com dia anterior */
 .pv2{--txt:#eaf2ff;--ny:#f9f871;display:flex;flex-direction:column;gap:14px;container-type:inline-size;container-name:pvarea}
 .pv2 .pv-lbl{font-size:13px;letter-spacing:.14em}
@@ -4586,6 +4623,7 @@ function getCellTipo(k) {
   if (k === '__painel') return 'painel';
   if (k === '__prodrobo') return 'prod_robo';
   if (k === '__histmetas') return 'hist_metas';
+  if (k === '__simdash') return 'sim_dash';
   if (k === '__gerenciar') return 'gerenciar';
   if (!celulas[k]) return 'robo';
   const n = (celulas[k].nome||'').toLowerCase();
@@ -5025,6 +5063,7 @@ const SB_IC = {
   painel: '<path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4.2-4.2"/><circle cx="12" cy="15" r="1.3"/>',
   prodrobo: '<path d="M3 21h18"/><path d="M5 21v-9l4 2.5V12l4 2.5V12l4 2.5V7l3 1.5V21"/>',
   histmetas: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M3.5 12H2M22 12h-1.5"/>',
+  simdash: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><path d="M10 7.5v5l4-2.5z"/>',
   metas: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
   producao_mensal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   producao_peca: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/>',
@@ -5097,6 +5136,7 @@ function renderSidebar(){
     html += item('__funcionarios', 'funcionarios', 'Funcionários', 'Desempenho individual');
     if(isAdmin){
       html += item('__tarefas', 'tarefas', 'Tarefas Diárias', 'Rotina diária');
+      html += item('__simdash', 'simdash', 'Simulação do Dashboard', 'Valores fictícios para teste');
       html += item('__gerenciar', 'gerenciar', 'Gerenciar', 'Configurações do host');
     }
   }
@@ -6764,6 +6804,7 @@ function _renderDetailInner(){
   if(selected==='__painel'){renderPainel();return;}
   if(selected==='__prodrobo'){renderProdRobo();return;}
   if(selected==='__histmetas'){renderHistMetas();return;}
+  if(selected==='__simdash'){renderSimDash();return;}
   if(selected==='__maparobos'){renderMapaRobos();return;}
   if(selected==='__gerenciar'){
     if(!isAdmin){ selected='__maparobos'; renderMapaRobos(); return; }
@@ -9263,6 +9304,143 @@ function tryLoginMetas(){
   if(pw===ADMIN_METAS_PW){loginAcertou();isAdmin=false;isAdminMetas=true;startApp();}
   else{ loginErrou(); }
 }
+// ===== Simulação do Dashboard (só HOST, 15/11/2026) =====
+// Quadro com valores FICTÍCIOS para testar o dashboard da TV. Fica só neste aparelho (localStorage):
+// nunca vai para o banco, não aparece na TV e não mexe na Meta Diária.
+let _dashSim = null;   // {dados, hora} enquanto o dashboard simulado está aberto
+let _sd = null;        // {hora, robos: {'600': {cod, meta, v: {h0800: '40'}}}}
+const SD_KEY = 'tremps_sim_dash';
+function _sdChave(){ return _dashGetChave(); }
+function _sdHoras(){ return [...horasDiaPara(_sdChave()), ...HORAS_NOITE]; }
+function _sdRobos(){ return Object.keys(celulas).filter(k => getCellTipo(k) === 'robo').sort(); }
+function _sdCarrega(){
+  if(!_sd){ try{ _sd = JSON.parse(localStorage.getItem(SD_KEY) || 'null'); }catch(_){ _sd = null; } }
+  if(!_sd || typeof _sd !== 'object' || !_sd.robos || typeof _sd.robos !== 'object') _sd = {hora: '', robos: {}};
+  _sdRobos().forEach(k => {
+    const rn = k.replace(/\D/g, ''), c = celulas[k] || {};
+    if(!_sd.robos[rn]) _sd.robos[rn] = {cod: String(c.codigo_peca || ''), meta: String(parseInt(c.meta_hora) || ''), v: {}};
+    if(!_sd.robos[rn].v || typeof _sd.robos[rn].v !== 'object') _sd.robos[rn].v = {};
+  });
+  if(!_sd.hora || !_sdHoras().includes(_sd.hora)) _sd.hora = _dashGetHoraCheia();
+  return _sd;
+}
+function _sdSalva(){ try{ localStorage.setItem(SD_KEY, JSON.stringify(_sd)); }catch(_){} }
+function _sdDados(){
+  const out = {};
+  Object.entries(_sd.robos).forEach(([rn, o]) => {
+    const rd = {cod: o.cod || '', meta: o.meta || ''};
+    Object.entries(o.v || {}).forEach(([c, v]) => { if(String(v).trim() !== '') rd[c] = String(v).trim(); });
+    out[rn] = rd;
+  });
+  return out;
+}
+function _sdCor(rn, h){
+  const o = _sd.robos[rn], raw = String((o.v || {})[campoH(h)] || '').trim(); if(!raw) return '';
+  if(_ehAjusteT(raw)) return 'aj';
+  if(HORAS_CAFE.includes(h)) return 'cafe';
+  const v = parseCelVal(raw).num, m = metaEfetivaHora(h, parseInt(o.meta) || 0, _sdChave());
+  return m > 0 && v > 0 ? (v >= m ? 'ok' : 'fail') : '';
+}
+function renderSimDash(force){
+  const mp = document.getElementById('mainPanel'); if(!mp) return;
+  if(!isAdmin){ selected = '__maparobos'; renderMapaRobos(); return; }
+  if(!force && mp.querySelector('.sd-wrap')) return;   // a atualização automática não redesenha (não perde o que está digitando)
+  _sdCarrega();
+  const horas = _sdHoras(), robos = _sdRobos().map(k => k.replace(/\D/g, '')).filter(rn => _sd.robos[rn]);
+  const horasOpts = horas.map(h => `<option value="${h}" ${h === _sd.hora ? 'selected' : ''}>${h}</option>`).join('');
+  const head = `<tr><th class="l">Robô</th><th class="l">Peça</th><th>Meta/h</th>${horas.map(h => `<th class="${h === _sd.hora ? 'at' : ''}">${h}${HORAS_CAFE.includes(h) ? ' ☕' : ''}</th>`).join('')}<th>Total</th></tr>`;
+  const linhas = robos.map(rn => {
+    const o = _sd.robos[rn], tot = horas.reduce((s, h) => s + parseCelVal(String(o.v[campoH(h)] || '')).num, 0);
+    return `<tr><td class="l rn">${rn}</td>
+      <td class="l"><input class="sd-in cod" value="${esc(o.cod)}" aria-label="Peça do robô ${rn}" onchange="_sdSet('${rn}','cod',this.value)"></td>
+      <td><input class="sd-in meta" inputmode="numeric" value="${esc(o.meta)}" aria-label="Meta por hora do robô ${rn}" onchange="_sdSet('${rn}','meta',this.value)"></td>
+      ${horas.map(h => { const c = campoH(h); return `<td class="${h === _sd.hora ? 'at' : ''}"><input id="sd-${rn}-${c}" class="sd-in v ${_sdCor(rn, h)}" value="${esc(o.v[c] || '')}" aria-label="Robô ${rn} às ${h}" onchange="_sdSet('${rn}','${c}',this.value)"></td>`; }).join('')}
+      <td class="tot" id="sd-tot-${rn}">${tot ? tot.toLocaleString('pt-BR') : '—'}</td></tr>`;
+  }).join('');
+  mp.innerHTML = `<div class="sd-wrap">
+    <div class="sd-top"><div><div class="sd-tt">🧪 Simulação do Dashboard</div>
+      <div class="sd-st">Coloque valores fictícios e veja como o dashboard da TV fica. Os valores ficam só neste aparelho: não vão para o banco, não aparecem na TV e não mexem na Meta Diária.</div></div></div>
+    <div class="sd-bar">
+      <label class="sd-lb">Hora atual simulada <select onchange="_sdHora(this.value)">${horasOpts}</select></label>
+      <button type="button" class="sd-btn" onclick="_sdCopiarHoje()">📋 Copiar o dia de hoje</button>
+      <button type="button" class="sd-btn" onclick="_sdAleatorio()">🎲 Preencher aleatório</button>
+      <button type="button" class="sd-btn" onclick="_sdLimpar()">🧹 Limpar</button>
+      <button type="button" class="sd-btn pri" onclick="simDashAbrir()">▶ Abrir dashboard simulado</button>
+    </div>
+    <div class="sd-tw"><table class="sd-t"><thead>${head}</thead><tbody>${linhas}</tbody></table></div>
+    <div class="sd-dica">Verde = bateu a meta da hora · vermelho = não bateu · amarelo = café (10:00) · roxo = parada justificada (digite <b>#</b> ou <b>-</b> no fim, ex.: <b>40#</b>).<br>
+      A coluna em amarelo é a hora atual simulada: o dashboard mostra os robôs que têm valor nela e depois a visão geral.</div>
+  </div>`;
+}
+function _sdSet(rn, campo, val){
+  const o = _sd && _sd.robos[rn]; if(!o) return; val = String(val == null ? '' : val).trim();
+  if(campo === 'cod') o.cod = val;
+  else if(campo === 'meta') o.meta = String(parseInt(val) || '');
+  else { val = _normParadaT(val); o.v[campo] = val; const el = document.getElementById(`sd-${rn}-${campo}`); if(el && el.value !== val) el.value = val; }
+  _sdSalva(); _sdPinta(rn);
+}
+function _sdPinta(rn){
+  const o = _sd.robos[rn]; let tot = 0;
+  _sdHoras().forEach(h => {
+    const c = campoH(h), el = document.getElementById(`sd-${rn}-${c}`); tot += parseCelVal(String(o.v[c] || '')).num;
+    if(el){ el.classList.remove('ok', 'fail', 'aj', 'cafe'); const k = _sdCor(rn, h); if(k) el.classList.add(k); }
+  });
+  const t = document.getElementById('sd-tot-' + rn); if(t) t.textContent = tot ? tot.toLocaleString('pt-BR') : '—';
+}
+function _sdHora(h){ _sd.hora = h; _sdSalva(); renderSimDash(true); }
+function _sdLimpar(){
+  if(!confirm('Limpar todos os valores da simulação? (só a simulação — a produção de verdade não muda)')) return;
+  Object.values(_sd.robos).forEach(o => { o.v = {}; }); _sdSalva(); renderSimDash(true);
+}
+function _sdCopiarHoje(){
+  const real = _dashGetDados();   // fora da simulação: é o dia de hoje de verdade (só leitura)
+  _sdRobos().forEach(k => {
+    const rn = k.replace(/\D/g, ''), rd = real[rn] || {}, o = _sd.robos[rn]; if(!o) return;
+    o.cod = String(rd.cod || o.cod || ''); o.meta = String(parseInt(rd.meta) || o.meta || ''); o.v = {};
+    _sdHoras().forEach(h => { const c = campoH(h); if(rd[c] != null && String(rd[c]).trim() !== '') o.v[c] = String(rd[c]).trim(); });
+  });
+  _sdSalva(); renderSimDash(true); showToast('Copiei o dia de hoje — agora pode mudar à vontade');
+}
+function _sdAleatorio(){
+  const horas = _sdHoras(), ate = horas.indexOf(_sd.hora), ch = _sdChave();
+  Object.values(_sd.robos).forEach(o => {
+    if(!(parseInt(o.meta) > 0)) o.meta = '50';
+    o.v = {};
+    horas.forEach((h, i) => {
+      if(i > ate) return;
+      let m = metaEfetivaHora(h, parseInt(o.meta), ch); if(HORAS_CAFE.includes(h)) m = Math.round(m * 0.6);
+      o.v[campoH(h)] = String(Math.max(1, Math.round(m * (0.7 + Math.random() * 0.5))));
+    });
+  });
+  _sdSalva(); renderSimDash(true);
+}
+function simDashAbrir(){
+  if(!isAdmin){ showToast('Só o HOST usa a simulação', true); return; }
+  _sdCarrega();
+  _dashSim = {dados: _sdDados(), hora: _sd.hora};
+  const scr = document.getElementById('dashboardScreen'); if(!scr) return;
+  let bar = document.getElementById('dashSimBar');
+  if(!bar){ bar = document.createElement('div'); bar.id = 'dashSimBar'; bar.className = 'dash-sim-bar'; scr.insertBefore(bar, scr.children[1] || null); }
+  bar.innerHTML = `<b>🧪 SIMULAÇÃO</b><span>valores fictícios · hora ${esc(_sd.hora)} · nada é gravado</span>
+    <button type="button" onclick="_simDashProx()">▶ Próximo</button><button type="button" onclick="_dashIrParaGeral()">📊 Visão geral</button><button type="button" onclick="simDashFechar()">✕ Fechar simulação</button>`;
+  scr.style.display = 'flex'; scr.classList.add('sim');
+  document.body.style.overflow = 'hidden';
+  [_dashClockTimer, _dashSlideTimer].forEach(t => clearInterval(t));
+  _dashRobos = _sdRobos(); _dashIdx = 0; _dashGeral = false; _dashSeqRobos = []; _dashSeqIdx = -1;
+  _dashClockTimer = setInterval(_dashTickClock, 1000); _dashTickClock();
+  _dashIniciarCarrossel(_dashSim.dados, _dashGetHoraRef());   // mesma ordem da TV: robôs com valor na hora, depois a visão geral
+}
+function _simDashProx(){ _dashNextSlide(); clearInterval(_dashSlideTimer); _dashSlideTimer = setInterval(_dashNextSlide, _dashGeral ? 60000 : 6000); }
+function simDashFechar(){
+  [_dashClockTimer, _dashSlideTimer].forEach(t => clearInterval(t));
+  _dashSim = null;
+  const scr = document.getElementById('dashboardScreen'); if(scr){ scr.style.display = 'none'; scr.classList.remove('sim'); }
+  const bar = document.getElementById('dashSimBar'); if(bar) bar.remove();
+  document.body.style.overflow = '';
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(_){}
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && _dashSim) simDashFechar(); });
+
 function startDashboard(){
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("dashboardScreen").style.display="flex";
@@ -9283,6 +9461,7 @@ function startDashboard(){
 }
 
 function sairDashboard(){
+  if(_dashSim){ simDashFechar(); return; }   // simulação do HOST: só fecha o dashboard e volta ao app
   [_dashLoadTimer,_dashClockTimer,_dashSlideTimer,_dashVerTimer].forEach(t=>clearInterval(t));
   try{ sessionStorage.removeItem("__dash_tv"); }catch(_){}
   // tira o ?tv=1 do endereço pra não voltar ao dashboard se recarregar depois de sair
@@ -9372,6 +9551,7 @@ let _dashLoadTimer=null,_dashClockTimer=null,_dashSlideTimer=null,_dashVerTimer=
 let _dashIdx=0, _dashGeral=false, _dashRobos=[];
 
 function _dashGetHoraCheia(){
+  if(_dashSim && _dashSim.hora) return _dashSim.hora;   // simulação: hora escolhida pelo HOST
   // Retorna o slot correto considerando meias horas (:30)
   // Se agora é 09:35 e existe slot 09:30, retorna 09:30. Senão, 09:00.
   const now = new Date();
@@ -9397,7 +9577,7 @@ function _dashTickClock(){
   const now=new Date();
   const ce=document.getElementById("dashClock");
   const de=document.getElementById("dashDate");
-  if(ce) ce.textContent=now.toLocaleTimeString("pt-BR");
+  if(ce) ce.textContent=_dashSim?_dashSim.hora:now.toLocaleTimeString("pt-BR");
   if(de) de.textContent=now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 
@@ -9500,6 +9680,7 @@ function _dashRoboSemValor(k, dados, hora){
 // Chave "ano_mes_dia" de HOJE (mês 0-indexed) — para regras dependentes da data (ex: sexta sem 14:30)
 function _dashGetChave(){ const n=new Date(); return `${n.getFullYear()}_${n.getMonth()}_${n.getDate()}`; }
 function _dashGetDados(){
+  if(_dashSim) return _dashSim.dados;   // simulação: valores fictícios do HOST (nada vem do banco)
   const mk=Object.keys(celulas).find(k=>getCellTipo(k)==='metas');
   if(!mk) return {};
   const mc=celulas[mk];
