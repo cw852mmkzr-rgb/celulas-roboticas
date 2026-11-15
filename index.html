@@ -1831,6 +1831,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .sd-in.aj{background:rgba(180,108,255,.28);border-color:#b46cff80;color:#fff}
 .sd-in.cafe{background:rgba(255,179,0,.15);border-color:#ffb30070;color:#ffb300}
 .sd-dica{font-size:12px;color:#7a8698;margin-top:10px;line-height:1.7}
+.sd-vivo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border:1px solid #00f0ff40;border-radius:10px;background:linear-gradient(90deg,rgba(0,240,255,.07),rgba(0,255,174,.03))}
+.sd-vivo-tx{flex:1;min-width:260px;font-size:12.5px;color:#9aa8bf;line-height:1.55}
+.sd-vivo-tx b{color:#00f0ff}
+.sd-vivo-bt{display:flex;gap:8px;flex-wrap:wrap}
 .sd-dica b{color:#d8dde6}
 #dashboardScreen.sim{z-index:9000}   /* na simulação o app fica aberto atrás: o dashboard cobre também o topo do app */
 .dash-sim-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:repeating-linear-gradient(135deg,#2a1d00,#2a1d00 12px,#211700 12px,#211700 24px);border-bottom:2px solid #ffb300;color:#ffcf66;font-size:13px;flex-shrink:0}
@@ -1838,6 +1842,118 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-sim-bar span{flex:1;min-width:160px}
 .dash-sim-bar button{background:#0a0d12;border:1px solid #ffb30080;color:#ffb300;border-radius:7px;padding:6px 12px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12.5px}
 .dash-sim-bar button:hover{background:#ffb30018}
+/* ===== Dashboard Ao Vivo (contagem automática, 15/11/2026) ===== */
+#vivoScreen{display:none;position:fixed;inset:0;z-index:9500;flex-direction:column;overflow:hidden;color:#e6f0ff;font-family:'Manrope',sans-serif;
+  background:radial-gradient(1200px 600px at 10% -10%,rgba(0,240,255,.10),transparent 60%),radial-gradient(900px 500px at 110% 110%,rgba(0,255,174,.07),transparent 60%),
+  linear-gradient(rgba(0,240,255,.035) 1px,transparent 1px) 0 0/100% 4vh,#03060c}
+.vv-root{flex:1;min-height:0;display:flex;flex-direction:column;gap:1.1vh;padding:1.4vh 1.4vw}
+.vv-load{margin:auto;display:flex;flex-direction:column;align-items:center;gap:16px;font-family:'Share Tech Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#5c6890}
+.vv-load i{width:46px;height:46px;border:3px solid #16233c;border-top-color:#00f0ff;border-radius:50%;animation:vvSpin 1s linear infinite}
+@keyframes vvSpin{to{transform:rotate(360deg)}}
+.vv-hd{display:grid;grid-template-columns:auto minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr) auto;gap:1vw;align-items:stretch}
+.vv-brand{display:flex;flex-direction:column;justify-content:center;gap:.5vh;padding-right:.6vw}
+.vv-tt{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(20px,3.6vh,46px);letter-spacing:.12em;color:#00ff66;text-shadow:0 0 18px rgba(0,255,102,.55)}
+.vv-sub{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.35vh,15px);color:#6b7aa0;letter-spacing:.12em;text-transform:uppercase}
+.vv-live{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:clamp(11px,1.5vh,17px);letter-spacing:.2em;padding:4px 12px;border-radius:999px;border:1px solid}
+.vv-live i{width:10px;height:10px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.vv-live.on{color:#ff3b5c;border-color:#ff3b5c80;background:rgba(255,59,92,.1)}
+.vv-live.on i{animation:vvPulse 1.2s ease-in-out infinite}
+.vv-live.off{color:#ff9f1a;border-color:#ff9f1a70}
+.vv-live.sim{color:#ffb300;border-color:#ffb30080;background:rgba(255,179,0,.1)}
+.vv-live.sim i{animation:vvPulse 1.2s ease-in-out infinite}
+@keyframes vvPulse{50%{opacity:.25;transform:scale(.7)}}
+.vv-box{background:rgba(8,13,26,.78);border:1px solid rgba(0,240,255,.16);border-radius:10px;padding:1.1vh 1.1vw;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.vv-lb{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.35vh,15px);letter-spacing:.16em;text-transform:uppercase;color:#00f0ff}
+.vv-hv{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(22px,4.4vh,58px);line-height:1.05;color:#fff;margin-top:.3vh}
+.vv-hv small{font-size:.55em}
+.vv-hbar{height:max(6px,.8vh);background:#16233c;border-radius:99px;overflow:hidden;margin-top:.8vh}
+.vv-hbar i{display:block;height:100%;background:linear-gradient(90deg,#00f0ff,#00ffae);transform-origin:left;transform:scaleX(0);transition:transform .9s linear;box-shadow:0 0 12px rgba(0,240,255,.6)}
+.vv-hs{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.5vh,17px);color:#7d8bb0;margin-top:.6vh;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vv-hs b{color:#e6f0ff}
+.vv-kv{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(24px,5vh,66px);line-height:1.05;color:#00f0ff;text-shadow:0 0 18px rgba(0,240,255,.45);white-space:nowrap;margin-top:.3vh}
+.vv-kv small{font-size:.45em;color:#6b7aa0;text-shadow:none;margin-left:.3em}
+.vv-kv.big{color:#00ffae;text-shadow:0 0 22px rgba(0,255,174,.5)}
+.vv-clk{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:.3vh;position:relative;padding-left:.6vw}
+.vv-cv{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(22px,4.6vh,60px);color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.vv-acts{display:flex;gap:6px;margin-top:.4vh;opacity:.35;transition:opacity .2s}
+.vv-acts:hover,.vv-acts:focus-within{opacity:1}
+.vv-acts button{background:#0a1020;border:1px solid #2a3756;color:#cfe0ff;border-radius:7px;width:34px;height:30px;cursor:pointer;font-size:14px}
+.vv-acts button:hover{border-color:#00f0ff}
+.vv-tk{display:flex;align-items:center;gap:.7vw;overflow:hidden;white-space:nowrap;min-height:3.4vh;padding:.4vh .8vw;background:rgba(8,13,26,.6);border:1px solid rgba(0,240,255,.1);border-radius:8px}
+.vv-tk-l{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.3vh,14px);letter-spacing:.16em;text-transform:uppercase;color:#5c6890;flex-shrink:0}
+.vv-ev{display:inline-flex;align-items:baseline;gap:6px;font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.55vh,18px);color:#00ffae;padding:2px 10px;border-radius:6px;background:rgba(0,255,174,.06);border:1px solid rgba(0,255,174,.18);flex-shrink:0}
+.vv-ev b{font-family:'Orbitron',sans-serif;color:#fff;font-size:.95em}
+.vv-ev i{font-style:normal;color:#6b7aa0;font-size:.85em}
+.vv-ev.new{animation:vvIn .5s cubic-bezier(.2,.9,.3,1.2)}
+.vv-ev.vazio{color:#5c6890;background:none;border-color:transparent}
+@keyframes vvIn{from{opacity:0;transform:translateX(-14px) scale(.9)}}
+.vv-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:1vh .9vw}
+.vv-card{--c:#00f0ff;position:relative;min-width:0;min-height:0;background:linear-gradient(180deg,rgba(10,16,32,.92),rgba(6,10,20,.92));border:1px solid color-mix(in srgb,var(--c) 38%,transparent);border-radius:12px;padding:1.1vh .9vw;display:flex;flex-direction:column;gap:.55vh;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.02),0 0 22px -12px var(--c);transition:border-color .4s,box-shadow .4s}
+.vv-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);box-shadow:0 0 14px var(--c)}
+.vv-card.hit{animation:vvHit .9s ease-out}
+@keyframes vvHit{0%{box-shadow:inset 0 0 0 1px rgba(255,255,255,.02),0 0 0 0 var(--c)}30%{box-shadow:inset 0 0 40px -10px var(--c),0 0 26px -4px var(--c)}}
+.vv-ch{display:flex;align-items:center;gap:.6vw;min-width:0}
+.vv-rn{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(18px,3.4vh,44px);color:#fff;line-height:1}
+.vv-mk{font-family:'Share Tech Mono',monospace;font-size:clamp(9px,1.2vh,13px);color:#5c6890;letter-spacing:.12em}
+.vv-st{margin-left:auto;font-family:'Share Tech Mono',monospace;font-weight:700;font-size:clamp(9px,1.35vh,15px);letter-spacing:.06em;color:var(--c);border:1px solid color-mix(in srgb,var(--c) 55%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent);padding:2px 8px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+.vv-card.st-par2 .vv-st,.vv-card.st-par .vv-st{animation:vvBlink 1.4s ease-in-out infinite}
+@keyframes vvBlink{50%{opacity:.45}}
+.vv-pc{display:flex;justify-content:space-between;gap:.6vw;font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.45vh,16px);color:#7d8bb0;white-space:nowrap}
+.vv-pcn{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.vv-pj{flex-shrink:0}
+.vv-pj b{font-family:'Orbitron',sans-serif;color:inherit}
+.vv-pc b{color:#fff;font-family:'Orbitron',sans-serif;font-size:.95em;letter-spacing:.04em}
+.vv-aj{color:#c99bff}
+.vv-num{display:flex;align-items:baseline;gap:.5vw;margin-top:auto}
+.vv-n{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(30px,7.4vh,104px);line-height:.95;color:var(--c);text-shadow:0 0 24px color-mix(in srgb,var(--c) 55%,transparent);font-variant-numeric:tabular-nums;display:inline-block;transform-origin:left bottom}
+.vv-n.bump{animation:vvBump .55s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes vvBump{30%{transform:scale(1.14);filter:brightness(1.5)}}
+.vv-m{font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(14px,2.6vh,34px);color:#5c6890}
+.vv-pct{margin-left:auto;font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(14px,2.5vh,32px);color:var(--c)}
+.vv-bar{position:relative;height:max(8px,1.15vh);background:#14203a;border-radius:99px;overflow:visible}
+.vv-bar i{display:block;height:100%;border-radius:99px;background:var(--c);transform-origin:left;transform:scaleX(0);transition:transform .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 12px color-mix(in srgb,var(--c) 70%,transparent)}
+.vv-bar em{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:#fff;border-radius:2px;box-shadow:0 0 6px #fff;transition:left .9s linear}
+.vv-tl{position:relative;height:max(12px,1.9vh);background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 25%);border-bottom:1px solid #1a2744}
+.vv-tl i{position:absolute;bottom:0;width:2px;height:100%;margin-left:-1px;background:var(--c);opacity:.75;border-radius:1px}
+.vv-tl b{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:#00f0ff;box-shadow:0 0 8px #00f0ff;transition:left .9s linear}
+.vv-tl span{font-family:'Share Tech Mono',monospace;font-size:clamp(9px,1.25vh,13px);color:#5c6890;letter-spacing:.06em}
+.vv-ft{display:flex;justify-content:space-between;gap:.6vw;font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.45vh,16px);color:#7d8bb0;white-space:nowrap}
+.vv-ft span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.vv-ft b{color:#e6f0ff}
+.vv-pj.ok{color:#00ffae}.vv-pj.no{color:#ff6b81}
+.vv-plus{position:absolute;right:1vw;top:38%;font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(16px,3vh,38px);color:var(--c);text-shadow:0 0 14px var(--c);pointer-events:none;animation:vvPlus 1.25s ease-out forwards}
+@keyframes vvPlus{from{opacity:0;transform:translateY(10px) scale(.8)}20%{opacity:1;transform:translateY(0) scale(1.1)}to{opacity:0;transform:translateY(-4vh) scale(1)}}
+.vv-card.st-man{--c:#5c6890;opacity:.78}
+.vv-card.st-man .vv-n{text-shadow:none;color:#9aa8c8}
+.vv-strip{display:flex;gap:.45vw;overflow-x:auto;padding-bottom:2px}
+.vv-hr{flex:1 0 auto;min-width:56px;text-align:center;background:rgba(8,13,26,.75);border:1px solid #16233c;border-top:3px solid var(--hc);border-radius:8px;padding:.6vh .3vw}
+.vv-hr span{display:block;font-family:'Share Tech Mono',monospace;font-size:clamp(10px,1.35vh,15px);color:#8a99bf}
+.vv-hr b{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(13px,2.2vh,28px);color:var(--hc)}
+.vv-hr.fut{opacity:.45}
+.vv-hr.at{background:rgba(0,240,255,.1);border-color:#00f0ff80;box-shadow:0 0 16px -4px #00f0ff}
+.vv-hr.at b{color:#fff}
+.vv-simbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:repeating-linear-gradient(135deg,#2a1d00,#2a1d00 12px,#211700 12px,#211700 24px);border-bottom:2px solid #ffb300;color:#ffcf66;font-size:13px;flex-shrink:0;font-family:'Manrope',sans-serif}
+.vv-simbar>b{color:#ffb300;letter-spacing:.12em}
+.vv-sb-tx{margin-right:auto}
+.vv-sb-g{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.vv-simbar button{background:#0a0d12;border:1px solid #ffb30060;color:#ffb300;border-radius:6px;padding:5px 9px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px}
+.vv-simbar button.on{background:#ffb300;color:#1a1200}
+.vv-simbar button.stop{background:#ff2b5e;border-color:#ff2b5e;color:#fff}
+@media(max-width:1000px){
+  #vivoScreen{overflow:auto}
+  .vv-root{flex:none;min-height:100%;padding:12px;gap:10px}
+  .vv-hd{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vv-brand{grid-column:1/-1;flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px}
+  .vv-clk{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}
+  .vv-acts{opacity:1;margin:0}
+  .vv-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;flex:none}
+  .vv-card{min-height:190px;padding:12px}
+  .vv-n{font-size:48px}
+  .vv-tk{overflow-x:auto}
+}
+@media(max-width:560px){.vv-hd{grid-template-columns:minmax(0,1fr)}.vv-grid{grid-template-columns:minmax(0,1fr)}.vv-hb{grid-column:auto}.vv-cv{font-size:30px}.vv-clk .vv-hs{white-space:normal}}
+@media(prefers-reduced-motion:reduce){.vv-n.bump,.vv-card.hit,.vv-plus,.vv-ev.new,.vv-live i{animation:none!important}}
 /* Painel v2 (15/11/2026) — igual ao Painel da Cromo: KPIs, Top 3 funcionários, alertas e robôs com dia anterior */
 .pv2{--txt:#eaf2ff;--ny:#f9f871;display:flex;flex-direction:column;gap:14px;container-type:inline-size;container-name:pvarea}
 .pv2 .pv-lbl{font-size:13px;letter-spacing:.14em}
@@ -9367,6 +9483,15 @@ function renderSimDash(force){
       <button type="button" class="sd-btn" onclick="_sdLimpar()">🧹 Limpar</button>
       <button type="button" class="sd-btn pri" onclick="simDashAbrir()">▶ Abrir dashboard simulado</button>
     </div>
+    <div class="sd-vivo">
+      <div class="sd-vivo-tx"><b>📡 Dashboard Ao Vivo</b> — feito para a contagem automática: cada peça aparece na hora, com ritmo, projeção da hora e alerta de robô parado.
+        O simulado usa a meta e a peça deste quadro e gera peças fictícias a partir da hora escolhida (dá para acelerar e "parar" um robô).</div>
+      <div class="sd-vivo-bt">
+        <button type="button" class="sd-btn pri" onclick="vivoAbrir('sim')">🧪 Ao vivo simulado</button>
+        <button type="button" class="sd-btn" onclick="vivoAbrir('real')">📡 Ao vivo real</button>
+        <button type="button" class="sd-btn" onclick="_vvCopiarLink()" title="${esc(_vvLinkTV())}">🔗 Copiar link da TV</button>
+      </div>
+    </div>
     <div class="sd-tw"><table class="sd-t"><thead>${head}</thead><tbody>${linhas}</tbody></table></div>
     <div class="sd-dica">Verde = bateu a meta da hora · vermelho = não bateu · amarelo = café (10:00) · roxo = parada justificada (digite <b>#</b> ou <b>-</b> no fim, ex.: <b>40#</b>).<br>
       A coluna em amarelo é a hora atual simulada: o dashboard mostra os robôs que têm valor nela e depois a visão geral.</div>
@@ -9440,6 +9565,376 @@ function simDashFechar(){
   try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(_){}
 }
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && _dashSim) simDashFechar(); });
+
+// ===== DASHBOARD AO VIVO (15/11/2026) =====
+// Feito para a contagem automática ("zeramento automático"): cada peça que o robô faz chega na tabela producao_robos
+// e entra na tela na hora (Realtime) — sem carrossel, todos os robôs ao mesmo tempo, com ritmo, projeção da hora e alerta de parada.
+// Modos: 'real' (TV pelo link ?tv=vivo, ou o HOST pela aba Simulação) e 'sim' (peças fictícias geradas no próprio aparelho; nada é gravado).
+// Robô sem contagem automática aparece como MANUAL, com o que foi lançado na Meta Diária.
+const VV_SLOTS = [[300,360,'h0600'],[360,420,'h0700'],[420,480,'h0800'],[480,540,'h0900'],[540,570,'h0930'],[570,600,'h1000'],[600,660,'h1100'],[660,720,'h1200'],
+  [720,780,'h1300'],[780,840,'h1400'],[840,870,'h1430'],[870,900,'h1500'],[900,960,'h1600'],[960,1020,'h1700'],[1020,1080,'h1800'],[1080,1140,'h1900'],[1200,1260,'h2100'],[1260,1320,'h2200']];
+const _vv = { on: false, modo: 'real', solo: false, tot: {}, rows: {}, ids: null, ult: [], flash: {}, canal: null, vivo: false, timers: [], sig: '', carregando: false, erro: '', sim: null, cache: {} };
+function _vvBase(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function _vvMk(d, a, b, c){ const b0 = _vvBase(d).getTime(); return {campo: c, ini: new Date(b0 + a * 60000), fim: new Date(b0 + b * 60000)}; }
+// coluna da Meta Diária em andamento (mesma regra do banco: tremps_slot / _cntSlot), com início e fim
+function _vvSlotDe(d){
+  const m = d.getHours() * 60 + d.getMinutes();
+  if(d.getDay() === 5 && m >= 840 && m < 900) return _vvMk(d, 840, 900, 'h1500');   // sexta sem 14:30
+  const s = VV_SLOTS.find(x => m >= x[0] && m < x[1]); return s ? _vvMk(d, s[0], s[1], s[2]) : null;
+}
+function _vvSlotCampo(d, campo){
+  if(d.getDay() === 5 && campo === 'h1500') return _vvMk(d, 840, 900, 'h1500');
+  if(d.getDay() === 5 && campo === 'h1430') return null;
+  const s = VV_SLOTS.find(x => x[2] === campo); return s ? _vvMk(d, s[0], s[1], s[2]) : null;
+}
+function _vvProxSlot(d){ const m = d.getHours() * 60 + d.getMinutes(), s = VV_SLOTS.find(x => x[0] > m); return s ? _vvMk(d, s[0], s[1], s[2]) : null; }
+function _vvNow(){
+  const S = _vv.sim; if(_vv.modo !== 'sim' || !S) return Date.now();
+  return S.pausado ? S.tPausa : S.tv0 + (Date.now() - S.tr0) * S.vel;
+}
+function _vvChave(d){ return d.getFullYear() + '_' + d.getMonth() + '_' + d.getDate(); }
+function _vvMd(chave){
+  if(_vv.modo === 'sim') return (_vv.sim && _vv.sim.dados) || {};
+  const mk = Object.keys(celulas).find(k => getCellTipo(k) === 'metas');
+  return (mk && celulas[mk].metas_dias && celulas[mk].metas_dias[chave]) || {};
+}
+function _vvRobos(){ return Object.keys(celulas).filter(k => getCellTipo(k) === 'robo').sort().map(k => k.replace(/\D/g, '')).filter(Boolean); }
+function _vvAuto(rn, rd){
+  if(_vv.modo === 'sim') return (parseInt(rd.meta) || 0) > 0;
+  const t = _vv.tot[rn]; if(t && Object.values(t).some(v => v > 0)) return true;
+  if((_vv.rows[rn] || []).length) return true;
+  return Object.keys(rd).some(k => k.indexOf('auto_') === 0 && rd[k] === '1');
+}
+function _vvMediana(a){ const s = a.slice().sort((x, y) => x - y), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : null; }
+function _vvDur(s){ s = Math.max(0, Math.round(s)); if(s < 60) return s + ' s'; const m = Math.floor(s / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0'); }
+function _vvMMSS(s){ s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function _vvHMS(t){ const d = new Date(t); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, '0')).join(':'); }
+function _vvSet(el, html){ if(el && el._h !== html){ el.innerHTML = html; el._h = html; } }
+function _vvAddRow(rows, x){
+  if(!x || x.obs === 'AJUSTE HOST') return;
+  const rn = String(x.robo).replace(/\D/g, ''); (rows[rn] = rows[rn] || []).push({t: new Date(x.data_hora).getTime(), p: parseInt(x.pecas) || 0});
+}
+function _vvEvento(rn, t, p){
+  _vv.ult.unshift({t, rn, p}); _vv.ult.sort((a, b) => b.t - a.t); if(_vv.ult.length > 16) _vv.ult.length = 16;
+  _vv.flash[rn] = (_vv.flash[rn] || 0) + p;
+}
+
+// ── modo real: lê a contagem e escuta cada peça nova ──
+async function _vvCarregar(){
+  if(_vv.modo !== 'real' || _vv.carregando || !_vv.on) return; _vv.carregando = true;
+  const agora = new Date(), iso = _hmIsoDe(agora), sl = _vvSlotDe(agora);
+  const desde = new Date((sl ? sl.ini : agora).getTime() - 25 * 60000);
+  try{
+    const [r1, r2] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/producao_por_slot?dia=eq.' + iso + '&select=robo,campo,pecas', {headers: HEADERS_SB, signal: AbortSignal.timeout(15000)}),
+      fetch(SUPABASE_URL + '/rest/v1/producao_robos?select=id,robo,pecas,obs,data_hora&data_hora=gte.' + encodeURIComponent(desde.toISOString()) + '&order=data_hora.asc,id.asc&limit=1000', {headers: HEADERS_SB, signal: AbortSignal.timeout(15000)})
+    ]);
+    if(!r1.ok || !r2.ok) throw new Error('http');
+    const s = await r1.json(), l = await r2.json();
+    const tot = {}; s.forEach(x => { if(!x.campo) return; const rn = String(x.robo).replace(/\D/g, ''), o = (tot[rn] = tot[rn] || {}); o[x.campo] = (o[x.campo] || 0) + (parseInt(x.pecas) || 0); });
+    const rows = {}; l.forEach(x => _vvAddRow(rows, x));
+    _vv.tot = tot; _vv.rows = rows; _vv.ids = new Set(l.map(x => x.id));
+    if(!_vv.ult.length) _vv.ult = l.filter(x => x.obs !== 'AJUSTE HOST').slice(-16).reverse().map(x => ({t: new Date(x.data_hora).getTime(), rn: String(x.robo).replace(/\D/g, ''), p: parseInt(x.pecas) || 0}));
+    _vv.erro = '';
+  }catch(e){ _vv.erro = 'Sem conexão com o banco — tentando de novo'; }
+  _vv.carregando = false; _vvTick();
+}
+function _vvNovo(x){
+  if(!x || !x.data_hora || _vv.modo !== 'real' || !_vv.on) return;
+  if(_vv.ids){ if(_vv.ids.has(x.id)) return; _vv.ids.add(x.id); }
+  const d = new Date(x.data_hora); if(_hmIsoDe(d) !== _hmIsoDe(new Date())) return;
+  const rn = String(x.robo).replace(/\D/g, ''), p = parseInt(x.pecas) || 0, sl = _vvSlotDe(d);
+  if(sl){ const o = (_vv.tot[rn] = _vv.tot[rn] || {}); o[sl.campo] = (o[sl.campo] || 0) + p; }
+  if(x.obs !== 'AJUSTE HOST'){ _vvAddRow(_vv.rows, x); (_vv.rows[rn] || []).sort((a, b) => a.t - b.t); _vvEvento(rn, d.getTime(), p); }
+  _vvTick();
+}
+async function _vvConectar(){
+  try{
+    await _cntCarregaLib();
+    if(!_vv.on || _vv.modo !== 'real' || _vv.canal) return;
+    if(!_cnt.sb) _cnt.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth: {persistSession: false, autoRefreshToken: false}});
+    _vv.canal = _cnt.sb.channel('vivo-robos')
+      .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'producao_robos'}, pl => _vvNovo(pl && pl.new))
+      .subscribe(st => { _vv.vivo = st === 'SUBSCRIBED'; _vvTick(); });
+  }catch(e){ _vv.vivo = false; }
+}
+// TV sem login: lê a Meta Diária (meta, peça, robôs manuais) direto do banco — só leitura
+async function _vvCarregaConteudo(){
+  try{
+    const r = await fetch(SUPABASE_URL + '/rest/v1/dados?id=eq.main&select=conteudo', {headers: HEADERS_SB, signal: AbortSignal.timeout(20000)});
+    const d = await r.json();
+    if(d && d[0] && d[0].conteudo && Object.keys(d[0].conteudo).length) celulas = d[0].conteudo;
+  }catch(e){}
+  _vvTick();
+}
+
+// ── modo simulado: gera peças fictícias a partir do quadro da aba Simulação ──
+function _vvSimIniciar(){
+  _sdCarrega();
+  const hoje = new Date(), quadro = _sdDados();
+  const sl = _vvSlotCampo(hoje, campoH(_sd.hora)) || _vvSlotCampo(hoje, 'h0900');
+  const ini = sl.ini.getTime(), start = ini + (sl.fim - sl.ini) * 0.35;
+  const dados = {};
+  Object.entries(quadro).forEach(([rn, rd]) => {
+    const o = {...rd};
+    // da hora simulada para frente quem manda são as peças geradas; o "#" (parada justificada) do quadro continua valendo
+    Object.keys(o).forEach(cp => { if(!/^h[0-9]{4}$/.test(cp)) return; const s2 = _vvSlotCampo(hoje, cp); if(s2 && s2.fim.getTime() > ini) o[cp] = _ehAjusteT(o[cp]) ? '0#' : ''; });
+    dados[rn] = o;
+  });
+  _vv.sim = {vel: 1, pausado: false, tPausa: start, tv0: start, tr0: Date.now(), dados, fator: {}, prox: {}, trav: new Set()};
+  _vv.tot = {}; _vv.rows = {}; _vv.ult = []; _vv.flash = {};
+  Object.entries(dados).forEach(([rn, o]) => {
+    const t = (_vv.tot[rn] = {});
+    Object.keys(o).forEach(cp => { if(!/^h[0-9]{4}$/.test(cp)) return; const s2 = _vvSlotCampo(hoje, cp); if(s2 && s2.fim.getTime() <= ini){ const v = parseCelVal(o[cp] || '').num; if(v) t[cp] = v; } });
+    const meta = parseInt(o.meta) || 0;
+    if(meta > 0){ _vv.sim.fator[rn] = 0.9 + Math.random() * 0.35; _vv.sim.prox[rn] = ini + Math.random() * 3600 / meta * 1000; }
+  });
+  _vvSimGerar(start, false);
+}
+function _vvSimGerar(ate, anim){
+  const S = _vv.sim; if(!S) return;
+  Object.keys(S.prox).forEach(rn => {
+    if(S.trav.has(rn)) return;
+    const meta = parseInt((S.dados[rn] || {}).meta) || 0; if(meta <= 0) return;
+    let t = S.prox[rn], n = 0;
+    while(t <= ate && n < 400){
+      n++;
+      const d = new Date(t), sl = _vvSlotDe(d);
+      if(sl){
+        const o = (_vv.tot[rn] = _vv.tot[rn] || {}); o[sl.campo] = (o[sl.campo] || 0) + 1;
+        (_vv.rows[rn] = _vv.rows[rn] || []).push({t, p: 1});
+        if(anim) _vvEvento(rn, t, 1);
+        t += 3600 / meta / S.fator[rn] * (0.72 + Math.random() * 0.56) * 1000;
+        if(Math.random() < 0.012) t += (200 + Math.random() * 520) * 1000;   // de vez em quando o robô para alguns minutos
+      } else { const px = _vvProxSlot(d); t = px ? Math.max(t + 1000, px.ini.getTime()) : Infinity; }
+    }
+    S.prox[rn] = t;
+    const r = _vv.rows[rn]; if(r && r.length > 400) _vv.rows[rn] = r.slice(-250);
+  });
+}
+function _vvSimVel(v){
+  const S = _vv.sim; if(!S) return; const agora = _vvNow();
+  S.tv0 = agora; S.tr0 = Date.now(); S.vel = v; if(S.pausado) S.tPausa = agora;
+  _vvSimBar(); _vvTick();
+}
+function _vvSimPausa(){
+  const S = _vv.sim; if(!S) return;
+  if(S.pausado){ S.tv0 = S.tPausa; S.tr0 = Date.now(); S.pausado = false; } else { S.tPausa = _vvNow(); S.pausado = true; }
+  _vvSimBar(); _vvTick();
+}
+function _vvSimTrava(rn){
+  const S = _vv.sim; if(!S || !rn) return;
+  if(S.trav.has(rn)){ S.trav.delete(rn); const meta = parseInt((S.dados[rn] || {}).meta) || 60; S.prox[rn] = _vvNow() + 3600 / meta * 1000; }
+  else S.trav.add(rn);
+  _vvSimBar(); _vvTick();
+}
+function _vvSimBar(){
+  const bar = document.getElementById('vvSimBar'), S = _vv.sim; if(!bar || !S) return;
+  const robos = Object.keys(S.prox).sort();
+  _vvSet(bar, `<b>🧪 SIMULAÇÃO</b><span class="vv-sb-tx">peças fictícias · nada é gravado</span>
+    <span class="vv-sb-g">Velocidade ${[1, 5, 20, 60].map(v => `<button type="button" class="${S.vel === v ? 'on' : ''}" onclick="_vvSimVel(${v})">${v}×</button>`).join('')}</span>
+    <button type="button" onclick="_vvSimPausa()">${S.pausado ? '▶ Continuar' : '⏸ Pausar'}</button>
+    <span class="vv-sb-g">Parar robô ${robos.map(rn => `<button type="button" class="${S.trav.has(rn) ? 'stop' : ''}" onclick="_vvSimTrava('${rn}')" title="${S.trav.has(rn) ? 'Voltar a produzir' : 'Simular robô parado'}">${rn}</button>`).join('')}</span>`);
+}
+
+// ── abrir / fechar ──
+function vivoAbrir(modo, solo){
+  if(modo === 'sim' && !isAdmin){ showToast('Só o HOST usa a simulação', true); return; }
+  if(_vv.on) vivoFechar(true);
+  Object.assign(_vv, {on: true, modo, solo: !!solo, tot: {}, rows: {}, ids: null, ult: [], flash: {}, vivo: false, sig: '', erro: '', sim: null, cache: {}});
+  let ov = document.getElementById('vivoScreen');
+  if(!ov){ ov = document.createElement('div'); ov.id = 'vivoScreen'; document.body.appendChild(ov); }
+  ov.className = 'vv' + (modo === 'sim' ? ' sim' : '');
+  ov.innerHTML = `${modo === 'sim' ? '<div class="vv-simbar" id="vvSimBar"></div>' : ''}<div class="vv-root" id="vvRoot"><div class="vv-load"><i></i>Conectando à contagem dos robôs…</div></div>`;
+  ov.style.display = 'flex'; document.body.style.overflow = 'hidden';
+  if(modo === 'sim'){
+    _vvSimIniciar(); _vvSimBar();
+    _vv.timers.push(setInterval(() => { _vvSimGerar(_vvNow(), true); _vvTick(); }, 400));
+  } else {
+    if(solo) _vvCarregaConteudo();
+    _vvCarregar(); _vvConectar();
+    _vv.timers.push(setInterval(_vvTick, 1000));
+    _vv.timers.push(setInterval(_vvCarregar, 15000));   // confere tudo de novo a cada 15 s (e cobre a queda do Realtime)
+    if(solo){ _vv.timers.push(setInterval(_vvCarregaConteudo, 20000)); _vv.timers.push(setInterval(_dashChecaVersao, 10 * 60 * 1000)); }
+    try{ if(solo) sessionStorage.setItem('__dash_tv', 'vivo'); }catch(_){}
+  }
+  _vvTick();
+}
+function vivoFechar(trocando){
+  _vv.timers.forEach(t => clearInterval(t)); _vv.timers = [];
+  if(_vv.canal && _cnt.sb){ try{ _cnt.sb.removeChannel(_vv.canal); }catch(e){} }
+  _vv.canal = null; _vv.on = false; _vv.sim = null;
+  const ov = document.getElementById('vivoScreen'); if(ov){ ov.style.display = 'none'; ov.innerHTML = ''; }
+  document.body.style.overflow = '';
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(_){}
+  if(trocando) return;
+  if(_vv.solo){
+    try{ sessionStorage.removeItem('__dash_tv'); }catch(_){}
+    try{ const u = new URL(location.href); if(u.searchParams.has('tv')){ u.searchParams.delete('tv'); history.replaceState(null, '', u.toString()); } }catch(_){}
+    const ls = document.getElementById('loginScreen'); if(ls) ls.style.display = 'flex';
+    if(typeof _loginAplicaBloqueio === 'function') _loginAplicaBloqueio();
+  }
+  _vv.solo = false;
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && _vv.on && !_vv.solo) vivoFechar(); });
+function _vvLinkTV(){ return location.origin + location.pathname + '?tv=vivo'; }
+function _vvCopiarLink(){
+  const url = _vvLinkTV();
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(() => showToast('Link da TV copiado ✓')).catch(() => showToast(url));
+  else showToast(url);
+}
+
+// ── cálculo de cada robô na hora em andamento ──
+function _vvCalc(rn, now, sl, chave, md){
+  const rd = md[rn] || {}, c = celulas[rn] || {}, auto = _vvAuto(rn, rd);
+  const tot = _vv.tot[rn] || {}, val = cp => (tot[cp] != null ? tot[cp] : parseCelVal(rd[cp] || '').num);
+  let hoje = 0; [...horasDiaPara(chave), ...HORAS_NOITE].forEach(h => { hoje += val(campoH(h)); });
+  const nm = String(c.nome || ''), marca = /fanuc/i.test(nm) ? 'FANUC' : /kuka/i.test(nm) ? 'KUKA' : 'ROBÔ';
+  const o = {rn, auto, hoje, marca, cod: '', cnt: 0, meta: 0, aj: false, ajTxt: '', cafe: false, ticks: [], gap: null, desde: null, proj: null, frac: 0, st: null};
+  const cp = sl ? sl.campo : null;
+  o.cod = String((cp && rd.trocas ? (codRdHora(rd, cp) || rd.cod) : rd.cod) || c.codigo_peca || '—');
+  if(cp){
+    const hora = _horaDoCampo(cp);
+    o.cnt = val(cp); o.cafe = HORAS_CAFE.includes(hora);
+    o.meta = metaEfetivaHora(hora, metaRdHora(rd, cp), chave); if(o.cafe) o.meta = Math.round(o.meta * 0.6);
+    o.aj = _ehAjusteT(rd[cp]); o.ajTxt = o.aj ? _ajTxtT(rd, cp) : '';
+    const dur = sl.fim - sl.ini; o.frac = Math.min(1, Math.max(0, (now - sl.ini) / dur));
+    const rows = (_vv.rows[rn] || []).filter(x => x.t <= now);
+    o.ticks = rows.filter(x => x.t >= sl.ini.getTime() && x.t < sl.fim.getTime()).map(x => (x.t - sl.ini) / dur * 100);
+    const gaps = []; for(let i = rows.length - 1; i > 0 && gaps.length < 8; i--){ const g = (rows[i].t - rows[i - 1].t) / 1000; if(g > 0 && g < 1500) gaps.push(g); }
+    o.gap = gaps.length >= 2 ? _vvMediana(gaps) : null;
+    o.desde = rows.length ? (now - rows[rows.length - 1].t) / 1000 : null;
+    const rest = Math.max(0, (sl.fim - now) / 1000), pass = (now - sl.ini) / 1000;
+    const g = o.gap || (o.meta > 0 ? dur / 1000 / o.meta : null);
+    o.proj = o.meta > 0 && o.cnt >= o.meta ? o.cnt : (g ? Math.round(o.cnt + rest / Math.max(g, o.desde || 0)) : o.cnt);
+    const parado = auto && pass > 240 && (o.desde == null ? o.cnt === 0 : o.desde > Math.max(4 * (o.gap || 60), 240));
+    const stTxt = (c.status && c.status !== 'Produzindo') ? mapaRobosStatusInfo(c.status) : null;
+    if(!auto) o.st = {k: 'man', txt: 'MANUAL', cor: '#7d8bb0'};
+    else if(o.aj) o.st = {k: 'aj', txt: '⏸ PARADA JUSTIFICADA', cor: '#b46cff'};
+    else if(o.meta > 0 && o.cnt >= o.meta) o.st = {k: 'ok', txt: '✓ META BATIDA', cor: '#00ffae'};
+    else if(stTxt && !o.ticks.length) o.st = {k: 'par2', txt: stTxt.label, cor: stTxt.cor};
+    else if(o.cafe) o.st = {k: 'cafe', txt: '☕ CAFÉ', cor: '#ffb300'};   // no café o robô para de propósito: sem alerta de parado
+    else if(_vv.modo === 'real' && !o.ticks.length && rd['auto_' + cp] !== '1' && parseCelVal(rd[cp] || '').num > 0) o.st = {k: 'man', txt: 'MANUAL NESTA HORA', cor: '#7d8bb0'};
+    else if(parado) o.st = {k: (o.desde || pass) > 600 ? 'par2' : 'par', txt: o.desde == null ? '⚠ SEM PEÇA NESTA HORA' : '⚠ SEM PEÇA HÁ ' + _vvDur(o.desde).toUpperCase(), cor: (o.desde || pass) > 600 ? '#ff2b5e' : '#ff9f1a'};
+    else if(o.cafe) o.st = {k: 'cafe', txt: '☕ CAFÉ', cor: '#ffb300'};
+    else if(o.meta <= 0) o.st = {k: 'sm', txt: 'SEM META', cor: '#00f0ff'};
+    else if(o.proj >= o.meta) o.st = {k: 'rit', txt: 'NO RITMO', cor: '#00ffae'};
+    else if(o.proj >= o.meta * 0.9) o.st = {k: 'ap', txt: 'APERTADO', cor: '#f9f871'};
+    else o.st = {k: 'ab', txt: 'ABAIXO DO RITMO', cor: '#ff2b5e'};
+  } else o.st = {k: 'fora', txt: auto ? 'FORA DO TURNO' : 'MANUAL', cor: '#5c6890'};
+  return o;
+}
+
+// ── desenho: a estrutura é montada uma vez; depois só os números mudam (sem piscar) ──
+function _vvTick(){
+  if(!_vv.on) return;
+  const root = document.getElementById('vvRoot'); if(!root) return;
+  const nowT = _vvNow(), now = new Date(nowT), sl = _vvSlotDe(now), chave = _vvChave(now), md = _vvMd(chave);
+  const robos = _vvRobos();
+  if(!robos.length){ _vvSet(root, `<div class="vv-load"><i></i>Carregando os robôs…</div>`); _vv.sig = ''; return; }
+  const sig = _vv.modo + '|' + robos.join(',');
+  if(sig !== _vv.sig){ _vv.sig = sig; _vvMonta(root, robos); }
+  const q = s => root.querySelector('[data-g="' + s + '"]');
+  const lista = robos.map(rn => _vvCalc(rn, nowT, sl, chave, md));
+  // cabeçalho
+  _vvSet(q('live'), _vv.modo === 'sim' ? '<i></i>SIMULAÇÃO' : (_vv.vivo ? '<i></i>AO VIVO' : (_vv.erro ? '<i></i>SEM CONEXÃO' : '<i></i>CONECTANDO')));
+  q('live').className = 'vv-live ' + (_vv.modo === 'sim' ? 'sim' : _vv.vivo ? 'on' : 'off');
+  q('clk').textContent = _vvHMS(nowT);
+  _vvSet(q('dt'), now.toLocaleDateString('pt-BR', {weekday: 'long', day: '2-digit', month: '2-digit'}));
+  if(sl){
+    const rest = (sl.fim - now) / 1000, hora = _horaDoCampo(sl.campo);
+    _vvSet(q('hora'), hora + (HORAS_CAFE.includes(hora) ? ' <small>☕</small>' : ''));
+    q('hfill').style.transform = 'scaleX(' + Math.min(1, (now - sl.ini) / (sl.fim - sl.ini)).toFixed(4) + ')';
+    _vvSet(q('hsub'), `${_horaDoCampo('h' + String(sl.ini.getHours()).padStart(2, '0') + String(sl.ini.getMinutes()).padStart(2, '0'))} → ${hora} · faltam <b>${_vvMMSS(rest)}</b>`);
+  } else {
+    const px = _vvProxSlot(now);
+    _vvSet(q('hora'), '—'); q('hfill').style.transform = 'scaleX(0)';
+    _vvSet(q('hsub'), px ? 'fora do turno · próxima hora começa às <b>' + String(px.ini.getHours()).padStart(2, '0') + ':' + String(px.ini.getMinutes()).padStart(2, '0') + '</b>' : 'fora do turno');
+  }
+  // topo: todos os robôs com meta na hora; o "esperado agora" só vale para os automáticos (o manual só é lançado no fim da hora)
+  const comMeta = lista.filter(o => o.meta > 0 && !o.aj), autoMeta = comMeta.filter(o => o.auto);
+  const kh = lista.reduce((s, o) => s + o.cnt, 0), mh = comMeta.reduce((s, o) => s + o.meta, 0);
+  const khA = autoMeta.reduce((s, o) => s + o.cnt, 0), esp = autoMeta.reduce((s, o) => s + o.meta * o.frac, 0);
+  const noRit = autoMeta.filter(o => ['ok', 'rit'].includes(o.st.k)).length;
+  _vvSet(q('kh'), kh.toLocaleString('pt-BR') + (mh ? `<small>/ ${mh.toLocaleString('pt-BR')}</small>` : ''));
+  _vvSet(q('khs'), sl ? (autoMeta.length ? `esperado agora <b>${Math.round(esp).toLocaleString('pt-BR')}</b> · <b style="color:${khA >= esp ? '#00ffae' : '#ff2b5e'}">${khA >= esp ? '+' : ''}${Math.round(khA - esp).toLocaleString('pt-BR')}</b>${autoMeta.length < comMeta.length ? ' <small>(automáticos)</small>' : ''}` : (mh ? 'meta da hora' : 'sem meta nesta hora')) : '—');
+  _vvSet(q('kd'), lista.reduce((s, o) => s + o.hoje, 0).toLocaleString('pt-BR'));
+  const nA = lista.filter(o => o.auto).length;
+  _vvSet(q('kds'), `<b>${noRit}</b> de ${autoMeta.length} no ritmo · ${nA} automático${nA === 1 ? '' : 's'}${lista.length - nA ? ' · ' + (lista.length - nA) + (lista.length - nA === 1 ? ' manual' : ' manuais') : ''}`);
+  // robôs
+  lista.forEach(o => _vvCard(root, o, sl));
+  // últimas peças
+  const ultV = _vv.ult.filter(e => e.t <= nowT);
+  _vvSet(q('tk'), ultV.length ? '<span class="vv-tk-l">Últimas peças</span>' + ultV.slice(0, 12).map((e, i) => `<span class="vv-ev${i === 0 ? ' new' : ''}"><b>${esc(e.rn)}</b> +${e.p}<i>${_vvHMS(e.t)}</i></span>`).join('') : '<span class="vv-tk-l">Últimas peças</span><span class="vv-ev vazio">aguardando a primeira peça…</span>');
+  // horas do dia
+  const cols = [...horasDiaPara(chave), ...HORAS_NOITE];
+  _vvSet(q('strip'), cols.map(h => {
+    const cp = campoH(h), s2 = _vvSlotCampo(now, cp), atual = sl && sl.campo === cp;
+    let t = 0, m = 0;
+    lista.forEach(o => { const rd = md[o.rn] || {}, tt = _vv.tot[o.rn] || {}; const v = tt[cp] != null ? tt[cp] : parseCelVal(rd[cp] || '').num; t += v;
+      if(v > 0 && !_ehAjusteT(rd[cp])){ let mm = metaEfetivaHora(h, metaRdHora(rd, cp), chave); if(HORAS_CAFE.includes(h)) mm = Math.round(mm * 0.6); m += mm; } });
+    const fut = s2 && s2.ini > now, cafe = HORAS_CAFE.includes(h);
+    const cor = atual ? '#00f0ff' : fut || !t ? '#3a4766' : cafe ? '#ffb300' : (m && t >= m ? '#00ffae' : '#ff2b5e');
+    return `<div class="vv-hr${atual ? ' at' : ''}${fut ? ' fut' : ''}" style="--hc:${cor}"><span>${h}${cafe ? '☕' : ''}</span><b>${t ? t.toLocaleString('pt-BR') : '—'}</b></div>`;
+  }).join(''));
+  _vv.flash = {};
+}
+function _vvMonta(root, robos){
+  const n = robos.length, cols = n <= 4 ? 2 : n <= 6 ? 3 : n <= 12 ? 4 : 5;
+  root.innerHTML = `
+    <header class="vv-hd">
+      <div class="vv-brand"><span class="vv-live" data-g="live"></span><div class="vv-tt">TREMPS</div><div class="vv-sub">Produção dos robôs · contagem automática</div></div>
+      <div class="vv-box vv-hb"><div class="vv-lb">Hora em andamento</div><div class="vv-hv" data-g="hora">—</div>
+        <div class="vv-hbar"><i data-g="hfill"></i></div><div class="vv-hs" data-g="hsub"></div></div>
+      <div class="vv-box"><div class="vv-lb">Peças nesta hora</div><div class="vv-kv" data-g="kh">0</div><div class="vv-hs" data-g="khs"></div></div>
+      <div class="vv-box"><div class="vv-lb">Total do dia</div><div class="vv-kv big" data-g="kd">0</div><div class="vv-hs" data-g="kds"></div></div>
+      <div class="vv-clk"><div class="vv-cv" data-g="clk">--:--:--</div><div class="vv-hs" data-g="dt"></div>
+        <div class="vv-acts"><button type="button" onclick="dashTelaCheia()" title="Tela cheia">⛶</button><button type="button" onclick="vivoFechar()" title="Sair">✕</button></div></div>
+    </header>
+    <div class="vv-tk" data-g="tk"></div>
+    <div class="vv-grid" style="--cols:${cols}">${robos.map(rn => `
+      <div class="vv-card" id="vv-c-${rn}">
+        <div class="vv-ch"><span class="vv-rn">${esc(rn)}</span><span class="vv-mk" data-r="mk"></span><span class="vv-st" data-r="st"></span></div>
+        <div class="vv-pc" data-r="pc"></div>
+        <div class="vv-num"><span class="vv-n" data-r="n">0</span><span class="vv-m" data-r="m"></span><span class="vv-pct" data-r="pct"></span></div>
+        <div class="vv-bar" data-r="bar"><i data-r="fill"></i><em data-r="exp" title="Onde deveria estar agora"></em></div>
+        <div class="vv-tl" data-r="tl"></div>
+        <div class="vv-ft"><span data-r="rit"></span><span data-r="hj"></span></div>
+      </div>`).join('')}</div>
+    <footer class="vv-strip" data-g="strip"></footer>`;
+}
+function _vvCard(root, o, sl){
+  const el = document.getElementById('vv-c-' + o.rn); if(!el) return;
+  const r = k => el.querySelector('[data-r="' + k + '"]');
+  el.style.setProperty('--c', o.st.cor);
+  el.className = 'vv-card st-' + o.st.k;
+  _vvSet(r('mk'), o.marca); _vvSet(r('st'), esc(o.st.txt));
+  const pj = (o.auto && sl && o.meta > 0 && o.cnt < o.meta && o.proj != null && !o.aj && ['rit', 'ap', 'ab'].includes(o.st.k)) ? `<span class="vv-pj ${o.proj >= o.meta ? 'ok' : 'no'}">vai fechar em <b>${o.proj}</b></span>` : '';
+  _vvSet(r('pc'), '<span class="vv-pcn">peça <b>' + esc(o.cod) + '</b>' + (o.aj && o.ajTxt ? ' · <span class="vv-aj">' + esc(o.ajTxt) + '</span>' : '') + '</span>' + pj);
+  const temV = sl && (o.auto || o.cnt > 0);   // manual sem lançamento nesta hora: "—" (ainda não apontado)
+  _vvSet(r('n'), temV ? o.cnt.toLocaleString('pt-BR') : '—');
+  _vvSet(r('m'), sl && o.meta > 0 ? '/ ' + o.meta : '');
+  _vvSet(r('pct'), temV && o.meta > 0 && !o.aj ? Math.round(o.cnt / o.meta * 100) + '%' : '');
+  const auto = o.auto && sl;
+  r('bar').style.visibility = temV && o.meta > 0 ? 'visible' : 'hidden';
+  r('fill').style.transform = 'scaleX(' + (o.meta > 0 ? Math.min(1, o.cnt / o.meta) : 0).toFixed(4) + ')';
+  r('exp').style.left = (o.frac * 100).toFixed(2) + '%';
+  r('exp').style.display = auto && o.meta > 0 ? '' : 'none';
+  _vvSet(r('tl'), auto ? o.ticks.map(p => `<i style="left:${p.toFixed(2)}%"></i>`).join('') + `<b style="left:${(o.frac * 100).toFixed(2)}%"></b>` : `<span>${o.auto ? 'fora do turno' : 'apontado à mão na Meta Diária'}</span>`);
+  let rit = '';
+  if(auto){
+    rit = (o.gap ? `⏱ <b>${Math.round(o.gap)} s</b>/peça` : '⏱ medindo o ritmo…') + (o.desde != null ? ` · última há <b>${_vvDur(o.desde)}</b>` : '');
+  } else if(sl) rit = o.auto ? '' : 'lançado nesta hora: <b>' + (o.cnt || '—') + '</b>';
+  _vvSet(r('rit'), rit);
+  _vvSet(r('hj'), 'hoje <b>' + o.hoje.toLocaleString('pt-BR') + '</b>');
+  // peça nova: o número pula e sobe um "+1"
+  const f = _vv.flash[o.rn];
+  if(f){
+    const n = r('n'); n.classList.remove('bump'); void n.offsetWidth; n.classList.add('bump');
+    el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit');
+    const p = document.createElement('span'); p.className = 'vv-plus'; p.textContent = '+' + f; el.appendChild(p); setTimeout(() => p.remove(), 1300);
+  }
+}
 
 function startDashboard(){
   document.getElementById("loginScreen").style.display="none";
@@ -9537,6 +10032,12 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') dashFecharAjudaCa
 // O link ?tv=1 (usado ao transmitir) também abre direto nele.
 (function _dashBootTV(){
   function abrir(){
+    // ?tv=vivo → Dashboard Ao Vivo (contagem automática), direto, sem login
+    let vivo=false; try{ vivo = sessionStorage.getItem("__dash_tv")==="vivo" || new URLSearchParams(location.search).get("tv")==="vivo"; }catch(_){}
+    if(vivo && String(location.hash||"").toLowerCase()!=="#tarefas"){
+      ["playScreen","introScreen","loginScreen"].forEach(function(id){ const el=document.getElementById(id); if(el) el.style.display="none"; });
+      vivoAbrir('real', true); return;
+    }
     let tv=false; try{ tv = sessionStorage.getItem("__dash_tv")==="1"; }catch(_){}
     try{ if(new URLSearchParams(location.search).get("tv")==="1") tv=true; }catch(_){}
     if(!tv || String(location.hash||"").toLowerCase()==="#tarefas") return;
