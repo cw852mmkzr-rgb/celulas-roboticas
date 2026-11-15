@@ -1942,7 +1942,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .vv-simbar button.stop{background:#ff2b5e;border-color:#ff2b5e;color:#fff}
 /* v2 limpa (15/11: "muita informação"): número grande no meio, uma barra e uma palavra de status */
 .vv-brand{flex-direction:row;align-items:center;gap:1vw}
-.vv-hrow{display:flex;align-items:baseline;gap:1vw}
+.vv-hrow{display:flex;align-items:baseline;gap:.4vh 1vw;flex-wrap:wrap}
+.vv-hrow .vv-hs{overflow:visible}
 .vv-hrow .vv-hs{margin:0;font-size:clamp(12px,2vh,24px)}
 .vv-card{padding:1.4vh 1.2vw;gap:1vh;justify-content:space-between}
 .vv-ch{justify-content:space-between}
@@ -1956,6 +1957,20 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .vv-st i{width:max(10px,1.2vh);height:max(10px,1.2vh);border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex-shrink:0}
 .vv-card.st-man .vv-st,.vv-card.st-fora .vv-st{font-size:clamp(11px,1.7vh,22px);opacity:.8}
 .vv-plus{top:30%;right:1.2vw}
+/* relógio verde e grande no meio do topo, como no dashboard da TV */
+.vv-hd{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) minmax(0,1fr)}
+.vv-brand{flex-direction:column;align-items:flex-start;justify-content:center;gap:.6vh}
+.vv-brand .vv-acts{margin:0}
+.vv-clk{align-items:center;justify-content:center;padding:0 1.2vw;gap:0}
+.vv-clk .vv-lb{color:#4a5568}
+.vv-cv{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(34px,8.6vh,124px);line-height:1;color:#00e87a;letter-spacing:.06em;text-shadow:0 0 26px rgba(0,232,122,.55)}
+/* tabela geral (alterna com os cartões a cada 1 min) */
+.vv-geral{display:none;flex:1;min-height:0;overflow:hidden;border:1px solid rgba(0,240,255,.12);border-radius:12px;background:rgba(6,10,20,.6)}
+.vv-modo-geral .vv-geral{display:block;animation:vvFade .6s ease-out}
+.vv-modo-geral .vv-grid{display:none}
+.vv-modo-geral .vv-strip{display:none}   /* a tabela já tem a linha TOTAL GERAL por hora */
+.vv-root:not(.vv-modo-geral) .vv-grid{animation:vvFade .6s ease-out}
+@keyframes vvFade{from{opacity:0;transform:translateY(8px)}}
 @media(max-width:1000px){
   #vivoScreen{overflow:auto}
   .vv-root{flex:none;min-height:100%;padding:12px;gap:10px}
@@ -1965,6 +1980,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   .vv-acts{opacity:1;margin:0}
   .vv-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;flex:none}
   .vv-card{min-height:190px;padding:12px}
+  .vv-geral{flex:none;overflow-x:auto}
+  .vv-geral>div{height:auto!important}
   .vv-n{font-size:48px}
   .vv-tk{overflow-x:auto}
 }
@@ -9757,7 +9774,7 @@ function _vvSimBar(){
 function vivoAbrir(modo, solo){
   if(modo === 'sim' && !isAdmin){ showToast('Só o HOST usa a simulação', true); return; }
   if(_vv.on) vivoFechar(true);
-  Object.assign(_vv, {on: true, modo, solo: !!solo, tot: {}, rows: {}, ids: null, ult: [], flash: {}, vivo: false, sig: '', erro: '', sim: null, cache: {}});
+  Object.assign(_vv, {on: true, modo, solo: !!solo, tot: {}, rows: {}, ids: null, ult: [], flash: {}, vivo: false, sig: '', erro: '', sim: null, cache: {}, vista: 'cards', vistaT0: Date.now()});
   let ov = document.getElementById('vivoScreen');
   if(!ov){ ov = document.createElement('div'); ov.id = 'vivoScreen'; document.body.appendChild(ov); }
   ov.className = 'vv' + (modo === 'sim' ? ' sim' : '');
@@ -9855,7 +9872,7 @@ function _vvTick(){
   // cabeçalho
   _vvSet(q('live'), _vv.modo === 'sim' ? '<i></i>SIMULAÇÃO' : (_vv.vivo ? '<i></i>AO VIVO' : (_vv.erro ? '<i></i>SEM CONEXÃO' : '<i></i>CONECTANDO')));
   q('live').className = 'vv-live ' + (_vv.modo === 'sim' ? 'sim' : _vv.vivo ? 'on' : 'off');
-  q('clk').textContent = _vvHMS(nowT).slice(0, 5);
+  q('clk').textContent = _vvHMS(nowT);
   if(sl){
     const rest = (sl.fim - now) / 1000, hora = _horaDoCampo(sl.campo);
     _vvSet(q('hora'), hora + (HORAS_CAFE.includes(hora) ? ' <small>☕</small>' : ''));
@@ -9872,6 +9889,16 @@ function _vvTick(){
   _vvSet(q('kd'), lista.reduce((s, o) => s + o.hoje, 0).toLocaleString('pt-BR'));
   // robôs
   lista.forEach(o => _vvCard(root, o, sl));
+  // a cada 1 minuto alterna: cartões dos robôs ⇄ tabela geral (a mesma do dashboard da TV), também ao vivo
+  if(Date.now() - (_vv.vistaT0 || 0) >= 60000) _vvTrocaVista(true);
+  const geral = _vv.vista === 'geral';
+  root.classList.toggle('vv-modo-geral', geral);
+  if(geral){
+    const dados = {};
+    lista.forEach(o => { const rd = md[o.rn] || {}, x = {...rd}, tt = _vv.tot[o.rn] || {};
+      Object.keys(tt).forEach(cp => { x[cp] = String(tt[cp]) + (_ehAjusteT(rd[cp]) ? '#' : ''); }); dados[o.rn] = x; });
+    _vvSet(q('geral'), _dashRenderGeral({html: true, dados, hora: sl ? _horaDoCampo(sl.campo) : '', robos}));
+  }
   // horas do dia
   const cols = [...horasDiaPara(chave), ...HORAS_NOITE];
   _vvSet(q('strip'), cols.map(h => {
@@ -9885,18 +9912,23 @@ function _vvTick(){
   }).join(''));
   _vv.flash = {};
 }
+function _vvTrocaVista(semTick){
+  _vv.vista = _vv.vista === 'geral' ? 'cards' : 'geral'; _vv.vistaT0 = Date.now();
+  if(!semTick) _vvTick();
+}
 function _vvMonta(root, robos){
   const n = robos.length, cols = n <= 4 ? 2 : n <= 6 ? 3 : n <= 12 ? 4 : 5;
   root.innerHTML = `
     <header class="vv-hd">
-      <div class="vv-brand"><span class="vv-live" data-g="live"></span><div class="vv-tt">TREMPS</div></div>
+      <div class="vv-brand"><div class="vv-tt">TREMPS</div><span class="vv-live" data-g="live"></span>
+        <div class="vv-acts"><button type="button" onclick="_vvTrocaVista()" title="Trocar entre robôs e tabela geral">⇄</button><button type="button" onclick="dashTelaCheia()" title="Tela cheia">⛶</button><button type="button" onclick="vivoFechar()" title="Sair">✕</button></div></div>
       <div class="vv-box vv-hb"><div class="vv-lb">Hora</div><div class="vv-hrow"><div class="vv-hv" data-g="hora">—</div><div class="vv-hs" data-g="hsub"></div></div>
         <div class="vv-hbar"><i data-g="hfill"></i></div></div>
+      <div class="vv-clk"><div class="vv-lb">Hora atual</div><div class="vv-cv" data-g="clk">--:--:--</div></div>
       <div class="vv-box"><div class="vv-lb">Peças nesta hora</div><div class="vv-kv" data-g="kh">0</div></div>
       <div class="vv-box"><div class="vv-lb">Total do dia</div><div class="vv-kv big" data-g="kd">0</div></div>
-      <div class="vv-clk"><div class="vv-cv" data-g="clk">--:--</div>
-        <div class="vv-acts"><button type="button" onclick="dashTelaCheia()" title="Tela cheia">⛶</button><button type="button" onclick="vivoFechar()" title="Sair">✕</button></div></div>
     </header>
+    <div class="vv-geral" data-g="geral"></div>
     <div class="vv-grid" style="--cols:${cols}">${robos.map(rn => `
       <div class="vv-card" id="vv-c-${rn}">
         <div class="vv-ch"><span class="vv-rn">${esc(rn)}</span><span class="vv-pc" data-r="pc"></span></div>
@@ -10327,15 +10359,18 @@ function _dashFitRobo(){
 window.addEventListener("resize", () => { const d = document.getElementById("dashboardScreen"); if(d && d.style.display !== "none") _dashFitRobo(); });
 
 
-function _dashRenderGeral(){
-  const main=document.getElementById("dashMain");
-  if(!main) return;
-  const dados=_dashGetDados();
-  const horaAtual=_dashGetHoraCheia();
+// op (opcional, Dashboard Ao Vivo): {html:true → só devolve o HTML, dados, hora, robos} — sem op é o dashboard da TV de sempre
+function _dashRenderGeral(op){
+  op=op||{};
+  const main=op.html?null:document.getElementById("dashMain");
+  if(!op.html&&!main) return;
+  const dados=op.dados||_dashGetDados();
+  const horaAtual=op.hora||_dashGetHoraCheia();
+  const robosL=op.robos||_dashRobos;
   const todasHoras=[...horasDiaPara(_dashGetChave()),...HORAS_NOITE]; // sexta: sem 14:30
   let totalGeral=0;
 
-  const linhas=_dashRobos.map(k=>{
+  const linhas=robosL.map(k=>{
     const rn=k.replace(/\D/g,'');
     const rd=dados[rn]||{};
     const metaBase=metaRdHora(rd, campoH(horaAtual));
@@ -10377,11 +10412,11 @@ function _dashRenderGeral(){
   }).join('');
 
   const hTotais=todasHoras.map(h=>{
-    const t=_dashRobos.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num;},0);
+    const t=robosL.reduce((s,k)=>{const rn=k.replace(/\D/g,'');return s+parseCelVal(((dados[rn]||{})[campoH(h)])||'').num;},0);
     return`<td style="padding:8px 6px;text-align:center;font-size:18px;font-weight:900;color:#d8dde6;border-top:2px solid #1e2530;${h===horaAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':''}">${t>0?t:'—'}</td>`;
   }).join('');
 
-  main.innerHTML=`
+  const html=`
   <div style="height:100%;overflow:auto;padding:14px 18px">
     <div style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;text-align:center">
       📊 Visão Geral — Produção do dia · Hora atual: <span style="color:#ffb300;font-weight:900">${horaAtual}</span>
@@ -10405,11 +10440,13 @@ function _dashRenderGeral(){
         </tr>
       </tfoot>
     </table>
-    <div style="display:flex;justify-content:center;gap:5px;margin-top:12px">
-      ${_dashRobos.map(()=>`<div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>`).join('')}
+    ${op.html?'':`<div style="display:flex;justify-content:center;gap:5px;margin-top:12px">
+      ${robosL.map(()=>`<div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>`).join('')}
       <div style="width:18px;height:5px;border-radius:99px;background:#ffb300"></div>
-    </div>
+    </div>`}
   </div>`;
+  if(op.html) return html;
+  main.innerHTML=html;
 }
 
 function _dashRenderFooter(){
