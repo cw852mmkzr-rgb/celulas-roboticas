@@ -1526,6 +1526,10 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .catx-status.off{color:var(--c-tx3);background:transparent;border-color:var(--c-line2)}
 .catx-cod{font-size:42px;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:var(--c-tx);word-break:break-all}
 .catx-cli{font-size:17px;font-weight:600;color:#c9d0d9;margin-top:4px}
+/* 18/11/2026: cliente grande, do lado do código */
+.catx-tit{display:flex;align-items:baseline;justify-content:space-between;gap:6px 14px;flex-wrap:wrap}
+.catx-tit .catx-cli{font-family:'Space Grotesk','Manrope',sans-serif;font-size:30px;font-weight:700;line-height:1.05;letter-spacing:-.01em;color:#7fd8ff;margin:0;text-align:right;margin-left:auto;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.catx-tit .catx-cli.vz{font-size:15px;font-weight:600;color:#4a5568}
 .catx-nome{font-size:14px;color:var(--c-tx3);margin-top:2px}
 .catx-met{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px;margin-top:14px;padding-bottom:14px;border-bottom:1px solid var(--c-line)}
 .catx-met div{min-width:0}
@@ -11559,8 +11563,8 @@ function _filtrarCatalogo(){
     html+=`<article class="catx-card" ${isAdmin?`onclick="abrirModalEditarPeca('${codJs}')" tabindex="0" onkeydown="if(event.key==='Enter'){abrirModalEditarPeca('${codJs}')}" title="Editar peça"`:'style="cursor:default"'}>
       ${_catFotoHtml(cod, p)}
       ${rob.length?`<span class="catx-status" title="Rodando agora no robô ${rob.join(', ')}"><i class="catx-ponto vivo"></i>${robTxt(rob)} — em produção</span>`:'<span class="catx-status off">Fora de produção</span>'}
-      <div class="catx-cod">${esc(cod)}</div>
-      <div class="catx-cli">${esc(_rotCli[_catCliKey(p.cliente)]||'Sem cliente')}</div>
+      <div class="catx-tit"><div class="catx-cod">${esc(cod)}</div>
+        <div class="catx-cli${_catCliKey(p.cliente)?'':' vz'}" title="Cliente">${esc(_rotCli[_catCliKey(p.cliente)]||'Sem cliente')}</div></div>
       ${(p.nome&&p.nome.trim().toUpperCase()!==cod.trim().toUpperCase())?`<div class="catx-nome">${esc(p.nome)}</div>`:''}
       <div class="catx-met">
         <div><span>Ciclo</span><b class="${tem(p,'tempo_peca')?'':'vz'}">${val(p,'tempo_peca')}</b></div>
