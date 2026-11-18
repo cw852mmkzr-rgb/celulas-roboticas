@@ -1744,6 +1744,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .pn-h-bar b{position:absolute;left:-3px;right:-3px;height:2px;background:#ffb300;box-shadow:0 0 4px #ffb300}
 .pn-h-l{font-size:10px;color:#8a95a8;font-weight:700}
 .pn-h-r{font-size:10px;color:#4a5568}
+.pn-h-bar b.prev{background:none;box-shadow:none;border-top:2px dashed #ffb30070;height:0}
+.pn-h-r.prev{opacity:.55}
 .pn-tab{width:100%;border-collapse:collapse;min-width:640px}
 .pn-tab th{font-size:11px;color:#8a95a8;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:8px;border-bottom:1px solid #1e2530;font-weight:800}
 .pn-tab td{padding:8px;border-bottom:1px solid #161b22;font-size:13px;color:#d8dde6;white-space:nowrap}
@@ -7877,7 +7879,8 @@ function _pnDia(md, d, turnos, agora, semMeta){
   const folga = _pnUtil(d) && !!(semMeta && semMeta[ch]);
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const res = {ch, d, util: _pnUtil(d) && !folga, folga, meta: 0, feito: 0, metaAteAgora: 0, robos: {}, porHora: {}, horas};
-  horas.forEach(h => { res.porHora[h] = {meta: 0, feito: 0, robos: 0}; });
+  // metaProd/robosProd (18/11/2026): meta da hora só dos robôs que REALMENTE soldaram nela (9 robôs produzindo = soma das 9 metas)
+  horas.forEach(h => { res.porHora[h] = {meta: 0, feito: 0, robos: 0, metaProd: 0, robosProd: 0}; });
   ROBOS.forEach(r => {
     const rd = dd[r] || dd[String(r)] || {};
     const t = turnos[r]; const mh = _pnMetaHora(md, r, d > hoje ? hoje : d);
@@ -7885,6 +7888,11 @@ function _pnDia(md, d, turnos, agora, semMeta){
     _pnTodasHoras().forEach(h => { rr.feito += parseCelVal(rd[campoH(h)] || '').num; });   // produzido: todas as horas lançadas
     horas.forEach(h => {
       const v = parseCelVal(rd[campoH(h)] || '').num; res.porHora[h].feito += v;
+      if(v > 0){
+        res.porHora[h].robosProd++;
+        // parada justificada (#) fica fora da conta de metas
+        if(!_ehAjusteT(rd[campoH(h)])) res.porHora[h].metaProd += metaEfetivaHora(h, (rd.trocas ? (metaRdHora(rd, campoH(h)) || mh) : mh), ch);
+      }
       const roda = res.util && t && _pnIdx(h) >= _pnIdx(t.ini) && _pnIdx(h) <= _pnIdx(t.fim);
       if(roda && mh > 0){
         const m = metaEfetivaHora(h, (rd.trocas ? (metaRdHora(rd, campoH(h)) || mh) : mh), ch); rr.meta += m; rr.horas++; res.porHora[h].meta += m; res.porHora[h].robos++;
@@ -8525,8 +8533,37 @@ function renderPainelVivo(){
     </div></div>`;
 }
 
-// Projeção do dia: eficiência das horas já fechadas aplicada na meta das horas que faltam
+// Projeção do dia (18/11/2026): as primeiras horas são as mais fortes do dia — esticar o ritmo delas para o dia todo
+// dava projeção alta demais (115% às 7 h). Agora cada hora que falta vale o que COSTUMA sair nela nos últimos 10 dias úteis
+// (mesmas colunas do dia), ajustado pelo ritmo de hoje (hoje ÷ dias normais nas horas já fechadas, limitado entre 50% e 150%).
+// Sem histórico suficiente (menos de 3 dias), usa o jeito antigo (eficiência das horas fechadas na meta que falta).
 function _pnProjDia(D, agora){
+  const fechadas = D.horas.filter(h => _horaVenceu(h, agora)), abertas = D.horas.filter(h => !_horaVenceu(h, agora));
+  const mc = _pnMetaCel(), md = (mc && mc.metas_dias) || {}, sem = (mc && mc.dias_sem_meta) || {};
+  const assin = D.horas.join(','), tip = {};
+  let dias = 0;
+  for(let i = 1; i <= 60 && dias < 10; i++){
+    const x = new Date(D.d); x.setDate(x.getDate() - i);
+    const ch = _pnChave(x), dd = md[ch];
+    if(!dd || !_pnUtil(x) || sem[ch]) continue;
+    const hs = _pnHorasDia(ch); if(hs.join(',') !== assin) continue;   // sexta (sem 14:30) só compara com sexta
+    const ph = {}; let tot = 0;
+    hs.forEach(h => { ph[h] = ROBOS.reduce((s, r) => s + parseCelVal(((dd[r] || dd[String(r)] || {})[campoH(h)]) || '').num, 0); tot += ph[h]; });
+    if(tot <= 0) continue;
+    dias++; hs.forEach(h => { tip[h] = (tip[h] || 0) + ph[h]; });
+  }
+  if(fechadas.length && dias >= 3){
+    Object.keys(tip).forEach(h => { tip[h] /= dias; });
+    const fF = fechadas.reduce((s, h) => s + D.porHora[h].feito, 0), tF = fechadas.reduce((s, h) => s + (tip[h] || 0), 0);
+    const resto = abertas.reduce((s, h) => s + (tip[h] || 0), 0);
+    // o ritmo de hoje ganha peso aos poucos: com 2 horas fechadas ele ainda pesa pouco (as primeiras horas enganam);
+    // depois de metade de um dia normal já fechado, vale inteiro
+    const peso = Math.min(1, tF / Math.max(1, tF + resto) * 2);
+    const fator = tF > 0 ? 1 + (Math.min(1.5, Math.max(0.5, fF / tF)) - 1) * peso : 1;
+    const fA = abertas.reduce((s, h) => s + D.porHora[h].feito, 0);   // hora em andamento que já tem peças (contagem automática)
+    const proj = Math.round(Math.max(D.feito, fF + Math.max(fA, fator * resto)));
+    return {proj, ef: fator, restaMeta: abertas.reduce((s, h) => s + D.porHora[h].meta, 0), base: dias};
+  }
   let mF = 0, fF = 0, mR = 0, fR = 0;
   D.horas.forEach(h => { const o = D.porHora[h]; if(_horaVenceu(h, agora)){ mF += o.meta; fF += o.feito; } else { mR += o.meta; fR += o.feito; } });
   if(mF <= 0) return null;
@@ -8563,7 +8600,7 @@ function renderPainel(){
           ${_pnLinha('Produzido', F(D.feito) + ' pç', cor)}
           ${_pnLinha('Falta', F(falta) + ' pç')}
           ${_pnLinha('Até agora (horas fechadas)', 'meta ' + F(D.metaAteAgora) + ' · ' + sd.txt, sd.cor)}
-          ${_pnLinha('Projeção do dia' + (pj && pj.restaMeta > 0 ? ' (no ritmo de hoje)' : ''), pj ? F(pj.proj) + ' pç · ' + pjP + '% da meta' : 'aguarda a 1ª hora fechar', pj ? _pnCor(pjP) : null)}
+          ${_pnLinha('Projeção do dia' + (pj && pj.restaMeta > 0 ? (pj.base ? ' (ritmo de hoje × últimos ' + pj.base + ' dias)' : ' (no ritmo de hoje)') : ''), pj ? F(pj.proj) + ' pç · ' + pjP + '% da meta' : 'aguarda a 1ª hora fechar', pj ? _pnCor(pjP) : null)}
           ${_pnLinha('Ritmo necessário', falta > 0 && restH.length ? F(Math.ceil(falta / restH.length)) + ' pç/h nas ' + restH.length + ' h que faltam' : (falta > 0 ? 'turno encerrado' : '✅ meta batida'))}
           ${_pnLinha('Robôs no cálculo', robosHoje + ' de ' + ROBOS.length)}
         </div></div></div>`;
@@ -8588,15 +8625,18 @@ function renderPainel(){
   let horasHTML = '';
   if(D && D.util){
     const agoraH = (typeof _dashGetHoraCheia === 'function') ? _dashGetHoraCheia() : '';
-    const mx = Math.max(1, ...D.horas.map(h => Math.max(D.porHora[h].meta, D.porHora[h].feito)));
-    horasHTML = `<div class="pn-box"><div class="pn-box-t">⏱ Hoje hora a hora <em>barra = produzido · traço = meta da hora · número de baixo = robôs no turno</em></div>
+    // meta da hora (18/11/2026): hora com produção = soma das metas só dos robôs que soldaram nela;
+    // hora sem produção ainda = previsão pelo turno dos robôs (traço apagado e tracejado)
+    const metaH = o => o.feito > 0 ? o.metaProd : o.meta;
+    const mx = Math.max(1, ...D.horas.map(h => Math.max(metaH(D.porHora[h]), D.porHora[h].feito)));
+    horasHTML = `<div class="pn-box"><div class="pn-box-t">⏱ Hoje hora a hora <em>barra = produzido · traço = soma das metas dos robôs que soldaram na hora (tracejado = previsão pelo turno) · número de baixo = robôs soldando</em></div>
       <div class="pn-horas">${D.horas.map(h => {
-        const o = D.porHora[h], venc = _horaVenceu(h, M.agora);
-        const cor = o.feito === 0 ? '#2a3342' : (o.meta > 0 && o.feito >= o.meta ? '#00e87a' : (venc ? '#ff4d4d' : '#3d9eff'));
-        return `<div class="pn-h${h === agoraH ? ' agora' : ''}" title="${h} — produzido ${F(o.feito)} / meta ${F(o.meta)} (${o.robos} robôs no turno)">
+        const o = D.porHora[h], venc = _horaVenceu(h, M.agora), prod = o.feito > 0, mt = metaH(o);
+        const cor = !prod ? '#2a3342' : (mt > 0 && o.feito >= mt ? '#00e87a' : (venc ? '#ff4d4d' : '#3d9eff'));
+        return `<div class="pn-h${h === agoraH ? ' agora' : ''}" title="${h} — produzido ${F(o.feito)} / meta ${F(mt)} (${prod ? o.robosProd + ' robôs soldando' : 'previsão: ' + o.robos + ' robôs no turno'})">
           <div class="pn-h-v">${o.feito ? F(o.feito) : ''}</div>
-          <div class="pn-h-bar"><i style="height:${(o.feito / mx * 100).toFixed(1)}%;background:${cor}"></i>${o.meta ? `<b style="bottom:${(o.meta / mx * 100).toFixed(1)}%"></b>` : ''}</div>
-          <div class="pn-h-l">${h}</div><div class="pn-h-r">${o.robos || '–'}</div></div>`;
+          <div class="pn-h-bar"><i style="height:${(o.feito / mx * 100).toFixed(1)}%;background:${cor}"></i>${mt ? `<b class="${prod ? '' : 'prev'}" style="bottom:${(mt / mx * 100).toFixed(1)}%"></b>` : ''}</div>
+          <div class="pn-h-l">${h}</div><div class="pn-h-r${prod ? '' : ' prev'}">${prod ? o.robosProd : (o.robos || '–')}</div></div>`;
       }).join('')}</div></div>`;
   }
 
@@ -17732,9 +17772,10 @@ function mapaRobosManuPendentes(robo){
 // se essas 2 horas estiverem vazias -> "Sem mão de obra".
 // "Automação manda": sobrescreve o status manual a cada avaliação.
 function _horaVenceu(h, now){
-  // hora "vencida" = já passou o fim dela (h + 1h). Ex.: 08:00 vence às 09:00.
-  const m = /^(\d{2}):(\d{2})$/.exec(h); if(!m) return false;
-  const fim = new Date(now); fim.setHours(parseInt(m[1])+1, parseInt(m[2]), 0, 0);
+  // hora "vencida" = já passou o fim dela. A coluna da Meta Diária é o FIM do intervalo (confirmado em 12/11/2026):
+  // "09:00" = 08:00–09:00 → fecha às 09:00; "09:30" fecha às 09:30. (Antes somava +1 h e a hora só fechava 1 h depois.)
+  const m = /^([0-9]{2}):([0-9]{2})$/.exec(h); if(!m) return false;
+  const fim = new Date(now); fim.setHours(parseInt(m[1]), parseInt(m[2]), 0, 0);
   return now.getTime() >= fim.getTime();
 }
 let _autoStatusRodando = false;
