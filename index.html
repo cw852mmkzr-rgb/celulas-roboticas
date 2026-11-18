@@ -1507,6 +1507,21 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 @media(hover:hover){.catx-card:hover{transform:translateY(-3px);border-color:#3d4858;box-shadow:0 18px 40px -20px #000}}
 .catx-foto{aspect-ratio:16/9;background:#0a0e13;border:1px solid var(--c-line);border-radius:10px;overflow:hidden;margin-bottom:14px}
 .catx-foto img{width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+/* foto em cima do card (18/11/2026, igual à Cromo): vazia = espaço para colar (Ctrl+V) ou escolher */
+.catx-foto{position:relative;outline:none;transition:border-color .2s,box-shadow .2s}
+.catx-foto.vazia{display:flex;align-items:center;justify-content:center;background:repeating-linear-gradient(135deg,#0a0e13 0 10px,#0c1117 10px 20px)}
+.catx-foto.vazia.pode{cursor:pointer;border-style:dashed}
+.catx-foto.pode:hover,.catx-foto[tabindex]:focus-visible,.catx-foto[tabindex]:hover{border-color:#00e87a90;box-shadow:0 0 0 3px #00e87a1f}
+.catx-foto-vz{display:flex;flex-direction:column;align-items:center;gap:8px;color:#4a5568;font-size:12px;text-align:center;line-height:1.45;padding:10px}
+.catx-foto-vz svg{width:30px;height:30px;stroke:currentColor;fill:none;stroke-width:1.6;opacity:.8}
+.catx-foto-vz b{color:#8a95a8;font-weight:700}
+.catx-foto.pode:hover .catx-foto-vz{color:#00e87a}
+.catx-foto.pode:hover .catx-foto-vz b{color:#00e87a}
+.catx-foto-tr{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:8px;border:1px solid #2e3b4e;background:#080b0fd9;color:#d8dde6;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .2s}
+.catx-foto-tr svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7}
+.catx-foto:hover .catx-foto-tr,.catx-foto:focus-within .catx-foto-tr{opacity:1}
+.catx-foto-tr:hover{border-color:#00e87a;color:#00e87a}
+@media(hover:none){.catx-foto-tr{opacity:1}}
 .catx-status{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--c-ac);background:#00e87a10;border:1px solid #00e87a88;border-radius:8px;padding:4px 10px;margin-bottom:10px;white-space:nowrap}
 .catx-status.off{color:var(--c-tx3);background:transparent;border-color:var(--c-line2)}
 .catx-cod{font-size:42px;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:var(--c-tx);word-break:break-all}
@@ -10969,7 +10984,7 @@ function abrirModalEditarPeca(cod){
   const pecas = getPecas();
   const p = pecas[cod] || {};
   _pecaCodEditando = cod;
-  _pecaImgTemp = p.img || "";
+  _pecaImgTemp = _catFotoDe(cod, p);
   document.getElementById("modalPecaTitulo").textContent = "Editar Peça";
   document.getElementById("peca_cod").value = cod;
   document.getElementById("peca_nome").value = p.nome||"";
@@ -10985,7 +11000,7 @@ function abrirModalEditarPeca(cod){
   document.getElementById("peca_responsavel").value = p.operador||"";
   document.getElementById("peca_pares_gabarito").value = p.pares_gabarito||"";
   const prev = document.getElementById("peca_img_preview");
-  if(prev && p.img){ prev.src=p.img; prev.style.display="block"; }
+  if(prev){ if(_pecaImgTemp){ prev.src=_pecaImgTemp; prev.style.display="block"; } else { prev.src=""; prev.style.display="none"; } }
   document.getElementById("modalPeca").style.display = "flex";
 }
 
@@ -10995,13 +11010,13 @@ function fecharModalPeca(){
 
 function handlePecaImgUpload(file){
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
-    _pecaImgTemp = e.target.result;
+  // comprimida (até 1000 px, JPEG) — vai para a tabela pecas_fotos ao salvar
+  _catComprimir(file, url => {
+    if(!url){ showToast('Não consegui ler essa imagem', true); return; }
+    _pecaImgTemp = url;
     const prev = document.getElementById("peca_img_preview");
     if(prev){ prev.src=_pecaImgTemp; prev.style.display="block"; }
-  };
-  reader.readAsDataURL(file);
+  });
 }
 
 function removerImgPecaCad(){
@@ -11016,6 +11031,13 @@ function salvarPeca(){
   const k = getCadastroPecasKey();
   if(!k){ showToast("Célula de cadastro não encontrada!", true); return; }
   if(!celulas[k].pecas) celulas[k].pecas = {};
+  // foto (18/11/2026): fica na tabela pecas_fotos, não no `dados`
+  const _codAnt = _pecaCodEditando, fotoAntes = _codAnt ? _catFotoDe(_codAnt, celulas[k].pecas[_codAnt]) : '';
+  const fotoNova = _pecaImgTemp || '';
+  if(fotoNova !== fotoAntes || (_codAnt && _codAnt !== cod)){
+    _catFotoGravar(cod, fotoNova);
+    if(_codAnt && _codAnt !== cod && fotoAntes) _catFotoGravar(_codAnt, '');
+  }
   // Se editando com código diferente, remove o antigo
   if(_pecaCodEditando && _pecaCodEditando !== cod) delete celulas[k].pecas[_pecaCodEditando];
   celulas[k].pecas[cod] = {
@@ -11031,7 +11053,7 @@ function salvarPeca(){
     turno: document.getElementById("peca_turno").value.trim(),
     operador: document.getElementById("peca_responsavel").value.trim(),
     pares_gabarito: document.getElementById("peca_pares_gabarito").value.trim(),
-    img: _pecaImgTemp
+    img: ''   // a foto agora fica na tabela pecas_fotos (ver _catFotoGravar)
   };
   saveToAPI(celulas);
   fecharModalPeca();
@@ -11044,6 +11066,7 @@ function excluirPeca(cod){
   if(!confirm("Excluir peça "+cod+"?")) return;
   const k = getCadastroPecasKey();
   if(k && celulas[k].pecas) delete celulas[k].pecas[cod];
+  if(_catFotos.mapa[cod]) _catFotoGravar(cod, '');
   saveToAPI(celulas);
   if(getCellTipo(selected)==='catalogo_pecas') renderCatalogoPecas();
   else renderCadastroPecas();
@@ -11339,6 +11362,82 @@ function _catSetVista(v){
   try{ localStorage.setItem('catx_vista', v); }catch(e){}
   _filtrarCatalogo();
 }
+// ===== Fotos do Catálogo (18/11/2026) — igual à Cromo: foto em cima das informações de cada peça =====
+// Ficam na tabela pecas_fotos (fora do `dados`, que é relido a cada poucos segundos) e só são lidas quando o Catálogo abre.
+// HOST: passa o mouse na área da foto e cola (Ctrl+V), ou clica para escolher o arquivo (no celular abre câmera/galeria).
+const _catFotos = { mapa: {}, ver: 0, carregado: 0, carregando: false, alvo: null };
+async function _catFotosCarregar(forcar){
+  if(_catFotos.carregando || (!forcar && Date.now() - _catFotos.carregado < 120000)) return;
+  _catFotos.carregando = true;
+  try{
+    const r = await fetch(SUPABASE_URL + '/rest/v1/pecas_fotos?select=codigo,foto', {headers: HEADERS_SB, signal: AbortSignal.timeout(25000)});
+    if(r.ok){
+      const l = await r.json(), m = {};
+      (Array.isArray(l) ? l : []).forEach(x => { if(x && x.codigo && x.foto) m[x.codigo] = x.foto; });
+      _catFotos.mapa = m; _catFotos.carregado = Date.now(); _catFotos.ver++;
+      _filtrarCatalogo();
+    }
+  }catch(e){}
+  _catFotos.carregando = false;
+}
+function _catFotoDe(cod, p){ return _catFotos.mapa[cod] || (p && p.img) || ''; }
+function _catFotoHtml(cod, p){
+  const foto = _catFotoDe(cod, p), cj = esc(cod).replace(/'/g, "\\'");
+  const ic = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M8 5l1.5-2h5L16 5"/></svg>';
+  const alvo = isAdmin ? `data-cod="${esc(cod)}" tabindex="0" onmouseenter="_catFotos.alvo='${cj}'" onmouseleave="if(_catFotos.alvo==='${cj}')_catFotos.alvo=null" onfocus="_catFotos.alvo='${cj}'"` : '';
+  if(foto) return `<div class="catx-foto" ${alvo}><img src="${foto}" alt="Foto da peça ${esc(cod)}" loading="lazy" onclick="event.stopPropagation();openLightbox(_catFotoDe('${cj}'))">${isAdmin ? `<button type="button" class="catx-foto-tr" onclick="event.stopPropagation();_catFotoEscolher('${cj}')" title="Trocar a foto (ou passe o mouse e cole com Ctrl+V)">${ic}</button>` : ''}</div>`;
+  return `<div class="catx-foto vazia${isAdmin ? ' pode' : ''}" ${alvo} ${isAdmin ? `onclick="event.stopPropagation();_catFotoEscolher('${cj}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();_catFotoEscolher('${cj}')}" title="Colar ou escolher a foto"` : ''}>
+    <div class="catx-foto-vz">${ic}<span>${isAdmin ? 'Cole a foto aqui <b>(Ctrl+V)</b><br>ou clique para escolher' : 'Sem foto'}</span></div></div>`;
+}
+// deixa a foto leve (como a Cromo: até 1000 px, JPEG)
+function _catComprimir(file, cb){
+  const rd = new FileReader();
+  rd.onload = e => { const img = new Image();
+    img.onload = () => { const sc = Math.min(1, 1000 / Math.max(img.width, img.height)), w = Math.round(img.width * sc), h = Math.round(img.height * sc);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+      try{ cb(cv.toDataURL('image/jpeg', 0.74)); }catch(err){ cb(null); } };
+    img.onerror = () => cb(null); img.src = e.target.result; };
+  rd.onerror = () => cb(null); rd.readAsDataURL(file);
+}
+async function _catFotoGravar(cod, dataUrl){
+  try{
+    const r = dataUrl
+      ? await fetch(SUPABASE_URL + '/rest/v1/pecas_fotos?on_conflict=codigo', {method: 'POST', headers: {...HEADERS_SB, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal'}, body: JSON.stringify({codigo: cod, foto: dataUrl, atualizado_em: new Date().toISOString()}), signal: AbortSignal.timeout(30000)})
+      : await fetch(SUPABASE_URL + '/rest/v1/pecas_fotos?codigo=eq.' + encodeURIComponent(cod), {method: 'DELETE', headers: HEADERS_SB, signal: AbortSignal.timeout(15000)});
+    if(!r.ok) throw new Error('http ' + r.status);
+    if(dataUrl) _catFotos.mapa[cod] = dataUrl; else delete _catFotos.mapa[cod];
+    _catFotos.ver++; _filtrarCatalogo();
+    return true;
+  }catch(e){ showToast('Não foi possível salvar a foto agora — tente de novo', true); return false; }
+}
+function _catFotoDeArquivo(cod, file){
+  if(!isAdmin || !cod || !file || !/^image\//.test(file.type || '')) return;
+  showToast('Salvando a foto da peça ' + cod + '…');
+  _catComprimir(file, async url => {
+    if(!url){ showToast('Não consegui ler essa imagem', true); return; }
+    if(await _catFotoGravar(cod, url)) showToast('Foto da peça ' + cod + ' salva ✓');
+  });
+}
+function _catFotoEscolher(cod){
+  if(!isAdmin) return;
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = () => { if(inp.files && inp.files[0]) _catFotoDeArquivo(cod, inp.files[0]); };
+  inp.click();
+}
+function _imagemDoColar(e){
+  const it = [...((e.clipboardData && e.clipboardData.items) || [])].find(i => i.kind === 'file' && /^image\//.test(i.type));
+  return it ? it.getAsFile() : null;
+}
+// Ctrl+V: com a janela da peça aberta, a foto vai para ela; senão, para a peça com o mouse em cima da foto
+document.addEventListener('paste', e => {
+  if(!isAdmin) return;
+  const mp = document.getElementById('modalPeca');
+  if(mp && mp.style.display === 'flex'){ const f = _imagemDoColar(e); if(f){ e.preventDefault(); handlePecaImgUpload(f); showToast('Foto colada — clique em Salvar'); } return; }
+  if(getCellTipo(selected) !== 'catalogo_pecas' || !_catFotos.alvo) return;
+  const f = _imagemDoColar(e); if(!f) return;
+  e.preventDefault(); _catFotoDeArquivo(_catFotos.alvo, f);
+});
+
 function _filtrarCatalogo(){
   if(!selected||getCellTipo(selected)!=='catalogo_pecas') return;
   const c = celulas[selected];
@@ -11402,7 +11501,7 @@ function _filtrarCatalogo(){
   if(!grid) return;
 
   // Só troca o HTML se algo mudou de verdade — senão a tela pisca a cada polling (3s)
-  const sig = JSON.stringify([isAdmin, busca, _catFiltro, _catCliente, _catVista, filtradas.map(([cod,p])=>[cod,p.nome,p.cliente,..._CAT_CAMPOS.map(f=>p[f]),!!p.img,robMap[_catCliKey(cod)]||0])]);
+  const sig = JSON.stringify([isAdmin, busca, _catFiltro, _catCliente, _catVista, _catFotos.ver, filtradas.map(([cod,p])=>[cod,p.nome,p.cliente,..._CAT_CAMPOS.map(f=>p[f]),!!p.img,robMap[_catCliKey(cod)]||0])]);
   if(grid.dataset.sig === sig) return;
   grid.dataset.sig = sig;
 
@@ -11458,7 +11557,7 @@ function _filtrarCatalogo(){
     const n = nCampos(p), cor = corFicha(n), codJs = codJsDe(cod);
     const ini = _catIniciais(tem(p,'operador') ? _catFmt('operador',p.operador) : '');
     html+=`<article class="catx-card" ${isAdmin?`onclick="abrirModalEditarPeca('${codJs}')" tabindex="0" onkeydown="if(event.key==='Enter'){abrirModalEditarPeca('${codJs}')}" title="Editar peça"`:'style="cursor:default"'}>
-      ${p.img?`<div class="catx-foto"><img src="${p.img}" alt="Foto da peça ${esc(cod)}" onclick="event.stopPropagation();openLightbox('${p.img}')"></div>`:''}
+      ${_catFotoHtml(cod, p)}
       ${rob.length?`<span class="catx-status" title="Rodando agora no robô ${rob.join(', ')}"><i class="catx-ponto vivo"></i>${robTxt(rob)} — em produção</span>`:'<span class="catx-status off">Fora de produção</span>'}
       <div class="catx-cod">${esc(cod)}</div>
       <div class="catx-cli">${esc(_rotCli[_catCliKey(p.cliente)]||'Sem cliente')}</div>
@@ -17664,6 +17763,7 @@ function bcLerFoto(event){
 }
 
 function renderCatalogoPecas(){
+  _catFotosCarregar();   // fotos (tabela pecas_fotos): relê no máximo a cada 2 min
   const c = celulas[selected];
   const cadastroKey = getCadastroPecasKey();
   const pecas = cadastroKey ? (celulas[cadastroKey].pecas||{}) : {};
