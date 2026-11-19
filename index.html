@@ -6371,8 +6371,13 @@ function renderMetasDiaria(){
   const diasOpts=Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${d}" ${d===dia?'selected':''}>${String(d).padStart(2,'0')}</option>`).join('');
   const mesesOpts=MESES.map((m,i)=>`<option value="${i}" ${i===mes?'selected':''}>${m}</option>`).join('');
   const anosOpts=[anoAtual-1,anoAtual,anoAtual+1].map(a=>`<option value="${a}" ${a===ano?'selected':''}>${a}</option>`).join('');
-  document.getElementById("mainPanel").innerHTML=`
-  <div>
+  // 19/11/2026: a contagem automática atualiza a tela a cada 30 s — guarda a rolagem para o lado das tabelas
+  // (senão a barrinha voltava sozinha para a esquerda a cada atualização)
+  const _mpEl = document.getElementById("mainPanel");
+  const _ROL_SEL = '.metas-table-wrap,.metas-car-table-wrap,.metas-carousel';
+  const _rolAnt = (_mpEl && _mpEl.querySelector('#metasRaiz[data-k="'+selected+'"]')) ? [..._mpEl.querySelectorAll(_ROL_SEL)].map(e=>e.scrollLeft) : null;
+  _mpEl.innerHTML=`
+  <div id="metasRaiz" data-k="${esc(selected)}">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px">
       <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:0.04em">📋 ${esc(c.nome)}</div>
       <div style="display:flex;gap:8px">
@@ -6440,7 +6445,13 @@ function renderMetasDiaria(){
       </div>
     </div>
   </div>`;
+  if(_rolAnt) [..._mpEl.querySelectorAll(_ROL_SEL)].forEach((e,i)=>{ if(_rolAnt[i]) e.scrollLeft=_rolAnt[i]; });
 }
+// enquanto a pessoa rola a tabela para o lado, a atualização automática espera (mesma regra de quando ela clica/digita)
+document.addEventListener('scroll', e => {
+  const t = e.target;
+  if(t && t.classList && (t.classList.contains('metas-table-wrap') || t.classList.contains('metas-car-table-wrap') || t.classList.contains('metas-carousel'))) lastUserAction = Date.now();
+}, true);
 
 // ── PRODUÇÃO POR PEÇA ────────────────────────
 function calcProducaoPorPeca(){
