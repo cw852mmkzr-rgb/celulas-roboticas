@@ -367,10 +367,14 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-date { font-size:clamp(12px,min(1.5vw,2.6vh),22px); color:#7a8698; text-align:left; margin-top:clamp(2px,.6vh,5px); white-space:nowrap; }
 .dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:clamp(4px,1.2vh,10px) 20px; }
 .dash-footer-title { font-size:clamp(9px,1.6vh,11px); color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:clamp(3px,1vh,8px); }
-.dash-horas { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
-.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:clamp(3px,1vh,8px) clamp(8px,1.2vw,14px); text-align:center; min-width:clamp(60px,6vw,80px); }
-.dash-hora-label { font-size:clamp(11px,2.4vh,16px); color:#4a5568; margin-bottom:clamp(1px,.5vh,4px); font-weight:700; }
-.dash-hora-val { font-size:clamp(18px,4.8vh,32px); font-weight:900; color:#d8dde6; }
+.dash-horas { display:flex; gap:clamp(3px,.45vw,8px); overflow-x:auto; padding-bottom:4px; }
+.dash-hora-card { flex:1 1 0; min-width:0; background:#0a0d12; border:1px solid #1e2530; border-radius:clamp(6px,.6vw,10px); padding:clamp(3px,1vh,8px) 2px; text-align:center; overflow:hidden; }
+.dash-hora-card.dash-hora-sum { flex-grow:1.8; }
+.dash-hora-card.dash-hora-atual { flex-grow:1.5; }
+.dash-hora-label { font-size:clamp(9px,min(2.4vh,1vw),16px); color:#4a5568; margin-bottom:clamp(1px,.5vh,4px); font-weight:700; white-space:nowrap; }
+.dash-hora-val { font-size:clamp(13px,min(4.8vh,1.85vw),32px); font-weight:900; color:#d8dde6; white-space:nowrap; }
+/* celular: não dá para caber tudo — volta a rolar de lado com quadradinhos legíveis */
+@media (max-width:700px){ .dash-hora-card { flex:0 0 auto; min-width:64px; padding:6px 10px; } .dash-hora-label { font-size:13px; } .dash-hora-val { font-size:24px; } }
 .dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
 .dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
 .dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
@@ -378,7 +382,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-exit { background:#ff4d4d15; border:1px solid #ff4d4d60; color:#ff4d4d; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; }
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
 .dash-acts { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
-@media (max-width:1100px){ .dash-acts { flex-direction:column; align-items:stretch; gap:4px; } .dash-acts .dash-exit { padding:4px 10px; font-size:12px; } }
+.dash-acts .dash-exit { font-size:clamp(12px,1.7vh,18px); padding:clamp(5px,.9vh,10px) clamp(12px,1.4vw,20px); }
 .dash-exit.dash-cast { background:#3d9eff15; border-color:#3d9eff60; color:#3d9eff; }
 .dash-exit.dash-cast:hover { background:#3d9eff30; border-color:#3d9eff; color:#fff; }
 .dash-cast-ov { display:none; position:fixed; inset:0; z-index:10050; background:#000000b3; align-items:center; justify-content:center; padding:16px; }
@@ -2580,8 +2584,6 @@ setInterval(function(){ var el=document.getElementById("lgRelogio"), t=document.
       <div class="dash-clock" id="dashClock">--:--:--</div>
     </div>
     <div class="dash-acts">
-      <button type="button" class="dash-exit dash-cast" onclick="dashTransmitir()" title="Transmitir o dashboard para a TV">📺 Transmitir</button>
-      <button type="button" class="dash-exit dash-cast" onclick="dashTelaCheia()" title="Tela cheia" id="dashBtnFull">⛶ Tela cheia</button>
       <button type="button" class="dash-exit" onclick="sairDashboard()">✕ Sair</button>
     </div>
   </div>
@@ -10656,7 +10658,7 @@ function _dashRenderFooter(){
     const metaT=ROBOS.reduce((s,rn)=>parseCelVal(((dados[rn]||{})[campo])||'').num>0?s+metaEfetivaHora(h, parseInt((dados[rn]||{}).meta)||0, _dashGetChave()):s,0);
     const bateu=total>0&&metaT>0&&total>=metaT;
     const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
-    return`<div class="dash-hora-card${isCafe?' cafe':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
+    return`<div class="dash-hora-card${isCafe?' cafe':''}${isAtual?' dash-hora-atual':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
       <div class="dash-hora-label" style="color:${isAtual?cor:'#fff'};${isAtual?'':'text-shadow:0 0 6px rgba(255,255,255,.75),0 0 16px rgba(255,255,255,.35)'}">${h}${isAtual?' ◀':''}</div>
       <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
     </div>`;
@@ -10682,11 +10684,11 @@ function _dashRenderFooter(){
     });
     const pctMetas=metasTot?Math.round(metasOk/metasTot*100):0;
     const corMetas=!metasTot?'#4a5568':pctMetas>=80?'#00e87a':pctMetas>=50?'#ffb300':'#ff4d4d';
-    return`<div class="dash-hora-card" style="border-color:#ffb30080;background:#ffb30015">
+    return`<div class="dash-hora-card dash-hora-sum" style="border-color:#ffb30080;background:#ffb30015">
       <div class="dash-hora-label" style="color:#ffb300">∑ TOTAL</div>
       <div class="dash-hora-val" style="color:#ffb300">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
     </div>
-    <div class="dash-hora-card" style="border-color:${corMetas}80;background:${corMetas}15" title="${metasOk} de ${metasTot} horas trabalhadas bateram a meta (${pctMetas}%)">
+    <div class="dash-hora-card dash-hora-sum" style="border-color:${corMetas}80;background:${corMetas}15" title="${metasOk} de ${metasTot} horas trabalhadas bateram a meta (${pctMetas}%)">
       <div class="dash-hora-label" style="color:${corMetas}">🎯 METAS</div>
       <div class="dash-hora-val" style="color:${corMetas}">${metasTot?metasOk+'/'+metasTot:'—'}</div>
     </div>`;
