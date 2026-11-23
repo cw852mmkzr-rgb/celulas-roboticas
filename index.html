@@ -4948,6 +4948,14 @@ function _motEscolher(t){
   const inf = _motInfoT(rd['mot_'+c.campo]);
   showToast(t ? `Robô ${c.robo} · ${_horaDoCampo(c.campo)}: ${inf.ic} ${inf.completo} ✓` : 'Justificativa removida');
 }
+// o botão direito não pode pôr o cursor no campo da hora: o campo fica por cima e escondia a etiqueta (23/11)
+document.addEventListener('mousedown', e => {
+  if(e.button !== 2 || !(isAdmin || isAdminMetas)) return;
+  const td = e.target && e.target.closest && e.target.closest('td[data-mot-campo]');
+  if(!td) return;
+  e.preventDefault();
+  const a = document.activeElement; if(a && td.contains(a)) a.blur();
+}, true);
 document.addEventListener('contextmenu', e => {
   const td = e.target && e.target.closest && e.target.closest('td[data-mot-campo]');
   if(!td || !(isAdmin || isAdminMetas)) return;
