@@ -357,16 +357,20 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 
 /* ── DASHBOARD TV ── */
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
-.dash-header { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; flex-wrap:wrap; gap:8px; }
-.dash-title { font-size:clamp(28px,3vw,42px); font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; }
-.dash-clock { font-size:clamp(60px,16vw,100px); font-weight:900; color:#00e87a; letter-spacing:0.1em; font-variant-numeric:tabular-nums; }
-.dash-date { font-size:clamp(15px,1.5vw,22px); color:#7a8698; text-align:left; margin-top:5px; }
-.dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:10px 20px; }
-.dash-footer-title { font-size:11px; color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:8px; }
+.dash-header { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; padding:clamp(6px,1.2vh,10px) 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; gap:8px clamp(12px,2vw,28px); }
+.dash-brand { min-width:0; }
+.dash-title { font-size:clamp(18px,min(2.6vw,4.6vh),42px); font-weight:900; color:#fff; letter-spacing:0.1em; font-family:'Montserrat',sans-serif; white-space:nowrap; }
+/* o relógio cresce até o tamanho da coluna do meio (cqi) ou da altura da tela (vh) — o que for menor */
+.dash-clock-col { container-type:inline-size; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.dash-clock-lb { font-size:clamp(10px,1.6vh,14px); color:#4a5568; letter-spacing:0.1em; text-transform:uppercase; }
+.dash-clock { font-size:clamp(28px,min(17cqi,12vh),140px); line-height:1; font-weight:900; color:#00e87a; letter-spacing:0.06em; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.dash-date { font-size:clamp(12px,min(1.5vw,2.6vh),22px); color:#7a8698; text-align:left; margin-top:clamp(2px,.6vh,5px); white-space:nowrap; }
+.dash-footer { flex-shrink:0; background:#080b0f; border-top:2px solid #1e2530; padding:clamp(4px,1.2vh,10px) 20px; }
+.dash-footer-title { font-size:clamp(9px,1.6vh,11px); color:#4a5568; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:clamp(3px,1vh,8px); }
 .dash-horas { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; }
-.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:8px 14px; text-align:center; min-width:80px; }
-.dash-hora-label { font-size:16px; color:#4a5568; margin-bottom:4px; font-weight:700; }
-.dash-hora-val { font-size:32px; font-weight:900; color:#d8dde6; }
+.dash-hora-card { flex-shrink:0; background:#0a0d12; border:1px solid #1e2530; border-radius:10px; padding:clamp(3px,1vh,8px) clamp(8px,1.2vw,14px); text-align:center; min-width:clamp(60px,6vw,80px); }
+.dash-hora-label { font-size:clamp(11px,2.4vh,16px); color:#4a5568; margin-bottom:clamp(1px,.5vh,4px); font-weight:700; }
+.dash-hora-val { font-size:clamp(18px,4.8vh,32px); font-weight:900; color:#d8dde6; }
 .dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
 .dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
 .dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
@@ -374,6 +378,7 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .dash-exit { background:#ff4d4d15; border:1px solid #ff4d4d60; color:#ff4d4d; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:'Courier New',monospace; font-weight:700; }
 .dash-exit:hover { background:#ff4d4d30; border-color:#ff4d4d; color:#fff; }
 .dash-acts { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+@media (max-width:1100px){ .dash-acts { flex-direction:column; align-items:stretch; gap:4px; } .dash-acts .dash-exit { padding:4px 10px; font-size:12px; } }
 .dash-exit.dash-cast { background:#3d9eff15; border-color:#3d9eff60; color:#3d9eff; }
 .dash-exit.dash-cast:hover { background:#3d9eff30; border-color:#3d9eff; color:#fff; }
 .dash-cast-ov { display:none; position:fixed; inset:0; z-index:10050; background:#000000b3; align-items:center; justify-content:center; padding:16px; }
@@ -400,21 +405,21 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
   #dashboardScreen .dash-exit { padding:5px 10px; font-size:11px; background:#0b0f15cc; }
   #dashboardScreen .dash-footer { padding:8px 10px calc(8px + env(safe-area-inset-bottom)); }
 }
-.dash-robo-wrap { height:100%; display:flex; align-items:center; justify-content:center; gap:clamp(12px,3vw,32px); padding:clamp(8px,1.5vh,16px); position:relative; overflow-y:auto; flex-wrap:wrap; }
+.dash-robo-wrap { height:100%; box-sizing:border-box; display:flex; align-items:safe center; align-content:safe center; justify-content:center; gap:clamp(12px,3vw,32px); padding:clamp(8px,1.5vh,16px); position:relative; overflow-y:auto; flex-wrap:wrap; }
 .dash-robo-svg { flex-shrink:0; }
 .dash-robo-svg svg { width:clamp(100px,19vw,270px); height:auto; max-height:58vh; }
-.dash-info { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; min-width:240px; max-width:1000px; }
+.dash-info { display:flex; flex-direction:column; align-items:center; gap:clamp(4px,1.2vh,10px); flex:1; min-width:240px; max-width:1000px; }
 .dash-rn { font-size:clamp(18px,3vw,32px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; }
-.dash-nome { font-size:clamp(26px,min(5vw,6vh),58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
-.dash-cod { font-size:clamp(26px,min(5vw,6.2vh),60px); color:#39ff14; font-weight:900; letter-spacing:.04em; line-height:1.1; font-family:'Orbitron','Montserrat',sans-serif; text-shadow:0 0 8px #39ff14,0 0 22px rgba(57,255,20,.6),0 0 44px rgba(57,255,20,.3); }
-.dash-cli { font-size:clamp(22px,min(3.8vw,4.6vh),46px); color:#c9d3df; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:6px; line-height:1.15; font-family:'Montserrat',sans-serif; }
+.dash-nome { font-size:clamp(18px,min(5vw,5.6vh),58px); font-weight:900; color:#fff; margin:2px 0; text-align:center; font-family:'Montserrat',sans-serif; }
+.dash-cod { font-size:clamp(18px,min(5vw,5.8vh),60px); color:#39ff14; font-weight:900; letter-spacing:.04em; line-height:1.1; font-family:'Orbitron','Montserrat',sans-serif; text-shadow:0 0 8px #39ff14,0 0 22px rgba(57,255,20,.6),0 0 44px rgba(57,255,20,.3); }
+.dash-cli { font-size:clamp(14px,min(3.8vw,4.2vh),46px); color:#c9d3df; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-top:6px; line-height:1.15; font-family:'Montserrat',sans-serif; }
 .dash-cli b { color:#fff; }
-.dash-tremps { font-family:'Orbitron','Montserrat',sans-serif; font-weight:900; font-size:clamp(22px,2.6vw,38px); line-height:1; letter-spacing:.22em; color:#39ff14; text-shadow:0 0 6px #39ff14,0 0 18px #39ff14,0 0 40px rgba(57,255,20,.55); margin-bottom:6px; animation:dashTrempsNeon 5s linear infinite; }
+.dash-tremps { font-family:'Orbitron','Montserrat',sans-serif; font-weight:900; font-size:clamp(16px,min(2.4vw,4.4vh),38px); line-height:1; letter-spacing:.22em; color:#39ff14; text-shadow:0 0 6px #39ff14,0 0 18px #39ff14,0 0 40px rgba(57,255,20,.55); margin-bottom:6px; animation:dashTrempsNeon 5s linear infinite; }
 @keyframes dashTrempsNeon { 0%,46%,50%,100% { opacity:1; } 48% { opacity:.45; } }
 .dash-box { background:#080b0f; border:4px solid #1e2530; border-radius:28px; padding:clamp(10px,min(2vw,2vh),26px) clamp(24px,5vw,90px); text-align:center; width:100%; box-sizing:border-box; }
-.dash-prod-h { font-size:clamp(16px,min(2.6vw,3vh),30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
-.dash-prod-n { font-size:clamp(56px,min(15vw,20vh),170px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
-.dash-meta-txt { font-size:clamp(18px,2.8vw,30px); color:#4a5568; margin-top:8px; }
+.dash-prod-h { font-size:clamp(12px,min(2.6vw,3vh),30px); color:#4a5568; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:clamp(2px,.8vh,8px); }
+.dash-prod-n { font-size:clamp(36px,min(15vw,17vh),170px); font-weight:900; line-height:0.9; font-variant-numeric:tabular-nums; }
+.dash-meta-txt { font-size:clamp(14px,min(2.8vw,3.4vh),30px); color:#4a5568; margin-top:clamp(2px,.8vh,8px); }
 .dash-badge { font-size:clamp(16px,2.8vw,32px); font-weight:900; letter-spacing:0.1em; padding:clamp(8px,1.5vw,16px) clamp(20px,3vw,48px); border-radius:99px; text-align:center; }
 .dash-faltou { font-size:clamp(13px,2vw,20px); color:#4a5568; text-align:center; }
 .dash-dots { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
@@ -2563,14 +2568,14 @@ setInterval(function(){ var el=document.getElementById("lgRelogio"), t=document.
 
 <div id="dashboardScreen">
   <div class="dash-header">
-    <div>
+    <div class="dash-brand">
       <div class="dash-tremps">TREMPS</div>
       <div class="dash-title">⬡ CÉLULAS ROBÓTICAS</div>
       <div class="dash-date" id="dashDate"></div>
     </div>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0">
-      <div style="font-size:14px;color:#4a5568;letter-spacing:0.1em;text-transform:uppercase">Hora atual</div>
-      <div class="dash-clock" id="dashClock" style="font-size:clamp(44px,min(15vw,15vh),150px);line-height:1">--:--:--</div>
+    <div class="dash-clock-col">
+      <div class="dash-clock-lb">Hora atual</div>
+      <div class="dash-clock" id="dashClock">--:--:--</div>
     </div>
     <div class="dash-acts">
       <button type="button" class="dash-exit dash-cast" onclick="dashTransmitir()" title="Transmitir o dashboard para a TV">📺 Transmitir</button>
@@ -10513,10 +10518,10 @@ function _dashRenderRobo(k){
       <!-- Eficiência em % -->
       ${meta>0&&prod>0?`
       <div style="text-align:center">
-        <div style="font-size:clamp(48px,min(14vw,16vh),130px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
-        <div style="font-size:clamp(16px,min(3vw,3vh),30px);color:#4a5568;margin-top:6px">eficiência da hora</div>
+        <div style="font-size:clamp(32px,min(14vw,13vh),130px);font-weight:900;color:${cor};line-height:1;font-family:'Montserrat',sans-serif">${pct}%</div>
+        <div style="font-size:clamp(12px,min(3vw,3vh),30px);color:#4a5568;margin-top:clamp(2px,.6vh,6px)">eficiência da hora</div>
         <!-- Barra de progresso -->
-        <div style="width:100%;max-width:520px;margin:14px auto 0;background:#1e2530;border-radius:99px;height:16px;overflow:hidden">
+        <div style="width:100%;max-width:520px;margin:clamp(6px,1.4vh,14px) auto 0;background:#1e2530;border-radius:99px;height:16px;overflow:hidden">
           <div style="height:100%;width:100%;background:${cor};border-radius:99px;transform-origin:left;transform:scaleX(${Math.min(pct,100)/100});transition:transform 400ms var(--ease-out)"></div>
         </div>
       </div>`:''}
@@ -10534,9 +10539,13 @@ function _dashRenderRobo(k){
 // Encolhe o slide do robô até caber na altura da TV (sem rolagem)
 function _dashFitRobo(){
   const m = document.getElementById("dashMain"), w = m && m.querySelector(".dash-robo-wrap"); if(!w) return;
-  w.style.zoom = "";
+  w.style.zoom = ""; w.style.height = "";
   const H = m.clientHeight, h = w.scrollHeight;
-  if(H > 0 && h > H + 2) w.style.zoom = Math.max(0.5, (H - 4) / h).toFixed(3);
+  if(H > 0 && h > H + 2){
+    const z = Math.max(0.5, (H - 4) / h);
+    w.style.zoom = z.toFixed(3);
+    w.style.height = (H / z).toFixed(1) + "px"; // com zoom a caixa encolhe junto; assim ela continua do tamanho da tela e o conteúdo fica centralizado
+  }
 }
 window.addEventListener("resize", () => { const d = document.getElementById("dashboardScreen"); if(d && d.style.display !== "none") _dashFitRobo(); });
 
