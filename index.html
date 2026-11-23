@@ -536,6 +536,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 /* o campo continua clicável por cima da etiqueta: clicou, aparece e dá para digitar o número */
 .metas-table td.mot-td input.hora-inp { position: absolute; inset: 0; height: 100%; opacity: 0; z-index: 1; }
 .metas-table td.mot-td input.hora-inp:focus { opacity: 1; background: #0b0f14; }
+/* visualizador: quadrado justificado travado — clicar não faz nada e a etiqueta nunca some */
+.metas-table td.mot-td.mot-ro input.hora-inp { pointer-events: none; opacity: 0 !important; }
 .mot-tag { color: var(--mc); font-family: 'Courier New', monospace; font-size: 10px; font-weight: 800; line-height: 1.15; letter-spacing: .3px; text-transform: uppercase; max-width: 78px; margin: 0 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mot-tag .ic { display: block; font-size: 14px; line-height: 1; margin-bottom: 2px; }
 #motMenu { position: fixed; z-index: 10050; min-width: 230px; background: #0e131a; border: 1px solid #2a3442; border-radius: 10px; padding: 6px; box-shadow: 0 12px 32px -6px #000c; font-family: inherit; display: none; }
@@ -6045,7 +6047,7 @@ function buildTurnoTable(c,turno,chave){
       const vazia=displayVal==='';
       const mot=vazia?_motInfoT(_motObjT(rd,campo)):null;
       const motAttr=(vazia&&podeEditar)?` data-mot-key="${selected}" data-mot-robo="${robo}" data-mot-campo="${campo}"`:'';
-      const motTd=mot?` class="mot-td${trocaIni?' troca-ini':''}" style="--mc:${mot.cor}" title="${esc(mot.completo)}${podeEditar?' · botão direito para mudar':''}"`:'';
+      const motTd=mot?` class="mot-td${podeEditar?'':' mot-ro'}${trocaIni?' troca-ini':''}" style="--mc:${mot.cor}" title="${esc(mot.completo)}${podeEditar?' · botão direito para mudar':''}"`:'';
       const inpFinal=mot?inpHtml.replace('placeholder="—"','placeholder=""'):inpHtml;
       const motHtml=mot?`<div class="mot-tag"><span class="ic">${mot.ic}</span>${esc(mot.rotulo)}</div>`:'';
       const tdAttrs=mot?motTd:`${tdStyle}${trocaAttr}${(vazia&&podeEditar&&!trocaIni)?' title="Botão direito: justificar o que houve nesta hora"':''}`;
