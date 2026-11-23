@@ -526,6 +526,24 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 .adj-b { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; padding: 0; border-radius: 6px; border: 1px dashed #b46cff88; background: #0b0f14; font-size: 11px; line-height: 20px; cursor: pointer; opacity: .7; filter: grayscale(1); z-index: 2; }
 .adj-b.has { border-style: solid; border-color: #b46cff; opacity: 1; filter: none; box-shadow: 0 0 8px -2px #b46cff; }
 .adj-b:hover { opacity: 1; filter: none; }
+.metas-table td.mot-td { background: color-mix(in srgb, var(--mc) 9%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc) 35%, transparent); }
+.metas-table td.mot-td { position: relative; }
+/* o campo continua clicável por cima da etiqueta: clicou, aparece e dá para digitar o número */
+.metas-table td.mot-td input.hora-inp { position: absolute; inset: 0; height: 100%; opacity: 0; z-index: 1; }
+.metas-table td.mot-td input.hora-inp:focus { opacity: 1; background: #0b0f14; }
+.mot-tag { color: var(--mc); font-family: 'Courier New', monospace; font-size: 10px; font-weight: 800; line-height: 1.15; letter-spacing: .3px; text-transform: uppercase; max-width: 78px; margin: 0 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mot-tag .ic { display: block; font-size: 14px; line-height: 1; margin-bottom: 2px; }
+#motMenu { position: fixed; z-index: 10050; min-width: 230px; background: #0e131a; border: 1px solid #2a3442; border-radius: 10px; padding: 6px; box-shadow: 0 12px 32px -6px #000c; font-family: inherit; display: none; }
+#motMenu.on { display: block; }
+#motMenu .mm-tit { font-size: 11px; color: #8b95a5; padding: 6px 10px 8px; border-bottom: 1px solid #1e2530; margin-bottom: 4px; }
+#motMenu .mm-tit b { color: #d8dde6; }
+#motMenu button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-radius: 7px; color: #d8dde6; font-size: 13px; padding: 8px 10px; cursor: pointer; }
+#motMenu button:hover, #motMenu button:focus-visible { background: #1a2230; outline: none; }
+#motMenu button .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--mc); flex: none; box-shadow: 0 0 6px -1px var(--mc); }
+#motMenu button.sel { background: #1a2230; }
+#motMenu button.sel::after { content: '\2713'; margin-left: auto; color: var(--mc); font-weight: 900; }
+#motMenu .mm-sep { height: 1px; background: #1e2530; margin: 4px 0; }
+#motMenu button.mm-limpar { color: #ff8a8a; }
 .aji-x { background: none; border: 1px solid #1e2530; color: #8a94a6; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; flex: none; }
 .aji-txt { background: #080b0f; border: 1px solid #b46cff55; border-left: 3px solid #b46cff; border-radius: 10px; padding: 12px 14px; font-size: 14.5px; line-height: 1.5; color: #e5ebf3; white-space: pre-wrap; word-break: break-word; }
 .aji-txt.vazio { color: #8a94a6; font-style: italic; border-color: #1e2530; border-left-color: #26303f; }
@@ -4860,6 +4878,82 @@ function abrirAjusteInfoT(key, robo, campo){
 }
 function fecharAjusteInfoT(){ const ov = document.getElementById('ajiOv'); if(ov) ov.classList.remove('on'); document.body.style.overflow = ''; }
 
+// ===== JUSTIFICATIVA DE HORA VAZIA (23/11/2026) =====
+// Quadrado vazio da Meta Diária: o HOST/Metas clica com o botão direito e escolhe o que houve
+// (manutenção, sem mão de obra...). Fica em rd['mot_'+campo] = {t, txt?, por, em}. Só aparece com a hora vazia;
+// digitar um número na hora apaga a justificativa.
+const MOTIVOS_HORA_T = [
+  {t:'manut',    ic:'🔧', nome:'Manutenção',            curto:'Manutenção', cor:'#ff9f43'},
+  {t:'semmo',    ic:'👷', nome:'Sem mão de obra',       curto:'Sem M.O.',   cor:'#ffd43b'},
+  {t:'setup',    ic:'⚙️', nome:'Setup / troca de peça', curto:'Setup',      cor:'#4dabf7'},
+  {t:'material', ic:'📦', nome:'Falta de material',     curto:'S/ material',cor:'#f783ac'},
+  {t:'falha',    ic:'⚠️', nome:'Robô em falha',         curto:'Falha',      cor:'#ff6b6b'},
+  {t:'treino',   ic:'🗣', nome:'Reunião / treinamento', curto:'Reunião',    cor:'#63e6be'},
+  {t:'outro',    ic:'✎',  nome:'Outro motivo…',         curto:'Outro',      cor:'#adb5bd'}
+];
+function _motObjT(rd, campo){ const m = rd && rd['mot_'+campo]; return (m && typeof m === 'object' && m.t) ? m : null; }
+function _motInfoT(m){ if(!m) return null; const o = MOTIVOS_HORA_T.find(x => x.t === m.t) || MOTIVOS_HORA_T[MOTIVOS_HORA_T.length-1];
+  const txt = String(m.txt || '').trim();
+  return {...o, rotulo: m.t === 'outro' ? (txt || 'Outro') : o.curto, completo: m.t === 'outro' ? (txt || 'Outro motivo') : o.nome + (txt ? ' — ' + txt : '')}; }
+let _motCtx = null;
+function _motMenuEl(){
+  let m = document.getElementById('motMenu');
+  if(!m){
+    m = document.createElement('div'); m.id = 'motMenu'; m.setAttribute('role', 'menu');
+    document.body.appendChild(m);
+    const fecha = e => { if(m.classList.contains('on') && !(e.target && m.contains(e.target))) _motFechar(); };
+    document.addEventListener('pointerdown', fecha, true);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') _motFechar(); });
+    // não fecha com "scroll": a tela que atualiza sozinha devolve a rolagem da tabela e fechava o menu antes do clique
+    window.addEventListener('resize', () => _motFechar());
+  }
+  return m;
+}
+function _motFechar(){ const m = document.getElementById('motMenu'); if(m) m.classList.remove('on'); _motCtx = null; }
+function _motAbrir(ev, td){
+  const key = td.dataset.motKey, robo = td.dataset.motRobo, campo = td.dataset.motCampo;
+  const chave = getMetasChave(key);
+  const rd = ((((celulas[key]||{}).metas_dias||{})[chave])||{})[robo] || {};
+  const atual = _motObjT(rd, campo);
+  _motCtx = {key, robo, campo, chave};
+  const m = _motMenuEl();
+  m.innerHTML = `<div class="mm-tit">Justificar hora vazia · <b>Robô ${esc(robo)} · ${esc(_horaDoCampo(campo))}</b></div>`
+    + MOTIVOS_HORA_T.map(o => `<button type="button" role="menuitem" style="--mc:${o.cor}" class="${atual && atual.t === o.t ? 'sel' : ''}" onclick="_motEscolher('${o.t}')"><span class="dot"></span>${o.ic} ${esc(o.t === 'outro' && atual && atual.t === 'outro' && atual.txt ? atual.txt : o.nome)}</button>`).join('')
+    + (atual ? `<div class="mm-sep"></div><button type="button" role="menuitem" class="mm-limpar" onclick="_motEscolher('')">✕ Tirar justificativa</button>` : '');
+  m.classList.add('on');
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, Math.min(ev.clientX, innerWidth - r.width - 8)) + 'px';
+  m.style.top = Math.max(8, Math.min(ev.clientY, innerHeight - r.height - 8)) + 'px';
+  const b = m.querySelector('button'); if(b) b.focus({preventScroll:true});
+}
+function _motEscolher(t){
+  const c = _motCtx; _motFechar(); if(!c) return;
+  if(!(isAdmin || isAdminMetas)){ showToast('Só o HOST ou Metas pode justificar', true); return; }
+  let txt = '';
+  if(t === 'outro'){
+    const rd0 = ((((celulas[c.key]||{}).metas_dias||{})[c.chave])||{})[c.robo] || {};
+    const at = _motObjT(rd0, c.campo);
+    const r = prompt('O que houve nesta hora? (Robô ' + c.robo + ' · ' + _horaDoCampo(c.campo) + ')', at && at.t === 'outro' ? (at.txt || '') : '');
+    if(r === null) return; txt = r.trim().slice(0, 80);
+    if(!txt){ showToast('Escreva o motivo', true); return; }
+  }
+  const md = celulas[c.key].metas_dias || (celulas[c.key].metas_dias = {});
+  const dia = md[c.chave] || (md[c.chave] = {});
+  const rd = dia[c.robo] || (dia[c.robo] = {});
+  if(String(rd[c.campo] || '').trim() !== '' && String(rd[c.campo]).trim() !== '0'){ showToast('Essa hora já tem produção — a justificativa é só para hora vazia', true); return; }
+  if(!t) delete rd['mot_'+c.campo];
+  else rd['mot_'+c.campo] = {t, ...(txt ? {txt} : {}), por: isAdmin ? 'HOST' : 'Metas', em: new Date().toISOString()};
+  saveToAPI(celulas);
+  if(getCellTipo(selected) === 'metas') renderMetasDiaria();
+  const inf = _motInfoT(rd['mot_'+c.campo]);
+  showToast(t ? `Robô ${c.robo} · ${_horaDoCampo(c.campo)}: ${inf.ic} ${inf.completo} ✓` : 'Justificativa removida');
+}
+document.addEventListener('contextmenu', e => {
+  const td = e.target && e.target.closest && e.target.closest('td[data-mot-campo]');
+  if(!td || !(isAdmin || isAdminMetas)) return;
+  e.preventDefault(); _motAbrir(e, td);
+});
+
 // Data escolhida na Meta Diária: é de CADA APARELHO (05/11/2026).
 // Antes ficava gravada no banco (metas_dia/mes/ano): o último que salvava mudava a data de todo mundo,
 // e a produção de hoje ia parar no dia de ontem. Escolha feita em outro dia volta sozinha para hoje.
@@ -5622,6 +5716,8 @@ function updateMetasCell(key,robo,campo,valor){
   celulas[key].metas_dias[chave][robo][campo]=valor;
   // sem parada justificada (#) o motivo do balãozinho sai junto
   if(campo.startsWith('h') && parseCelVal(valor||'').tipo!=='ajuste') delete celulas[key].metas_dias[chave][robo]['just_'+campo];
+  // hora com produção não tem justificativa de hora vazia
+  if(campo.startsWith('h') && String(valor||'').trim()!=='' && String(valor).trim()!=='0') delete celulas[key].metas_dias[chave][robo]['mot_'+campo];
   // Se a hora foi apagada (vazio/0), remove o snapshot de equipe daquela hora
   // — evita que apontamentos zerados continuem aparecendo no buscador/relatórios
   if(campo.startsWith('h') && parseCelVal(valor||'').num===0){
@@ -5932,7 +6028,15 @@ function buildTurnoTable(c,turno,chave){
       // só o HOST altera a produção automática — pelo botão "✎ Ajustar produção automática" do topo (pede senha)
       const autoAttr=auto?`readonly title="Automático: contado direto pelo robô${podeEditar?' · clique para registrar a equipe e a parada justificada':''}"${podeEditar?` onclick="metaEqAbrir('${selected}',${robo},'${campo}')"`:''}`:ro;
       const inpHtml=`<input id="inp-${robo}-${campo}" type="text" class="hora-inp${cc?' '+cc:''}${auto?' cell-auto'+(podeEditar?' cell-auto-ed':''):''}" value="${esc(String(displayVal))}" placeholder="—" ${autoAttr} onchange="handleMetasInput('${selected}',${robo},'${campo}',this.value)">`;
-      return`<td ${tdStyle}${trocaAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${tipo==='ajuste'&&num>0?_ajComBalaoT(inpHtml,rd,campo,robo,selected):inpHtml}${funcHtml}</td>`;
+      // hora vazia: botão direito (HOST/Metas) justifica o que houve — manutenção, sem mão de obra...
+      const vazia=displayVal==='';
+      const mot=vazia?_motInfoT(_motObjT(rd,campo)):null;
+      const motAttr=(vazia&&podeEditar)?` data-mot-key="${selected}" data-mot-robo="${robo}" data-mot-campo="${campo}"`:'';
+      const motTd=mot?` class="mot-td${trocaIni?' troca-ini':''}" style="--mc:${mot.cor}" title="${esc(mot.completo)}${podeEditar?' · botão direito para mudar':''}"`:'';
+      const inpFinal=mot?inpHtml.replace('placeholder="—"','placeholder=""'):inpHtml;
+      const motHtml=mot?`<div class="mot-tag"><span class="ic">${mot.ic}</span>${esc(mot.rotulo)}</div>`:'';
+      const tdAttrs=mot?motTd:`${tdStyle}${trocaAttr}${(vazia&&podeEditar&&!trocaIni)?' title="Botão direito: justificar o que houve nesta hora"':''}`;
+      return`<td ${tdAttrs}${motAttr}>${trocaIni?`<div class="troca-tag">⇄ ${esc(trocaIni.cod||'—')}</div>`:''}${tipo==='ajuste'&&num>0?_ajComBalaoT(inpFinal,rd,campo,robo,selected):inpFinal}${motHtml}${funcHtml}</td>`;
     }).join('');
     const subRow=HORAS.reduce((s,h)=>s+(parseCelVal(rd[campoH(h)]).num),0);
     const totalG=isNoite?([...HORAS_DIA,...HORAS_NOITE].reduce((s,h)=>s+(parseCelVal((rd[campoH(h)])||'').num),0)):null;
