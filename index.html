@@ -7807,7 +7807,6 @@ function _projCapAtualiza(forcar){
   const porH = E.cmph * E.crob, porDia = porH * E.chor, periodo = porDia * E.cdias;
   const fechado = P.estado === 'fechado';
   const fechaMes = P.realizadoMes + periodo;
-  const projAtual = P.realizadoMes + P.ritmo * P.restMes(P.sabPadrao);
   const metaFalta = Math.max(0, (E.meta || 0) - P.realizadoMes);
   const capHoras = E.crob * E.chor * E.cdias;
   const precisa = capHoras > 0 ? Math.ceil(metaFalta / capHoras) : null;
@@ -7820,7 +7819,6 @@ function _projCapAtualiza(forcar){
     _projCard('#00e87a', 'Peças por hora (fábrica)', _projFmt(porH), `${E.crob} robôs × ${_projFmt(E.cmph)}/h`),
     _projCard('#3d9eff', 'Peças por dia', _projFmt(porDia), `× ${_projDec(E.chor)} h trabalhadas por robô`),
     _projCard('#a78bfa', `Em ${E.cdias} dia(s)`, _projFmt(periodo), `${_projFmt(porDia)} × ${E.cdias} dias`),
-    fechado ? '' : _projCard(fechaMes >= projAtual ? '#00e87a' : '#ff4d4d', 'Mês fechando em', _projFmt(fechaMes), `${_projFmt(P.realizadoMes)} feitas + ${_projFmt(periodo)} · projeção atual ${_projFmt(projAtual)}`),
     fechado ? '' : _projCard(metaCor, 'Média/h necessária', metaVal, metaTxt),
     fechado ? '' : _projCard('#ffb300', 'vs ' + P.mesAnt, P.antRef ? ((fechaMes / P.antRef - 1) * 100 >= 0 ? '+' : '') + Math.round((fechaMes / P.antRef - 1) * 100) + '%' : '—', P.antTxt || '')
   ].join('');
