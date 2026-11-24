@@ -356,6 +356,8 @@ body { background: #080b0f; color: #d8dde6; font-family: 'Courier New', monospac
 }
 
 /* ── DASHBOARD TV ── */
+/* no Dashboard TV o botão 🖥 (Dispositivos conectados) some: ele cobria o card METAS do rodapé */
+body:has(#dashboardScreen[style*="flex"]) #dispFab { display:none !important; }
 #dashboardScreen { display:none; position:fixed; inset:0; background:#04070d; z-index:100; flex-direction:column; overflow:hidden; }
 .dash-header { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; padding:clamp(6px,1.2vh,10px) 16px; border-bottom:2px solid #1e2530; background:#080b0f; flex-shrink:0; gap:8px clamp(12px,2vw,28px); }
 .dash-brand { min-width:0; }
@@ -24490,7 +24492,7 @@ function _relHistoricoHTML(){
 
 </script>
 
-<button onclick="dispAbrirLogin()" title="Dispositivos conectados" style="position:fixed;bottom:14px;right:14px;background:#0f1318;border:1px solid #2a3040;color:#6b7788;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;z-index:9500;opacity:0.35;transition:opacity .2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.35">🖥️</button>
+<button id="dispFab" onclick="dispAbrirLogin()" title="Dispositivos conectados" style="position:fixed;bottom:14px;right:14px;background:#0f1318;border:1px solid #2a3040;color:#6b7788;border-radius:50%;width:36px;height:36px;font-size:15px;cursor:pointer;z-index:9500;opacity:0.35;transition:opacity .2s;display:flex;align-items:center;justify-content:center" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.35">🖥️</button>
 
 <div id="modalDispositivos" style="display:none;position:fixed;inset:0;background:#000000dd;z-index:9700;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)dispFecharModal()">
   <div style="background:#0f1318;border:1px solid #3d9eff40;border-radius:16px;padding:22px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column">
