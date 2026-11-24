@@ -374,9 +374,11 @@ body:has(#dashboardScreen[style*="flex"]) #dispFab { display:none !important; }
 .dash-hora-card.dash-hora-sum { flex-grow:1.8; }
 .dash-hora-card.dash-hora-atual { flex-grow:1.5; }
 .dash-hora-label { font-size:clamp(9px,min(2.4vh,1vw),16px); color:#4a5568; margin-bottom:clamp(1px,.5vh,4px); font-weight:700; white-space:nowrap; }
-.dash-hora-val { font-size:clamp(13px,min(4.8vh,1.85vw),32px); font-weight:900; color:#d8dde6; white-space:nowrap; }
+/* a letra do valor também respeita a largura do quadradinho: --n = quantidade de caracteres (cada um tem 0,6em) */
+.dash-hora-card { container-type:inline-size; }
+.dash-hora-val { font-size:clamp(13px,min(4.8vh,1.85vw),32px); font-size:min(clamp(13px,min(4.8vh,1.85vw),32px), calc(158cqi / var(--n,3))); font-weight:900; color:#d8dde6; white-space:nowrap; }
 /* celular: não dá para caber tudo — volta a rolar de lado com quadradinhos legíveis */
-@media (max-width:700px){ .dash-hora-card { flex:0 0 auto; min-width:64px; padding:6px 10px; } .dash-hora-label { font-size:13px; } .dash-hora-val { font-size:24px; } }
+@media (max-width:700px){ .dash-hora-card { flex:0 0 auto; min-width:64px; padding:6px 10px; container-type:normal; } .dash-hora-label { font-size:13px; } .dash-hora-val { font-size:24px; } }
 .dash-hora-card.meta-ok .dash-hora-val { color:#00e87a; }
 .dash-hora-card.meta-fail .dash-hora-val { color:#ff4d4d; }
 .dash-hora-card.cafe { background:#ffb30008; border-color:#ffb30030; }
@@ -412,6 +414,13 @@ body:has(#dashboardScreen[style*="flex"]) #dispFab { display:none !important; }
   #dashboardScreen .dash-footer { padding:8px 10px calc(8px + env(safe-area-inset-bottom)); }
 }
 .dash-robo-wrap { height:100%; box-sizing:border-box; display:flex; align-items:safe center; align-content:safe center; justify-content:center; gap:clamp(12px,3vw,32px); padding:clamp(8px,1.5vh,16px); position:relative; overflow-y:auto; flex-wrap:wrap; }
+.dash-geral.dg-mini { padding:6px 12px !important; }
+.dash-geral.dg-mini .dg-tit { margin-bottom:4px !important; }
+.dash-geral.dg-mini .dg-dots { margin-top:5px !important; }
+.dash-geral.dg-mini td { padding-top:2px !important; padding-bottom:2px !important; line-height:1.1; }
+.dash-geral.dg-mini td.dg-at { font-size:26px !important; }
+.dash-geral.dg-mini th { padding:4px 4px !important; }
+.dash-geral.dg-mini thead th { font-size:17px !important; letter-spacing:0 !important; }
 .dash-robo-svg { flex-shrink:0; }
 .dash-robo-svg svg { width:clamp(100px,19vw,270px); height:auto; max-height:58vh; }
 .dash-info { display:flex; flex-direction:column; align-items:center; gap:clamp(4px,1.2vh,10px); flex:1; min-width:240px; max-width:1000px; }
@@ -10553,7 +10562,24 @@ function _dashFitRobo(){
     w.style.height = (H / z).toFixed(1) + "px"; // com zoom a caixa encolhe junto; assim ela continua do tamanho da tela e o conteúdo fica centralizado
   }
 }
-window.addEventListener("resize", () => { const d = document.getElementById("dashboardScreen"); if(d && d.style.display !== "none") _dashFitRobo(); });
+// Visão Geral inteira na tela, sem rolagem (24/11/2026): se não couber, primeiro aperta os espaços (dg-mini), depois diminui.
+// No celular (menos de 700 px) continua rolando: ali o texto ficaria pequeno demais para ler.
+function _dashFitGeral(){
+  const m = document.getElementById("dashMain"), w = m && m.querySelector(".dash-geral"); if(!w) return;
+  w.classList.remove("dg-mini"); w.style.zoom = ""; w.style.width = ""; w.style.height = "100%"; w.style.overflow = "auto";
+  const W = m.clientWidth, H = m.clientHeight;
+  if(!W || !H || window.innerWidth < 700) return;
+  w.style.overflow = "hidden";
+  const cabe = () => Math.min(1, (W - 1) / w.scrollWidth, (H - 1) / w.scrollHeight);
+  let z = cabe();
+  if(z >= 1) return;
+  if(z < 0.9){ w.classList.add("dg-mini"); z = cabe(); }
+  if(z < 1){ w.style.zoom = z.toFixed(4); w.style.width = (W / z).toFixed(1) + "px"; w.style.height = (H / z).toFixed(1) + "px"; }
+}
+function _dashFitTudo(){ const d = document.getElementById("dashboardScreen"); if(d && d.style.display !== "none"){ _dashFitRobo(); _dashFitGeral(); } }
+window.addEventListener("resize", _dashFitTudo);
+// o rodapé das horas é desenhado depois e muda a altura do miolo
+if(window.ResizeObserver){ const dm = document.getElementById("dashMain"); if(dm) new ResizeObserver(_dashFitTudo).observe(dm); }
 
 
 // op (opcional, Dashboard Ao Vivo): {html:true → só devolve o HTML, dados, hora, robos} — sem op é o dashboard da TV de sempre
@@ -10591,7 +10617,7 @@ function _dashRenderGeral(op){
       // fundo da hora: verde quando bateu a meta, vermelho quando não bateu (mesmo tom em todas as células)
       let heat='';
       if(!isCafe&&metaH>0&&v>0) heat=_ajC?'background:rgba(180,108,255,.38);':ok?'background:rgba(0,232,122,.38);':'background:rgba(255,77,77,.42);';
-      return`<td style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${heat?'#fff':cor};${heat?heat+(isAtual?'box-shadow:inset 2px 0 0 rgba(255,179,0,.6),inset -2px 0 0 rgba(255,179,0,.6);':''):(isAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':bgCafe)}">${v>0?v:'—'}</td>`;
+      return`<td${isAtual?' class="dg-at"':''} style="padding:6px 8px;text-align:center;font-size:${fontSize};font-weight:900;color:${heat?'#fff':cor};${heat?heat+(isAtual?'box-shadow:inset 2px 0 0 rgba(255,179,0,.6),inset -2px 0 0 rgba(255,179,0,.6);':''):(isAtual?'background:rgba(255,179,0,.10);box-shadow:inset 2px 0 0 rgba(255,179,0,.45),inset -2px 0 0 rgba(255,179,0,.45);':bgCafe)}">${v>0?v:'—'}</td>`;
     }).join('');
     return`<tr style="border-bottom:1px solid #0a0d12">
       <td style="padding:7px 10px;font-size:22px;font-weight:900;color:#d8dde6;white-space:nowrap">${rn}</td>
@@ -10614,8 +10640,8 @@ function _dashRenderGeral(op){
   }).join('');
 
   const html=`
-  <div style="height:100%;overflow:auto;padding:14px 18px">
-    <div style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;text-align:center">
+  <div${op.html?'':' class="dash-geral"'} style="height:100%;overflow:auto;padding:14px 18px${op.html?'':';box-sizing:border-box'}">
+    <div class="dg-tit" style="font-size:12px;color:#4a5568;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:10px;text-align:center">
       📊 Visão Geral — Produção do dia · Hora atual: <span style="color:#ffb300;font-weight:900">${horaAtual}</span>
     </div>
     <table style="width:100%;border-collapse:collapse;background:#0a0d12;border-radius:12px;overflow:hidden">
@@ -10637,13 +10663,14 @@ function _dashRenderGeral(op){
         </tr>
       </tfoot>
     </table>
-    ${op.html?'':`<div style="display:flex;justify-content:center;gap:5px;margin-top:12px">
+    ${op.html?'':`<div class="dg-dots" style="display:flex;justify-content:center;gap:5px;margin-top:12px">
       ${robosL.map(()=>`<div style="width:5px;height:5px;border-radius:99px;background:#1e2530"></div>`).join('')}
       <div style="width:18px;height:5px;border-radius:99px;background:#ffb300"></div>
     </div>`}
   </div>`;
   if(op.html) return html;
   main.innerHTML=html;
+  _dashFitGeral();
 }
 
 function _dashRenderFooter(){
@@ -10662,7 +10689,7 @@ function _dashRenderFooter(){
     const cor=isCafe?'#ffb300':total===0?'#4a5568':bateu?'#00e87a':'#ff4d4d';
     return`<div class="dash-hora-card${isCafe?' cafe':''}${isAtual?' dash-hora-atual':''}" style="border-color:${isAtual?cor+'80':'#1e2530'};background:${isAtual?cor+'10':'#0a0d12'}">
       <div class="dash-hora-label" style="color:${isAtual?cor:'#fff'};${isAtual?'':'text-shadow:0 0 6px rgba(255,255,255,.75),0 0 16px rgba(255,255,255,.35)'}">${h}${isAtual?' ◀':''}</div>
-      <div class="dash-hora-val" style="color:${cor}">${total>0?total:'—'}</div>
+      <div class="dash-hora-val" style="color:${cor};--n:${Math.max(3,String(total).length)}">${total>0?total:'—'}</div>
     </div>`;
   }).join('')+(()=>{
     // Card final com o total geral do dia
@@ -10688,11 +10715,11 @@ function _dashRenderFooter(){
     const corMetas=!metasTot?'#4a5568':pctMetas>=80?'#00e87a':pctMetas>=50?'#ffb300':'#ff4d4d';
     return`<div class="dash-hora-card dash-hora-sum" style="border-color:#ffb30080;background:#ffb30015">
       <div class="dash-hora-label" style="color:#ffb300">∑ TOTAL</div>
-      <div class="dash-hora-val" style="color:#ffb300">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
+      <div class="dash-hora-val" style="color:#ffb300;--n:${totalDia.toLocaleString("pt-BR").length}">${totalDia>0?totalDia.toLocaleString("pt-BR"):'—'}</div>
     </div>
     <div class="dash-hora-card dash-hora-sum" style="border-color:${corMetas}80;background:${corMetas}15" title="${metasOk} de ${metasTot} horas trabalhadas bateram a meta (${pctMetas}%)">
       <div class="dash-hora-label" style="color:${corMetas}">🎯 METAS</div>
-      <div class="dash-hora-val" style="color:${corMetas}">${metasTot?metasOk+'/'+metasTot:'—'}</div>
+      <div class="dash-hora-val" style="color:${corMetas};--n:${(metasOk+'/'+metasTot).length}">${metasTot?metasOk+'/'+metasTot:'—'}</div>
     </div>`;
   })();
 }
