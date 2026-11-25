@@ -18496,13 +18496,20 @@ let _manuRoboAtual = null;
 let _manuIdxAtual = null;
 let _manuKeyAtual = null;
 
+let _manuEditOrig = null; // como a manutenção estava ao abrir o Editar (acha o registro e o aviso antigo do WhatsApp)
 function editarManu(key,robo,idx){
   const m = celulas[key].manutencoes[robo][idx];
   _manuRoboAtual = robo;
   _manuIdxAtual = idx;
+  _manuKeyAtual = key;
+  _manuEditOrig = {robo:robo, descricao:m.descricao||'', data:m.data||'', responsavel:m.responsavel||''};
+  const selR = document.getElementById("editManuRobo");
+  selR.innerHTML = ROBOS.map(r=>`<option value="${r}">Robô ${r} — ${r<=604?'Fanuc':'Kuka'}</option>`).join('');
+  selR.value = String(robo);
   document.getElementById("editManuDescricao").value = m.descricao||'';
   document.getElementById("editManuResponsavel").value = m.responsavel||'';
   document.getElementById("editManuData").value = m.data||'';
+  document.getElementById("editManuAviso").style.display = (equipesData && equipesData.alertas_manu_ativos) ? '' : 'none';
   document.getElementById("modalEditManu").style.display = 'flex';
 }
 
@@ -18511,13 +18518,48 @@ function salvarEdicaoManu(){
   if(!desc){ showToast("Descrição obrigatória!", true); return; }
   const resp = document.getElementById("editManuResponsavel").value.trim();
   const data = document.getElementById("editManuData").value.trim();
-  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].descricao = desc;
-  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].responsavel = resp;
-  celulas[selected].manutencoes[_manuRoboAtual][_manuIdxAtual].data = data;
-  saveToAPI(celulas);
+  const robo = parseInt(document.getElementById("editManuRobo").value);
+  if(!ROBOS.includes(robo)){ showToast("Selecione o robô!", true); return; }
+  const o = _manuEditOrig, todas = celulas[_manuKeyAtual].manutencoes, lista = todas[_manuRoboAtual]||[];
+  // a lista pode ter mudado enquanto a janela estava aberta: confere se ainda é a mesma manutenção
+  const ehEla = x => !!x && (x.descricao||'')===o.descricao && (x.data||'')===o.data;
+  const idx = ehEla(lista[_manuIdxAtual]) ? _manuIdxAtual : lista.findIndex(ehEla);
+  if(idx < 0){ document.getElementById("modalEditManu").style.display = 'none'; renderManutencao(); showToast("Essa manutenção foi alterada em outro aparelho. Abra de novo para editar.", true); return; }
+  const m = lista[idx], trocouRobo = robo !== parseInt(_manuRoboAtual);
+  const mudou = trocouRobo || desc!==o.descricao.trim() || resp!==o.responsavel.trim() || data!==o.data.trim();
   document.getElementById("modalEditManu").style.display = 'none';
+  if(!mudou){ showToast("Nada foi alterado"); return; }
+  m.descricao = desc;
+  m.responsavel = resp;
+  m.data = data;
+  if(trocouRobo){
+    lista.splice(idx,1);
+    if(!todas[robo]) todas[robo] = [];
+    todas[robo].push(m);
+  }
+  saveToAPI(celulas);
   renderManutencao();
   showToast("Manutenção atualizada ✓");
+  if(!m.concluido) _manuReenviarAviso(o, robo, m);
+}
+
+// Edição: apaga o aviso antigo no WhatsApp e manda o corrigido (edge function manu-reenviar; os números saem do banco)
+async function _manuReenviarAviso(antes, robo, m){
+  if(!equipesData || !equipesData.alertas_manu_ativos) return;
+  try{
+    const r = await fetch(SUPABASE_URL+"/functions/v1/manu-reenviar",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+SUPABASE_KEY,"apikey":SUPABASE_KEY},
+      body:JSON.stringify({antes:{robo:antes.robo, descricao:antes.descricao, data:antes.data},
+        novo:{robo, nome:(celulas[String(robo)]&&celulas[String(robo)].nome)||('Robô '+robo), tipo:m.tipo||'', prioridade:m.prioridade||'Média', descricao:m.descricao, peca:m.peca||'', responsavel:m.responsavel||'', data:m.data}})
+    });
+    const d = await r.json().catch(()=>null);
+    if(!r.ok || !d || !d.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+    if(d.desligado || !(d.resultado||[]).length) return;
+    if(d.resultado.some(x=>!x.enviado)) showToast("Salvo, mas o WhatsApp não recebeu o novo aviso em todos os números", true);
+    else if(d.resultado.every(x=>x.achadas>0 && x.apagadas===x.achadas)) showToast("WhatsApp: aviso antigo apagado e novo enviado ✓");
+    else showToast("WhatsApp: novo aviso enviado, mas o antigo não pôde ser apagado", true);
+  }catch(e){ console.error('reenviar aviso', e); showToast("Salvo, mas não consegui atualizar o aviso no WhatsApp", true); }
 }
 
 let _manuCardAbertoRobo = null;
@@ -20884,12 +20926,16 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ ['modalCompLogin'
 <div id="modalEditManu" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
   <div style="background:#0f1318;border:1px solid #1e2530;border-radius:16px;padding:24px;width:90%;max-width:420px">
     <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:16px">✏ Editar Manutenção</div>
+    <div style="font-size:11px;color:#4a5568;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Robô</div>
+    <select id="editManuRobo"
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;outline:none"></select>
     <textarea id="editManuDescricao" placeholder="Descrição *" rows="3"
       style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;resize:vertical;outline:none"></textarea>
     <input id="editManuResponsavel" placeholder="Responsável"
       style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;outline:none">
     <input id="editManuData" placeholder="Data de abertura (ex: 11/06/2026, 14:30)"
-      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:16px;box-sizing:border-box;outline:none">
+      style="width:100%;background:#080b0f;border:1px solid #1e2530;color:#d8dde6;padding:8px 12px;border-radius:8px;font-family:'Courier New',monospace;font-size:13px;margin-bottom:8px;box-sizing:border-box;outline:none">
+    <div id="editManuAviso" style="font-size:12px;color:#9aa5b8;line-height:1.45;margin-bottom:16px">📲 Ao salvar, o aviso antigo do WhatsApp é apagado e o corrigido é enviado.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-gray" style="padding:6px 16px" onclick="document.getElementById('modalEditManu').style.display='none'">Cancelar</button>
       <button class="btn btn-gray" style="padding:6px 16px;background:#a78bfa20;border:1px solid #a78bfa40;color:#a78bfa" onclick="salvarEdicaoManu()">✓ Salvar</button>
